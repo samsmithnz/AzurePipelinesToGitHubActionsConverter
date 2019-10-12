@@ -1,0 +1,16 @@
+name: CI
+
+on: [push]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v1
+    - name: Build with dotnet
+      run: dotnet build AzurePipelinesToGitHubActionsConverter/AzurePipelinesToGitHubActionsConverter.Tests/AzurePipelinesToGitHubActionsConverter.Test.csproj --configuration Release
+    - name: Test with dotnet
+      run: dotnet test AzurePipelinesToGitHubActionsConverter/AzurePipelinesToGitHubActionsConverter.Tests/AzurePipelinesToGitHubActionsConverter.Test.csproj --configuration Release
+
