@@ -7,7 +7,12 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AzurePipelinesToGitHubActio
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AzurePipelinesToGitHubActionsConverter.Tests", "AzurePipelinesToGitHubActionsConverter.Tests\AzurePipelinesToGitHubActionsConverter.Tests.csproj", "{102D54AE-A0FB-4CE8-972E-5B0A4CF61F7A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AzurePipelinesToGitHubActionsConverter.ConsoleApp", "AzurePipelinesToGitHubActionsConverter.ConsoleApp\AzurePipelinesToGitHubActionsConverter.ConsoleApp.csproj", "{8F111FD9-C3BB-428B-9C03-70274B4A371D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AzurePipelinesToGitHubActionsConverter.ConsoleApp", "AzurePipelinesToGitHubActionsConverter.ConsoleApp\AzurePipelinesToGitHubActionsConverter.ConsoleApp.csproj", "{8F111FD9-C3BB-428B-9C03-70274B4A371D}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{90C45174-BE52-4642-BBB4-609E29A8CE48}"
+	ProjectSection(SolutionItems) = preProject
+		..\README.md = ..\README.md
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
