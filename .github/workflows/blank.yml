@@ -10,7 +10,7 @@ jobs:
     steps:
     - uses: actions/checkout@v1
     - name: Build with dotnet
-      run: dotnet build AzurePipelinesToGitHubActionsConverter/AzurePipelinesToGitHubActionsConverter.Tests/AzurePipelinesToGitHubActionsConverter.Test.csproj --configuration Release
+      run: dotnet build AzurePipelinesToGitHubActionsConverter/AzurePipelinesToGitHubActionsConverter.Tests/AzurePipelinesToGitHubActionsConverter.Tests.csproj --configuration Release
     - name: Test with dotnet
-      run: dotnet test AzurePipelinesToGitHubActionsConverter/AzurePipelinesToGitHubActionsConverter.Tests/AzurePipelinesToGitHubActionsConverter.Test.csproj --configuration Release
+      run: dotnet test AzurePipelinesToGitHubActionsConverter/AzurePipelinesToGitHubActionsConverter.Tests/AzurePipelinesToGitHubActionsConverter.Tests.csproj --configuration Release
 
