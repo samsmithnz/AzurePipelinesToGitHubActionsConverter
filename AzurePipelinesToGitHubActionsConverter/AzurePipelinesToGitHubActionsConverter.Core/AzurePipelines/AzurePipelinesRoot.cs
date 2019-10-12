@@ -11,7 +11,6 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.AzurePipelines
         public Pool pool { get; set; }
         public Variables variables { get; set; }
         public Script[] steps { get; set; }
-        //public Dictionary<string, Script>[] steps { get; set; }
     }
 }
 

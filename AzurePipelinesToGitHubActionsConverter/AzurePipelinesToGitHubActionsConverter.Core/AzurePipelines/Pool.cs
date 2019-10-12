@@ -13,5 +13,4 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.AzurePipelines
         public string vmImage { get; set; }
     }
 
-
 }

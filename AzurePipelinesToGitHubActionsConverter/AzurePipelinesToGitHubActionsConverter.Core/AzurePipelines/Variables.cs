@@ -11,8 +11,6 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.AzurePipelines
     public class Variables
     {
         public string buildConfiguration { get; set; }
-        public int anotherVariable { get; set; }
-        public string yetAnotherVariable { get; set; }
     }
 
 }

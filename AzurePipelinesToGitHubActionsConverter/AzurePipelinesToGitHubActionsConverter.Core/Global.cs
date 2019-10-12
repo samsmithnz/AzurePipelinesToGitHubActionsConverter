@@ -17,9 +17,10 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
             return "# WARNING: This line is unknown and may not have been migrated correctly";
         }
 
-        public static string GetSpaces(int number)
+        public static string GenerateSpaces(int number)
         {
             return new String(' ', number);
         }
+
     }
 }

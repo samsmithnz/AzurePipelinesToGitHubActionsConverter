@@ -27,54 +27,54 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
         //    Assert.AreEqual(input, output);
         //}
 
-        //[TestMethod]
-        //public void TestPoolUbuntuLatestString()
-        //{
-        //    //Arrange
-        //    bool showGlobalHeaderComment = false;
-        //    string input = "pool:" + Environment.NewLine +
-        //                   "  vmImage: 'ubuntu-latest'";
-        //    Conversion conversion = new Conversion();
+        [TestMethod]
+        public void TestPoolUbuntuLatestString()
+        {
+            //Arrange
+            string input = "pool:" + Environment.NewLine +
+                           "  vmImage: 'ubuntu-latest'";
+            Conversion conversion = new Conversion();
 
-        //    //Act
-        //    string output = conversion.ConvertPipelineToAction(input, showGlobalHeaderComment);
+            //Act
+            string output = conversion.ConvertAzurePipelineToGitHubAction(input);
 
-        //    //Assert
-        //    Assert.AreEqual(output, "runs-on: ubuntu-latest");
-        //}
+            //Assert
+            Assert.AreEqual(output, "jobs:" + Environment.NewLine +
+                                    "- build:" + Environment.NewLine +
+                                    "    runsOn: ubuntu-latest" + Environment.NewLine);
+        }
 
-        //[TestMethod]
-        //public void TestPoolWindowsLatestString()
-        //{
-        //    //Arrange
-        //    bool showGlobalHeaderComment = false;
-        //    string input = "pool: " + Environment.NewLine +
-        //                   "  vmImage: 'windows-latest' ";
-        //    Conversion conversion = new Conversion();
+        [TestMethod]
+        public void TestPoolWindowsLatestString()
+        {
+            //Arrange
+            string input = "pool: " + Environment.NewLine +
+                           "  vmImage: 'windows-latest' ";
+            Conversion conversion = new Conversion();
 
-        //    //Act
-        //    string output = conversion.ConvertPipelineToAction(input, showGlobalHeaderComment);
+            //Act
+            string output = conversion.ConvertAzurePipelineToGitHubAction(input);
 
-        //    //Assert
-        //    Assert.AreEqual(output, "runs-on: windows-latest");
-        //}
+            //Assert
+            Assert.AreEqual(output, "jobs:" + Environment.NewLine +
+                                    "- build:" + Environment.NewLine +
+                                    "    runsOn: windows-latest" + Environment.NewLine);
+        }
 
-        //[TestMethod]
-        //public void TestTriggerString()
-        //{
-        //    //Arrange
-        //    bool showGlobalHeaderComment = false;
-        //    string input = "" + Environment.NewLine +
-        //        "trigger:" + Environment.NewLine +
-        //        "- master" + Environment.NewLine;
-        //    Conversion conversion = new Conversion();
+        [TestMethod]
+        public void TestTriggerString()
+        {
+            //Arrange
+            string input = "trigger:" + Environment.NewLine +
+                           "- master";
+            Conversion conversion = new Conversion();
 
-        //    //Act
-        //    string output = conversion.ConvertPipelineToAction(input, showGlobalHeaderComment);
+            //Act
+            string output = conversion.ConvertAzurePipelineToGitHubAction(input);
 
-        //    //Assert
-        //    Assert.AreEqual(output, "on: [push]");
-        //}
+            //Assert
+            Assert.AreEqual(output, "on: [push]" + Environment.NewLine);
+        }
 
         [TestMethod]
         public void TestGitHubActionObjectToYaml()
@@ -95,7 +95,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             //Arrange
             Conversion conversion = new Conversion();
             string yaml = "name: CI" + Environment.NewLine +
-                        "on: '[push]'" + Environment.NewLine +
+                        "on: [push]" + Environment.NewLine +
                         "jobs:" + Environment.NewLine +
                         "- build:" + Environment.NewLine +
                         "    runsOn: ubuntu-latest" + Environment.NewLine +
@@ -145,8 +145,6 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
                 "  vmImage: ubuntu-latest" + Environment.NewLine +
                 "variables:" + Environment.NewLine +
                 "  buildConfiguration: Release" + Environment.NewLine +
-                "  anotherVariable: 12" + Environment.NewLine +
-                "  yetAnotherVariable: var" + Environment.NewLine +
                 "steps:" + Environment.NewLine +
                 "- script: dotnet build --configuration $(buildConfiguration) WebApplication1/WebApplication1.Service/WebApplication1.Service.csproj" + Environment.NewLine +
                 "  displayName: dotnet build $(buildConfiguration)";
@@ -155,8 +153,6 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             IDeserializer deserializer = new DeserializerBuilder()
                                                .Build();
             AzurePipelinesRoot yamlObject = deserializer.Deserialize<AzurePipelinesRoot>(yaml);
-            //StringReader sr = new StringReader(yaml);
-            //var yamlObject = deserializer.Deserialize(sr);
 
             //Assert
             Assert.IsTrue(yamlObject != null);
