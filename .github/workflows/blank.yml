@@ -1,16 +1,15 @@
 name: CI
 
 on: [push]
-env:
-  buildConfiguration: Release
-  vmImage: ubuntu-latest
+
 jobs:
   build:
-    runs-on: ${{vmImage}}
+
+    runs-on: ubuntu-latest
+    
     steps:
-    - name: dotnet build $(buildConfiguration) part A1
-      run: dotnet build --configuration ${{buildConfiguration}} WebApplication1/WebApplication1.Service/WebApplication1.Service.csproj
-    - name: dotnet build $(buildConfiguration) part B1
-      run: dotnet build --configuration ${{buildConfiguration}} WebApplication1/WebApplication1.Service/WebApplication1.Service.csproj
-    - name: dotnet build $(buildConfiguration) part B2
-      run: dotnet build --configuration ${{buildConfiguration}} WebApplication1/WebApplication1.Service/WebApplication1.Service.csproj
+    - uses: actions/checkout@v1
+    - name: Build with dotnet
+      run: dotnet build AzurePipelinesToGitHubActionsConverter/AzurePipelinesToGitHubActionsConverter.Tests/AzurePipelinesToGitHubActionsConverter.Tests.csproj --configuration Release
+    - name: Test with dotnet
+      run: dotnet test AzurePipelinesToGitHubActionsConverter/AzurePipelinesToGitHubActionsConverter.Tests/AzurePipelinesToGitHubActionsConverter.Tests.csproj --configuration Release
