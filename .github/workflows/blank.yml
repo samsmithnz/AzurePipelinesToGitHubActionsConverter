@@ -3,16 +3,13 @@ name: CI
 on: [push]
 env:
   buildConfiguration: Release
-  vmImage: windows-latest
+  vmImage: ubuntu-latest
 jobs:
   build:
     runs-on: ${{vmImage}}
     steps:
     - name: dotnet build $(buildConfiguration) part A1
       run: dotnet build --configuration ${{buildConfiguration}} WebApplication1/WebApplication1.Service/WebApplication1.Service.csproj
-  build2:
-    runs-on: ${{vmImage}}
-    steps:
     - name: dotnet build $(buildConfiguration) part B1
       run: dotnet build --configuration ${{buildConfiguration}} WebApplication1/WebApplication1.Service/WebApplication1.Service.csproj
     - name: dotnet build $(buildConfiguration) part B2
