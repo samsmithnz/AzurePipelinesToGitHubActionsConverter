@@ -12,20 +12,34 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
     [TestClass]
     public class ConversionTest
     {
-        //[TestMethod]
-        //public void TestComment()
-        //{
-        //    //Arrange
-        //    bool showGlobalHeaderComment = false;
-        //    string input = "   #";
-        //    Conversion conversion = new Conversion();
+        [TestMethod]
+        public void TestName()
+        {
+            //Arrange
+            string input = "name: test ci pipelines";
+            Conversion conversion = new Conversion();
 
-        //    //Act
-        //    string output = conversion.ConvertPipelineToAction(input, showGlobalHeaderComment);
+            //Act
+            string output = conversion.ConvertAzurePipelineToGitHubAction(input);
 
-        //    //Assert
-        //    Assert.AreEqual(input, output);
-        //}
+            //Assert
+            Assert.AreEqual(output, "name: test ci pipelines" + Environment.NewLine);
+        }
+
+        [TestMethod]
+        public void TestTriggerString()
+        {
+            //Arrange
+            string input = "trigger:" + Environment.NewLine +
+                           "- master";
+            Conversion conversion = new Conversion();
+
+            //Act
+            string output = conversion.ConvertAzurePipelineToGitHubAction(input);
+
+            //Assert
+            Assert.AreEqual(output, "on: [push]" + Environment.NewLine);
+        }
 
         [TestMethod]
         public void TestPoolUbuntuLatestString()
@@ -62,18 +76,25 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
         }
 
         [TestMethod]
-        public void TestTriggerString()
+        public void TestVariables()
         {
             //Arrange
-            string input = "trigger:" + Environment.NewLine +
-                           "- master";
+            string input = "variables:" + Environment.NewLine +
+                           "  vmImage: windows-latest" + Environment.NewLine +
+                           "  buildConfiguration: Release" + Environment.NewLine +
+                           "  buildPlatform: Any CPU" + Environment.NewLine +
+                           "  buildNumber: 1.1.0.0" + Environment.NewLine;
             Conversion conversion = new Conversion();
 
             //Act
             string output = conversion.ConvertAzurePipelineToGitHubAction(input);
 
             //Assert
-            Assert.AreEqual(output, "on: [push]" + Environment.NewLine);
+            Assert.AreEqual(output, "env:" + Environment.NewLine +
+                                    "  vmImage: windows-latest" + Environment.NewLine +
+                                    "  buildConfiguration: Release" + Environment.NewLine +
+                                    "  buildPlatform: Any CPU" + Environment.NewLine +
+                                    "  buildNumber: 1.1.0.0" + Environment.NewLine);
         }
 
         [TestMethod]
@@ -134,20 +155,38 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
         }
 
         [TestMethod]
-        public void TestAzurePipelineYamlToObject()
+        public void TestAzurePipelineWithStagesYamlToObject()
         {
+            //stages:
+            //- stage: Build
+            //  displayName: 'Build/Test Stage'
+            //  jobs:
+            //  - job: Build
+            //    displayName: 'Build job'
+            //    pool:
+            //      vmImage: $(vmImage)
+            //    steps:
+
             //Arrange
             Conversion conversion = new Conversion();
             string yaml =
-                "trigger:" + Environment.NewLine +
-                "- master" + Environment.NewLine +
-                "pool:" + Environment.NewLine +
-                "  vmImage: ubuntu-latest" + Environment.NewLine +
-                "variables:" + Environment.NewLine +
-                "  buildConfiguration: Release" + Environment.NewLine +
-                "steps:" + Environment.NewLine +
-                "- script: dotnet build --configuration $(buildConfiguration) WebApplication1/WebApplication1.Service/WebApplication1.Service.csproj" + Environment.NewLine +
-                "  displayName: dotnet build $(buildConfiguration)";
+@"name: test dotnet build with stages 
+trigger: 
+- master 
+variables: 
+  buildConfiguration: Release 
+  randomVariable: 14 
+stages: 
+- stage: Build 
+  displayName: Build/Test Stage 
+  jobs: 
+  - job: Build 
+    displayName: Build job 
+    pool: 
+      vmImage: $(vmImage) 
+    steps: 
+    - script: dotnet build --configuration $(buildConfiguration) WebApplication1/WebApplication1.Service/WebApplication1.Service.csproj 
+      displayName: dotnet build $(buildConfiguration)";
 
             //Act
             IDeserializer deserializer = new DeserializerBuilder()
@@ -157,6 +196,146 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             //Assert
             Assert.IsTrue(yamlObject != null);
         }
+
+        [TestMethod]
+        public void TestAzurePipelineWithJobsYamlToObject()
+        {
+            //Arrange
+            Conversion conversion = new Conversion();
+            string yaml = @"
+trigger:
+- master
+variables:
+  buildConfiguration: Release
+  vmImage: windows-latest
+jobs:
+- job: Build
+  displayName: Build job part A
+  pool: 
+    vmImage: $(vmImage) 
+  steps: 
+  - script: dotnet build --configuration $(buildConfiguration) WebApplication1/WebApplication1.Service/WebApplication1.Service.csproj
+    displayName: dotnet build $(buildConfiguration) part A1
+- job: Build
+  displayName: Build job part B 
+  pool: 
+    vmImage: $(vmImage) 
+  steps: 
+  - script: dotnet build --configuration $(buildConfiguration) WebApplication1/WebApplication1.Service/WebApplication1.Service.csproj
+    displayName: dotnet build $(buildConfiguration) part B1
+  - script: dotnet build --configuration $(buildConfiguration) WebApplication1/WebApplication1.Service/WebApplication1.Service.csproj
+    displayName: dotnet build $(buildConfiguration) part B2";
+
+            //Act
+            IDeserializer deserializer = new DeserializerBuilder()
+                                               .Build();
+            AzurePipelinesRoot yamlObject = deserializer.Deserialize<AzurePipelinesRoot>(yaml);
+
+            //Assert
+            Assert.IsTrue(yamlObject != null);
+        }
+
+        [TestMethod]
+        public void TestAzurePipelineWithStepsYamlToObject()
+        {
+            //Arrange
+            Conversion conversion = new Conversion();
+            string yaml = @"
+trigger:
+- master
+pool:
+  vmImage: ubuntu-latest
+variables:
+  buildConfiguration: Release
+steps:
+- script: dotnet build --configuration $(buildConfiguration) WebApplication1/WebApplication1.Service/WebApplication1.Service.csproj
+  displayName: dotnet build $(buildConfiguration) part 1
+- script: dotnet build --configuration $(buildConfiguration) WebApplication1/WebApplication1.Service/WebApplication1.Service.csproj
+  displayName: dotnet build $(buildConfiguration) part 2";
+
+            //Act
+            IDeserializer deserializer = new DeserializerBuilder()
+                                               .Build();
+            AzurePipelinesRoot yamlObject = deserializer.Deserialize<AzurePipelinesRoot>(yaml);
+
+            //Assert
+            Assert.IsTrue(yamlObject != null);
+        }
+
+        //[TestMethod]
+        //public void TestLargeAzurePipelineYamlToObject()
+        //{
+        //    //Arrange
+        //    Conversion conversion = new Conversion();
+        //    string yaml =
+        //        "trigger:" + Environment.NewLine +
+        //        "- master" + Environment.NewLine +
+        //        "pr:" + Environment.NewLine +
+        //        "  branches:" + Environment.NewLine +
+        //        "    include:" + Environment.NewLine +
+        //        "    - '*'  # must quote since \" * \" is a YAML reserved character; we want a string" + Environment.NewLine +
+        //        "" + Environment.NewLine +
+        //        "variables:" + Environment.NewLine +
+        //        "  vmImage: 'windows-latest'" + Environment.NewLine +
+        //        "  buildConfiguration: 'Release'" + Environment.NewLine +
+        //        "  buildPlatform: 'Any CPU'" + Environment.NewLine +
+        //        "  buildNumber: '1.1.0.0'" + Environment.NewLine +
+        //        "";// + Environment.NewLine +
+        //        //"stages:" + Environment.NewLine +
+        //        //"- stage: Build" + Environment.NewLine +
+        //        //"  displayName: 'Build/Test Stage'" + Environment.NewLine +
+        //        //"  jobs:" + Environment.NewLine +
+        //        //"  - job: Build" + Environment.NewLine +
+        //        //"    displayName: 'Build job'" + Environment.NewLine +
+        //        //"    pool:" + Environment.NewLine +
+        //        //"      vmImage: $(vmImage)" + Environment.NewLine +
+        //        //"    steps:" + Environment.NewLine +
+        //        //"    - task: PowerShell@2" + Environment.NewLine +
+        //        //"      displayName: 'Generate build version number'" + Environment.NewLine +
+        //        //"      inputs:" + Environment.NewLine +
+        //        //"        targetType: 'inline'" + Environment.NewLine +
+        //        //"        script: |" + Environment.NewLine +
+        //        //"         Write -Host \"Generating Build Number\"" + Environment.NewLine;// +
+        //        //"" + Environment.NewLine +
+        //        //"    - task: CopyFiles@2" + Environment.NewLine +
+        //        //"      displayName: 'Copy environment ARM template files to: $(build.artifactstagingdirectory)'" + Environment.NewLine +
+        //        //"      inputs:" + Environment.NewLine +
+        //        //@"        SourceFolder: '$(system.defaultworkingdirectory)\FeatureFlags\FeatureFlags.ARMTemplates'" + Environment.NewLine +
+        //        //@"        Contents: '**\*' # **\* = Copy all files and all files in sub directories" + Environment.NewLine +
+        //        //@"        TargetFolder: '$(build.artifactstagingdirectory)\ARMTemplates'" + Environment.NewLine +
+        //        //"" + Environment.NewLine +
+        //        ////"    - task: DotNetCoreCLI@2" + Environment.NewLine +
+        //        ////"      displayName: 'Test dotnet code projects'" + Environment.NewLine +
+        //        ////"      inputs:" + Environment.NewLine +
+        //        ////"        command: test" + Environment.NewLine +
+        //        ////"        projects: |" + Environment.NewLine +
+        //        ////"         FeatureFlags /FeatureFlags.Tests/FeatureFlags.Tests.csproj" + Environment.NewLine +
+        //        ////"        arguments: '--configuration $(buildConfiguration) --logger trx --collect "Code coverage" --settings:$(Build.SourcesDirectory)\FeatureFlags\FeatureFlags.Tests\CodeCoverage.runsettings'" + Environment.NewLine +
+        //        ////"" + Environment.NewLine +
+        //        //"    - task: DotNetCoreCLI@2" + Environment.NewLine +
+        //        //"      displayName: 'Publish dotnet core projects'" + Environment.NewLine +
+        //        //"      inputs:" + Environment.NewLine +
+        //        //"        command: publish" + Environment.NewLine +
+        //        //"        publishWebProjects: false" + Environment.NewLine +
+        //        //"        projects: |" + Environment.NewLine +
+        //        //"         FeatureFlags /FeatureFlags.Service/FeatureFlags.Service.csproj" + Environment.NewLine +
+        //        //"         FeatureFlags /FeatureFlags.Web/FeatureFlags.Web.csproj" + Environment.NewLine +
+        //        //"        arguments: '--configuration $(buildConfiguration) --output $(build.artifactstagingdirectory) -p:Version=$(buildNumber)'" + Environment.NewLine +
+        //        //"        zipAfterPublish: true" + Environment.NewLine +
+        //        //"" + Environment.NewLine +
+        //        //"    # Publish the artifacts" + Environment.NewLine +
+        //        //"    - task: PublishBuildArtifacts@1" + Environment.NewLine +
+        //        //"      displayName: 'Publish Artifact'" + Environment.NewLine +
+        //        //"      inputs:" + Environment.NewLine +
+        //        //"        PathtoPublish: '$(build.artifactstagingdirectory)'";
+        //    //Act
+        //    IDeserializer deserializer = new DeserializerBuilder()
+        //                                       .Build();
+        //    AzurePipelinesRoot yamlObject = deserializer.Deserialize<AzurePipelinesRoot>(yaml);
+
+        //    //Assert
+        //    Assert.IsTrue(yamlObject != null);
+        //}
     }
 }
 

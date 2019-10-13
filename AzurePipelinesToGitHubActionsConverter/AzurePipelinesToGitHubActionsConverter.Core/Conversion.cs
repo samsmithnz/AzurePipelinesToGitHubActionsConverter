@@ -31,45 +31,67 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
 
             if (azurePipeline != null)
             {
-                //gitHubAction.name = Global.GetHeaderComment();
+                //Name
+                if (azurePipeline.name != null)
+                {
+                    gitHubActions.name = azurePipeline.name;
+                }
 
+                //Trigger
                 if (azurePipeline.trigger != null)
                 {
                     //TODO: update this to handle multiple triggers
                     gitHubActions.on = new string[] { "push" };
                 }
+
+                //Variables
+                if (azurePipeline.variables != null)
+                {
+                    gitHubActions.env = azurePipeline.variables;
+                }
+
+                //Stages
+                if (azurePipeline.stages != null)
+                {
+                    //TODO: Stages are not yet supported in GitHub actions
+                }
+
+                //Jobs
+                if (azurePipeline.jobs != null)
+                {
+                    //TODO: multiple job conversion is still a wip
+                    gitHubActions.jobs = ProcessJobs(azurePipeline.jobs);
+                    //gitHubActions.jobs = new GitHubActions.Job[]
+                    //{
+                    //    new GitHubActions.Job
+                    //    {
+                    //         build = new Build
+                    //        {
+                    //            runsOn = azurePipeline.jobs[0].pool.vmImage,
+                    //            steps = new GitHubActions.Step[stepsLength] //Initialize the array, and then populate it below             
+                    //        }
+                    //    }
+                    //};
+                }
+
+                //Pool + Steps
                 if (azurePipeline.pool != null ||
                         (azurePipeline.steps != null && azurePipeline.steps.Length > 0))
                 {
-                    gitHubActions.jobs = new Job[]
+                    gitHubActions.jobs = new GitHubActions.Job[]
                     {
-                        new Job
+                        new GitHubActions.Job
                         {
                             build = new Build
                             {
                                 runsOn = azurePipeline.pool.vmImage,
-                                steps = new Step[stepsLength] //Initialize the array, and then populate it below
+                                steps = ProcessSteps(azurePipeline.steps) //Initialize the array, and then populate it below
                             }
                         }
                     };
-
-                    //TODO: Refactor this to be part of the steps creation, instead of a clean up step
-                    if (gitHubActions.jobs[0].build.steps.Length == 0)
-                    {
-                        gitHubActions.jobs[0].build.steps = null;
-                    }
-                    else
-                    {
-                        for (int i = 0; i < stepsLength; i++)
-                        {
-                            gitHubActions.jobs[0].build.steps[i] = new Step
-                            {
-                                name = azurePipeline.steps[i].displayName,
-                                run = azurePipeline.steps[i].script
-                            };
-                        }
-                    }
+                    
                 }
+
                 string yaml = WriteYAMLFile<GitHubActionsRoot>(gitHubActions);
                 return yaml;
             }
@@ -103,6 +125,36 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
         //        name: serviceapp
         //        path: WebApplication1/WebApplication1.Service/bin/Release/netcoreapp3.0/publish
 
+        private GitHubActions.Job[] ProcessJobs(AzurePipelines.Job[] jobs)
+        {
+            GitHubActions.Job[] newJobs = new GitHubActions.Job[]
+            {
+
+            };
+            return newJobs;
+        }
+
+        private GitHubActions.Step[] ProcessSteps(AzurePipelines.Step[] steps)
+        {
+            GitHubActions.Step[] newSteps = null;
+            if (steps != null)
+            {
+                int stepsLength = steps.Length;
+
+                newSteps = new GitHubActions.Step[stepsLength];
+                for (int i = 0; i < stepsLength; i++)
+                {
+                    newSteps[i] = new GitHubActions.Step
+                    {
+                        name = steps[i].displayName,
+                        run = steps[i].script
+                    };
+                }
+            }
+
+            return newSteps;
+        }
+
         public string CreateGitHubAction()
         {
             //name: CI
@@ -134,9 +186,9 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
             {
                 name = "CI",
                 on = new string[] { "push" },
-                jobs = new Job[]
+                jobs = new GitHubActions.Job[]
                 {
-                    new Job
+                    new GitHubActions.Job
                     {
                         build = new Build
                         {
@@ -203,13 +255,17 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                 {
                     vmImage = "ubuntu-latest"
                 },
-                variables = new Variables
+                variables = new Dictionary<string, string>
                 {
-                    buildConfiguration = "Release"
+                    { "buildConfiguration","Release" }
                 },
-                steps = new Script[]
+                //variables = new Variables
+                //{
+                //    buildConfiguration = "Release"
+                //},
+                steps = new AzurePipelines.Step[]
                 {
-                    new Script {
+                    new AzurePipelines.Step {
                         script = "dotnet build --configuration $(buildConfiguration) WebApplication1/WebApplication1.Service/WebApplication1.Service.csproj",
                         displayName = "dotnet build $(buildConfiguration)"
                     }

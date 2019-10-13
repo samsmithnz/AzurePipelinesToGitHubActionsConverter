@@ -4,7 +4,7 @@ using System.Text;
 
 namespace AzurePipelinesToGitHubActionsConverter.Core.AzurePipelines
 {
-    public class Script
+    public class Step
     {
         //- script: dotnet build --configuration $(buildConfiguration) WebApplication1/WebApplication1.Service/WebApplication1.Service.csproj
         //  displayName: dotnet build $(buildConfiguration)
