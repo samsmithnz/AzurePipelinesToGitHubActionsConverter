@@ -40,8 +40,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                 //Trigger
                 if (azurePipeline.trigger != null)
                 {
-                    //TODO: update this to handle multiple triggers
-                    gitHubActions.on = new string[] { "push" };
+                    gitHubActions.on = ProcessTrigger(azurePipeline.trigger);
                 }
 
                 //Variables
@@ -53,31 +52,20 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                 //Stages
                 if (azurePipeline.stages != null)
                 {
-                    //TODO: Stages are not yet supported in GitHub actions
+                    //TODO: Stages are not yet supported in GitHub actions (I think?)
                 }
 
                 //Jobs
                 if (azurePipeline.jobs != null)
                 {
-                    //TODO: multiple job conversion is still a wip
                     gitHubActions.jobs = ProcessJobs(azurePipeline.jobs);
-                    //gitHubActions.jobs = new GitHubActions.Job[]
-                    //{
-                    //    new GitHubActions.Job
-                    //    {
-                    //         build = new Build
-                    //        {
-                    //            runsOn = azurePipeline.jobs[0].pool.vmImage,
-                    //            steps = new GitHubActions.Step[stepsLength] //Initialize the array, and then populate it below             
-                    //        }
-                    //    }
-                    //};
                 }
 
-                //Pool + Steps
+                //Pool + Steps (When there are no jobs defined and a minimal set of steps and a pool)
                 if (azurePipeline.pool != null ||
                         (azurePipeline.steps != null && azurePipeline.steps.Length > 0))
                 {
+                    //Steps only have one job, so we just create it here
                     gitHubActions.jobs = new GitHubActions.Job[]
                     {
                         new GitHubActions.Job
@@ -85,11 +73,10 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                             build = new Build
                             {
                                 runsOn = azurePipeline.pool.vmImage,
-                                steps = ProcessSteps(azurePipeline.steps) //Initialize the array, and then populate it below
+                                steps = ProcessSteps(azurePipeline.steps)
                             }
                         }
                     };
-                    
                 }
 
                 string yaml = WriteYAMLFile<GitHubActionsRoot>(gitHubActions);
@@ -125,12 +112,41 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
         //        name: serviceapp
         //        path: WebApplication1/WebApplication1.Service/bin/Release/netcoreapp3.0/publish
 
+        private string[] ProcessTrigger(string[] trigger)
+        {
+            //return trigger;
+            //TODO: Add more processing on different triggers
+            return new string[] { "push" };
+        }  
+        
+        private string ProcessPool(Pool pool)
+        {
+            string newPool = null;
+            if (pool != null)
+            {
+                newPool = pool.vmImage;
+            }
+            return newPool;
+        }
+
         private GitHubActions.Job[] ProcessJobs(AzurePipelines.Job[] jobs)
         {
-            GitHubActions.Job[] newJobs = new GitHubActions.Job[]
+            GitHubActions.Job[] newJobs = null;
+            if (jobs != null)
             {
-
-            };
+                newJobs = new GitHubActions.Job[jobs.Length];
+                for (int i = 0; i < jobs.Length; i++)
+                {
+                    newJobs[i] = new GitHubActions.Job
+                    {
+                        build = new Build
+                        {
+                            runsOn = ProcessPool(jobs[i].pool),
+                            steps = ProcessSteps(jobs[i].steps)
+                        }
+                    };
+                }
+            }
             return newJobs;
         }
 
@@ -139,10 +155,8 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
             GitHubActions.Step[] newSteps = null;
             if (steps != null)
             {
-                int stepsLength = steps.Length;
-
-                newSteps = new GitHubActions.Step[stepsLength];
-                for (int i = 0; i < stepsLength; i++)
+                newSteps = new GitHubActions.Step[steps.Length];
+                for (int i = 0; i < steps.Length; i++)
                 {
                     newSteps[i] = new GitHubActions.Step
                     {

@@ -98,7 +98,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
         }
 
         [TestMethod]
-        public void TestGitHubActionObjectToYaml()
+        public void TestSampleGitHubActionObjectToYaml()
         {
             //Arrange
             Conversion conversion = new Conversion();
@@ -142,7 +142,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
         }
 
         [TestMethod]
-        public void TestAzurePipelineObjectToYaml()
+        public void TestSampleAzurePipelineObjectToYaml()
         {
             //Arrange
             Conversion conversion = new Conversion();
@@ -155,7 +155,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
         }
 
         [TestMethod]
-        public void TestAzurePipelineWithStagesYamlToObject()
+        public void TestStagesWithAzurePipelineYamlToObject()
         {
             //stages:
             //- stage: Build
@@ -189,16 +189,14 @@ stages:
       displayName: dotnet build $(buildConfiguration)";
 
             //Act
-            IDeserializer deserializer = new DeserializerBuilder()
-                                               .Build();
-            AzurePipelinesRoot yamlObject = deserializer.Deserialize<AzurePipelinesRoot>(yaml);
+            string output = conversion.ConvertAzurePipelineToGitHubAction(yaml);
 
             //Assert
-            Assert.IsTrue(yamlObject != null);
+            Assert.IsTrue(output != null);
         }
 
         [TestMethod]
-        public void TestAzurePipelineWithJobsYamlToObject()
+        public void TestJobsWithAzurePipelineYamlToObject()
         {
             //Arrange
             Conversion conversion = new Conversion();
@@ -227,16 +225,14 @@ jobs:
     displayName: dotnet build $(buildConfiguration) part B2";
 
             //Act
-            IDeserializer deserializer = new DeserializerBuilder()
-                                               .Build();
-            AzurePipelinesRoot yamlObject = deserializer.Deserialize<AzurePipelinesRoot>(yaml);
+            string output = conversion.ConvertAzurePipelineToGitHubAction(yaml);
 
             //Assert
-            Assert.IsTrue(yamlObject != null);
+            Assert.IsTrue(output != null);
         }
 
         [TestMethod]
-        public void TestAzurePipelineWithStepsYamlToObject()
+        public void TestStepsWithAzurePipelineYamlToObject()
         {
             //Arrange
             Conversion conversion = new Conversion();
@@ -254,12 +250,10 @@ steps:
   displayName: dotnet build $(buildConfiguration) part 2";
 
             //Act
-            IDeserializer deserializer = new DeserializerBuilder()
-                                               .Build();
-            AzurePipelinesRoot yamlObject = deserializer.Deserialize<AzurePipelinesRoot>(yaml);
+            string output = conversion.ConvertAzurePipelineToGitHubAction(yaml);
 
             //Assert
-            Assert.IsTrue(yamlObject != null);
+            Assert.IsTrue(output != null);
         }
 
         //[TestMethod]
