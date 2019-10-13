@@ -80,6 +80,14 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                 }
 
                 string yaml = WriteYAMLFile<GitHubActionsRoot>(gitHubActions);
+
+                //Fix the runs-on variable
+                yaml = yaml.Replace("runsOn", "runs-on");
+
+                //TODO: need to fix jobs to remove leading -
+                //TODO: need to update variables from the $(variableName) format to ${{variableName}} format
+                
+
                 return yaml;
             }
             else
@@ -117,8 +125,8 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
             //return trigger;
             //TODO: Add more processing on different triggers
             return new string[] { "push" };
-        }  
-        
+        }
+
         private string ProcessPool(Pool pool)
         {
             string newPool = null;
