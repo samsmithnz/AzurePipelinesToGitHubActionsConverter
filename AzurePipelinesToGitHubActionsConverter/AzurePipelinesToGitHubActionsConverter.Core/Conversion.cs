@@ -17,11 +17,14 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
 {
     public class Conversion
     {
+        private List<string> _variableList;
 
         public string ConvertAzurePipelineToGitHubAction(string input)
         {
             AzurePipelinesRoot azurePipeline = ReadYamlFile<AzurePipelinesRoot>(input);
             GitHubActionsRoot gitHubActions = new GitHubActionsRoot();
+            _variableList = new List<string>();
+
 
             if (azurePipeline != null)
             {
@@ -41,7 +44,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                 if (azurePipeline.variables != null)
                 {
                     //TODO: While it converts variables, we still don't know how to implement them. ${{ myVar }} and $myVar both don't work...
-                    gitHubActions.env = azurePipeline.variables;
+                    gitHubActions.env = ProcessVariables(azurePipeline.variables);
                 }
 
                 //Stages
@@ -67,7 +70,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                             "build",
                             new GitHubActions.Job
                             {
-                                runsOn = ProcessPool(azurePipeline.pool),
+                                runs_on = ProcessPool(azurePipeline.pool),
                                 steps = ProcessSteps(azurePipeline.steps)
                             }
                         }
@@ -76,10 +79,11 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
 
                 string yaml = WriteYAMLFile<GitHubActionsRoot>(gitHubActions);
 
-                //Fix the runs-on variable
-                yaml = yaml.Replace("runsOn", "runs-on");
+                //Fix some variables for serialization, the '-' character is not valid in property names, and some of the YAML standard uses reserved words (e.g. if)
+                yaml = PrepareYamlPropertiesForGitHubSerialization(yaml);
 
-                //TODO: need to update variables from the $(variableName) format to ${{variableName}} format
+                //update variables from the $(variableName) format to ${{variableName}} format, by piping them into a list for replacement later.
+                yaml = PrepareYamlVariablesForGitHubSerialization(yaml);
 
                 return yaml;
             }
@@ -130,8 +134,20 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
             return newPool;
         }
 
+        private Dictionary<string, string> ProcessVariables(Dictionary<string, string> variables)
+        {
+            //update variables from the $(variableName) format to ${{variableName}} format, by piping them into a list for replacement later.
+            foreach (string item in variables.Keys)
+            {
+                _variableList.Add(item);
+            }
+
+            return variables;
+        }
+
         private Dictionary<string, GitHubActions.Job> ProcessJobs(AzurePipelines.Job[] jobs)
         {
+            //A dictonary is perfect here, as the job_id (a string), must be unique in the action
             Dictionary<string, GitHubActions.Job> newJobs = null;
             if (jobs != null)
             {
@@ -141,7 +157,11 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                     newJobs.Add(jobs[i].job,
                         new GitHubActions.Job
                         {
-                            runsOn = ProcessPool(jobs[i].pool),
+                            name = jobs[i].displayName,
+                            needs = jobs[i].dependsOn,
+                            _if = jobs[i].condition,
+                            env = ProcessVariables(jobs[i].variables),
+                            runs_on = ProcessPool(jobs[i].pool),
                             steps = ProcessSteps(jobs[i].steps)
                         });
                 }
@@ -149,26 +169,33 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
             return newJobs;
         }
 
-        private GitHubActions.Step[] ProcessSteps(AzurePipelines.Step[] steps)
+        private GitHubActions.Step[] ProcessSteps(AzurePipelines.Step[] steps, bool addCheckoutStep = true)
         {
             GitHubActions.Step[] newSteps = null;
             if (steps != null)
             {
-                newSteps = new GitHubActions.Step[steps.Length + 1]; //Add 1 for the check out step
-
-                //TODO: Work out if we should add a switch to insert this or not
-                newSteps[0] = new GitHubActions.Step
+                int adjustment = 0;
+                if (addCheckoutStep == true)
                 {
-                    uses = "actions/checkout@v1"
-                };
+                    adjustment = 1; // we are inserting a step and need to start moving steps 1 place into the array
+                }
+                newSteps = new GitHubActions.Step[steps.Length + adjustment]; //Add 1 for the check out step
+
+                if (addCheckoutStep == true)
+                {
+                    newSteps[0] = new GitHubActions.Step
+                    {
+                        uses = "actions/checkout@v1"
+                    };
+                }
 
                 //Translate the other steps
-                for (int i = 1; i < steps.Length + 1; i++)
+                for (int i = adjustment; i < steps.Length + adjustment; i++)
                 {
                     newSteps[i] = new GitHubActions.Step
                     {
-                        name = steps[i - 1].displayName,
-                        run = steps[i - 1].script
+                        name = steps[i - adjustment].displayName,
+                        run = steps[i - adjustment].script
                     };
                 }
             }
@@ -213,7 +240,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                         "build",
                         new GitHubActions.Job
                         {
-                            runsOn = "ubuntu-latest",
+                            runs_on = "ubuntu-latest",
                             steps = new GitHubActions.Step[]
                             {
                                 new GitHubActions.Step
@@ -278,12 +305,8 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                 },
                 variables = new Dictionary<string, string>
                 {
-                    { "buildConfiguration","Release" }
+                    { "buildConfiguration", "Release" }
                 },
-                //variables = new Variables
-                //{
-                //    buildConfiguration = "Release"
-                //},
                 steps = new AzurePipelines.Step[]
                 {
                     new AzurePipelines.Step {
@@ -298,25 +321,56 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
             return yaml;
         }
 
-        private IDictionary<YamlNode, YamlNode> ReadYAMLFile(string input)
+        //private IDictionary<YamlNode, YamlNode> ReadYAMLFile(string input)
+        //{
+        //    // Setup the input
+        //    StringReader inputSR = new StringReader(input);
+
+        //    // Load the stream
+        //    YamlStream yaml = new YamlStream();
+        //    yaml.Load(inputSR);
+
+        //    // Examine the stream
+        //    IDictionary<YamlNode, YamlNode> results = null;
+        //    if (yaml.Documents.Count > 0)
+        //    {
+        //        YamlMappingNode mapping = (YamlMappingNode)yaml.Documents[0].RootNode;
+        //        results = mapping.Children;
+        //    }
+
+        //    // Return all nodes from the YAML document
+        //    return results;
+        //}
+
+
+        public GitHubActionsRoot ReadGitHubActionsYaml(string yaml)
         {
-            // Setup the input
-            StringReader inputSR = new StringReader(input);
+            //Fix some variables that we can't use for property names because the - character is not allowed or it's a reserved word (e.g. if)
+            yaml = yaml.Replace("runs-on", "runs_on");
+            yaml = yaml.Replace("if", "_if");
+            yaml = yaml.Replace("timeout-minutes", "timeout_minutes");
 
-            // Load the stream
-            YamlStream yaml = new YamlStream();
-            yaml.Load(inputSR);
+            return ReadYamlFile<GitHubActionsRoot>(yaml);
+        }
 
-            // Examine the stream
-            IDictionary<YamlNode, YamlNode> results = null;
-            if (yaml.Documents.Count > 0)
+        private string PrepareYamlPropertiesForGitHubSerialization(string yaml)
+        {
+            //Fix some variables that we can't use for property names because the - character is not allowed or it's a reserved word (e.g. if)
+            yaml = yaml.Replace("runs_on", "runs-on");
+            yaml = yaml.Replace("_if", "if");
+            yaml = yaml.Replace("timeout_minutes", "timeout-minutes");
+            return yaml;
+        }
+
+        private string PrepareYamlVariablesForGitHubSerialization(string yaml)
+        {
+            foreach (string item in _variableList)
             {
-                YamlMappingNode mapping = (YamlMappingNode)yaml.Documents[0].RootNode;
-                results = mapping.Children;
+                //Replace variables with the format "$(MyVar)" with the format "$MyVar"
+                yaml = yaml.Replace("$(" + item + ")", "$" + item);
             }
 
-            // Return all nodes from the YAML document
-            return results;
+            return yaml;
         }
 
         private T ReadYamlFile<T>(string yaml)

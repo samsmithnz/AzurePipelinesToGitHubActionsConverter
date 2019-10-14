@@ -76,22 +76,43 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
         public void TestVariables()
         {
             //Arrange
-            string input = "variables:" + Environment.NewLine +
-                           "  vmImage: windows-latest" + Environment.NewLine +
-                           "  buildConfiguration: Release" + Environment.NewLine +
-                           "  buildPlatform: Any CPU" + Environment.NewLine +
-                           "  buildNumber: 1.1.0.0" + Environment.NewLine;
+            string input = @"
+trigger:
+- master
+variables:
+  buildConfiguration: Release
+jobs:
+- job: Build
+  displayName: Build job
+  pool: 
+    vmImage: ubuntu-latest
+  variables:
+    myJobVariable: 'data'
+  steps: 
+  - script: dotnet build WebApplication1/WebApplication1.Service/WebApplication1.Service.csproj --configuration $(buildConfiguration) 
+    displayName: dotnet build $(myJobVariable)";
             Conversion conversion = new Conversion();
 
             //Act
             string output = conversion.ConvertAzurePipelineToGitHubAction(input);
 
             //Assert
-            Assert.AreEqual(output, "env:" + Environment.NewLine +
-                                    "  vmImage: windows-latest" + Environment.NewLine +
-                                    "  buildConfiguration: Release" + Environment.NewLine +
-                                    "  buildPlatform: Any CPU" + Environment.NewLine +
-                                    "  buildNumber: 1.1.0.0" + Environment.NewLine);
+            string expectedOutput = @"
+on: [push]
+env:
+  buildConfiguration: Release
+jobs:
+  Build:
+    name: Build job
+    runs-on: ubuntu-latest
+    env:
+      myJobVariable: data
+    steps:
+    - uses: actions/checkout@v1
+    - name: dotnet build $myJobVariable
+      run: dotnet build WebApplication1/WebApplication1.Service/WebApplication1.Service.csproj --configuration $buildConfiguration
+";
+            Assert.AreEqual(Environment.NewLine + output, expectedOutput);
         }
 
         [TestMethod]
@@ -116,7 +137,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
                         "on: [push]" + Environment.NewLine +
                         "jobs:" + Environment.NewLine +
                         "  build:" + Environment.NewLine +
-                        "    runsOn: ubuntu-latest" + Environment.NewLine +
+                        "    runs_on: ubuntu-latest" + Environment.NewLine +
                         "    steps:" + Environment.NewLine +
                         "    - uses: actions/checkout @v1" + Environment.NewLine +
                         "    - name: Build with dotnet" + Environment.NewLine +
@@ -130,9 +151,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
                         "        path: WebApplication1/WebApplication1.Service/bin/Release/netcoreapp3.0/publish";
 
             //Act
-            IDeserializer deserializer = new DeserializerBuilder()
-                                    .Build();
-            GitHubActionsRoot yamlObject = deserializer.Deserialize<GitHubActionsRoot>(yaml);
+            GitHubActionsRoot yamlObject = conversion.ReadGitHubActionsYaml(yaml);
 
             //Assert
             Assert.IsTrue(yamlObject != null);
@@ -151,46 +170,46 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             Assert.IsTrue(yaml != null);
         }
 
-        [TestMethod]
-        public void TestStagesWithAzurePipelineYamlToObject()
-        {
-            //stages:
-            //- stage: Build
-            //  displayName: 'Build/Test Stage'
-            //  jobs:
-            //  - job: Build
-            //    displayName: 'Build job'
-            //    pool:
-            //      vmImage: $(vmImage)
-            //    steps:
+        //        [TestMethod]
+        //        public void TestStagesWithAzurePipelineYamlToObject()
+        //        {
+        //            //stages:
+        //            //- stage: Build
+        //            //  displayName: 'Build/Test Stage'
+        //            //  jobs:
+        //            //  - job: Build
+        //            //    displayName: 'Build job'
+        //            //    pool:
+        //            //      vmImage: $(vmImage)
+        //            //    steps:
 
-            //Arrange
-            Conversion conversion = new Conversion();
-            string yaml =
-@"name: test dotnet build with stages 
-trigger: 
-- master 
-variables: 
-  buildConfiguration: Release 
-  randomVariable: 14 
-stages: 
-- stage: Build 
-  displayName: Build/Test Stage 
-  jobs: 
-  - job: Build 
-    displayName: Build job 
-    pool: 
-      vmImage: $(vmImage) 
-    steps: 
-    - script: dotnet build --configuration $(buildConfiguration) WebApplication1/WebApplication1.Service/WebApplication1.Service.csproj 
-      displayName: dotnet build $(buildConfiguration)";
+        //            //Arrange
+        //            Conversion conversion = new Conversion();
+        //            string yaml =
+        //@"name: test dotnet build with stages 
+        //trigger: 
+        //- master 
+        //variables: 
+        //  buildConfiguration: Release 
+        //  randomVariable: 14 
+        //stages: 
+        //- stage: Build 
+        //  displayName: Build/Test Stage 
+        //  jobs: 
+        //  - job: Build 
+        //    displayName: Build job 
+        //    pool: 
+        //      vmImage: $(vmImage) 
+        //    steps: 
+        //    - script: dotnet build --configuration $(buildConfiguration) WebApplication1/WebApplication1.Service/WebApplication1.Service.csproj 
+        //      displayName: dotnet build $(buildConfiguration)";
 
-            //Act
-            string output = conversion.ConvertAzurePipelineToGitHubAction(yaml);
+        //            //Act
+        //            string output = conversion.ConvertAzurePipelineToGitHubAction(yaml);
 
-            //Assert
-            Assert.IsTrue(output != null);
-        }
+        //            //Assert
+        //            Assert.IsTrue(output != null);
+        //        }
 
         [TestMethod]
         public void TestJobsWithAzurePipelineYamlToObject()
@@ -202,30 +221,67 @@ trigger:
 - master
 variables:
   buildConfiguration: Release
-  vmImage: windows-latest
+  vmImage: ubuntu-latest
 jobs:
 - job: Build
-  displayName: Build job part A
+  displayName: Build job
   pool: 
-    vmImage: $(vmImage) 
+    vmImage: ubuntu-latest
+  variables:
+    buildConfiguration: Debug
+    myJobVariable: 'data'
+    myJobVariable2: 'data2'
   steps: 
-  - script: dotnet build --configuration $(buildConfiguration) WebApplication1/WebApplication1.Service/WebApplication1.Service.csproj
-    displayName: dotnet build $(buildConfiguration) part A1
+  - script: dotnet build WebApplication1/WebApplication1.Service/WebApplication1.Service.csproj --configuration $(buildConfiguration) 
+    displayName: dotnet build part 1
 - job: Build2
-  displayName: Build job part B 
+  displayName: Build job
+  dependsOn: Build
   pool: 
-    vmImage: $(vmImage) 
-  steps: 
-  - script: dotnet build --configuration $(buildConfiguration) WebApplication1/WebApplication1.Service/WebApplication1.Service.csproj
-    displayName: dotnet build $(buildConfiguration) part B1
-  - script: dotnet build --configuration $(buildConfiguration) WebApplication1/WebApplication1.Service/WebApplication1.Service.csproj
-    displayName: dotnet build $(buildConfiguration) part B2";
+    vmImage: ubuntu-latest
+  variables:
+    myJobVariable: 'data'
+  steps:
+  - script: dotnet build WebApplication1/WebApplication1.Service/WebApplication1.Service.csproj --configuration $(buildConfiguration) 
+    displayName: dotnet build part 2
+  - script: dotnet build WebApplication1/WebApplication1.Service/WebApplication1.Service.csproj --configuration $(buildConfiguration) 
+    displayName: dotnet build part 3";
 
             //Act
             string output = conversion.ConvertAzurePipelineToGitHubAction(yaml);
 
             //Assert
-            Assert.IsTrue(output != null);
+            string expectedOutput = @"
+on: [push]
+env:
+  buildConfiguration: Release
+  vmImage: ubuntu-latest
+jobs:
+  Build:
+    name: Build job
+    runs-on: ubuntu-latest
+    env:
+      buildConfiguration: Debug
+      myJobVariable: data
+      myJobVariable2: data2
+    steps:
+    - uses: actions/checkout@v1
+    - name: dotnet build part 1
+      run: dotnet build WebApplication1/WebApplication1.Service/WebApplication1.Service.csproj --configuration $buildConfiguration
+  Build2:
+    name: Build job
+    runs-on: ubuntu-latest
+    needs: Build
+    env:
+      myJobVariable: data
+    steps:
+    - uses: actions/checkout@v1
+    - name: dotnet build part 2
+      run: dotnet build WebApplication1/WebApplication1.Service/WebApplication1.Service.csproj --configuration $buildConfiguration
+    - name: dotnet build part 3
+      run: dotnet build WebApplication1/WebApplication1.Service/WebApplication1.Service.csproj --configuration $buildConfiguration
+";
+            Assert.AreEqual(Environment.NewLine + output, expectedOutput);
         }
 
         [TestMethod]
