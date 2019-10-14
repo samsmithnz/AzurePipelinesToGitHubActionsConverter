@@ -1,10 +1,7 @@
 using AzurePipelinesToGitHubActionsConverter.Core;
-using AzurePipelinesToGitHubActionsConverter.Core.AzurePipelines;
 using AzurePipelinesToGitHubActionsConverter.Core.GitHubActions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
-using System.IO;
-using System.Security.Cryptography.X509Certificates;
 using YamlDotNet.Serialization;
 
 namespace AzurePipelinesToGitHubActionsConverter.Tests
@@ -46,7 +43,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
         {
             //Arrange
             string input = "pool:" + Environment.NewLine +
-                           "  vmImage: 'ubuntu-latest'";
+                           "  vmImage: ubuntu-latest";
             Conversion conversion = new Conversion();
 
             //Act
@@ -54,8 +51,8 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
 
             //Assert
             Assert.AreEqual(output, "jobs:" + Environment.NewLine +
-                                    "- build:" + Environment.NewLine +
-                                    "    runsOn: ubuntu-latest" + Environment.NewLine);
+                                    "  build:" + Environment.NewLine +
+                                    "    runs-on: ubuntu-latest" + Environment.NewLine);
         }
 
         [TestMethod]
@@ -63,7 +60,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
         {
             //Arrange
             string input = "pool: " + Environment.NewLine +
-                           "  vmImage: 'windows-latest' ";
+                           "  vmImage: windows-latest";
             Conversion conversion = new Conversion();
 
             //Act
@@ -71,8 +68,8 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
 
             //Assert
             Assert.AreEqual(output, "jobs:" + Environment.NewLine +
-                                    "- build:" + Environment.NewLine +
-                                    "    runsOn: windows-latest" + Environment.NewLine);
+                                    "  build:" + Environment.NewLine +
+                                    "    runs-on: windows-latest" + Environment.NewLine);
         }
 
         [TestMethod]
@@ -118,7 +115,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             string yaml = "name: CI" + Environment.NewLine +
                         "on: [push]" + Environment.NewLine +
                         "jobs:" + Environment.NewLine +
-                        "- build:" + Environment.NewLine +
+                        "  build:" + Environment.NewLine +
                         "    runsOn: ubuntu-latest" + Environment.NewLine +
                         "    steps:" + Environment.NewLine +
                         "    - uses: actions/checkout @v1" + Environment.NewLine +

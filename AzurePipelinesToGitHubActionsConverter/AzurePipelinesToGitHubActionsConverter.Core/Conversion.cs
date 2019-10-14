@@ -55,27 +55,33 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                     //TODO: Stages are not yet supported in GitHub actions (I think?)
                 }
 
-                //Jobs
+                //Jobs (when no stages are defined)
                 if (azurePipeline.jobs != null)
                 {
                     gitHubActions.jobs = ProcessJobs(azurePipeline.jobs);
                 }
 
-                //Pool + Steps (When there are no jobs defined and a minimal set of steps and a pool)
+                //Pool + Steps (When there are no jobs defined)
                 if (azurePipeline.pool != null ||
                         (azurePipeline.steps != null && azurePipeline.steps.Length > 0))
                 {
                     //Steps only have one job, so we just create it here
-                    gitHubActions.jobs = new GitHubActions.Job[]
+                    gitHubActions.jobs = new Dictionary<string, GitHubActions.Job>
                     {
-                        new GitHubActions.Job
                         {
-                            build = new Build
+                            "build",
+                            new GitHubActions.Job
                             {
-                                runsOn = azurePipeline.pool.vmImage,
+                                runsOn = ProcessPool(azurePipeline.pool),
                                 steps = ProcessSteps(azurePipeline.steps)
                             }
                         }
+
+                        //build = new Build
+                        //{
+                        //    runsOn = azurePipeline.pool.vmImage,
+                        //    steps = ProcessSteps(azurePipeline.steps)
+                        ////}
                     };
                 }
 
@@ -86,7 +92,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
 
                 //TODO: need to fix jobs to remove leading -
                 //TODO: need to update variables from the $(variableName) format to ${{variableName}} format
-                
+
 
                 return yaml;
             }
@@ -137,22 +143,44 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
             return newPool;
         }
 
-        private GitHubActions.Job[] ProcessJobs(AzurePipelines.Job[] jobs)
+        private Dictionary<string, GitHubActions.Job> ProcessJobs(AzurePipelines.Job[] jobs)
         {
-            GitHubActions.Job[] newJobs = null;
+            Dictionary<string, GitHubActions.Job> newJobs = null;
             if (jobs != null)
             {
-                newJobs = new GitHubActions.Job[jobs.Length];
+                //newJobs = new GitHubActions.Job[jobs.Length];
                 for (int i = 0; i < jobs.Length; i++)
                 {
-                    newJobs[i] = new GitHubActions.Job
+                    new Dictionary<string, GitHubActions.Job>
                     {
-                        build = new Build
                         {
-                            runsOn = ProcessPool(jobs[i].pool),
-                            steps = ProcessSteps(jobs[i].steps)
+                            "build",
+                            new GitHubActions.Job
+                            {
+                                runsOn = ProcessPool(jobs[i].pool),
+                                steps = ProcessSteps(jobs[i].steps)
+                            }
                         }
                     };
+                    //newJobs[i] = new GitHubActions.Job
+                    //{
+                    //    build = new Dictionary<string, Build>
+                    //    {
+                    //        {
+                    //            "build",
+                    //            new Build
+                    //            {
+                    //                runsOn = ProcessPool(jobs[i].pool),
+                    //                steps = ProcessSteps(jobs[i].steps)
+                    //            } 
+                    //        }
+                    //    }
+                    //    //build = new Build
+                    //    //{
+                    //    //    runsOn = ProcessPool(jobs[i].pool),
+                    //    //    steps = ProcessSteps(jobs[i].steps)
+                    //    //}
+                    //};
                 }
             }
             return newJobs;
@@ -208,11 +236,11 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
             {
                 name = "CI",
                 on = new string[] { "push" },
-                jobs = new GitHubActions.Job[]
+                jobs = new Dictionary<string, GitHubActions.Job>
                 {
-                    new GitHubActions.Job
                     {
-                        build = new Build
+                        "build",
+                        new GitHubActions.Job
                         {
                             runsOn = "ubuntu-latest",
                             steps = new GitHubActions.Step[]

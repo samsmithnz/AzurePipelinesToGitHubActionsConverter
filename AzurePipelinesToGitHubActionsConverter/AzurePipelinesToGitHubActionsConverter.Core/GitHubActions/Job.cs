@@ -6,6 +6,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.GitHubActions
 {
     public class Job
     {
-        public Build build { get; set; }
+        public string runsOn { get; set; }
+        public Step[] steps { get; set; }
     }
 }

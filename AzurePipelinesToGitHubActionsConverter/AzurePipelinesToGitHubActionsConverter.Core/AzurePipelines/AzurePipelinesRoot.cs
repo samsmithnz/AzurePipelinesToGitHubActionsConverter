@@ -20,6 +20,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.AzurePipelines
         //TODO: add resources support
         //public string resources { get; set; }
         public string[] trigger { get; set; }
+        //TODO: add pr support
         //public string[] pr { get; set; }
         public Pool pool { get; set; }
         public Dictionary<string, string> variables { get; set; }
