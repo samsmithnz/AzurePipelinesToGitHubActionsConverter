@@ -7,16 +7,29 @@ namespace AzurePipelinesToGitHubActionsConverter.ConsoleApp
     {
         static void Main(string[] args)
         {
-            string input = "" + Environment.NewLine +
-                "trigger:" + Environment.NewLine +
-                "- master" + Environment.NewLine +
-                "pool:" + Environment.NewLine +
-                "  vmImage: 'ubuntu-latest'" + Environment.NewLine +
-                "variables:" + Environment.NewLine +
-                "  buildConfiguration: 'Release'" + Environment.NewLine +
-                "steps:" + Environment.NewLine +
-                "- script: dotnet build --configuration $(buildConfiguration) WebApplication1/WebApplication1.Service/WebApplication1.Service.csproj" + Environment.NewLine +
-                "  displayName: 'dotnet build $(buildConfiguration)'";
+            string input = @"
+trigger:
+- master
+variables:
+  buildConfiguration: Release
+  vmImage: windows-latest
+jobs:
+- job: Build
+  displayName: Build job part A
+  pool: 
+    vmImage: $(vmImage) 
+  steps: 
+  - script: dotnet build --configuration $(buildConfiguration) WebApplication1/WebApplication1.Service/WebApplication1.Service.csproj
+    displayName: dotnet build $(buildConfiguration) part A1
+- job: Build
+  displayName: Build job part B 
+  pool: 
+    vmImage: $(vmImage) 
+  steps: 
+  - script: dotnet build --configuration $(buildConfiguration) WebApplication1/WebApplication1.Service/WebApplication1.Service.csproj
+    displayName: dotnet build $(buildConfiguration) part B1
+  - script: dotnet build --configuration $(buildConfiguration) WebApplication1/WebApplication1.Service/WebApplication1.Service.csproj
+    displayName: dotnet build $(buildConfiguration) part B2";
 
             //Process the input
             Conversion conversion = new Conversion();
