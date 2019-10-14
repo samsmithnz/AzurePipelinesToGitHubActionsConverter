@@ -8,10 +8,6 @@ using YamlDotNet.Serialization;
 using YamlDotNet.Serialization.NamingConventions;
 using AzurePipelinesToGitHubActionsConverter.Core.GitHubActions;
 using AzurePipelinesToGitHubActionsConverter.Core.AzurePipelines;
-using Newtonsoft.Json;
-using YamlDotNet.Core;
-using YamlDotNet.Serialization.EventEmitters;
-using YamlDotNet.Core.Events;
 
 namespace AzurePipelinesToGitHubActionsConverter.Core
 {
@@ -78,6 +74,9 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
 
                 string yaml = WriteYAMLFile<GitHubActionsRoot>(gitHubActions);
 
+                //TODO: Resolve Sequence.Flow issue for on-push array to be on a single line (https://github.com/aaubry/YamlDotNet/issues/9)
+                yaml = yaml.Replace("on:" + Environment.NewLine + "- push", "on: [push]");
+
                 //Fix some variables for serialization, the '-' character is not valid in property names, and some of the YAML standard uses reserved words (e.g. if)
                 yaml = PrepareYamlPropertiesForGitHubSerialization(yaml);
 
@@ -91,30 +90,6 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                 return "";
             }
         }
-
-        //name: CI
-
-        //on: [push]
-
-        //jobs:
-        //  build:
-
-        //    runs-on: ubuntu-latest
-
-        //    steps:
-        //    # checkout the repo
-        //    - uses: actions/checkout @v1
-
-        //    # install dependencies, build, and test
-        //    - name: Build with dotnet
-        //      run: dotnet build WebApplication1/WebApplication1.Service/WebApplication1.Service.csproj --configuration Release
-        //    - name: Publish with dotnet
-        //      run: dotnet publish WebApplication1/WebApplication1.Service/WebApplication1.Service.csproj --configuration Release
-        //    - name: publish build artifacts back to GitHub
-        //      uses: actions/upload-artifact @master
-        //      with:
-        //        name: serviceapp
-        //        path: WebApplication1/WebApplication1.Service/bin/Release/netcoreapp3.0/publish
 
         private string[] ProcessTrigger(string[] trigger)
         {
@@ -207,146 +182,6 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
             return newSteps;
         }
 
-        public string CreateGitHubAction()
-        {
-            //name: CI
-
-            //on: [push]
-
-            //jobs:
-            //  build:
-
-            //    runs-on: ubuntu-latest
-
-            //    steps:
-            //    # checkout the repo
-            //    - uses: actions/checkout @v1
-
-            //    # install dependencies, build, and test
-            //    - name: Build with dotnet
-            //      run: dotnet build WebApplication1/WebApplication1.Service/WebApplication1.Service.csproj --configuration Release
-            //    - name: Publish with dotnet
-            //      run: dotnet publish WebApplication1/WebApplication1.Service/WebApplication1.Service.csproj --configuration Release
-            //    - name: publish build artifacts back to GitHub
-            //      uses: actions/upload-artifact @master
-            //      with:
-            //        name: serviceapp
-            //        path: WebApplication1/WebApplication1.Service/bin/Release/netcoreapp3.0/publish
-
-            //Build the GitHub actions object
-            GitHubActionsRoot githubActionsYAML = new GitHubActionsRoot
-            {
-                name = "CI",
-                on = new string[] { "push" },
-                jobs = new Dictionary<string, GitHubActions.Job>
-                {
-                    {
-                        "build",
-                        new GitHubActions.Job
-                        {
-                            runs_on = "ubuntu-latest",
-                            steps = new GitHubActions.Step[]
-                            {
-                                new GitHubActions.Step
-                                {
-                                    uses = "actions/checkout @v1"
-                                },
-                                new GitHubActions.Step
-                                {
-                                    name = "Build with dotnet",
-                                    run = "dotnet build WebApplication1/WebApplication1.Service/WebApplication1.Service.csproj --configuration Release"
-                                },
-                                new GitHubActions.Step
-                                {
-                                    name = "Publish with dotnet",
-                                    run = "dotnet publish WebApplication1/WebApplication1.Service/WebApplication1.Service.csproj --configuration Release"
-                                },
-                                new GitHubActions.Step
-                                {
-                                    name = "publish build artifacts back to GitHub",
-                                    uses = "actions/upload-artifact @master",
-                                    with = new With
-                                    {
-                                        name = "serviceapp",
-                                        path = "WebApplication1/WebApplication1.Service/bin/Release/netcoreapp3.0/publish"
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            };
-
-            string yaml = WriteYAMLFile<GitHubActionsRoot>(githubActionsYAML);
-
-            return yaml;
-        }
-        public string CreateAzurePipeline()
-        {
-            //trigger:
-            //- master
-
-            //pool:
-            //  vmImage: ubuntu-latest
-
-            //variables:
-            //  buildConfiguration: Release
-
-            //steps:
-            //- script: dotnet build --configuration $(buildConfiguration) WebApplication1/WebApplication1.Service/WebApplication1.Service.csproj
-            //  displayName: dotnet build $(buildConfiguration)
-
-            //Build the Azure Pipelines object
-            AzurePipelinesRoot azurePipelinesYAML = new AzurePipelinesRoot
-            {
-                trigger = new string[]
-                {
-                    "master"
-                },
-                pool = new Pool
-                {
-                    vmImage = "ubuntu-latest"
-                },
-                variables = new Dictionary<string, string>
-                {
-                    { "buildConfiguration", "Release" }
-                },
-                steps = new AzurePipelines.Step[]
-                {
-                    new AzurePipelines.Step {
-                        script = "dotnet build --configuration $(buildConfiguration) WebApplication1/WebApplication1.Service/WebApplication1.Service.csproj",
-                        displayName = "dotnet build $(buildConfiguration)"
-                    }
-                }
-            };
-
-            string yaml = WriteYAMLFile<AzurePipelinesRoot>(azurePipelinesYAML);
-
-            return yaml;
-        }
-
-        //private IDictionary<YamlNode, YamlNode> ReadYAMLFile(string input)
-        //{
-        //    // Setup the input
-        //    StringReader inputSR = new StringReader(input);
-
-        //    // Load the stream
-        //    YamlStream yaml = new YamlStream();
-        //    yaml.Load(inputSR);
-
-        //    // Examine the stream
-        //    IDictionary<YamlNode, YamlNode> results = null;
-        //    if (yaml.Documents.Count > 0)
-        //    {
-        //        YamlMappingNode mapping = (YamlMappingNode)yaml.Documents[0].RootNode;
-        //        results = mapping.Children;
-        //    }
-
-        //    // Return all nodes from the YAML document
-        //    return results;
-        //}
-
-
         public GitHubActionsRoot ReadGitHubActionsYaml(string yaml)
         {
             //Fix some variables that we can't use for property names because the - character is not allowed or it's a reserved word (e.g. if)
@@ -356,7 +191,6 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
 
             return ReadYamlFile<GitHubActionsRoot>(yaml);
         }
-
         private string PrepareYamlPropertiesForGitHubSerialization(string yaml)
         {
             //Fix some variables that we can't use for property names because the - character is not allowed or it's a reserved word (e.g. if)
@@ -386,14 +220,12 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
             return yamlObject;
         }
 
-        private string WriteYAMLFile<T>(T obj)
+        public string WriteYAMLFile<T>(T obj)
         {
             //Convert the object into a YAML document
             ISerializer serializer = new SerializerBuilder()
                     .Build();
             string yaml = serializer.Serialize(obj);
-            //TODO: Resolve Sequence.Flow issue for on-push array to be on a single line (https://github.com/aaubry/YamlDotNet/issues/9)
-            yaml = yaml.Replace("on:" + Environment.NewLine + "- push", "on: [push]");
 
             return yaml;
         }
@@ -401,49 +233,3 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
     }
 
 }
-
-
-
-//# ASP.NET Core
-//# Build and test ASP.NET Core projects targeting .NET Core.
-//# Add steps that run tests, create a NuGet package, deploy, and more:
-//# https://docs.microsoft.com/azure/devops/pipelines/languages/dotnet-core
-
-//trigger:
-//- master
-
-//pool:
-//  vmImage: ubuntu-latest
-
-//variables:
-//  buildConfiguration: Release
-
-//steps:
-//- script: dotnet build --configuration $(buildConfiguration) WebApplication1/WebApplication1.Service/WebApplication1.Service.csproj
-//  displayName: 'dotnet build $(buildConfiguration)'
-
-
-//name: CI
-
-//on: [push]
-
-//jobs:
-//  build:
-
-//    runs-on: ubuntu-latest
-
-//    steps:
-//    # checkout the repo
-//    - uses: actions/checkout @v1
-
-//    # install dependencies, build, and test
-//    - name: Build with dotnet
-//      run: dotnet build WebApplication1/WebApplication1.Service/WebApplication1.Service.csproj --configuration Release
-//    - name: Publish with dotnet
-//      run: dotnet publish WebApplication1/WebApplication1.Service/WebApplication1.Service.csproj --configuration Release
-//    - name: publish build artifacts back to GitHub
-//      uses: actions/upload-artifact @master
-//      with:
-//        name: serviceapp
-//        path: WebApplication1/WebApplication1.Service/bin/Release/netcoreapp3.0/publish
-
