@@ -8,6 +8,8 @@ As GitHub Actions becomes more popular, it's clear that a migration tool will be
 Currently this only supports one-way migrations from Azure Pipelines to GitHub Actions. 
 
 Made with help from https://github.com/aaubry/YamlDotNet and https://en.wikipedia.org/wiki/YAML.
+- Azure Pipelines YAML docs: https://docs.microsoft.com/en-us/azure/devops/pipelines/yaml-schema?view=azure-devops&tabs=schema
+- GitHub Actions YAML docs: https://help.github.com/en/articles/workflow-syntax-for-github-actions#jobsjob_idstepsuses
 
 Yaml can be challenging. The wikipedia page lays out the rules nicely, but when we are talking about converting yaml to C#, there are a few things to know
 

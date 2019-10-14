@@ -21,12 +21,6 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
         public string ConvertAzurePipelineToGitHubAction(string input)
         {
             AzurePipelinesRoot azurePipeline = ReadYamlFile<AzurePipelinesRoot>(input);
-            int stepsLength = 0;
-            if (azurePipeline != null && azurePipeline.steps != null)
-            {
-                stepsLength = azurePipeline.steps.Length;
-            }
-
             GitHubActionsRoot gitHubActions = new GitHubActionsRoot();
 
             if (azurePipeline != null)
@@ -77,12 +71,6 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                                 steps = ProcessSteps(azurePipeline.steps)
                             }
                         }
-
-                        //build = new Build
-                        //{
-                        //    runsOn = azurePipeline.pool.vmImage,
-                        //    steps = ProcessSteps(azurePipeline.steps)
-                        ////}
                     };
                 }
 
@@ -91,9 +79,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                 //Fix the runs-on variable
                 yaml = yaml.Replace("runsOn", "runs-on");
 
-                //TODO: need to fix jobs to remove leading -
                 //TODO: need to update variables from the $(variableName) format to ${{variableName}} format
-
 
                 return yaml;
             }
@@ -168,13 +154,21 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
             GitHubActions.Step[] newSteps = null;
             if (steps != null)
             {
-                newSteps = new GitHubActions.Step[steps.Length];
-                for (int i = 0; i < steps.Length; i++)
+                newSteps = new GitHubActions.Step[steps.Length + 1]; //Add 1 for the check out step
+
+                //TODO: Work out if we should add a switch to insert this or not
+                newSteps[0] = new GitHubActions.Step
+                {
+                    uses = "actions/checkout@v1"
+                };
+
+                //Translate the other steps
+                for (int i = 1; i < steps.Length + 1; i++)
                 {
                     newSteps[i] = new GitHubActions.Step
                     {
-                        name = steps[i].displayName,
-                        run = steps[i].script
+                        name = steps[i - 1].displayName,
+                        run = steps[i - 1].script
                     };
                 }
             }

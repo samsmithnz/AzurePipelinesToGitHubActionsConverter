@@ -12,24 +12,19 @@ trigger:
 - master
 variables:
   buildConfiguration: Release
-  vmImage: windows-latest
+  vmImage: ubuntu-latest
 jobs:
 - job: Build
-  displayName: Build job part A
+  displayName: Build job
   pool: 
-    vmImage: windows-latest
+    vmImage: ubuntu-latest
   steps: 
   - script: dotnet build WebApplication1/WebApplication1.Service/WebApplication1.Service.csproj --configuration Release 
-    displayName: dotnet build part A1
-- job: Build2
-  displayName: Build job part B 
-  pool: 
-    vmImage: windows-latest
-  steps: 
+    displayName: dotnet build part 1
   - script: dotnet build WebApplication1/WebApplication1.Service/WebApplication1.Service.csproj --configuration Release 
-    displayName: dotnet build part B1
+    displayName: dotnet build part 2
   - script: dotnet build WebApplication1/WebApplication1.Service/WebApplication1.Service.csproj --configuration Release 
-    displayName: dotnet build part B2";
+    displayName: dotnet build part 3";
 
             //Process the input
             Conversion conversion = new Conversion();
