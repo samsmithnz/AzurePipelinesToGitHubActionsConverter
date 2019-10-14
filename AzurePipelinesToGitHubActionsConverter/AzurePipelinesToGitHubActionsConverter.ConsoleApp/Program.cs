@@ -17,19 +17,19 @@ jobs:
 - job: Build
   displayName: Build job part A
   pool: 
-    vmImage: $(vmImage) 
+    vmImage: windows-latest
   steps: 
-  - script: dotnet build --configuration $(buildConfiguration) WebApplication1/WebApplication1.Service/WebApplication1.Service.csproj
-    displayName: dotnet build $(buildConfiguration) part A1
-- job: Build
+  - script: dotnet build --configuration Release WebApplication1/WebApplication1.Service/WebApplication1.Service.csproj
+    displayName: dotnet build Release part A1
+- job: Build2
   displayName: Build job part B 
   pool: 
-    vmImage: $(vmImage) 
+    vmImage: windows-latest
   steps: 
-  - script: dotnet build --configuration $(buildConfiguration) WebApplication1/WebApplication1.Service/WebApplication1.Service.csproj
-    displayName: dotnet build $(buildConfiguration) part B1
-  - script: dotnet build --configuration $(buildConfiguration) WebApplication1/WebApplication1.Service/WebApplication1.Service.csproj
-    displayName: dotnet build $(buildConfiguration) part B2";
+  - script: dotnet build --configuration Release WebApplication1/WebApplication1.Service/WebApplication1.Service.csproj
+    displayName: dotnet build Release part B1
+  - script: dotnet build --configuration Release WebApplication1/WebApplication1.Service/WebApplication1.Service.csproj
+    displayName: dotnet build Release part B2";
 
             //Process the input
             Conversion conversion = new Conversion();

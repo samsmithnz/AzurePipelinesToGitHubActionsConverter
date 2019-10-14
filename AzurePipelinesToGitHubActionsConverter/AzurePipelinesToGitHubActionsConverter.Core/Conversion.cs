@@ -46,6 +46,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                 //Variables
                 if (azurePipeline.variables != null)
                 {
+                    //TODO: While it converts variables, we still don't know how to implement them. ${{ myVar }} and $myVar both don't work...
                     gitHubActions.env = azurePipeline.variables;
                 }
 
@@ -148,39 +149,15 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
             Dictionary<string, GitHubActions.Job> newJobs = null;
             if (jobs != null)
             {
-                //newJobs = new GitHubActions.Job[jobs.Length];
+                newJobs = new Dictionary<string, GitHubActions.Job>();
                 for (int i = 0; i < jobs.Length; i++)
                 {
-                    new Dictionary<string, GitHubActions.Job>
-                    {
+                    newJobs.Add(jobs[i].job,
+                        new GitHubActions.Job
                         {
-                            "build",
-                            new GitHubActions.Job
-                            {
-                                runsOn = ProcessPool(jobs[i].pool),
-                                steps = ProcessSteps(jobs[i].steps)
-                            }
-                        }
-                    };
-                    //newJobs[i] = new GitHubActions.Job
-                    //{
-                    //    build = new Dictionary<string, Build>
-                    //    {
-                    //        {
-                    //            "build",
-                    //            new Build
-                    //            {
-                    //                runsOn = ProcessPool(jobs[i].pool),
-                    //                steps = ProcessSteps(jobs[i].steps)
-                    //            } 
-                    //        }
-                    //    }
-                    //    //build = new Build
-                    //    //{
-                    //    //    runsOn = ProcessPool(jobs[i].pool),
-                    //    //    steps = ProcessSteps(jobs[i].steps)
-                    //    //}
-                    //};
+                            runsOn = ProcessPool(jobs[i].pool),
+                            steps = ProcessSteps(jobs[i].steps)
+                        });
                 }
             }
             return newJobs;
