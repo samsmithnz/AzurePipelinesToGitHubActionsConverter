@@ -43,7 +43,6 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                 //Variables
                 if (azurePipeline.variables != null)
                 {
-                    //TODO: While it converts variables, we still don't know how to implement them. ${{ myVar }} and $myVar both don't work...
                     gitHubActions.env = ProcessVariables(azurePipeline.variables);
                 }
 
