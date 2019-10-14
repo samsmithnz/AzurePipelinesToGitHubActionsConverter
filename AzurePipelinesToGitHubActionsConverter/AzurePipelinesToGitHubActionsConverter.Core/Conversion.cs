@@ -168,13 +168,21 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
             GitHubActions.Step[] newSteps = null;
             if (steps != null)
             {
-                newSteps = new GitHubActions.Step[steps.Length];
-                for (int i = 0; i < steps.Length; i++)
+                newSteps = new GitHubActions.Step[steps.Length + 1]; //Add 1 for the check out step
+
+                //TODO: Work out if we should add a switch to insert this or not
+                newSteps[0] = new GitHubActions.Step
+                {
+                    uses = "actions/checkout@v1"
+                };
+
+                //Translate the other steps
+                for (int i = 1; i < steps.Length + 1; i++)
                 {
                     newSteps[i] = new GitHubActions.Step
                     {
-                        name = steps[i].displayName,
-                        run = steps[i].script
+                        name = steps[i - 1].displayName,
+                        run = steps[i - 1].script
                     };
                 }
             }
