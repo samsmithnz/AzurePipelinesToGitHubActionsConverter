@@ -25,10 +25,9 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
         public void TestGetLineComment()
         {
             //Arrange
-            string expectedString = "# converted to GitHub Actions by https://github.com/samsmithnz/AzurePipelinesToGitHubActionsConverter on " + DateTime.Now.ToString("dd-MMM-yyyy hh:mm:sstt");
 
             //Act
-            string output = Global.GetHeaderComment();
+            string output = Global.GetLineComment();
 
             //Assert
             Assert.IsTrue(string.IsNullOrEmpty(output) == false);
