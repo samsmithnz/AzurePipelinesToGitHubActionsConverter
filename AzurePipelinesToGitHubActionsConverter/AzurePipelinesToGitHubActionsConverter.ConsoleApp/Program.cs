@@ -18,12 +18,24 @@ jobs:
   displayName: Build job
   pool: 
     vmImage: ubuntu-latest
+  variables:
+    buildConfiguration: Debug
+    myJobVariable: 'data'
+    myJobVariable2: 'data2'
   steps: 
-  - script: dotnet build WebApplication1/WebApplication1.Service/WebApplication1.Service.csproj --configuration Release 
+  - script: dotnet build WebApplication1/WebApplication1.Service/WebApplication1.Service.csproj --configuration $(buildConfiguration) 
     displayName: dotnet build part 1
-  - script: dotnet build WebApplication1/WebApplication1.Service/WebApplication1.Service.csproj --configuration Release 
+- job: Build2
+  displayName: Build job
+  dependsOn: Build
+  pool: 
+    vmImage: ubuntu-latest
+  variables:
+    myJobVariable: 'data'
+  steps:
+  - script: dotnet build WebApplication1/WebApplication1.Service/WebApplication1.Service.csproj --configuration $(buildConfiguration) 
     displayName: dotnet build part 2
-  - script: dotnet build WebApplication1/WebApplication1.Service/WebApplication1.Service.csproj --configuration Release 
+  - script: dotnet build WebApplication1/WebApplication1.Service/WebApplication1.Service.csproj --configuration $(buildConfiguration) 
     displayName: dotnet build part 3";
 
             //Process the input
