@@ -21,12 +21,6 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
         public string ConvertAzurePipelineToGitHubAction(string input)
         {
             AzurePipelinesRoot azurePipeline = ReadYamlFile<AzurePipelinesRoot>(input);
-            int stepsLength = 0;
-            if (azurePipeline != null && azurePipeline.steps != null)
-            {
-                stepsLength = azurePipeline.steps.Length;
-            }
-
             GitHubActionsRoot gitHubActions = new GitHubActionsRoot();
 
             if (azurePipeline != null)
@@ -77,12 +71,6 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                                 steps = ProcessSteps(azurePipeline.steps)
                             }
                         }
-
-                        //build = new Build
-                        //{
-                        //    runsOn = azurePipeline.pool.vmImage,
-                        //    steps = ProcessSteps(azurePipeline.steps)
-                        ////}
                     };
                 }
 
@@ -91,9 +79,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                 //Fix the runs-on variable
                 yaml = yaml.Replace("runsOn", "runs-on");
 
-                //TODO: need to fix jobs to remove leading -
                 //TODO: need to update variables from the $(variableName) format to ${{variableName}} format
-
 
                 return yaml;
             }
