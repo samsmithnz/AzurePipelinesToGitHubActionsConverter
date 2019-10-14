@@ -211,7 +211,7 @@ jobs:
   steps: 
   - script: dotnet build --configuration $(buildConfiguration) WebApplication1/WebApplication1.Service/WebApplication1.Service.csproj
     displayName: dotnet build $(buildConfiguration) part A1
-- job: Build
+- job: Build2
   displayName: Build job part B 
   pool: 
     vmImage: $(vmImage) 
