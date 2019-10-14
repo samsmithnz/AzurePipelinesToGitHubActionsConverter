@@ -150,6 +150,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
 
         private GitHubActions.Step[] ProcessSteps(AzurePipelines.Step[] steps, bool addCheckoutStep = true)
         {
+            //TODO: Add support to actually translate Azure Pipeline steps to GitHub Action steps. This has the potential to be the biggest task here due to the possible number of permutations.
             GitHubActions.Step[] newSteps = null;
             if (steps != null)
             {
@@ -178,7 +179,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                     };
                 }
             }
-
+        
             return newSteps;
         }
 
