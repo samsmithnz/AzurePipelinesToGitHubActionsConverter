@@ -154,19 +154,24 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                 newJobs = new Dictionary<string, GitHubActions.Job>();
                 for (int i = 0; i < jobs.Length; i++)
                 {
-                    newJobs.Add(jobs[i].job,
-                        new GitHubActions.Job
-                        {
-                            name = jobs[i].displayName,
-                            needs = jobs[i].dependsOn,
-                            _if = jobs[i].condition,
-                            env = ProcessVariables(jobs[i].variables),
-                            runs_on = ProcessPool(jobs[i].pool),
-                            steps = ProcessSteps(jobs[i].steps)
-                        });
+                    newJobs.Add(jobs[i].job, ProcessIndividualJob(jobs[i]));
                 }
             }
             return newJobs;
+        }
+
+        private GitHubActions.Job ProcessIndividualJob(AzurePipelines.Job job)
+        {
+            return new GitHubActions.Job
+            {
+                name = job.displayName,
+                needs = job.dependsOn,
+                _if = job.condition,
+                env = ProcessVariables(job.variables),
+                runs_on = ProcessPool(job.pool),
+                timeout_minutes = job.timeoutInMinutes,
+                steps = ProcessSteps(job.steps)
+            };
         }
 
         private GitHubActions.Step[] ProcessSteps(AzurePipelines.Step[] steps, bool addCheckoutStep = true)
