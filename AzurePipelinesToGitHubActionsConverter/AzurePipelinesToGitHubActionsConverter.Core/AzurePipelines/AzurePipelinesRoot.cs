@@ -19,7 +19,9 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.AzurePipelines
         public string name { get; set; }
         //TODO: add resources support
         //public string resources { get; set; }
-        public string[] trigger { get; set; }
+        //TODO: Add all trigger options
+        public string[] trigger { get; set; } //https://docs.microsoft.com/en-us/azure/devops/pipelines/yaml-schema?view=azure-devops&tabs=schema#triggers
+        //public Trigger trigger2 { get; set; }
         //TODO: add pr support
         //public string[] pr { get; set; }
         public Pool pool { get; set; }

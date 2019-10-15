@@ -6,10 +6,6 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.AzurePipelines
 {
     public class Job
     {
-        //stages:
-        //- stage: Build
-        //  displayName: 'Build/Test Stage'
-        //  jobs:
         //  - job: Build
         //    displayName: 'Build job'
         //    pool:
