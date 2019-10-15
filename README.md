@@ -14,7 +14,7 @@ Made with help from https://github.com/aaubry/YamlDotNet and https://en.wikipedi
 Yaml can be challenging. The wikipedia page lays out the rules nicely, but when we are talking about converting yaml to C#, there are a few things to know
 
 1. Yaml is wack. The white spaces will destroy you, as the errors returned are often not helpful at all. Take lots of breaks.
-2. Use a good editor - Visual Studio Code has a decent YAML extension
+2. Use a good editor - Visual Studio Code has a decent YAML extension (https://marketplace.visualstudio.com/items?itemName=docsmsft.docs-yaml), or if using Visual Studio, enable spaces with CTRL+R,CTRL+W
 3. String arrays (string[]) are useful for lists (e.g) -job. Note both of the following pieces of code for a triggers are effectively the same 
 ```YAML
 trigger: [master,develop]
