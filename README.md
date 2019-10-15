@@ -33,7 +33,18 @@ The C# definition for this looks like:
 ```C#
 public Dictionary<string, string> variables { get; set; }
 ```
-5. Just about everything else can be a string or object
+5. Just about everything else can be a string or object. Here is an example of a simple job:
+```YAML
+- job: Build
+  displayName: 'Build job'
+  pool:
+    vmImage: $(vmImage)
+```
+```C#
+public string job { get; set; }
+public string displayName { get; set; }
+public Pool pool { get; set; }
+```
 
 ## Architecture
 Currently a .NET Standard 2.0 class that is used by a MSTEST project for tests, and a .NET Core 3.0 console app
