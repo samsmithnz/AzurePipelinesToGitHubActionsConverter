@@ -15,15 +15,24 @@ Yaml can be challenging. The wikipedia page lays out the rules nicely, but when 
 
 1. Yaml is wack. The white spaces will destroy you, as the errors returned are often not helpful at all. Take lots of breaks.
 2. Use a good editor - Visual Studio Code has a decent YAML extension
-3. String arrays (string[]) are useful for lists (e.g) -job. Note both of the following triggers evaluate to the same
+3. String arrays (string[]) are useful for lists (e.g) -job. Note both of the following pieces of code for a triggers are effectively the same 
 ```YAML
-trigger: [ master, develop ]
+trigger: [master,develop]
 
 trigger:
 - master
 - develop
 ```
 4. The dictonary object (dictonary<string,string>) is useful for dynamic key value pairs, for example, variables
+```YAML
+variables:
+  MY_VAR: 'my value'
+  ANOTHER_VAR: 'another value'
+```
+The C# definition for this looks like:
+```C#
+public Dictionary<string, string> variables { get; set; }
+```
 5. Just about everything else can be a string or object
 
 ## Architecture
