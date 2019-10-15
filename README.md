@@ -5,7 +5,7 @@ A project to create a conversion tool to make migrations between Azure Pipelines
 
 As GitHub Actions becomes more popular, it's clear that a migration tool will be useful to move workloads to GitHub. 
 
-Currently this only supports one-way migrations from Azure Pipelines to GitHub Actions. Also note that this is not translating steps at this time, just translating the infrastructure around it.
+**Currently this only supports one-way migrations from Azure Pipelines to GitHub Actions. Also note that this is not translating steps at this time, just translating the infrastructure around it.**
  
 Made with help from https://github.com/aaubry/YamlDotNet and https://en.wikipedia.org/wiki/YAML.
 - Azure Pipelines YAML docs: https://docs.microsoft.com/en-us/azure/devops/pipelines/yaml-schema?view=azure-devops&tabs=schema
