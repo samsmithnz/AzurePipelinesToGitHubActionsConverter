@@ -25,7 +25,11 @@ variables:
 ```
 The C# definition for this looks like:
 ```C#
-public Dictionary<string, string> variables { get; set; }
+Dictionary<string, string> variables = new Dictionary<string, string>
+{
+    { "MY_VAR", "my value" },
+    { "ANOTHER_VAR", "another value" }
+};
 ```
 5. Just about everything else can be a string or object. Here is an example of a simple job:
 ```YAML
