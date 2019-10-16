@@ -8,6 +8,7 @@ using YamlDotNet.Serialization;
 using YamlDotNet.Serialization.NamingConventions;
 using AzurePipelinesToGitHubActionsConverter.Core.GitHubActions;
 using AzurePipelinesToGitHubActionsConverter.Core.AzurePipelines;
+using System.Runtime.CompilerServices;
 
 namespace AzurePipelinesToGitHubActionsConverter.Core
 {
@@ -179,7 +180,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                     };
                 }
             }
-        
+
             return newSteps;
         }
 
