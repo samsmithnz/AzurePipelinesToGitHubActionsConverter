@@ -18,6 +18,8 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.AzurePipelines
     {
         //TODO: Investigate where the batch property is in actions
         public string batch { get; set; }
+        //TODO: Investigate where the autoCancel property is in actions
+        public string autoCancel { get; set; }
         public IncludeExclude branches { get; set; }
         public IncludeExclude paths { get; set; }
     }

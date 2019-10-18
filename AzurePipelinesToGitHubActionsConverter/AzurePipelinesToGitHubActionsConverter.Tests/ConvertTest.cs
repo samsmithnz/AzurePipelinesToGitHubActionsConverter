@@ -93,6 +93,34 @@ trigger:
         }
 
         [TestMethod]
+        public void TestTriggerComplexWithPRString()
+        {
+            //Arrange
+            string input = @"
+pr:
+  branches:
+    include:
+    - features/*
+    exclude:
+    - features/experimental/*
+  paths:
+    include:
+    - README.md";
+            Conversion conversion = new Conversion();
+
+            //Act
+            string output = conversion.ConvertAzurePipelineToGitHubAction(input);
+
+            //Assert
+            Assert.AreEqual(output, "on:" + Environment.NewLine +
+                        "  pull-request:" + Environment.NewLine +
+                        "    branches:" + Environment.NewLine +
+                        "    - features/*" + Environment.NewLine +
+                        "    paths:" + Environment.NewLine +
+                        "    - README.md" + Environment.NewLine);
+        }
+
+        [TestMethod]
         public void TestTriggerComplexWithIgnoresString()
         {
             //Arrange

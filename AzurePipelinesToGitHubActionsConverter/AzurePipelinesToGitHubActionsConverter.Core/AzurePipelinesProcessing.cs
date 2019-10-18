@@ -20,7 +20,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                 gitHubActions.name = azurePipeline.name;
             }
 
-            //Trigger
+            //Triggers for pushs 
             if (azurePipeline.trigger != null)
             {
                 if (complexTrigger != null)
@@ -30,6 +30,24 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                 else if (simpleTrigger != null)
                 {
                     gitHubActions.on = ProcessSimpleTrigger(simpleTrigger);
+                }
+            }
+
+            //Triggers for pull requests
+            if (azurePipeline.pr != null)
+            {
+                if (azurePipeline.pr != null)
+                {
+                    GitHubActions.Trigger pr = ProcessPullRequest(azurePipeline.pr);
+                    if (gitHubActions.on == null)
+                    {
+                        gitHubActions.on = pr;
+                    }
+                    else
+                    {
+                        gitHubActions.on.pull_request = pr.pull_request;
+                    }
+                    
                 }
             }
 
@@ -111,10 +129,43 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                 }
             }
 
-            //TODO: Add more processing for PRs
             return new GitHubActions.Trigger
             {
                 push = push
+            };
+
+        }
+
+        private GitHubActions.Trigger ProcessPullRequest(AzurePipelines.Trigger pr)
+        {
+            //Process the PR
+            TriggerDetail pullRequest = new TriggerDetail();
+            if (pr.branches != null)
+            {
+                if (pr.branches.include != null)
+                {
+                    pullRequest.branches = pr.branches.include;
+                }
+                else if (pr.branches.exclude != null)
+                {
+                    pullRequest.branches_ignore = pr.branches.exclude;
+                }
+            }
+            if (pr.paths != null)
+            {
+                if (pr.paths.include != null)
+                {
+                    pullRequest.paths = pr.paths.include;
+                }
+                if (pr.paths.exclude != null)
+                {
+                    pullRequest.paths_ignore = pr.paths.exclude;
+                }
+            }
+
+            return new GitHubActions.Trigger
+            {
+                pull_request = pullRequest
             };
         }
 
