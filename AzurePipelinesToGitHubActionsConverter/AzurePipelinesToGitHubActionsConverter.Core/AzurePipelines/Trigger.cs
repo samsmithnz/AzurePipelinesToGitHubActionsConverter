@@ -17,7 +17,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.AzurePipelines
     public class Trigger
     {
         public string batch { get; set; }
-        public IncludeExclude[] branches { get; set; }
-        public IncludeExclude[] paths { get; set; }
+        public IncludeExclude branches { get; set; }
+        public IncludeExclude paths { get; set; }
     }
 }

@@ -37,7 +37,68 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             string output = conversion.ConvertAzurePipelineToGitHubAction(input);
 
             //Assert
-            Assert.AreEqual(output, "on: [push]" + Environment.NewLine);
+            //Assert.AreEqual(output, "on: [push]" + Environment.NewLine);
+            Assert.AreEqual(output, "on: "+ Environment.NewLine +
+                                    "  push: " + Environment.NewLine +
+                                    "    branches: " + Environment.NewLine +
+                                    "    - master");
+        }
+
+        [TestMethod]
+        public void TestTrigger2String()
+        {
+            //Arrange
+            string input = "trigger:" + Environment.NewLine +
+                            "- master" + Environment.NewLine +
+                            "- develop";
+            Conversion conversion = new Conversion();
+
+            //Act
+            Type typeParameterType = typeof(AzurePipelinesProcessing<Trigger>);
+            //var output = conversion.ReadYamlFile<AzurePipelinesRoot<string[]>>(input);
+            string output = conversion.ConvertAzurePipelineToGitHubAction(input);
+
+            //Assert
+            //Assert.AreEqual(output, "on: [push]" + Environment.NewLine);
+            Assert.AreEqual(output, "on: " + Environment.NewLine +
+                                    "  push: " + Environment.NewLine +
+                                    "    branches: " + Environment.NewLine +
+                                    "    - master" + Environment.NewLine +
+                                    "    - develop");
+        }
+
+        [TestMethod]
+        public void TestTrigger3String()
+        {
+            //Arrange
+            string input = @"
+trigger:
+  batch: true
+  branches:
+    include:
+    - features/*
+    exclude:
+    - features/experimental/*
+  paths:
+    exclude:
+    - README.md";
+            Conversion conversion = new Conversion();
+
+            //Act
+            //var output = conversion.ReadYamlFile<AzurePipelinesRoot<Trigger>>(input);
+            string output = conversion.ConvertAzurePipelineToGitHubAction(input);
+
+            //Assert
+            //Assert.AreEqual(output, "on: [push]" + Environment.NewLine);
+            Assert.AreEqual(output, "on: " + Environment.NewLine +
+                        "  push: " + Environment.NewLine +
+                        "    branches: " + Environment.NewLine +
+                        "    - features/*" + Environment.NewLine +
+                        "    branches-ignore: " + Environment.NewLine +
+                        "    - features/experimental/*" + Environment.NewLine +
+                        "    paths: " + Environment.NewLine +
+                        "      paths-ignore: " + Environment.NewLine +
+                        "    - '**.js'");
         }
 
         [TestMethod]
