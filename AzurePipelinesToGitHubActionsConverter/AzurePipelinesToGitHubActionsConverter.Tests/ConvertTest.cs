@@ -26,7 +26,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
         }
 
         [TestMethod]
-        public void TestTriggerString()
+        public void TestTriggerSimpleString()
         {
             //Arrange
             string input = "trigger:" + Environment.NewLine +
@@ -37,15 +37,14 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             string output = conversion.ConvertAzurePipelineToGitHubAction(input);
 
             //Assert
-            //Assert.AreEqual(output, "on: [push]" + Environment.NewLine);
-            Assert.AreEqual(output, "on: "+ Environment.NewLine +
-                                    "  push: " + Environment.NewLine +
-                                    "    branches: " + Environment.NewLine +
-                                    "    - master");
+            Assert.AreEqual(output, "on:" + Environment.NewLine +
+                                    "  push:" + Environment.NewLine +
+                                    "    branches:" + Environment.NewLine +
+                                    "    - master" + Environment.NewLine);
         }
 
         [TestMethod]
-        public void TestTrigger2String()
+        public void TestTriggerSimpleWithMultipleBranchesString()
         {
             //Arrange
             string input = "trigger:" + Environment.NewLine +
@@ -54,21 +53,18 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             Conversion conversion = new Conversion();
 
             //Act
-            Type typeParameterType = typeof(AzurePipelinesProcessing<Trigger>);
-            //var output = conversion.ReadYamlFile<AzurePipelinesRoot<string[]>>(input);
             string output = conversion.ConvertAzurePipelineToGitHubAction(input);
 
             //Assert
-            //Assert.AreEqual(output, "on: [push]" + Environment.NewLine);
-            Assert.AreEqual(output, "on: " + Environment.NewLine +
-                                    "  push: " + Environment.NewLine +
-                                    "    branches: " + Environment.NewLine +
+            Assert.AreEqual(output, "on:" + Environment.NewLine +
+                                    "  push:" + Environment.NewLine +
+                                    "    branches:" + Environment.NewLine +
                                     "    - master" + Environment.NewLine +
-                                    "    - develop");
+                                    "    - develop" + Environment.NewLine);
         }
 
         [TestMethod]
-        public void TestTrigger3String()
+        public void TestTriggerComplexString()
         {
             //Arrange
             string input = @"
@@ -80,25 +76,47 @@ trigger:
     exclude:
     - features/experimental/*
   paths:
+    include:
+    - README.md";
+            Conversion conversion = new Conversion();
+
+            //Act
+            string output = conversion.ConvertAzurePipelineToGitHubAction(input);
+
+            //Assert
+            Assert.AreEqual(output, "on:" + Environment.NewLine +
+                        "  push:" + Environment.NewLine +
+                        "    branches:" + Environment.NewLine +
+                        "    - features/*" + Environment.NewLine +
+                        "    paths:" + Environment.NewLine +
+                        "    - README.md" + Environment.NewLine);
+        }
+
+        [TestMethod]
+        public void TestTriggerComplexWithIgnoresString()
+        {
+            //Arrange
+            string input = @"
+trigger:
+  batch: true
+  branches:
+    exclude:
+    - features/experimental/*
+  paths:
     exclude:
     - README.md";
             Conversion conversion = new Conversion();
 
             //Act
-            //var output = conversion.ReadYamlFile<AzurePipelinesRoot<Trigger>>(input);
             string output = conversion.ConvertAzurePipelineToGitHubAction(input);
 
             //Assert
-            //Assert.AreEqual(output, "on: [push]" + Environment.NewLine);
-            Assert.AreEqual(output, "on: " + Environment.NewLine +
-                        "  push: " + Environment.NewLine +
-                        "    branches: " + Environment.NewLine +
-                        "    - features/*" + Environment.NewLine +
-                        "    branches-ignore: " + Environment.NewLine +
+            Assert.AreEqual(output, "on:" + Environment.NewLine +
+                        "  push:" + Environment.NewLine +
+                        "    branches-ignore:" + Environment.NewLine +
                         "    - features/experimental/*" + Environment.NewLine +
-                        "    paths: " + Environment.NewLine +
-                        "      paths-ignore: " + Environment.NewLine +
-                        "    - '**.js'");
+                        "    paths-ignore:" + Environment.NewLine +
+                        "    - README.md" + Environment.NewLine);
         }
 
         [TestMethod]
@@ -175,7 +193,10 @@ jobs:
 
             //Assert
             string expectedOutput = @"
-on: [push]
+on:
+  push:
+    branches:
+    - master
 env:
   buildConfiguration: Release
 jobs:
@@ -198,7 +219,10 @@ jobs:
             //Arrange
             Conversion conversion = new Conversion();
             string yaml = "name: CI" + Environment.NewLine +
-                        "on: [push]" + Environment.NewLine +
+                        "on:" + Environment.NewLine +
+                        "  push:" + Environment.NewLine +
+                        "    branches:" + Environment.NewLine +
+                        "    - master" + Environment.NewLine +
                         "jobs:" + Environment.NewLine +
                         "  build:" + Environment.NewLine +
                         "    runs_on: ubuntu-latest" + Environment.NewLine +
@@ -303,7 +327,10 @@ jobs:
 
             //Assert
             string expectedOutput = @"
-on: [push]
+on:
+  push:
+    branches:
+    - master
 env:
   buildConfiguration: Release
   vmImage: ubuntu-latest

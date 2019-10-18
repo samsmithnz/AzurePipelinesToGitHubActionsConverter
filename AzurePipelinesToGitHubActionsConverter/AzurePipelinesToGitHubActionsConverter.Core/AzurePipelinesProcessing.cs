@@ -10,8 +10,9 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
     {
         public List<string> VariableList;
 
-        public GitHubActionsRoot ProcessPipeline(AzurePipelinesRoot<T> azurePipeline, string[] simpleTrigger, Trigger complexTrigger)
+        public GitHubActionsRoot ProcessPipeline(AzurePipelinesRoot<T> azurePipeline, string[] simpleTrigger, AzurePipelines.Trigger complexTrigger)
         {
+            VariableList = new List<string>();
             GitHubActionsRoot gitHubActions = new GitHubActionsRoot();
             //Name
             if (azurePipeline.name != null)
@@ -24,8 +25,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
             {
                 if (complexTrigger != null)
                 {
-                    //gitHubActions.on = 
-                    ProcessComplexTrigger(complexTrigger);
+                    gitHubActions.on = ProcessComplexTrigger(complexTrigger);
                 }
                 else if (simpleTrigger != null)
                 {
@@ -72,17 +72,49 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
             return gitHubActions;
         }
 
-        private string[] ProcessSimpleTrigger(string[] trigger)
+        private GitHubActions.Trigger ProcessSimpleTrigger(string[] trigger)
         {
-            return new string[] { "push" };
+            AzurePipelines.Trigger newTrigger = new AzurePipelines.Trigger
+            {
+                branches = new IncludeExclude
+                {
+                    include = trigger
+                }
+            };
+            return ProcessComplexTrigger(newTrigger);
         }
 
-        private Trigger ProcessComplexTrigger(Trigger trigger)
+        private GitHubActions.Trigger ProcessComplexTrigger(AzurePipelines.Trigger trigger)
         {
-            //TODO: Add more processing on different triggers
-            return new Trigger
+            //Note: as of 18-Oct, you receive an error if you try to post both a "branches" and a "ignore-branches", or a "paths and a ignore-paths". You can only have one or the other...
+            TriggerDetail push = new TriggerDetail();
+            if (trigger.branches != null)
             {
+                if (trigger.branches.include != null)
+                {
+                    push.branches = trigger.branches.include;
+                }
+                else if (trigger.branches.exclude != null)
+                {
+                    push.branches_ignore = trigger.branches.exclude;
+                }
+            }
+            if (trigger.paths != null)
+            {
+                if (trigger.paths.include != null)
+                {
+                    push.paths = trigger.paths.include;
+                }
+                if (trigger.paths.exclude != null)
+                {
+                    push.paths_ignore = trigger.paths.exclude;
+                }
+            }
 
+            //TODO: Add more processing for PRs
+            return new GitHubActions.Trigger
+            {
+                push = push
             };
         }
 
@@ -98,7 +130,6 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
 
         private Dictionary<string, string> ProcessVariables(Dictionary<string, string> variables)
         {
-            VariableList = new List<string>();
             //update variables from the $(variableName) format to ${{variableName}} format, by piping them into a list for replacement later.
             foreach (string item in variables.Keys)
             {

@@ -11,7 +11,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
     [TestClass]
     public class ObjectCreationTests
     {
-      
+
         [TestMethod]
         public void TestSampleGitHubActionObjectToYaml()
         {
@@ -45,7 +45,13 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             GitHubActionsRoot githubActionsYAML = new GitHubActionsRoot
             {
                 name = "CI",
-                on = new string[] { "push" },
+                on = new Core.GitHubActions.Trigger
+                {
+                    push = new TriggerDetail
+                    {
+                        branches = new string[] { "master" }
+                    }
+                },
                 jobs = new Dictionary<string, Core.GitHubActions.Job>
                 {
                     {
@@ -93,7 +99,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             Assert.IsTrue(yaml != null);
         }
 
-      
+
         //[TestMethod]
         //public void TestSampleAzurePipelineObjectToYaml()
         //{

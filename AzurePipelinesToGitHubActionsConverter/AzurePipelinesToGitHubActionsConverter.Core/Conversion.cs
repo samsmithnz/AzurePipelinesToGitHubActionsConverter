@@ -20,14 +20,14 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
         {
             //Triggers are hard, as there are two data types that can exist, so we need to go with the most common type and handle the less common type with generics
             AzurePipelinesRoot<string[]> azurePipelineWithSimpleTrigger = null;
-            AzurePipelinesRoot<Trigger> azurePipelineWithComplexTrigger = null;
+            AzurePipelinesRoot<AzurePipelines.Trigger> azurePipelineWithComplexTrigger = null;
             try
             {
                 azurePipelineWithSimpleTrigger = ReadYamlFile<AzurePipelinesRoot<string[]>>(input);
             }
             catch (Exception)
             {
-                azurePipelineWithComplexTrigger = ReadYamlFile<AzurePipelinesRoot<Trigger>>(input);
+                azurePipelineWithComplexTrigger = ReadYamlFile<AzurePipelinesRoot<AzurePipelines.Trigger>>(input);
             }
             _variableList = new List<string>();
 
@@ -42,7 +42,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
             }
             else if (azurePipelineWithComplexTrigger != null)
             {
-                AzurePipelinesProcessing<Trigger> processing = new AzurePipelinesProcessing<Trigger>();
+                AzurePipelinesProcessing<AzurePipelines.Trigger> processing = new AzurePipelinesProcessing<AzurePipelines.Trigger>();
                 gitHubActions = processing.ProcessPipeline(azurePipelineWithComplexTrigger, null, azurePipelineWithComplexTrigger.trigger);
 
                 _variableList.AddRange(processing.VariableList);
@@ -51,9 +51,6 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
             if (gitHubActions != null)
             {
                 string yaml = WriteYAMLFile<GitHubActionsRoot>(gitHubActions);
-
-                //TODO: Resolve Sequence.Flow issue for on-push array to be on a single line (https://github.com/aaubry/YamlDotNet/issues/9)
-                yaml = yaml.Replace("on:" + Environment.NewLine + "- push", "on: [push]");
 
                 //Fix some variables for serialization, the '-' character is not valid in property names, and some of the YAML standard uses reserved words (e.g. if)
                 yaml = PrepareYamlPropertiesForGitHubSerialization(yaml);
@@ -75,6 +72,9 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
             yaml = yaml.Replace("runs-on", "runs_on");
             yaml = yaml.Replace("if", "_if");
             yaml = yaml.Replace("timeout-minutes", "timeout_minutes");
+            yaml = yaml.Replace("pull-request", "pull_request");
+            yaml = yaml.Replace("branches-ignore", "branches_ignore");
+            yaml = yaml.Replace("paths-ignore", "paths_ignore");
 
             return ReadYamlFile<GitHubActionsRoot>(yaml);
         }
@@ -84,6 +84,9 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
             yaml = yaml.Replace("runs_on", "runs-on");
             yaml = yaml.Replace("_if", "if");
             yaml = yaml.Replace("timeout_minutes", "timeout-minutes");
+            yaml = yaml.Replace("pull_request", "pull-request");
+            yaml = yaml.Replace("branches_ignore", "branches-ignore");
+            yaml = yaml.Replace("paths_ignore", "paths-ignore");
             return yaml;
         }
 
