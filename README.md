@@ -3,13 +3,25 @@ A project to create a conversion tool to make migrations between Azure Pipelines
 
 Current build: ![](https://github.com/samsmithnz/AzurePipelinesToGitHubActionsConverter/workflows/CI/badge.svg)
 
+As GitHub Actions becomes more popular, it's clear that a migration tool will be useful to move workloads to GitHub. 
+
+# How to use
+In the future we will create a website for ease of converting results. 
+Today, you need to paste in your yaml to the text in the console application, "AzurePipelinesToGitHubActionsConverter.ConsoleApp"
+
+# How this works
 **Currently this only supports one-way migrations from Azure Pipelines to GitHub Actions. Also note that this is not translating steps at this time, just translating the infrastructure around it. Check the [issues](https://github.com/samsmithnz/AzurePipelinesToGitHubActionsConverter/issues) for incomplete items, or the TODO's in the source code.**
+ 
+Made with help from https://github.com/aaubry/YamlDotNet and https://en.wikipedia.org/wiki/YAML.
+- Azure Pipelines YAML docs: https://docs.microsoft.com/en-us/azure/devops/pipelines/yaml-schema?view=azure-devops&tabs=schema
+- GitHub Actions YAML docs: https://help.github.com/en/articles/workflow-syntax-for-github-actions#jobsjob_idstepsuses
+
  
 Yaml can be challenging. The wikipedia page lays out the rules nicely, but when we are talking about converting yaml to C#, there are a few things to know
 
 1. Yaml is wack. The white spaces will destroy you, as the errors returned are often not helpful at all. Take lots of breaks.
 2. Use a good editor - Visual Studio Code has a decent YAML extension (https://marketplace.visualstudio.com/items?itemName=docsmsft.docs-yaml), or if using Visual Studio, enable spaces with CTRL+R,CTRL+W
-3. String arrays (string[]) are useful for lists (e.g) -job. Note both of the following pieces of code for a triggers are effectively the same 
+3. String arrays (string[]) are useful for lists (e.g -job). Note both of the following pieces of code for triggers are effectively the same (although our serializer does not support the single line 'sequence flow' format)
 ```YAML
 trigger: [master,develop]
 
@@ -23,7 +35,7 @@ variables:
   MY_VAR: 'my value'
   ANOTHER_VAR: 'another value'
 ```
-The C# definition for this looks like:
+The C# definition for a dictonary looks like:
 ```C#
 Dictionary<string, string> variables = new Dictionary<string, string>
 {
@@ -45,7 +57,9 @@ public Pool pool { get; set; }
 ```
 
 ## Architecture
-Currently a .NET Standard 2.0 class that is used by a MSTEST project for tests, and a .NET Core 3.0 console app
+The core functionality is a .NET Standard 2.1 class, "AzurePipelinesToGitHubActionsConverter.Core" 
+- There is a .NET CORE 3.0 MSTEST project for tests, "AzurePipelinesToGitHubActionsConverter.Tests" 
+- There is a .NET CORE 3.0 console app for running specific workloads, "AzurePipelinesToGitHubActionsConverter.ConsoleApp" 
 
 ## Example: 
 The Azure Pipelines YAML to build a dotnet application on ubuntu:
@@ -67,7 +81,10 @@ jobs:
 ```
 In GitHub Actions:
 ```YAML
-on: [push]
+on: 
+  push:
+    branches:
+	- master
 env:
   buildConfiguration: Release
 jobs:
