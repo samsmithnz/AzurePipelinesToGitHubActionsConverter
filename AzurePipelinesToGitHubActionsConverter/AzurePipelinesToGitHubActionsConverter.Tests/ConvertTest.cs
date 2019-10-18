@@ -145,6 +145,33 @@ trigger:
                         "    - features/experimental/*" + Environment.NewLine +
                         "    paths-ignore:" + Environment.NewLine +
                         "    - README.md" + Environment.NewLine);
+        } 
+        
+        [TestMethod]
+        public void TestTriggerComplexPRWithIgnoresString()
+        {
+            //Arrange
+            string input = @"
+pr:
+  batch: true
+  branches:
+    exclude:
+    - features/experimental/*
+  paths:
+    exclude:
+    - README.md";
+            Conversion conversion = new Conversion();
+
+            //Act
+            string output = conversion.ConvertAzurePipelineToGitHubAction(input);
+
+            //Assert
+            Assert.AreEqual(output, "on:" + Environment.NewLine +
+                        "  pull-request:" + Environment.NewLine +
+                        "    branches-ignore:" + Environment.NewLine +
+                        "    - features/experimental/*" + Environment.NewLine +
+                        "    paths-ignore:" + Environment.NewLine +
+                        "    - README.md" + Environment.NewLine);
         }
 
         [TestMethod]
