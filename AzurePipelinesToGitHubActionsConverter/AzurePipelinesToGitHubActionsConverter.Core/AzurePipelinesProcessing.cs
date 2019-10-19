@@ -47,7 +47,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                     {
                         gitHubActions.on.pull_request = pr.pull_request;
                     }
-                    
+
                 }
             }
 
@@ -278,15 +278,99 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                 //Translate the other steps
                 for (int i = adjustment; i < steps.Length + adjustment; i++)
                 {
-                    newSteps[i] = new GitHubActions.Step
-                    {
-                        name = steps[i - adjustment].displayName,
-                        run = steps[i - adjustment].script
-                    };
+                    newSteps[i] = ProcessStep(steps[i - adjustment]);
                 }
             }
 
             return newSteps;
+        }
+
+        private GitHubActions.Step ProcessStep(AzurePipelines.Step step)
+        {
+
+            if (step.task != null)
+            {
+                //Pipelines
+                //- task: UseDotNet@2
+                //  displayName: 'Use .NET Core sdk'
+                //  inputs:
+                //    packageType: sdk
+                //    version: 2.2.203
+                //    installationPath: $(Agent.ToolsDirectory)/dotnet
+
+                //Actions
+                //- uses: actions/setup-dotnet@v1
+                //  with:
+                //    dotnet-version: '2.2.103' # SDK Version to use.
+
+                string taskName;
+                if (step.task == "UseDotNet@2")
+                {
+                    taskName = "actions/setup-dotnet@v1";
+                }
+                else if (step.task == "PowerShell@2")
+                {
+                    return CreateScript("powershell", step);
+                }
+                else
+                {
+                    taskName = "***Unknown task***";
+                }
+
+                return new GitHubActions.Step
+                {
+                    name = step.displayName,
+                    uses = taskName,
+                    with = step.inputs
+                };
+            }
+            else if (step.script != null)
+            {
+                return new GitHubActions.Step
+                {
+                    name = step.displayName,
+                    run = step.script,
+                    with = step.inputs
+                };
+            }
+            else if (step.pwsh != null)
+            {
+                return CreateScript("pwsh", step);
+            }
+            else if (step.powershell != null)
+            {
+                return CreateScript("pwsh", step);
+            }
+            else if (step.bash != null)
+            {
+                return CreateScript("bash", step);
+            }
+            else
+            {
+                return new GitHubActions.Step
+                {
+                    name = "This step is not currently supported: " + step.displayName
+                };
+            }
+        }
+
+        private GitHubActions.Step CreateScript(string shellType, AzurePipelines.Step step)
+        {
+            GitHubActions.Step gitHubStep = new GitHubActions.Step
+            {
+                name = step.displayName,
+                run = step.script,
+                shell = shellType//,
+                //with = step.inputs
+            };
+            if (gitHubStep.run == null)
+            {
+                string value;
+                step.inputs.TryGetValue("script", out value);
+                gitHubStep.run = value;
+            }
+
+            return gitHubStep;
         }
     }
 }

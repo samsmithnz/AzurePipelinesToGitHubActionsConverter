@@ -90,6 +90,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
             yaml = yaml.Replace("branches_ignore", "branches-ignore");
             yaml = yaml.Replace("paths_ignore", "paths-ignore");
             yaml = yaml.Replace("tags_ignore", "tags-ignore");
+            yaml = yaml.Replace(">-", "|"); //Replace a weird artifact in scripts
             return yaml;
         }
 
