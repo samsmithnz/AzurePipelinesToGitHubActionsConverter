@@ -15,9 +15,17 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.GitHubActions
         //    - '**.js'
         //    paths-ignore:
         //    - 'docs/**'
-        public string[] branches {get;set;}
-        public string[] branches_ignore { get;set;}
-        public string[] paths {get;set;}
-        public string[] paths_ignore {get;set;}
+        //    tags:        
+        //    - v1             
+        //    - v1.*           
+        //    tags-ignore:        
+        //    - v1             
+        //    - v1.*           
+        public string[] branches { get; set; }
+        public string[] branches_ignore { get; set; }
+        public string[] paths { get; set; }
+        public string[] paths_ignore { get; set; }
+        public string[] tags { get; set; }
+        public string[] tags_ignore { get; set; }
     }
 }

@@ -75,6 +75,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
             yaml = yaml.Replace("pull-request", "pull_request");
             yaml = yaml.Replace("branches-ignore", "branches_ignore");
             yaml = yaml.Replace("paths-ignore", "paths_ignore");
+            yaml = yaml.Replace("tags-ignore", "tags_ignore");
 
             return ReadYamlFile<GitHubActionsRoot>(yaml);
         }
@@ -87,6 +88,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
             yaml = yaml.Replace("pull_request", "pull-request");
             yaml = yaml.Replace("branches_ignore", "branches-ignore");
             yaml = yaml.Replace("paths_ignore", "paths-ignore");
+            yaml = yaml.Replace("tags_ignore", "tags-ignore");
             return yaml;
         }
 

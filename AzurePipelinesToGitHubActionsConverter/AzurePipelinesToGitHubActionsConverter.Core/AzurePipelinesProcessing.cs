@@ -57,11 +57,11 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                 gitHubActions.env = ProcessVariables(azurePipeline.variables);
             }
 
-            //Stages
-            if (azurePipeline.stages != null)
-            {
-                //TODO: Stages are not yet supported in GitHub actions (I think?)
-            }
+            ////Stages
+            //if (azurePipeline.stages != null)
+            //{
+            //    //TODO: Stages are not yet supported in GitHub actions (I think?)
+            //}
 
             //Jobs (when no stages are defined)
             if (azurePipeline.jobs != null)
@@ -128,6 +128,17 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                     push.paths_ignore = trigger.paths.exclude;
                 }
             }
+            if (trigger.tags != null)
+            {
+                if (trigger.tags.include != null)
+                {
+                    push.tags = trigger.tags.include;
+                }
+                if (trigger.tags.exclude != null)
+                {
+                    push.tags_ignore = trigger.tags.exclude;
+                }
+            }
 
             return new GitHubActions.Trigger
             {
@@ -160,6 +171,17 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                 if (pr.paths.exclude != null)
                 {
                     pullRequest.paths_ignore = pr.paths.exclude;
+                }
+            }
+            if (pr.tags != null)
+            {
+                if (pr.tags.include != null)
+                {
+                    pullRequest.tags = pr.tags.include;
+                }
+                if (pr.tags.exclude != null)
+                {
+                    pullRequest.tags_ignore = pr.tags.exclude;
                 }
             }
 

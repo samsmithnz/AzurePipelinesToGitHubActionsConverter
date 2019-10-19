@@ -26,155 +26,6 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
         }
 
         [TestMethod]
-        public void TestTriggerSimpleString()
-        {
-            //Arrange
-            string input = "trigger:" + Environment.NewLine +
-                           "- master";
-            Conversion conversion = new Conversion();
-
-            //Act
-            string output = conversion.ConvertAzurePipelineToGitHubAction(input);
-
-            //Assert
-            Assert.AreEqual(output, "on:" + Environment.NewLine +
-                                    "  push:" + Environment.NewLine +
-                                    "    branches:" + Environment.NewLine +
-                                    "    - master" + Environment.NewLine);
-        }
-
-        [TestMethod]
-        public void TestTriggerSimpleWithMultipleBranchesString()
-        {
-            //Arrange
-            string input = "trigger:" + Environment.NewLine +
-                            "- master" + Environment.NewLine +
-                            "- develop";
-            Conversion conversion = new Conversion();
-
-            //Act
-            string output = conversion.ConvertAzurePipelineToGitHubAction(input);
-
-            //Assert
-            Assert.AreEqual(output, "on:" + Environment.NewLine +
-                                    "  push:" + Environment.NewLine +
-                                    "    branches:" + Environment.NewLine +
-                                    "    - master" + Environment.NewLine +
-                                    "    - develop" + Environment.NewLine);
-        }
-
-        [TestMethod]
-        public void TestTriggerComplexString()
-        {
-            //Arrange
-            string input = @"
-trigger:
-  batch: true
-  branches:
-    include:
-    - features/*
-    exclude:
-    - features/experimental/*
-  paths:
-    include:
-    - README.md";
-            Conversion conversion = new Conversion();
-
-            //Act
-            string output = conversion.ConvertAzurePipelineToGitHubAction(input);
-
-            //Assert
-            Assert.AreEqual(output, "on:" + Environment.NewLine +
-                        "  push:" + Environment.NewLine +
-                        "    branches:" + Environment.NewLine +
-                        "    - features/*" + Environment.NewLine +
-                        "    paths:" + Environment.NewLine +
-                        "    - README.md" + Environment.NewLine);
-        }
-
-        [TestMethod]
-        public void TestTriggerComplexWithPRString()
-        {
-            //Arrange
-            string input = @"
-pr:
-  branches:
-    include:
-    - features/*
-    exclude:
-    - features/experimental/*
-  paths:
-    include:
-    - README.md";
-            Conversion conversion = new Conversion();
-
-            //Act
-            string output = conversion.ConvertAzurePipelineToGitHubAction(input);
-
-            //Assert
-            Assert.AreEqual(output, "on:" + Environment.NewLine +
-                        "  pull-request:" + Environment.NewLine +
-                        "    branches:" + Environment.NewLine +
-                        "    - features/*" + Environment.NewLine +
-                        "    paths:" + Environment.NewLine +
-                        "    - README.md" + Environment.NewLine);
-        }
-
-        [TestMethod]
-        public void TestTriggerComplexWithIgnoresString()
-        {
-            //Arrange
-            string input = @"
-trigger:
-  batch: true
-  branches:
-    exclude:
-    - features/experimental/*
-  paths:
-    exclude:
-    - README.md";
-            Conversion conversion = new Conversion();
-
-            //Act
-            string output = conversion.ConvertAzurePipelineToGitHubAction(input);
-
-            //Assert
-            Assert.AreEqual(output, "on:" + Environment.NewLine +
-                        "  push:" + Environment.NewLine +
-                        "    branches-ignore:" + Environment.NewLine +
-                        "    - features/experimental/*" + Environment.NewLine +
-                        "    paths-ignore:" + Environment.NewLine +
-                        "    - README.md" + Environment.NewLine);
-        } 
-        
-        [TestMethod]
-        public void TestTriggerComplexPRWithIgnoresString()
-        {
-            //Arrange
-            string input = @"
-pr:
-  batch: true
-  branches:
-    exclude:
-    - features/experimental/*
-  paths:
-    exclude:
-    - README.md";
-            Conversion conversion = new Conversion();
-
-            //Act
-            string output = conversion.ConvertAzurePipelineToGitHubAction(input);
-
-            //Assert
-            Assert.AreEqual(output, "on:" + Environment.NewLine +
-                        "  pull-request:" + Environment.NewLine +
-                        "    branches-ignore:" + Environment.NewLine +
-                        "    - features/experimental/*" + Environment.NewLine +
-                        "    paths-ignore:" + Environment.NewLine +
-                        "    - README.md" + Environment.NewLine);
-        }
-
-        [TestMethod]
         public void TestInvalidString()
         {
             //Arrange
@@ -357,6 +208,7 @@ jobs:
   displayName: Build job
   pool: 
     vmImage: ubuntu-latest
+  timeoutInMinutes: 23
   variables:
     buildConfiguration: Debug
     myJobVariable: 'data'
@@ -393,6 +245,7 @@ jobs:
   Build:
     name: Build job
     runs-on: ubuntu-latest
+    timeout-minutes: 23
     env:
       buildConfiguration: Debug
       myJobVariable: data
