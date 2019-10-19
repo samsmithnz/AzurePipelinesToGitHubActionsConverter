@@ -20,9 +20,9 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.AzurePipelines
         //TODO: add resources support
         //public string resources { get; set; }
 
-            //Trigger is a complicated case, where it can be a simple list, or a more complex trigger object
-            //To solve this, we added a generic to try to convert to a string[], and failing that, try to convert with Trigger
-            //All outputs will return the complex version
+        //Trigger is a complicated case, where it can be a simple list, or a more complex trigger object
+        //To solve this, we added a generic to try to convert to a string[], and failing that, try to convert with Trigger
+        //All outputs will return the complex version
         public T trigger { get; set; }
         //public string[] trigger { get; set; } //https://docs.microsoft.com/en-us/azure/devops/pipelines/yaml-schema?view=azure-devops&tabs=schema#triggers
         //public Trigger trigger { get; set; }

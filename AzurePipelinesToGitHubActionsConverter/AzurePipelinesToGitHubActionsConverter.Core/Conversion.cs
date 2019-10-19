@@ -48,6 +48,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                 _variableList.AddRange(processing.VariableList);
             }
 
+            //Create the YAML and apply some adjustments
             if (gitHubActions != null)
             {
                 string yaml = WriteYAMLFile<GitHubActionsRoot>(gitHubActions);
@@ -75,6 +76,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
             yaml = yaml.Replace("pull-request", "pull_request");
             yaml = yaml.Replace("branches-ignore", "branches_ignore");
             yaml = yaml.Replace("paths-ignore", "paths_ignore");
+            yaml = yaml.Replace("tags-ignore", "tags_ignore");
 
             return ReadYamlFile<GitHubActionsRoot>(yaml);
         }
@@ -87,6 +89,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
             yaml = yaml.Replace("pull_request", "pull-request");
             yaml = yaml.Replace("branches_ignore", "branches-ignore");
             yaml = yaml.Replace("paths_ignore", "paths-ignore");
+            yaml = yaml.Replace("tags_ignore", "tags-ignore");
             return yaml;
         }
 
@@ -96,11 +99,15 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
             {
                 //Replace variables with the format "$(MyVar)" with the format "$MyVar"
                 yaml = yaml.Replace("$(" + item + ")", "$" + item);
+                yaml = yaml.Replace("$( " + item + " )", "$" + item);
+                yaml = yaml.Replace("$(" + item + " )", "$" + item);
+                yaml = yaml.Replace("$( " + item + ")", "$" + item);
             }
 
             return yaml;
         }
 
+        //Read in a YAML file and convert it to a T object
         public T ReadYamlFile<T>(string yaml)
         {
             IDeserializer deserializer = new DeserializerBuilder()
@@ -110,6 +117,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
             return yamlObject;
         }
 
+        //Write a YAML file using the T object
         public string WriteYAMLFile<T>(T obj)
         {
             //Convert the object into a YAML document

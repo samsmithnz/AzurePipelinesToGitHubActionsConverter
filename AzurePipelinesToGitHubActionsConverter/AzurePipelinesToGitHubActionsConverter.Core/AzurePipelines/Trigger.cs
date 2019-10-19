@@ -5,22 +5,24 @@ using System.Text;
 namespace AzurePipelinesToGitHubActionsConverter.Core.AzurePipelines
 {
     //trigger:
-    //  batch: true
+    //  batch: boolean # batch changes if true (the default); start a new build for every push if false
     //  branches:
-    //    include:
-    //    - features/*
-    //    exclude:
-    //    - features/experimental/*
+    //    include: [ string ] # branch names which will trigger a build
+    //    exclude: [ string ] # branch names which will not
+    //  tags:
+    //    include: [ string ] # tag names which will trigger a build
+    //    exclude: [ string ] # tag names which will not
     //  paths:
-    //    exclude:
-    //    - README.md
+    //    include: [ string ] # file paths which must match to trigger a build
+    //    exclude: [ string ] # file paths which will not trigger a build
     public class Trigger
     {
-        //TODO: Investigate where the batch property is in actions
+        //Note: There is no batch property in actions
         public string batch { get; set; }
-        //TODO: Investigate where the autoCancel property is in actions
+        //Note: There is no autoCancel property in actions
         public string autoCancel { get; set; }
         public IncludeExclude branches { get; set; }
+        public IncludeExclude tags { get; set; }
         public IncludeExclude paths { get; set; }
     }
 }
