@@ -48,6 +48,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                 _variableList.AddRange(processing.VariableList);
             }
 
+            //Create the YAML and apply some adjustments
             if (gitHubActions != null)
             {
                 string yaml = WriteYAMLFile<GitHubActionsRoot>(gitHubActions);
@@ -98,11 +99,15 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
             {
                 //Replace variables with the format "$(MyVar)" with the format "$MyVar"
                 yaml = yaml.Replace("$(" + item + ")", "$" + item);
+                yaml = yaml.Replace("$( " + item + " )", "$" + item);
+                yaml = yaml.Replace("$(" + item + " )", "$" + item);
+                yaml = yaml.Replace("$( " + item + ")", "$" + item);
             }
 
             return yaml;
         }
 
+        //Read in a YAML file and convert it to a T object
         public T ReadYamlFile<T>(string yaml)
         {
             IDeserializer deserializer = new DeserializerBuilder()
@@ -112,6 +117,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
             return yamlObject;
         }
 
+        //Write a YAML file using the T object
         public string WriteYAMLFile<T>(T obj)
         {
             //Convert the object into a YAML document

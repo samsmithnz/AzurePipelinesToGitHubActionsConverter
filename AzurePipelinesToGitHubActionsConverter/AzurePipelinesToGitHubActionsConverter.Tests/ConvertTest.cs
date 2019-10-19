@@ -120,6 +120,52 @@ jobs:
         }
 
         [TestMethod]
+        public void TestVariablesWithSpaces()
+        {
+            //Arrange
+            string input = @"
+trigger:
+- master
+variables:
+  buildConfiguration: Release
+jobs:
+- job: Build
+  displayName: Build job
+  pool: 
+    vmImage: ubuntu-latest
+  variables:
+    myJobVariable: 'data'
+  steps: 
+  - script: dotnet build WebApplication1/WebApplication1.Service/WebApplication1.Service.csproj --configuration $(buildConfiguration) 
+    displayName: dotnet build $( myJobVariable )";
+            Conversion conversion = new Conversion();
+
+            //Act
+            string output = conversion.ConvertAzurePipelineToGitHubAction(input);
+
+            //Assert
+            string expectedOutput = @"
+on:
+  push:
+    branches:
+    - master
+env:
+  buildConfiguration: Release
+jobs:
+  Build:
+    name: Build job
+    runs-on: ubuntu-latest
+    env:
+      myJobVariable: data
+    steps:
+    - uses: actions/checkout@v1
+    - name: dotnet build $myJobVariable
+      run: dotnet build WebApplication1/WebApplication1.Service/WebApplication1.Service.csproj --configuration $buildConfiguration
+";
+            Assert.AreEqual(Environment.NewLine + output, expectedOutput);
+        }
+
+        [TestMethod]
         public void TestGitHubActionYamlToObject()
         {
             //Arrange

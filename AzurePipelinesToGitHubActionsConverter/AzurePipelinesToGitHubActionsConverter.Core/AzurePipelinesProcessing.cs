@@ -90,6 +90,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
             return gitHubActions;
         }
 
+        //Process a simple trigger, e.g. "Trigger: [master, develop]"
         private GitHubActions.Trigger ProcessSimpleTrigger(string[] trigger)
         {
             AzurePipelines.Trigger newTrigger = new AzurePipelines.Trigger
@@ -102,10 +103,12 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
             return ProcessComplexTrigger(newTrigger);
         }
 
+        //Process a complex trigger, using the Trigger object
         private GitHubActions.Trigger ProcessComplexTrigger(AzurePipelines.Trigger trigger)
         {
             //Note: as of 18-Oct, you receive an error if you try to post both a "branches" and a "ignore-branches", or a "paths and a ignore-paths". You can only have one or the other...
             TriggerDetail push = new TriggerDetail();
+            //process branches
             if (trigger.branches != null)
             {
                 if (trigger.branches.include != null)
@@ -117,6 +120,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                     push.branches_ignore = trigger.branches.exclude;
                 }
             }
+            //process paths
             if (trigger.paths != null)
             {
                 if (trigger.paths.include != null)
@@ -128,6 +132,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                     push.paths_ignore = trigger.paths.exclude;
                 }
             }
+            //process tags
             if (trigger.tags != null)
             {
                 if (trigger.tags.include != null)
@@ -147,10 +152,11 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
 
         }
 
+        //process the pull request
         private GitHubActions.Trigger ProcessPullRequest(AzurePipelines.Trigger pr)
         {
-            //Process the PR
             TriggerDetail pullRequest = new TriggerDetail();
+            //process branches
             if (pr.branches != null)
             {
                 if (pr.branches.include != null)
@@ -162,6 +168,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                     pullRequest.branches_ignore = pr.branches.exclude;
                 }
             }
+            //process apths
             if (pr.paths != null)
             {
                 if (pr.paths.include != null)
@@ -173,6 +180,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                     pullRequest.paths_ignore = pr.paths.exclude;
                 }
             }
+            //process tags
             if (pr.tags != null)
             {
                 if (pr.tags.include != null)
@@ -191,6 +199,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
             };
         }
 
+        //process the build pool/agent
         private string ProcessPool(Pool pool)
         {
             string newPool = null;
@@ -201,6 +210,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
             return newPool;
         }
 
+        //process all variables
         private Dictionary<string, string> ProcessVariables(Dictionary<string, string> variables)
         {
             //update variables from the $(variableName) format to ${{variableName}} format, by piping them into a list for replacement later.
@@ -212,6 +222,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
             return variables;
         }
 
+        //process the jobs
         private Dictionary<string, GitHubActions.Job> ProcessJobs(AzurePipelines.Job[] jobs)
         {
             //A dictonary is perfect here, as the job_id (a string), must be unique in the action
@@ -241,6 +252,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
             };
         }
 
+        //process the steps
         private GitHubActions.Step[] ProcessSteps(AzurePipelines.Step[] steps, bool addCheckoutStep = true)
         {
             //TODO: Add support to actually translate Azure Pipeline steps to GitHub Action steps. This has the potential to be the biggest task here due to the possible number of permutations.
@@ -254,6 +266,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                 }
                 newSteps = new GitHubActions.Step[steps.Length + adjustment]; //Add 1 for the check out step
 
+                //Add the check out step to get the code
                 if (addCheckoutStep == true)
                 {
                     newSteps[0] = new GitHubActions.Step
