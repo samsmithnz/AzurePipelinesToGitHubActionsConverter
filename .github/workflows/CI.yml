@@ -21,4 +21,4 @@ jobs:
       uses: actions/upload-artifact@master
       with:
         name: console exe
-        path: ${GITHUB_WORKSPACE}/AzurePipelinesToGitHubActionsConverter/AzurePipelinesToGitHubActionsConverter.ConsoleApp/bin/Release/netcoreapp3.0
+        path: AzurePipelinesToGitHubActionsConverter/AzurePipelinesToGitHubActionsConverter.ConsoleApp/bin/Release/netcoreapp3.0
