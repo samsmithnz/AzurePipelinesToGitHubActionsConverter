@@ -1,13 +1,15 @@
 name: CI
 
 on: [push, pull_request]
+env: 
+  vmImage: ubuntu-latest
 
 jobs:
   build:
     strategy:
       matrix:
         os: [ubuntu-latest]
-    runs-on: ${{ matrix.os }}    
+    runs-on: ${{ vmImage }}    
     steps:
     - uses: actions/checkout@v1
     #- name: Restore with dotnet
