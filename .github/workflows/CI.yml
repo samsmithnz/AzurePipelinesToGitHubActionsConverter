@@ -11,6 +11,10 @@ jobs:
     
     steps:
     - uses: actions/checkout@v1
+    - name: Restore with dotnet
+      run: | 
+        dotnet restore AzurePipelinesToGitHubActionsConverter/AzurePipelinesToGitHubActionsConverter.ConsoleApp/AzurePipelinesToGitHubActionsConverter.ConsoleApp.csproj --configuration Release
+        dotnet restore AzurePipelinesToGitHubActionsConverter/AzurePipelinesToGitHubActionsConverter.Tests/AzurePipelinesToGitHubActionsConverter.Tests.csproj --configuration Release
     - name: Build with dotnet
       run: dotnet build AzurePipelinesToGitHubActionsConverter/AzurePipelinesToGitHubActionsConverter.Tests/AzurePipelinesToGitHubActionsConverter.Tests.csproj --configuration Release
     - name: Test with dotnet
