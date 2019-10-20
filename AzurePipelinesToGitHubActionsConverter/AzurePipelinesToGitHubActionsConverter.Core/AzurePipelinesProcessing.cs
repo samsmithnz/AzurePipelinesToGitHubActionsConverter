@@ -57,11 +57,13 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                 gitHubActions.env = ProcessVariables(azurePipeline.variables);
             }
 
-            ////Stages
-            //if (azurePipeline.stages != null)
-            //{
-            //    //TODO: Stages are not yet supported in GitHub actions (I think?)
-            //}
+            //Stages
+            if (azurePipeline.stages != null)
+            {
+                //TODO: Stages are not yet supported in GitHub actions (I think?)
+                //We are just going to take the first stage and use it's jobs
+                azurePipeline.jobs = azurePipeline.stages[0].jobs;
+            }
 
             //Jobs (when no stages are defined)
             if (azurePipeline.jobs != null)
@@ -213,10 +215,13 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
         //process all variables
         private Dictionary<string, string> ProcessVariables(Dictionary<string, string> variables)
         {
-            //update variables from the $(variableName) format to ${{variableName}} format, by piping them into a list for replacement later.
-            foreach (string item in variables.Keys)
+            if (variables != null)
             {
-                VariableList.Add(item);
+                //update variables from the $(variableName) format to ${{variableName}} format, by piping them into a list for replacement later.
+                foreach (string item in variables.Keys)
+                {
+                    VariableList.Add(item);
+                }
             }
 
             return variables;
@@ -285,44 +290,72 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
             return newSteps;
         }
 
+        //This section is very much in Alpha. It has long way to go.
         private GitHubActions.Step ProcessStep(AzurePipelines.Step step)
         {
 
             if (step.task != null)
             {
-                //Pipelines
-                //- task: UseDotNet@2
-                //  displayName: 'Use .NET Core sdk'
-                //  inputs:
-                //    packageType: sdk
-                //    version: 2.2.203
-                //    installationPath: $(Agent.ToolsDirectory)/dotnet
-
-                //Actions
-                //- uses: actions/setup-dotnet@v1
-                //  with:
-                //    dotnet-version: '2.2.103' # SDK Version to use.
-
-                string taskName;
-                if (step.task == "UseDotNet@2")
+                string taskName = null;
+                GitHubActions.Step gitHubStep = null;
+                switch (step.task)
                 {
-                    taskName = "actions/setup-dotnet@v1";
+                    case "CmdLine@2":
+                        gitHubStep = CreateScript("cmd", step);
+                        break;
+                    case "CopyFiles@2":
+                        //Use PowerShell to copy files
+                        step.script = "Copy " + step.inputs["SourceFolder"] + "/" + step.inputs["Contents"] + " " + step.inputs["TargetFolder"];
+                        gitHubStep = CreateScript("powershell", step);
+                        break;
+                    case "DotNetCoreCLI@2":
+                        gitHubStep = CreateDotNetCommand(step);
+                        break;
+                    case "PowerShell@2":
+                        gitHubStep = CreateScript("powershell", step);
+                        break;
+                    case "UseDotNet@2":
+                        taskName = "actions/setup-dotnet@v1";
+                        gitHubStep =  new GitHubActions.Step
+                        {
+                            name = step.displayName,
+                            uses = taskName,
+                            with = new Dictionary<string, string> 
+                            {
+                                {"dotnet-version", step.inputs["version"] }
+                            }
+                        };
+                        //Pipelines
+                        //- task: UseDotNet@2
+                        //  displayName: 'Use .NET Core sdk'
+                        //  inputs:
+                        //    packageType: sdk
+                        //    version: 2.2.203
+                        //    installationPath: $(Agent.ToolsDirectory)/dotnet
+
+                        //Actions
+                        //- uses: actions/setup-dotnet@v1
+                        //  with:
+                        //    dotnet-version: '2.2.103' # SDK Version to use.
+                        break;
+                    default:
+                        taskName = "***unknown task***" + step.task;
+                        break;
                 }
-                else if (step.task == "PowerShell@2")
+
+                if (gitHubStep == null)
                 {
-                    return CreateScript("powershell", step);
+                    return new GitHubActions.Step
+                    {
+                        name = step.displayName,
+                        uses = taskName,
+                        with = step.inputs
+                    };
                 }
                 else
                 {
-                    taskName = "***Unknown task***";
+                    return gitHubStep;
                 }
-
-                return new GitHubActions.Step
-                {
-                    name = step.displayName,
-                    uses = taskName,
-                    with = step.inputs
-                };
             }
             else if (step.script != null)
             {
@@ -349,9 +382,27 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
             {
                 return new GitHubActions.Step
                 {
-                    name = "This step is not currently supported: " + step.displayName
+                    name = "***This step is not currently supported***: " + step.displayName
                 };
             }
+        }
+
+        private GitHubActions.Step CreateDotNetCommand(AzurePipelines.Step step)
+        {
+
+            GitHubActions.Step gitHubStep = new GitHubActions.Step
+            {
+                name = step.displayName,
+                run = "dotnet " +
+                    step.inputs["command"] + " " +
+                    step.inputs["projects"] + " " +
+                    step.inputs["arguments"]
+            };
+
+            //Remove the new line characters
+            gitHubStep.run = gitHubStep.run.Replace("\n", "");
+
+            return gitHubStep;
         }
 
         private GitHubActions.Step CreateScript(string shellType, AzurePipelines.Step step)
