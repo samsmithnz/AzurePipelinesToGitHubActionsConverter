@@ -6,9 +6,8 @@ jobs:
   build:
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-2019, windows-latest]
-    runs-on: ${{ matrix.os }}
-    
+        os: [ubuntu-latest]
+    runs-on: ${{ matrix.os }}    
     steps:
     - uses: actions/checkout@v1
     #- name: Restore with dotnet
