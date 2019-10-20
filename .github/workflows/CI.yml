@@ -9,7 +9,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest]
-    runs-on: ${{ env.vmImage }}    
+    runs-on: $vmImage    
     steps:
     - uses: actions/checkout@v1
     #- name: Restore with dotnet
