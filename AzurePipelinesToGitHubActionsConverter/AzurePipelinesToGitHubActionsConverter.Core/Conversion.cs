@@ -14,10 +14,10 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
 {
     public class Conversion
     {
-        private List<string> _variableList;
-
         public string ConvertAzurePipelineToGitHubAction(string input)
         {
+            List<string> variableList = new List<string>();
+
             //Triggers are hard, as there are two data types that can exist, so we need to go with the most common type and handle the less common type with generics
             AzurePipelinesRoot<string[]> azurePipelineWithSimpleTrigger = null;
             AzurePipelinesRoot<AzurePipelines.Trigger> azurePipelineWithComplexTrigger = null;
@@ -29,7 +29,6 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
             {
                 azurePipelineWithComplexTrigger = ReadYamlFile<AzurePipelinesRoot<AzurePipelines.Trigger>>(input);
             }
-            _variableList = new List<string>();
 
             //Generate the github actions
             GitHubActionsRoot gitHubActions = null;
@@ -38,14 +37,14 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                 AzurePipelinesProcessing<string[]> processing = new AzurePipelinesProcessing<string[]>();
                 gitHubActions = processing.ProcessPipeline(azurePipelineWithSimpleTrigger, azurePipelineWithSimpleTrigger.trigger, null);
 
-                _variableList.AddRange(processing.VariableList);
+                variableList.AddRange(processing.VariableList);
             }
             else if (azurePipelineWithComplexTrigger != null)
             {
                 AzurePipelinesProcessing<AzurePipelines.Trigger> processing = new AzurePipelinesProcessing<AzurePipelines.Trigger>();
                 gitHubActions = processing.ProcessPipeline(azurePipelineWithComplexTrigger, null, azurePipelineWithComplexTrigger.trigger);
 
-                _variableList.AddRange(processing.VariableList);
+                variableList.AddRange(processing.VariableList);
             }
 
             //Create the YAML and apply some adjustments
@@ -57,7 +56,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                 yaml = PrepareYamlPropertiesForGitHubSerialization(yaml);
 
                 //update variables from the $(variableName) format to ${{variableName}} format, by piping them into a list for replacement later.
-                yaml = PrepareYamlVariablesForGitHubSerialization(yaml);
+                yaml = PrepareYamlVariablesForGitHubSerialization(yaml, variableList);
 
                 return yaml;
             }
@@ -94,9 +93,9 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
             return yaml;
         }
 
-        private string PrepareYamlVariablesForGitHubSerialization(string yaml)
+        private string PrepareYamlVariablesForGitHubSerialization(string yaml, List<string> variableList)
         {
-            foreach (string item in _variableList)
+            foreach (string item in variableList)
             {
                 //Replace variables with the format "$(MyVar)" with the format "$MyVar"
                 yaml = yaml.Replace("$(" + item + ")", "$" + item);
