@@ -81,6 +81,9 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
         }
         private string PrepareYamlPropertiesForGitHubSerialization(string yaml)
         {
+            //Fix system variables
+            yaml = yaml.Replace("$(build.artifactstagingdirectory)", "${GITHUB_WORKSPACE}");
+
             //Fix some variables that we can't use for property names because the - character is not allowed or it's a reserved word (e.g. if)
             yaml = yaml.Replace("runs_on", "runs-on");
             yaml = yaml.Replace("_if", "if");
@@ -89,7 +92,8 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
             yaml = yaml.Replace("branches_ignore", "branches-ignore");
             yaml = yaml.Replace("paths_ignore", "paths-ignore");
             yaml = yaml.Replace("tags_ignore", "tags-ignore");
-            yaml = yaml.Replace(">-", "|"); //Replace a weird artifact in scripts
+            yaml = yaml.Replace(">-", "|"); //Replace a weird artifact in scripts when converting pipes
+
             return yaml;
         }
 

@@ -170,7 +170,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                     pullRequest.branches_ignore = pr.branches.exclude;
                 }
             }
-            //process apths
+            //process paths
             if (pr.paths != null)
             {
                 if (pr.paths.include != null)
@@ -202,6 +202,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
         }
 
         //process the build pool/agent
+        //TODO: Resolve bug where I can't use a variable for runs-on
         private string ProcessPool(Pool pool)
         {
             string newPool = null;
@@ -315,12 +316,11 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                         gitHubStep = CreateScript("powershell", step);
                         break;
                     case "UseDotNet@2":
-                        taskName = "actions/setup-dotnet@v1";
-                        gitHubStep =  new GitHubActions.Step
+                        gitHubStep = new GitHubActions.Step
                         {
                             name = step.displayName,
-                            uses = taskName,
-                            with = new Dictionary<string, string> 
+                            uses = "actions/setup-dotnet@v1",
+                            with = new Dictionary<string, string>
                             {
                                 {"dotnet-version", step.inputs["version"] }
                             }
@@ -338,6 +338,32 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                         //  with:
                         //    dotnet-version: '2.2.103' # SDK Version to use.
                         break;
+                    case "PublishBuildArtifacts@1":
+                        gitHubStep = new GitHubActions.Step
+                        {
+                            name = step.displayName,
+                            uses = "actions/upload-artifact@master",
+                            with = new Dictionary<string, string>
+                            {
+                                {"path", step.inputs["PathtoPublish"] }
+                            }
+                        };
+                        //In publish task, I we need to delete any usage of build.artifactstagingdirectory variable as it's implied in github actions, and therefore not needed (Adding it adds the path twice)
+                        gitHubStep.with["path"].Replace("$(build.artifactstagingdirectory)", "");
+                        
+                        break;
+                    //# Publish the artifacts
+                    //- task: PublishBuildArtifacts@1
+                    //  displayName: 'Publish Artifact'
+                    //  inputs:
+                    //    PathtoPublish: '$(build.artifactstagingdirectory)'";
+
+                    //- name: publish build artifacts back to GitHub
+                    //  uses: actions/upload-artifact@master
+                    //  with:
+                    //    name: console exe
+                    //    path: /home/runner/work/AzurePipelinesToGitHubActionsConverter/AzurePipelinesToGitHubActionsConverter/AzurePipelinesToGitHubActionsConverter/AzurePipelinesToGitHubActionsConverter.ConsoleApp/bin/Release/netcoreapp3.0
+
                     default:
                         taskName = "***unknown task***" + step.task;
                         break;

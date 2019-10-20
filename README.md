@@ -58,7 +58,7 @@ public Pool pool { get; set; }
 
 ## Architecture
 The core functionality is a .NET Standard 2.1 class, "AzurePipelinesToGitHubActionsConverter.Core" 
-- There is a .NET CORE 3.0 MSTEST project for tests, "AzurePipelinesToGitHubActionsConverter.Tests" 
+- There is a .NET CORE 3.0 mstest project for tests, "AzurePipelinesToGitHubActionsConverter.Tests" 
 - There is a .NET CORE 3.0 console app for running specific workloads, "AzurePipelinesToGitHubActionsConverter.ConsoleApp" 
 
 ## Example: 

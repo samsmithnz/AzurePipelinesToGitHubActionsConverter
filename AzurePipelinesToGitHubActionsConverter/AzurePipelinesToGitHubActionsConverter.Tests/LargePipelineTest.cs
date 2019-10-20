@@ -131,6 +131,11 @@ stages:
             //string expectedOutput = @"";
             Assert.IsTrue(output.IndexOf("unknown") == -1);
             //Assert.AreEqual(Environment.NewLine + output, expectedOutput);
+      //- name: publish build artifacts back to GitHub
+      //  uses: actions/upload-artifact@master
+      //  with:
+      //    name: console exe
+      //    path: /home/runner/work/AzurePipelinesToGitHubActionsConverter/AzurePipelinesToGitHubActionsConverter/AzurePipelinesToGitHubActionsConverter/AzurePipelinesToGitHubActionsConverter.ConsoleApp/bin/Release/netcoreapp3.0
         }
 
     }
