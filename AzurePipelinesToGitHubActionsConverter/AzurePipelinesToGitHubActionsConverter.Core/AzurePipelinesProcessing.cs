@@ -292,6 +292,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
         }
 
         //This section is very much in Alpha. It has long way to go.
+        //TODO: Refactor this into a separate class
         private GitHubActions.Step ProcessStep(AzurePipelines.Step step)
         {
 
@@ -442,8 +443,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
             };
             if (gitHubStep.run == null)
             {
-                string value;
-                step.inputs.TryGetValue("script", out value);
+                step.inputs.TryGetValue("script", out string value);
                 gitHubStep.run = value;
             }
 
