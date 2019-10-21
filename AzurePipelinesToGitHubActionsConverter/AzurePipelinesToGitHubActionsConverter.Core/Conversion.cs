@@ -1,20 +1,13 @@
-﻿using System;
-using System.IO;
-using System.Text;
-using System.Xml;
-using YamlDotNet.RepresentationModel;
+﻿using AzurePipelinesToGitHubActionsConverter.Core.AzurePipelines;
+using AzurePipelinesToGitHubActionsConverter.Core.GitHubActions;
+using System;
 using System.Collections.Generic;
 using YamlDotNet.Serialization;
-using YamlDotNet.Serialization.NamingConventions;
-using AzurePipelinesToGitHubActionsConverter.Core.GitHubActions;
-using AzurePipelinesToGitHubActionsConverter.Core.AzurePipelines;
-using System.Runtime.CompilerServices;
 
 namespace AzurePipelinesToGitHubActionsConverter.Core
 {
     public class Conversion
     {
-        private List<string> _variableList;
         private string _matrixVariableName;
 
         public string ConvertAzurePipelineToGitHubAction(string input)
@@ -40,12 +33,10 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                 AzurePipelinesProcessing<string[]> processing = new AzurePipelinesProcessing<string[]>();
                 gitHubActions = processing.ProcessPipeline(azurePipelineWithSimpleTrigger, azurePipelineWithSimpleTrigger.trigger, null);
 
-                _variableList.AddRange(processing.VariableList);
                 if (processing.MatrixVariableName != null)
                 {
                     _matrixVariableName = processing.MatrixVariableName;
                 }
-            }
                 variableList.AddRange(processing.VariableList);
             }
             else if (azurePipelineWithComplexTrigger != null)
@@ -53,7 +44,6 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                 AzurePipelinesProcessing<AzurePipelines.Trigger> processing = new AzurePipelinesProcessing<AzurePipelines.Trigger>();
                 gitHubActions = processing.ProcessPipeline(azurePipelineWithComplexTrigger, null, azurePipelineWithComplexTrigger.trigger);
 
-                _variableList.AddRange(processing.VariableList);
                 if (processing.MatrixVariableName != null)
                 {
                     _matrixVariableName = processing.MatrixVariableName;
@@ -94,6 +84,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
 
             return ReadYamlFile<GitHubActionsRoot>(yaml);
         }
+
         private string PrepareYamlPropertiesForGitHubSerialization(string yaml)
         {
             //Fix system variables
@@ -118,10 +109,9 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
         {
             if (_matrixVariableName != null)
             {
-                _variableList.Add(_matrixVariableName);
+                variableList.Add(_matrixVariableName);
             }
 
-            foreach (string item in _variableList)
             foreach (string item in variableList)
             {
                 if (item == _matrixVariableName)
