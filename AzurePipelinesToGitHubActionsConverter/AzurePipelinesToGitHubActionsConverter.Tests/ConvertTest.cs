@@ -315,32 +315,7 @@ jobs:
       run: dotnet build WebApplication1/WebApplication1.Service/WebApplication1.Service.csproj --configuration $buildConfiguration
 ";
             Assert.AreEqual(Environment.NewLine + output, expectedOutput);
-        }
-
-        [TestMethod]
-        public void TestStepsWithAzurePipelineYamlToObject()
-        {
-            //Arrange
-            Conversion conversion = new Conversion();
-            string yaml = @"
-trigger:
-- master
-pool:
-  vmImage: ubuntu-latest
-variables:
-  buildConfiguration: Release
-steps:
-- script: dotnet build --configuration $(buildConfiguration) WebApplication1/WebApplication1.Service/WebApplication1.Service.csproj
-  displayName: dotnet build $(buildConfiguration) part 1
-- script: dotnet build --configuration $(buildConfiguration) WebApplication1/WebApplication1.Service/WebApplication1.Service.csproj
-  displayName: dotnet build $(buildConfiguration) part 2";
-
-            //Act
-            string output = conversion.ConvertAzurePipelineToGitHubAction(yaml);
-
-            //Assert
-            Assert.IsTrue(output != null);
-        }
+        }     
 
     }
 }

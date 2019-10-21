@@ -1,24 +1,19 @@
-﻿using System;
-using System.IO;
-using System.Text;
-using System.Xml;
-using YamlDotNet.RepresentationModel;
+﻿using AzurePipelinesToGitHubActionsConverter.Core.AzurePipelines;
+using AzurePipelinesToGitHubActionsConverter.Core.GitHubActions;
+using System;
 using System.Collections.Generic;
 using YamlDotNet.Serialization;
-using YamlDotNet.Serialization.NamingConventions;
-using AzurePipelinesToGitHubActionsConverter.Core.GitHubActions;
-using AzurePipelinesToGitHubActionsConverter.Core.AzurePipelines;
-using System.Runtime.CompilerServices;
 
 namespace AzurePipelinesToGitHubActionsConverter.Core
 {
     public class Conversion
     {
-        private List<string> _variableList;
         private string _matrixVariableName;
 
         public string ConvertAzurePipelineToGitHubAction(string input)
         {
+            List<string> variableList = new List<string>();
+
             //Triggers are hard, as there are two data types that can exist, so we need to go with the most common type and handle the less common type with generics
             AzurePipelinesRoot<string[]> azurePipelineWithSimpleTrigger = null;
             AzurePipelinesRoot<AzurePipelines.Trigger> azurePipelineWithComplexTrigger = null;
@@ -30,7 +25,6 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
             {
                 azurePipelineWithComplexTrigger = ReadYamlFile<AzurePipelinesRoot<AzurePipelines.Trigger>>(input);
             }
-            _variableList = new List<string>();
 
             //Generate the github actions
             GitHubActionsRoot gitHubActions = null;
@@ -39,22 +33,22 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                 AzurePipelinesProcessing<string[]> processing = new AzurePipelinesProcessing<string[]>();
                 gitHubActions = processing.ProcessPipeline(azurePipelineWithSimpleTrigger, azurePipelineWithSimpleTrigger.trigger, null);
 
-                _variableList.AddRange(processing.VariableList);
                 if (processing.MatrixVariableName != null)
                 {
                     _matrixVariableName = processing.MatrixVariableName;
                 }
+                variableList.AddRange(processing.VariableList);
             }
             else if (azurePipelineWithComplexTrigger != null)
             {
                 AzurePipelinesProcessing<AzurePipelines.Trigger> processing = new AzurePipelinesProcessing<AzurePipelines.Trigger>();
                 gitHubActions = processing.ProcessPipeline(azurePipelineWithComplexTrigger, null, azurePipelineWithComplexTrigger.trigger);
 
-                _variableList.AddRange(processing.VariableList);
                 if (processing.MatrixVariableName != null)
                 {
                     _matrixVariableName = processing.MatrixVariableName;
                 }
+                variableList.AddRange(processing.VariableList);
             }
 
             //Create the YAML and apply some adjustments
@@ -66,7 +60,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                 yaml = PrepareYamlPropertiesForGitHubSerialization(yaml);
 
                 //update variables from the $(variableName) format to ${{variableName}} format, by piping them into a list for replacement later.
-                yaml = PrepareYamlVariablesForGitHubSerialization(yaml);
+                yaml = PrepareYamlVariablesForGitHubSerialization(yaml, variableList);
 
                 return yaml;
             }
@@ -90,8 +84,12 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
 
             return ReadYamlFile<GitHubActionsRoot>(yaml);
         }
+
         private string PrepareYamlPropertiesForGitHubSerialization(string yaml)
         {
+            //Fix system variables
+            yaml = yaml.Replace("$(build.artifactstagingdirectory)", "${GITHUB_WORKSPACE}");
+
             //Fix some variables that we can't use for property names because the - character is not allowed or it's a reserved word (e.g. if)
             yaml = yaml.Replace("runs_on", "runs-on");
             yaml = yaml.Replace("_if", "if");
@@ -100,19 +98,21 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
             yaml = yaml.Replace("branches_ignore", "branches-ignore");
             yaml = yaml.Replace("paths_ignore", "paths-ignore");
             yaml = yaml.Replace("tags_ignore", "tags-ignore");
+            yaml = yaml.Replace(">-", "|"); //Replace a weird artifact in scripts when converting pipes
+
             yaml = yaml.Replace("max_parallel", "max-parallel");
 
             return yaml;
         }
 
-        private string PrepareYamlVariablesForGitHubSerialization(string yaml)
+        private string PrepareYamlVariablesForGitHubSerialization(string yaml, List<string> variableList)
         {
             if (_matrixVariableName != null)
             {
-                _variableList.Add(_matrixVariableName);
+                variableList.Add(_matrixVariableName);
             }
 
-            foreach (string item in _variableList)
+            foreach (string item in variableList)
             {
                 if (item == _matrixVariableName)
                 {

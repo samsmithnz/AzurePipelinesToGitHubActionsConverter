@@ -79,10 +79,10 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
                                 {
                                     name = "publish build artifacts back to GitHub",
                                     uses = "actions/upload-artifact @master",
-                                    with = new With
+                                    with = new Dictionary<string, string>
                                     {
-                                        name = "serviceapp",
-                                        path = "WebApplication1/WebApplication1.Service/bin/Release/netcoreapp3.0/publish"
+                                        { "name" , "serviceapp" },
+                                        { "path" , "WebApplication1/WebApplication1.Service/bin/Release/netcoreapp3.0/publish" }
                                     }
                                 }
                             }

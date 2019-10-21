@@ -1,9 +1,7 @@
 ﻿using AzurePipelinesToGitHubActionsConverter.Core.AzurePipelines;
 using AzurePipelinesToGitHubActionsConverter.Core.GitHubActions;
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 namespace AzurePipelinesToGitHubActionsConverter.Core
 {
@@ -53,11 +51,13 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                 }
             }
 
-            ////Stages
-            //if (azurePipeline.stages != null)
-            //{
-            //    //TODO: Stages are not yet supported in GitHub actions (I think?)
-            //}
+            //Stages
+            if (azurePipeline.stages != null)
+            {
+                //TODO: Stages are not yet supported in GitHub actions (I think?)
+                //We are just going to take the first stage and use it's jobs
+                azurePipeline.jobs = azurePipeline.stages[0].jobs;
+            }
 
             //Jobs (when no stages are defined)
             if (azurePipeline.jobs != null)
@@ -183,7 +183,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                     pullRequest.branches_ignore = pr.branches.exclude;
                 }
             }
-            //process apths
+            //process paths
             if (pr.paths != null)
             {
                 if (pr.paths.include != null)
@@ -215,6 +215,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
         }
 
         //process the build pool/agent
+        //TODO: Resolve bug where I can't use a variable for runs-on
         private string ProcessPool(Pool pool)
         {
             string newPool = null;
@@ -277,10 +278,13 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
         //process all variables
         private Dictionary<string, string> ProcessVariables(Dictionary<string, string> variables)
         {
-            //update variables from the $(variableName) format to ${{variableName}} format, by piping them into a list for replacement later.
-            foreach (string item in variables.Keys)
+            if (variables != null)
             {
-                VariableList.Add(item);
+                //update variables from the $(variableName) format to ${{variableName}} format, by piping them into a list for replacement later.
+                foreach (string item in variables.Keys)
+                {
+                    VariableList.Add(item);
+                }
             }
 
             return variables;
@@ -343,15 +347,170 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                 //Translate the other steps
                 for (int i = adjustment; i < steps.Length + adjustment; i++)
                 {
-                    newSteps[i] = new GitHubActions.Step
-                    {
-                        name = steps[i - adjustment].displayName,
-                        run = steps[i - adjustment].script
-                    };
+                    newSteps[i] = ProcessStep(steps[i - adjustment]);
                 }
             }
 
             return newSteps;
+        }
+
+        //This section is very much in Alpha. It has long way to go.
+        //TODO: Refactor this into a separate class
+        private GitHubActions.Step ProcessStep(AzurePipelines.Step step)
+        {
+
+            if (step.task != null)
+            {
+                string taskName = null;
+                GitHubActions.Step gitHubStep = null;
+                switch (step.task)
+                {
+                    case "CmdLine@2":
+                        gitHubStep = CreateScript("cmd", step);
+                        break;
+                    case "CopyFiles@2":
+                        //Use PowerShell to copy files
+                        step.script = "Copy " + step.inputs["SourceFolder"] + "/" + step.inputs["Contents"] + " " + step.inputs["TargetFolder"];
+                        gitHubStep = CreateScript("powershell", step);
+                        break;
+                    case "DotNetCoreCLI@2":
+                        gitHubStep = CreateDotNetCommand(step);
+                        break;
+                    case "PowerShell@2":
+                        gitHubStep = CreateScript("powershell", step);
+                        break;
+                    case "UseDotNet@2":
+                        gitHubStep = new GitHubActions.Step
+                        {
+                            name = step.displayName,
+                            uses = "actions/setup-dotnet@v1",
+                            with = new Dictionary<string, string>
+                            {
+                                {"dotnet-version", step.inputs["version"] }
+                            }
+                        };
+                        //Pipelines
+                        //- task: UseDotNet@2
+                        //  displayName: 'Use .NET Core sdk'
+                        //  inputs:
+                        //    packageType: sdk
+                        //    version: 2.2.203
+                        //    installationPath: $(Agent.ToolsDirectory)/dotnet
+
+                        //Actions
+                        //- uses: actions/setup-dotnet@v1
+                        //  with:
+                        //    dotnet-version: '2.2.103' # SDK Version to use.
+                        break;
+                    case "PublishBuildArtifacts@1":
+                        gitHubStep = new GitHubActions.Step
+                        {
+                            name = step.displayName,
+                            uses = "actions/upload-artifact@master",
+                            with = new Dictionary<string, string>
+                            {
+                                {"path", step.inputs["PathtoPublish"] }
+                            }
+                        };
+                        //In publish task, I we need to delete any usage of build.artifactstagingdirectory variable as it's implied in github actions, and therefore not needed (Adding it adds the path twice)
+                        gitHubStep.with["path"].Replace("$(build.artifactstagingdirectory)", "");
+                        
+                        break;
+                    //# Publish the artifacts
+                    //- task: PublishBuildArtifacts@1
+                    //  displayName: 'Publish Artifact'
+                    //  inputs:
+                    //    PathtoPublish: '$(build.artifactstagingdirectory)'";
+
+                    //- name: publish build artifacts back to GitHub
+                    //  uses: actions/upload-artifact@master
+                    //  with:
+                    //    name: console exe
+                    //    path: /home/runner/work/AzurePipelinesToGitHubActionsConverter/AzurePipelinesToGitHubActionsConverter/AzurePipelinesToGitHubActionsConverter/AzurePipelinesToGitHubActionsConverter.ConsoleApp/bin/Release/netcoreapp3.0
+
+                    default:
+                        taskName = "***unknown task***" + step.task;
+                        break;
+                }
+
+                if (gitHubStep == null)
+                {
+                    return new GitHubActions.Step
+                    {
+                        name = step.displayName,
+                        uses = taskName,
+                        with = step.inputs
+                    };
+                }
+                else
+                {
+                    return gitHubStep;
+                }
+            }
+            else if (step.script != null)
+            {
+                return new GitHubActions.Step
+                {
+                    name = step.displayName,
+                    run = step.script,
+                    with = step.inputs
+                };
+            }
+            else if (step.pwsh != null)
+            {
+                return CreateScript("pwsh", step);
+            }
+            else if (step.powershell != null)
+            {
+                return CreateScript("pwsh", step);
+            }
+            else if (step.bash != null)
+            {
+                return CreateScript("bash", step);
+            }
+            else
+            {
+                return new GitHubActions.Step
+                {
+                    name = "***This step is not currently supported***: " + step.displayName
+                };
+            }
+        }
+
+        private GitHubActions.Step CreateDotNetCommand(AzurePipelines.Step step)
+        {
+
+            GitHubActions.Step gitHubStep = new GitHubActions.Step
+            {
+                name = step.displayName,
+                run = "dotnet " +
+                    step.inputs["command"] + " " +
+                    step.inputs["projects"] + " " +
+                    step.inputs["arguments"]
+            };
+
+            //Remove the new line characters
+            gitHubStep.run = gitHubStep.run.Replace("\n", "");
+
+            return gitHubStep;
+        }
+
+        private GitHubActions.Step CreateScript(string shellType, AzurePipelines.Step step)
+        {
+            GitHubActions.Step gitHubStep = new GitHubActions.Step
+            {
+                name = step.displayName,
+                run = step.script,
+                shell = shellType//,
+                //with = step.inputs
+            };
+            if (gitHubStep.run == null)
+            {
+                step.inputs.TryGetValue("script", out string value);
+                gitHubStep.run = value;
+            }
+
+            return gitHubStep;
         }
     }
 }
