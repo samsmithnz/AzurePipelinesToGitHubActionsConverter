@@ -15,6 +15,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
     public class Conversion
     {
         private List<string> _variableList;
+        private string _matrixVariableName;
 
         public string ConvertAzurePipelineToGitHubAction(string input)
         {
@@ -39,6 +40,10 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                 gitHubActions = processing.ProcessPipeline(azurePipelineWithSimpleTrigger, azurePipelineWithSimpleTrigger.trigger, null);
 
                 _variableList.AddRange(processing.VariableList);
+                if (processing.MatrixVariableName != null)
+                {
+                    _matrixVariableName = processing.MatrixVariableName;
+                }
             }
             else if (azurePipelineWithComplexTrigger != null)
             {
@@ -46,6 +51,10 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                 gitHubActions = processing.ProcessPipeline(azurePipelineWithComplexTrigger, null, azurePipelineWithComplexTrigger.trigger);
 
                 _variableList.AddRange(processing.VariableList);
+                if (processing.MatrixVariableName != null)
+                {
+                    _matrixVariableName = processing.MatrixVariableName;
+                }
             }
 
             //Create the YAML and apply some adjustments
@@ -77,6 +86,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
             yaml = yaml.Replace("branches-ignore", "branches_ignore");
             yaml = yaml.Replace("paths-ignore", "paths_ignore");
             yaml = yaml.Replace("tags-ignore", "tags_ignore");
+            yaml = yaml.Replace("max-parallel", "max_parallel");
 
             return ReadYamlFile<GitHubActionsRoot>(yaml);
         }
@@ -90,18 +100,33 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
             yaml = yaml.Replace("branches_ignore", "branches-ignore");
             yaml = yaml.Replace("paths_ignore", "paths-ignore");
             yaml = yaml.Replace("tags_ignore", "tags-ignore");
+            yaml = yaml.Replace("max_parallel", "max-parallel");
+
             return yaml;
         }
 
         private string PrepareYamlVariablesForGitHubSerialization(string yaml)
         {
+            if (_matrixVariableName != null)
+            {
+                _variableList.Add(_matrixVariableName);
+            }
+
             foreach (string item in _variableList)
             {
-                //Replace variables with the format "$(MyVar)" with the format "$MyVar"
-                yaml = yaml.Replace("$(" + item + ")", "$" + item);
-                yaml = yaml.Replace("$( " + item + " )", "$" + item);
-                yaml = yaml.Replace("$(" + item + " )", "$" + item);
-                yaml = yaml.Replace("$( " + item + ")", "$" + item);
+                if (item == _matrixVariableName)
+                {
+                    yaml = yaml.Replace("$(" + item + ")", "${{ matrix." + item + " }}");
+                    yaml = yaml.Replace("$( " + item + " )", "${{ matrix." + item + " }}");
+                }
+                else
+                {
+                    //Replace variables with the format "$(MyVar)" with the format "$MyVar"
+                    yaml = yaml.Replace("$(" + item + ")", "$" + item);
+                    yaml = yaml.Replace("$( " + item + " )", "$" + item);
+                    yaml = yaml.Replace("$(" + item + " )", "$" + item);
+                    yaml = yaml.Replace("$( " + item + ")", "$" + item);
+                }
             }
 
             return yaml;
