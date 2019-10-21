@@ -2,6 +2,7 @@
 using AzurePipelinesToGitHubActionsConverter.Core.GitHubActions;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace AzurePipelinesToGitHubActionsConverter.Core
@@ -9,6 +10,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
     public class AzurePipelinesProcessing<T>
     {
         public List<string> VariableList;
+        public string MatrixVariableName;
 
         public GitHubActionsRoot ProcessPipeline(AzurePipelinesRoot<T> azurePipeline, string[] simpleTrigger, AzurePipelines.Trigger complexTrigger)
         {
@@ -51,12 +53,6 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                 }
             }
 
-            //Variables
-            if (azurePipeline.variables != null)
-            {
-                gitHubActions.env = ProcessVariables(azurePipeline.variables);
-            }
-
             //Stages
             if (azurePipeline.stages != null)
             {
@@ -68,6 +64,18 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
             //Jobs (when no stages are defined)
             if (azurePipeline.jobs != null)
             {
+                //If there is a parent strategy, and no child strategy, load in the parent
+                //This is not perfect...
+                if (azurePipeline.strategy != null)
+                {
+                    foreach (AzurePipelines.Job item in azurePipeline.jobs)
+                    {
+                        if (item.strategy == null)
+                        {
+                            item.strategy = azurePipeline.strategy;
+                        }
+                    }
+                }
                 gitHubActions.jobs = ProcessJobs(azurePipeline.jobs);
             }
 
@@ -83,10 +91,17 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                             new GitHubActions.Job
                             {
                                 runs_on = ProcessPool(azurePipeline.pool),
+                                strategy = ProcessStrategy(azurePipeline.strategy),
                                 steps = ProcessSteps(azurePipeline.steps)
                             }
                         }
                     };
+            }
+
+            //Variables
+            if (azurePipeline.variables != null)
+            {
+                gitHubActions.env = ProcessVariables(azurePipeline.variables);
             }
 
             return gitHubActions;
@@ -213,6 +228,55 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
             return newPool;
         }
 
+        //process the strategy matrix
+        private GitHubActions.Strategy ProcessStrategy(AzurePipelines.Strategy strategy)
+        {
+            //Azure DevOps
+            //strategy:
+            //  matrix:
+            //    linux:
+            //      imageName: ubuntu - 16.04
+            //    mac:
+            //      imageName: macos-10.13
+            //    windows:
+            //      imageName: vs2017-win2016
+            //jobs:
+            //- job: Build
+            //  pool: 
+            //    vmImage: $(imageName)
+
+            //GitHub Actions
+            //runs-on: ${{ matrix.imageName }}
+            //strategy:
+            //  matrix:
+            //    imageName: [ubuntu-16.04, macos-10.13, vs2017-win2016]
+
+            if (strategy != null)
+            {
+                string[] matrix = new string[strategy.matrix.Count];
+                KeyValuePair<string, Dictionary<string, string>> matrixVariable = strategy.matrix.First();
+                MatrixVariableName = matrixVariable.Value.Keys.First();
+                //VariableList.Add("$(" + _matrixVariableName + ")");
+                int i = 0;
+                foreach (KeyValuePair<string, Dictionary<string, string>> entry in strategy.matrix)
+                {
+                    matrix[i] = strategy.matrix[entry.Key][MatrixVariableName];
+                    i++;
+                }
+                return new GitHubActions.Strategy()
+                {
+                    matrix = new Dictionary<string, string[]>
+                {
+                    { MatrixVariableName, matrix }
+                }
+                };
+            }
+            else
+            {
+                return null;
+            }
+        }
+
         //process all variables
         private Dictionary<string, string> ProcessVariables(Dictionary<string, string> variables)
         {
@@ -251,8 +315,9 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                 name = job.displayName,
                 needs = job.dependsOn,
                 _if = job.condition,
-                env = ProcessVariables(job.variables),
                 runs_on = ProcessPool(job.pool),
+                strategy = ProcessStrategy(job.strategy),
+                env = ProcessVariables(job.variables),
                 timeout_minutes = job.timeoutInMinutes,
                 steps = ProcessSteps(job.steps)
             };

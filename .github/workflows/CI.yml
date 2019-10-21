@@ -4,12 +4,24 @@ on: [push, pull_request]
 
 jobs:
   build:
-
-    runs-on: ubuntu-latest
-    
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+    runs-on: ${{ matrix.os }} 
     steps:
     - uses: actions/checkout@v1
-    - name: Build with dotnet
-      run: dotnet build AzurePipelinesToGitHubActionsConverter/AzurePipelinesToGitHubActionsConverter.Tests/AzurePipelinesToGitHubActionsConverter.Tests.csproj --configuration Release
+    #- name: Restore with dotnet
+    #  run: dotnet restore AzurePipelinesToGitHubActionsConverter/AzurePipelinesToGitHubActionsConverter.Tests/AzurePipelinesToGitHubActionsConverter.Tests.csproj
+    #- name: Build with dotnet
+    #  run: dotnet build AzurePipelinesToGitHubActionsConverter/AzurePipelinesToGitHubActionsConverter.Tests/AzurePipelinesToGitHubActionsConverter.Tests.csproj --configuration Release
     - name: Test with dotnet
       run: dotnet test AzurePipelinesToGitHubActionsConverter/AzurePipelinesToGitHubActionsConverter.Tests/AzurePipelinesToGitHubActionsConverter.Tests.csproj --configuration Release
+    - name: Publish with dotnet
+      run: dotnet publish AzurePipelinesToGitHubActionsConverter/AzurePipelinesToGitHubActionsConverter.ConsoleApp/AzurePipelinesToGitHubActionsConverter.ConsoleApp.csproj --configuration Release
+    - name: test variables
+      run: echo ${GITHUB_WORKSPACE} 
+    - name: publish build artifacts back to GitHub
+      uses: actions/upload-artifact@master
+      with:
+        name: console exe
+        path: AzurePipelinesToGitHubActionsConverter/AzurePipelinesToGitHubActionsConverter.ConsoleApp/bin/Release/netcoreapp3.0

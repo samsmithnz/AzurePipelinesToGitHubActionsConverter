@@ -17,6 +17,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.AzurePipelines
         //TODO: Add conditions support
         public string condition { get; set; }
         public string timeoutInMinutes { get; set; }
+        public Strategy strategy { get; set; }
         public Pool pool { get; set; }
         public Dictionary<string, string> variables { get; set; }
         public Step[] steps { get; set; }
