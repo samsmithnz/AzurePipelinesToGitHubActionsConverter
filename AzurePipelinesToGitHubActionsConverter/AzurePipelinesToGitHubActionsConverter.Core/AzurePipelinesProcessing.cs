@@ -264,10 +264,12 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                 return new GitHubActions.Strategy()
                 {
                     matrix = new Dictionary<string, string[]>
-                {
-                    { MatrixVariableName, matrix }
-                }
+                    {
+                        { MatrixVariableName, matrix }
+                    },
+                    max_parallel = strategy.maxParallel
                 };
+
             }
             else
             {
