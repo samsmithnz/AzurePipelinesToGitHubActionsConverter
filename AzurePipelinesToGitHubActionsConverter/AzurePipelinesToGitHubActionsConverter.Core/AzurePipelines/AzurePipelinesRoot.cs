@@ -29,6 +29,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.AzurePipelines
 
         public Trigger pr { get; set; }
         public Pool pool { get; set; }
+        public Strategy strategy { get; set; }
         public Dictionary<string, string> variables { get; set; }
         public Stage[] stages { get; set; }
         public Job[] jobs { get; set; }
