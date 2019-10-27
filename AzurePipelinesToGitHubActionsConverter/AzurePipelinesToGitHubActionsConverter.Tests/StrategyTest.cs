@@ -77,7 +77,8 @@ jobs:
     - name: dotnet build part 1
       run: dotnet build WebApplication1/WebApplication1.Service/WebApplication1.Service.csproj --configuration $buildConfiguration
 ";
-            Assert.AreEqual(output, expectedOutput);
+
+            Assert.AreEqual(output, TestUtility.TrimNewLines(expectedOutput));
         }
 
     }

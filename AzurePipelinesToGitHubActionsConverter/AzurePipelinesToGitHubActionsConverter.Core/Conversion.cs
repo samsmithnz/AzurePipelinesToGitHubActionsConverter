@@ -15,37 +15,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
         {
             List<string> variableList = new List<string>();
 
-            //If the step isn't wrapped in a "steps:" node, we need to add this, so we can process the step
-            if (input.Trim().StartsWith("steps:") == false)
-            {
-                //we need to add steps, before we do, we need to see if the task needs an indent
-                string[] stepLines = input.Split(Environment.NewLine);
-                if (stepLines.Length > 0)
-                {
-                    int i = 0;
-                    //Search for the first non empty line
-                    while (string.IsNullOrEmpty(stepLines[i].Trim()) == true)
-                    {
-                        i++;
-                    }
-                    if (stepLines[i].Trim().StartsWith("-") == true)
-                    {
-                        int indentLevel = stepLines[i].IndexOf("-");
-                        indentLevel = indentLevel + 2;
-                        string buffer = Global.GenerateSpaces(indentLevel);
-                        StringBuilder newInput = new StringBuilder();
-                        foreach (string item in stepLines)
-                        {
-                            newInput.Append(buffer);
-                            newInput.Append(item);
-                            newInput.Append(Environment.NewLine);
-                        }
-                        input = newInput.ToString();
-                    }
-
-                    input = "steps:" + Environment.NewLine + input;
-                }
-            }
+            input = StepsPreProcessing(input);
 
             GitHubActions.Step gitHubActionStep = new GitHubActions.Step();
             AzurePipelinesProcessing<string[]> processing = new AzurePipelinesProcessing<string[]>();
@@ -64,16 +34,23 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                 //Create the YAML and apply some adjustments
                 if (gitHubActionStep != null)
                 {
-                    string yaml = WriteYAMLFile<GitHubActions.Step>(gitHubActionStep);
+                    //add the step into a github job so it renders correctly
+                    GitHubActions.Job gitHubJob = new GitHubActions.Job();
+                    gitHubJob.steps = new GitHubActions.Step[1];
+                    gitHubJob.steps[0] = gitHubActionStep;
+                    string yaml = WriteYAMLFile<GitHubActions.Job>(gitHubJob);
 
                     //Fix some variables for serialization, the '-' character is not valid in property names, and some of the YAML standard uses reserved words (e.g. if)
                     yaml = PrepareYamlPropertiesForGitHubSerialization(yaml);
 
                     //update variables from the $(variableName) format to ${{variableName}} format, by piping them into a list for replacement later.
                     //yaml = PrepareYamlVariablesForGitHubSerialization(yaml, variableList);
-                  
-                    //Append a new line character to the output - this helps to match with the content being produced, cleaning up the unit tests slightly, but also not causing any harm to the ouput
-                    yaml = Environment.NewLine + yaml;
+
+                    yaml = StepsPostProcessing(yaml);
+
+                    //Trim off any leading of trailing new lines 
+                    yaml = yaml.TrimStart('\r', '\n');
+                    yaml = yaml.TrimEnd('\r', '\n');
 
                     return yaml;
                 }
@@ -134,8 +111,9 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                 //update variables from the $(variableName) format to ${{variableName}} format, by piping them into a list for replacement later.
                 yaml = PrepareYamlVariablesForGitHubSerialization(yaml, variableList);
 
-                //Append a new line character to the output - this helps to match with the content being produced, cleaning up the unit tests slightly, but also not causing any harm to the ouput
-                yaml = Environment.NewLine + yaml;
+                //Trim off any leading of trailing new lines 
+                yaml = yaml.TrimStart('\r', '\n');
+                yaml = yaml.TrimEnd('\r', '\n');
 
                 return yaml;
             }
@@ -205,6 +183,85 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
             }
 
             return yaml;
+        }
+
+        //Add a steps parent, to allow the processing of an individual step to proceed
+        private string StepsPreProcessing(string input)
+        {
+            //If the step isn't wrapped in a "steps:" node, we need to add this, so we can process the step
+            if (input.Trim().StartsWith("steps:") == false)
+            {
+                //we need to add steps, before we do, we need to see if the task needs an indent
+                string[] stepLines = input.Split(Environment.NewLine);
+                if (stepLines.Length > 0)
+                {
+                    int i = 0;
+                    //Search for the first non empty line
+                    while (string.IsNullOrEmpty(stepLines[i].Trim()) == true)
+                    {
+                        i++;
+                    }
+                    if (stepLines[i].Trim().StartsWith("-") == true)
+                    {
+                        int indentLevel = stepLines[i].IndexOf("-");
+                        indentLevel += 2;
+                        string buffer = Global.GenerateSpaces(indentLevel);
+                        StringBuilder newInput = new StringBuilder();
+                        foreach (string item in stepLines)
+                        {
+                            newInput.Append(buffer);
+                            newInput.Append(item);
+                            newInput.Append(Environment.NewLine);
+                        }
+                        input = newInput.ToString();
+                    }
+
+                    input = "steps:" + Environment.NewLine + input;
+                }
+            }
+            return input;
+        }
+
+        //Strip the steps off to focus on just the individual step
+        private string StepsPostProcessing(string input)
+        {
+            if (input.Trim().StartsWith("steps:") == true)
+            {
+                //we need to remove steps, before we do, we need to see if the task needs to remove indent
+                string[] stepLines = input.Split(Environment.NewLine);
+                if (stepLines.Length > 0)
+                {
+                    int i = 0;
+                    //Search for the first non empty line
+                    while (string.IsNullOrEmpty(stepLines[i].Trim()) == true || stepLines[i].Trim().StartsWith("steps:") == true)
+                    {
+                        i++;
+                    }
+                    if (stepLines[i].StartsWith("-") == true)
+                    {
+                        int indentLevel = stepLines[i].IndexOf("-");
+                        if (indentLevel >= 2)
+                        {
+                            indentLevel -= 2;
+                        }
+                        string buffer = Global.GenerateSpaces(indentLevel);
+                        StringBuilder newInput = new StringBuilder();
+                        foreach (string item in stepLines)
+                        {
+                            if (item.Trim().StartsWith("steps:") == false)
+                            {
+                                newInput.Append(buffer);
+                                newInput.Append(item);
+                                newInput.Append(Environment.NewLine);
+                            }
+                        }
+                        input = newInput.ToString();
+                    }
+                }
+            }
+
+            return input;
+
         }
 
         //Read in a YAML file and convert it to a T object

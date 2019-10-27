@@ -55,15 +55,17 @@ steps:
     version: 2.2.203";
 
             //Act
-            string output = conversion.ConvertAzurePipelineToGitHubAction(yaml);
+            string output = conversion.ConvertAzurePinelineTaskToGitHubActionTask(yaml);
 
             //Assert
             string expectedOutput = @"
-    - name: Use .NET Core sdk
-      uses: actions/setup-dotnet@v1
-      with:
-        dotnet-version: 2.2.203";
-            Assert.AreEqual(output, expectedOutput);
+- name: Use .NET Core sdk
+  uses: actions/setup-dotnet@v1
+  with:
+    dotnet-version: 2.2.203
+";
+            
+            Assert.AreEqual(output, TestUtility.TrimNewLines(expectedOutput));
         }
 
         [TestMethod]
@@ -83,7 +85,8 @@ steps:
 - name: dotnet build $buildConfiguration part 1
   run: dotnet build --configuration $buildConfiguration WebApplication1/WebApplication1.Service/WebApplication1.Service.csproj
 ";
-            Assert.AreEqual(output, expectedOutput);
+            
+            Assert.AreEqual(output, TestUtility.TrimNewLines(expectedOutput));
         }
 
 
