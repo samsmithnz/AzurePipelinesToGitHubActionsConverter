@@ -23,7 +23,8 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             string output = conversion.ConvertAzurePipelineToGitHubAction(input);
 
             //Assert
-            Assert.AreEqual(output, "name: test ci pipelines" + Environment.NewLine);
+            Assert.AreEqual(output, Environment.NewLine + 
+                                    "name: test ci pipelines" + Environment.NewLine);
         }
 
         [TestMethod]
@@ -52,7 +53,8 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             string output = conversion.ConvertAzurePipelineToGitHubAction(input);
 
             //Assert
-            Assert.AreEqual(output, "jobs:" + Environment.NewLine +
+            Assert.AreEqual(output, Environment.NewLine + 
+                                    "jobs:" + Environment.NewLine +
                                     "  build:" + Environment.NewLine +
                                     "    runs-on: ubuntu-latest" + Environment.NewLine);
         }
@@ -69,7 +71,8 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             string output = conversion.ConvertAzurePipelineToGitHubAction(input);
 
             //Assert
-            Assert.AreEqual(output, "jobs:" + Environment.NewLine +
+            Assert.AreEqual(output, Environment.NewLine + 
+                                    "jobs:" + Environment.NewLine +
                                     "  build:" + Environment.NewLine +
                                     "    runs-on: windows-latest" + Environment.NewLine);
         }
@@ -117,7 +120,7 @@ jobs:
     - name: dotnet build $myJobVariable
       run: dotnet build WebApplication1/WebApplication1.Service/WebApplication1.Service.csproj --configuration $buildConfiguration
 ";
-            Assert.AreEqual(Environment.NewLine + output, expectedOutput);
+            Assert.AreEqual(output, expectedOutput);
         }
 
         [TestMethod]
@@ -163,7 +166,7 @@ jobs:
     - name: dotnet build $myJobVariable
       run: dotnet build WebApplication1/WebApplication1.Service/WebApplication1.Service.csproj --configuration $buildConfiguration
 ";
-            Assert.AreEqual(Environment.NewLine + output, expectedOutput);
+            Assert.AreEqual(output, expectedOutput);
         }
 
         [TestMethod]
@@ -314,7 +317,7 @@ jobs:
     - name: dotnet build part 3
       run: dotnet build WebApplication1/WebApplication1.Service/WebApplication1.Service.csproj --configuration $buildConfiguration
 ";
-            Assert.AreEqual(Environment.NewLine + output, expectedOutput);
+            Assert.AreEqual(output, expectedOutput);
         }     
 
     }

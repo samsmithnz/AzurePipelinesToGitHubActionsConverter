@@ -23,7 +23,8 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             string output = conversion.ConvertAzurePipelineToGitHubAction(input);
 
             //Assert
-            Assert.AreEqual(output, "on:" + Environment.NewLine +
+            Assert.AreEqual(output, Environment.NewLine + 
+                                    "on:" + Environment.NewLine +
                                     "  push:" + Environment.NewLine +
                                     "    branches:" + Environment.NewLine +
                                     "    - master" + Environment.NewLine);
@@ -42,7 +43,8 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             string output = conversion.ConvertAzurePipelineToGitHubAction(input);
 
             //Assert
-            Assert.AreEqual(output, "on:" + Environment.NewLine +
+            Assert.AreEqual(output, Environment.NewLine + 
+                                    "on:" + Environment.NewLine +
                                     "  push:" + Environment.NewLine +
                                     "    branches:" + Environment.NewLine +
                                     "    - master" + Environment.NewLine +
@@ -74,7 +76,8 @@ trigger:
             string output = conversion.ConvertAzurePipelineToGitHubAction(input);
 
             //Assert
-            Assert.AreEqual(output, "on:" + Environment.NewLine +
+            Assert.AreEqual(output, Environment.NewLine + 
+                        "on:" + Environment.NewLine +
                         "  push:" + Environment.NewLine +
                         "    branches:" + Environment.NewLine +
                         "    - features/*" + Environment.NewLine +
@@ -109,7 +112,8 @@ pr:
             string output = conversion.ConvertAzurePipelineToGitHubAction(input);
 
             //Assert
-            Assert.AreEqual(output, "on:" + Environment.NewLine +
+            Assert.AreEqual(output, Environment.NewLine + 
+                        "on:" + Environment.NewLine +
                         "  pull-request:" + Environment.NewLine +
                         "    branches:" + Environment.NewLine +
                         "    - features/*" + Environment.NewLine +
@@ -143,7 +147,8 @@ trigger:
             string output = conversion.ConvertAzurePipelineToGitHubAction(input);
 
             //Assert
-            Assert.AreEqual(output, "on:" + Environment.NewLine +
+            Assert.AreEqual(output, Environment.NewLine + 
+                        "on:" + Environment.NewLine +
                         "  push:" + Environment.NewLine +
                         "    branches-ignore:" + Environment.NewLine +
                         "    - features/experimental/*" + Environment.NewLine +
@@ -177,7 +182,8 @@ pr:
             string output = conversion.ConvertAzurePipelineToGitHubAction(input);
 
             //Assert
-            Assert.AreEqual(output, "on:" + Environment.NewLine +
+            Assert.AreEqual(output, Environment.NewLine + 
+                        "on:" + Environment.NewLine +
                         "  pull-request:" + Environment.NewLine +
                         "    branches-ignore:" + Environment.NewLine +
                         "    - features/experimental/*" + Environment.NewLine +
@@ -219,7 +225,8 @@ pr:
             string output = conversion.ConvertAzurePipelineToGitHubAction(input);
 
             //Assert
-            Assert.AreEqual(output, "on:" + Environment.NewLine +
+            Assert.AreEqual(output, Environment.NewLine + 
+                        "on:" + Environment.NewLine +
                         "  push:" + Environment.NewLine +
                         "    branches-ignore:" + Environment.NewLine +
                         "    - features/experimental/*" + Environment.NewLine +
