@@ -2,6 +2,8 @@
 using AzurePipelinesToGitHubActionsConverter.Core.GitHubActions;
 using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
+using System.Text;
 using YamlDotNet.Serialization;
 
 namespace AzurePipelinesToGitHubActionsConverter.Core
@@ -9,6 +11,55 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
     public class Conversion
     {
         private string _matrixVariableName;
+
+        public string ConvertAzurePinelineTaskToGitHubActionTask(string input)
+        {
+            List<string> variableList = new List<string>();
+
+            input = StepsPreProcessing(input);
+
+            GitHubActions.Step gitHubActionStep = new GitHubActions.Step();
+            AzurePipelinesProcessing<string[]> processing = new AzurePipelinesProcessing<string[]>();
+
+            AzurePipelines.Job azurePipelinesJob = ReadYamlFile<AzurePipelines.Job>(input);
+            if (azurePipelinesJob != null && azurePipelinesJob.steps != null && azurePipelinesJob.steps.Length > 0)
+            {
+                AzurePipelines.Step azurePipelinesStep = azurePipelinesJob.steps[0];
+
+                AzurePipelinesStepsProcessing stepsProcessing = new AzurePipelinesStepsProcessing();
+                gitHubActionStep = stepsProcessing.ProcessStep(azurePipelinesStep);
+
+                //Find all variables in this text block
+                variableList = SearchForVariables(input);
+                //Global.FindVariables();
+
+                //Create the YAML and apply some adjustments
+                if (gitHubActionStep != null)
+                {
+                    //add the step into a github job so it renders correctly
+                    GitHubActions.Job gitHubJob = new GitHubActions.Job();
+                    gitHubJob.steps = new GitHubActions.Step[1];
+                    gitHubJob.steps[0] = gitHubActionStep;
+                    string yaml = WriteYAMLFile<GitHubActions.Job>(gitHubJob);
+
+                    //Fix some variables for serialization, the '-' character is not valid in property names, and some of the YAML standard uses reserved words (e.g. if)
+                    yaml = PrepareYamlPropertiesForGitHubSerialization(yaml);
+
+                    //update variables from the $(variableName) format to ${{variableName}} format, by piping them into a list for replacement later.
+                    yaml = PrepareYamlVariablesForGitHubSerialization(yaml, variableList);
+
+                    yaml = StepsPostProcessing(yaml);
+
+                    //Trim off any leading of trailing new lines 
+                    yaml = yaml.TrimStart('\r', '\n');
+                    yaml = yaml.TrimEnd('\r', '\n');
+
+                    return yaml;
+                }
+            }
+            return "";
+
+        }
 
         public string ConvertAzurePipelineToGitHubAction(string input)
         {
@@ -61,6 +112,10 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
 
                 //update variables from the $(variableName) format to ${{variableName}} format, by piping them into a list for replacement later.
                 yaml = PrepareYamlVariablesForGitHubSerialization(yaml, variableList);
+
+                //Trim off any leading of trailing new lines 
+                yaml = yaml.TrimStart('\r', '\n');
+                yaml = yaml.TrimEnd('\r', '\n');
 
                 return yaml;
             }
@@ -130,6 +185,103 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
             }
 
             return yaml;
+        }
+
+
+        //Add a steps parent, to allow the processing of an individual step to proceed
+        private string StepsPreProcessing(string input)
+        {
+            //If the step isn't wrapped in a "steps:" node, we need to add this, so we can process the step
+            if (input.Trim().StartsWith("steps:") == false)
+            {
+                //we need to add steps, before we do, we need to see if the task needs an indent
+                string[] stepLines = input.Split(Environment.NewLine);
+                if (stepLines.Length > 0)
+                {
+                    int i = 0;
+                    //Search for the first non empty line
+                    while (string.IsNullOrEmpty(stepLines[i].Trim()) == true)
+                    {
+                        i++;
+                    }
+                    if (stepLines[i].Trim().StartsWith("-") == true)
+                    {
+                        int indentLevel = stepLines[i].IndexOf("-");
+                        indentLevel += 2;
+                        string buffer = Global.GenerateSpaces(indentLevel);
+                        StringBuilder newInput = new StringBuilder();
+                        foreach (string line in stepLines)
+                        {
+                            newInput.Append(buffer);
+                            newInput.Append(line);
+                            newInput.Append(Environment.NewLine);
+                        }
+                        input = newInput.ToString();
+                    }
+
+                    input = "steps:" + Environment.NewLine + input;
+                }
+            }
+            return input;
+        }
+
+        //Strip the steps off to focus on just the individual step
+        private string StepsPostProcessing(string input)
+        {
+            if (input.Trim().StartsWith("steps:") == true)
+            {
+                //we need to remove steps, before we do, we need to see if the task needs to remove indent
+                string[] stepLines = input.Split(Environment.NewLine);
+                if (stepLines.Length > 0)
+                {
+                    int i = 0;
+                    //Search for the first non empty line
+                    while (string.IsNullOrEmpty(stepLines[i].Trim()) == true || stepLines[i].Trim().StartsWith("steps:") == true)
+                    {
+                        i++;
+                    }
+                    if (stepLines[i].StartsWith("-") == true)
+                    {
+                        int indentLevel = stepLines[i].IndexOf("-");
+                        if (indentLevel >= 2)
+                        {
+                            indentLevel -= 2;
+                        }
+                        string buffer = Global.GenerateSpaces(indentLevel);
+                        StringBuilder newInput = new StringBuilder();
+                        foreach (string line in stepLines)
+                        {
+                            if (line.Trim().StartsWith("steps:") == false)
+                            {
+                                newInput.Append(buffer);
+                                newInput.Append(line);
+                                newInput.Append(Environment.NewLine);
+                            }
+                        }
+                        input = newInput.ToString();
+                    }
+                }
+            }
+
+            return input;
+
+        }
+
+        private static List<string> SearchForVariables(string input)
+        {
+            List<string> variableList = new List<string>();
+
+            string[] stepLines = input.Split(Environment.NewLine);
+            foreach (string line in stepLines)
+            {
+                List<string> results = Global.FindVariables(line);
+                if (results.Count > 0)
+                {
+                    variableList.AddRange(results);
+                }
+            }
+
+            return variableList;
         }
 
         //Read in a YAML file and convert it to a T object

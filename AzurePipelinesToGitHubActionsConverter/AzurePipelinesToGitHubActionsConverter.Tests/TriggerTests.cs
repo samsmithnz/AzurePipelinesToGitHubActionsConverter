@@ -26,7 +26,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             Assert.AreEqual(output, "on:" + Environment.NewLine +
                                     "  push:" + Environment.NewLine +
                                     "    branches:" + Environment.NewLine +
-                                    "    - master" + Environment.NewLine);
+                                    "    - master");
         }
 
         [TestMethod]
@@ -46,7 +46,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
                                     "  push:" + Environment.NewLine +
                                     "    branches:" + Environment.NewLine +
                                     "    - master" + Environment.NewLine +
-                                    "    - develop" + Environment.NewLine);
+                                    "    - develop");
         }
 
         [TestMethod]
@@ -74,7 +74,8 @@ trigger:
             string output = conversion.ConvertAzurePipelineToGitHubAction(input);
 
             //Assert
-            Assert.AreEqual(output, "on:" + Environment.NewLine +
+            Assert.AreEqual(output,
+                        "on:" + Environment.NewLine +
                         "  push:" + Environment.NewLine +
                         "    branches:" + Environment.NewLine +
                         "    - features/*" + Environment.NewLine +
@@ -82,7 +83,7 @@ trigger:
                         "    - README.md" + Environment.NewLine +
                         "    tags:" + Environment.NewLine +
                         "    - v1" + Environment.NewLine +
-                        "    - v1.*" + Environment.NewLine);
+                        "    - v1.*");
         }
 
         [TestMethod]
@@ -102,14 +103,15 @@ pr:
   tags:
     include:
     - v1             
-    - v1.*"; 
+    - v1.*";
             Conversion conversion = new Conversion();
 
             //Act
             string output = conversion.ConvertAzurePipelineToGitHubAction(input);
 
             //Assert
-            Assert.AreEqual(output, "on:" + Environment.NewLine +
+            Assert.AreEqual(output,
+                        "on:" + Environment.NewLine +
                         "  pull-request:" + Environment.NewLine +
                         "    branches:" + Environment.NewLine +
                         "    - features/*" + Environment.NewLine +
@@ -117,7 +119,7 @@ pr:
                         "    - README.md" + Environment.NewLine +
                         "    tags:" + Environment.NewLine +
                         "    - v1" + Environment.NewLine +
-                        "    - v1.*" + Environment.NewLine);
+                        "    - v1.*");
         }
 
         [TestMethod]
@@ -143,7 +145,8 @@ trigger:
             string output = conversion.ConvertAzurePipelineToGitHubAction(input);
 
             //Assert
-            Assert.AreEqual(output, "on:" + Environment.NewLine +
+            Assert.AreEqual(output,
+                        "on:" + Environment.NewLine +
                         "  push:" + Environment.NewLine +
                         "    branches-ignore:" + Environment.NewLine +
                         "    - features/experimental/*" + Environment.NewLine +
@@ -151,7 +154,7 @@ trigger:
                         "    - README.md" + Environment.NewLine +
                         "    tags-ignore:" + Environment.NewLine +
                         "    - v1" + Environment.NewLine +
-                        "    - v1.*" + Environment.NewLine);
+                        "    - v1.*");
         }
 
         [TestMethod]
@@ -177,7 +180,8 @@ pr:
             string output = conversion.ConvertAzurePipelineToGitHubAction(input);
 
             //Assert
-            Assert.AreEqual(output, "on:" + Environment.NewLine +
+            Assert.AreEqual(output,
+                        "on:" + Environment.NewLine +
                         "  pull-request:" + Environment.NewLine +
                         "    branches-ignore:" + Environment.NewLine +
                         "    - features/experimental/*" + Environment.NewLine +
@@ -185,7 +189,7 @@ pr:
                         "    - README.md" + Environment.NewLine +
                         "    tags-ignore:" + Environment.NewLine +
                         "    - v1" + Environment.NewLine +
-                        "    - v1.*" + Environment.NewLine);
+                        "    - v1.*");
         }
 
         [TestMethod]
@@ -219,7 +223,8 @@ pr:
             string output = conversion.ConvertAzurePipelineToGitHubAction(input);
 
             //Assert
-            Assert.AreEqual(output, "on:" + Environment.NewLine +
+            Assert.AreEqual(output,
+                        "on:" + Environment.NewLine +
                         "  push:" + Environment.NewLine +
                         "    branches-ignore:" + Environment.NewLine +
                         "    - features/experimental/*" + Environment.NewLine +
@@ -232,7 +237,7 @@ pr:
                         "    - README.md" + Environment.NewLine +
                         "    tags-ignore:" + Environment.NewLine +
                         "    - v1" + Environment.NewLine +
-                        "    - v1.*" + Environment.NewLine);
+                        "    - v1.*");
         }
 
     }
