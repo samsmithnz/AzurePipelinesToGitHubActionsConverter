@@ -13,8 +13,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
 
             if (step.task != null)
             {
-                string taskName = null;
-                GitHubActions.Step gitHubStep = null;
+                GitHubActions.Step gitHubStep;
                 switch (step.task)
                 {
                     case "CmdLine@2":
