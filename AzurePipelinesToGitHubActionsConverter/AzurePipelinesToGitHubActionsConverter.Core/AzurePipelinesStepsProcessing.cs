@@ -81,8 +81,10 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                     //    path: /home/runner/work/AzurePipelinesToGitHubActionsConverter/AzurePipelinesToGitHubActionsConverter/AzurePipelinesToGitHubActionsConverter/AzurePipelinesToGitHubActionsConverter.ConsoleApp/bin/Release/netcoreapp3.0
 
                     default:
-                        taskName = "***unknown task***" + step.task;
-                        break;
+                        return new GitHubActions.Step
+                        {
+                            name = "***This step is not currently supported***: " + step.displayName
+                        };
                 }
 
                 return gitHubStep;
@@ -102,7 +104,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
             }
             else if (step.powershell != null)
             {
-                return CreateScript("pwsh", step);
+                return CreateScript("powershell", step);
             }
             else if (step.bash != null)
             {
@@ -110,10 +112,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
             }
             else
             {
-                return new GitHubActions.Step
-                {
-                    name = "***This step is not currently supported***: " + step.displayName
-                };
+                return null;
             }
         }
 
@@ -146,8 +145,23 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
             };
             if (gitHubStep.run == null)
             {
-                step.inputs.TryGetValue("script", out string value);
-                gitHubStep.run = value;
+                if (step.powershell != null)
+                {
+                    gitHubStep.run = step.powershell;
+                }
+                else if (step.pwsh != null)
+                {
+                    gitHubStep.run = step.pwsh;
+                }
+                else if (step.bash != null)
+                {
+                    gitHubStep.run = step.bash;
+                }
+                else
+                {
+                    step.inputs.TryGetValue("script", out string value);
+                    gitHubStep.run = value;
+                }
             }
 
             return gitHubStep;
