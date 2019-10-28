@@ -7,8 +7,6 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
 {
     public class AzurePipelinesStepsProcessing
     {
-        public List<string> VariableList;
-
         //This section is very much in Alpha. It has long way to go.
         public GitHubActions.Step ProcessStep(AzurePipelines.Step step)
         {

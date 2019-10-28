@@ -2,6 +2,7 @@
 using AzurePipelinesToGitHubActionsConverter.Core.GitHubActions;
 using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using System.Text;
 using YamlDotNet.Serialization;
 
@@ -28,8 +29,9 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                 AzurePipelinesStepsProcessing stepsProcessing = new AzurePipelinesStepsProcessing();
                 gitHubActionStep = stepsProcessing.ProcessStep(azurePipelinesStep);
 
-                //TODO: Find a way to identify all variables in this block, so that we can process variables
-                //variableList.AddRange(processing.VariableList);
+                //Find all variables in this text block
+                variableList = SearchForVariables(input);
+                //Global.FindVariables();
 
                 //Create the YAML and apply some adjustments
                 if (gitHubActionStep != null)
@@ -44,7 +46,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                     yaml = PrepareYamlPropertiesForGitHubSerialization(yaml);
 
                     //update variables from the $(variableName) format to ${{variableName}} format, by piping them into a list for replacement later.
-                    //yaml = PrepareYamlVariablesForGitHubSerialization(yaml, variableList);
+                    yaml = PrepareYamlVariablesForGitHubSerialization(yaml, variableList);
 
                     yaml = StepsPostProcessing(yaml);
 
@@ -185,6 +187,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
             return yaml;
         }
 
+
         //Add a steps parent, to allow the processing of an individual step to proceed
         private string StepsPreProcessing(string input)
         {
@@ -207,10 +210,10 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                         indentLevel += 2;
                         string buffer = Global.GenerateSpaces(indentLevel);
                         StringBuilder newInput = new StringBuilder();
-                        foreach (string item in stepLines)
+                        foreach (string line in stepLines)
                         {
                             newInput.Append(buffer);
-                            newInput.Append(item);
+                            newInput.Append(line);
                             newInput.Append(Environment.NewLine);
                         }
                         input = newInput.ToString();
@@ -246,12 +249,12 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                         }
                         string buffer = Global.GenerateSpaces(indentLevel);
                         StringBuilder newInput = new StringBuilder();
-                        foreach (string item in stepLines)
+                        foreach (string line in stepLines)
                         {
-                            if (item.Trim().StartsWith("steps:") == false)
+                            if (line.Trim().StartsWith("steps:") == false)
                             {
                                 newInput.Append(buffer);
-                                newInput.Append(item);
+                                newInput.Append(line);
                                 newInput.Append(Environment.NewLine);
                             }
                         }
@@ -262,6 +265,23 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
 
             return input;
 
+        }
+
+        private static List<string> SearchForVariables(string input)
+        {
+            List<string> variableList = new List<string>();
+
+            string[] stepLines = input.Split(Environment.NewLine);
+            foreach (string line in stepLines)
+            {
+                List<string> results = Global.FindVariables(line);
+                if (results.Count > 0)
+                {
+                    variableList.AddRange(results);
+                }
+            }
+
+            return variableList;
         }
 
         //Read in a YAML file and convert it to a T object
