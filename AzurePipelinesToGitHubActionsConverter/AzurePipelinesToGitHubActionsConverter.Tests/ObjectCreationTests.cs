@@ -2,9 +2,7 @@ using AzurePipelinesToGitHubActionsConverter.Core;
 using AzurePipelinesToGitHubActionsConverter.Core.AzurePipelines;
 using AzurePipelinesToGitHubActionsConverter.Core.GitHubActions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
 using System.Collections.Generic;
-using YamlDotNet.Serialization;
 
 namespace AzurePipelinesToGitHubActionsConverter.Tests
 {

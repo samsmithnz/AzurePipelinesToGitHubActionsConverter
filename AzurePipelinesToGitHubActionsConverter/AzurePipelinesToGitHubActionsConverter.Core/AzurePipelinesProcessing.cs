@@ -47,7 +47,6 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                     {
                         gitHubActions.on.pull_request = pr.pull_request;
                     }
-
                 }
             }
 
@@ -83,17 +82,17 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
             {
                 //Steps only have one job, so we just create it here
                 gitHubActions.jobs = new Dictionary<string, GitHubActions.Job>
+                {
                     {
+                        "build",
+                        new GitHubActions.Job
                         {
-                            "build",
-                            new GitHubActions.Job
-                            {
-                                runs_on = ProcessPool(azurePipeline.pool),
-                                strategy = ProcessStrategy(azurePipeline.strategy),
-                                steps = ProcessSteps(azurePipeline.steps)
-                            }
+                            runs_on = ProcessPool(azurePipeline.pool),
+                            strategy = ProcessStrategy(azurePipeline.strategy),
+                            steps = ProcessSteps(azurePipeline.steps)
                         }
-                    };
+                    }
+                };
             }
 
             //Variables

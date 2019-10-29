@@ -142,6 +142,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                 shell = shellType//,
                 //with = step.inputs
             };
+
             if (gitHubStep.run == null)
             {
                 if (step.powershell != null)

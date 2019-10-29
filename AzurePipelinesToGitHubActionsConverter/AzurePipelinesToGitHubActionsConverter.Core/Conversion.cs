@@ -2,7 +2,6 @@
 using AzurePipelinesToGitHubActionsConverter.Core.GitHubActions;
 using System;
 using System.Collections.Generic;
-using System.Runtime.CompilerServices;
 using System.Text;
 using YamlDotNet.Serialization;
 
@@ -276,7 +275,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
             string[] stepLines = input.Split(Environment.NewLine);
             foreach (string line in stepLines)
             {
-                List<string> results = Global.FindVariables(line);
+                List<string> results = Global.FindPipelineVariablesInString(line);
                 if (results.Count > 0)
                 {
                     variableList.AddRange(results);

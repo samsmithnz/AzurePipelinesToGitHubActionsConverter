@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace AzurePipelinesToGitHubActionsConverter.Tests
+﻿namespace AzurePipelinesToGitHubActionsConverter.Tests
 {
     public static class TestUtility
     {
