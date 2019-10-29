@@ -84,7 +84,7 @@ In GitHub Actions:
 on: 
   push:
     branches:
-	- master
+    - master
 env:
   buildConfiguration: Release
 jobs:
