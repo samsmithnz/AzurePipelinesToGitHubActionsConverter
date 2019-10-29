@@ -10,6 +10,10 @@ jobs:
     runs-on: ${{ matrix.os }} 
     steps:
     - uses: actions/checkout@v1
+    - name: Use .NET Core sdk
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 3.x
     #- name: Restore with dotnet
     #  run: dotnet restore AzurePipelinesToGitHubActionsConverter/AzurePipelinesToGitHubActionsConverter.Tests/AzurePipelinesToGitHubActionsConverter.Tests.csproj
     #- name: Build with dotnet
