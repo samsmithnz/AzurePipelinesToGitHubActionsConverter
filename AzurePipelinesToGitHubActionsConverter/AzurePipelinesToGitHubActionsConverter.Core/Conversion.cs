@@ -37,8 +37,10 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                 if (gitHubActionStep != null)
                 {
                     //add the step into a github job so it renders correctly
-                    GitHubActions.Job gitHubJob = new GitHubActions.Job();
-                    gitHubJob.steps = new GitHubActions.Step[1];
+                    GitHubActions.Job gitHubJob = new GitHubActions.Job
+                    {
+                        steps = new GitHubActions.Step[1]
+                    };
                     gitHubJob.steps[0] = gitHubActionStep;
                     string yaml = WriteYAMLFile<GitHubActions.Job>(gitHubJob);
 

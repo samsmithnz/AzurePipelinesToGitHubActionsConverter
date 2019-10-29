@@ -10,12 +10,7 @@ In the future we will create a website for ease of converting results.
 Today, you need to paste in your yaml to the text in the console application, "AzurePipelinesToGitHubActionsConverter.ConsoleApp"
 
 # How this works
-**Currently this only supports one-way migrations from Azure Pipelines to GitHub Actions. Also note that this is not translating steps at this time, just translating the infrastructure around it. Check the [issues](https://github.com/samsmithnz/AzurePipelinesToGitHubActionsConverter/issues) for incomplete items, or the TODO's in the source code.**
- 
-Made with help from https://github.com/aaubry/YamlDotNet and https://en.wikipedia.org/wiki/YAML.
-- Azure Pipelines YAML docs: https://docs.microsoft.com/en-us/azure/devops/pipelines/yaml-schema?view=azure-devops&tabs=schema
-- GitHub Actions YAML docs: https://help.github.com/en/articles/workflow-syntax-for-github-actions
-
+**Currently this only supports one-way migrations from Azure Pipelines to GitHub Actions. Also note that this is translating some steps, but is just supporting the basic .NET tasks so far. Check the [issues](https://github.com/samsmithnz/AzurePipelinesToGitHubActionsConverter/issues) for incomplete items, or the TODO's in the source code.**
  
 Yaml can be challenging. The wikipedia page lays out the rules nicely, but when we are talking about converting yaml to C#, there are a few things to know
 
@@ -84,7 +79,7 @@ In GitHub Actions:
 on: 
   push:
     branches:
-	- master
+    - master
 env:
   buildConfiguration: Release
 jobs:
@@ -101,7 +96,7 @@ jobs:
 ## References
 Made with help from https://github.com/aaubry/YamlDotNet and https://en.wikipedia.org/wiki/YAML.
 - Azure Pipelines YAML docs: https://docs.microsoft.com/en-us/azure/devops/pipelines/yaml-schema?view=azure-devops&tabs=schema
-- GitHub Actions YAML docs: https://help.github.com/en/articles/workflow-syntax-for-github-actions#jobsjob_idstepsuses
+- GitHub Actions YAML docs: https://help.github.com/en/articles/workflow-syntax-for-github-actions
 
 ## Contributing
 Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
