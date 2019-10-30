@@ -9,7 +9,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
     public class ConversionTest
     {
         [TestMethod]
-        public void TestName()
+        public void NameTest()
         {
             //Arrange
             string input = "name: test ci pipelines";
@@ -23,7 +23,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
         }
 
         [TestMethod]
-        public void TestInvalidString()
+        public void InvalidStringTest()
         {
             //Arrange
             string input = "     ";
@@ -37,7 +37,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
         }
 
         [TestMethod]
-        public void TestPoolUbuntuLatestString()
+        public void PoolUbuntuLatestStringTest()
         {
             //Arrange
             string input = "pool:" + Environment.NewLine +
@@ -54,7 +54,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
         }
 
         [TestMethod]
-        public void TestPoolWindowsLatestString()
+        public void PoolWindowsLatestStringTest()
         {
             //Arrange
             string input = "pool: " + Environment.NewLine +
@@ -71,7 +71,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
         }
 
         [TestMethod]
-        public void TestVariables()
+        public void VariablesTest()
         {
             //Arrange
             string input = @"
@@ -118,7 +118,7 @@ jobs:
         }
 
         [TestMethod]
-        public void TestVariablesWithSpaces()
+        public void VariablesWithSpacesTest()
         {
             //Arrange
             string input = @"
@@ -164,7 +164,7 @@ jobs:
         }
 
         [TestMethod]
-        public void TestGitHubActionYamlToObject()
+        public void GitHubActionYamlToObjectTest()
         {
             //Arrange
             Conversion conversion = new Conversion();

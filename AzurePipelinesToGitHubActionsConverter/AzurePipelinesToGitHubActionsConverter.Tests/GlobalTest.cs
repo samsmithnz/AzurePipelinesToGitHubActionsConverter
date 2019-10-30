@@ -8,7 +8,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
     public class GlobalTest
     {
         [TestMethod]
-        public void TestGetGlobalHeader()
+        public void GetGlobalHeaderTest()
         {
             //Arrange
             string expectedString = "# converted to GitHub Actions by https://github.com/samsmithnz/AzurePipelinesToGitHubActionsConverter on " + DateTime.Now.ToString("dd-MMM-yyyy hh:mm:sstt");
@@ -21,7 +21,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
         }
 
         [TestMethod]
-        public void TestGetLineComment()
+        public void GetLineCommentTest()
         {
             //Arrange
 
@@ -33,7 +33,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
         }
 
         [TestMethod]
-        public void TestGenerateSpaces()
+        public void GenerateSpacesTest()
         {
             //Arrange
             int number0 = 0;

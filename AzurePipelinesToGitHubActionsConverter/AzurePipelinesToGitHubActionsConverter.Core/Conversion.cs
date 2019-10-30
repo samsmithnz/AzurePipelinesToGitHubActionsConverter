@@ -13,8 +13,6 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
 
         public string ConvertAzurePinelineTaskToGitHubActionTask(string input)
         {
-            List<string> variableList = new List<string>();
-
             input = StepsPreProcessing(input);
 
             GitHubActions.Step gitHubActionStep = new GitHubActions.Step();
@@ -29,8 +27,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                 gitHubActionStep = stepsProcessing.ProcessStep(azurePipelinesStep);
 
                 //Find all variables in this text block
-                variableList = SearchForVariables(input);
-                //Global.FindVariables();
+                List<string> variableList = SearchForVariables(input);
 
                 //Create the YAML and apply some adjustments
                 if (gitHubActionStep != null)

@@ -10,12 +10,20 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
         //This section is very much in Alpha. It has long way to go.
         public GitHubActions.Step ProcessStep(AzurePipelines.Step step)
         {
-
             if (step.task != null)
             {
                 GitHubActions.Step gitHubStep;
                 switch (step.task)
                 {
+                    case "AzureAppServiceManage@0":
+                        gitHubStep = CreateScript("powershell", step);
+                        break;
+                    case "AzureResourceGroupDeployment@2":
+                        gitHubStep = CreateScript("powershell", step);
+                        break;     
+                    case "AzureRmWebAppDeployment@3":
+                        gitHubStep = CreateScript("powershell", step);
+                        break;
                     case "CmdLine@2":
                         gitHubStep = CreateScript("cmd", step);
                         break;
@@ -27,8 +35,36 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                     case "DotNetCoreCLI@2":
                         gitHubStep = CreateDotNetCommand(step);
                         break;
+                    case "DownloadBuildArtifacts@0":
+                        gitHubStep = CreateScript("powershell", step);
+                        break;
                     case "PowerShell@2":
                         gitHubStep = CreateScript("powershell", step);
+                        break;
+                    case "PublishBuildArtifacts@1":
+                        gitHubStep = new GitHubActions.Step
+                        {
+                            name = step.displayName,
+                            uses = "actions/upload-artifact@master",
+                            with = new Dictionary<string, string>
+                            {
+                                {"path", step.inputs["PathtoPublish"] }
+                            }
+                        };
+                        //In publish task, I we need to delete any usage of build.artifactstagingdirectory variable as it's implied in github actions, and therefore not needed (Adding it adds the path twice)
+                        gitHubStep.with["path"].Replace("$(build.artifactstagingdirectory)", "");
+                        //# Publish the artifacts
+                        //- task: PublishBuildArtifacts@1
+                        //  displayName: 'Publish Artifact'
+                        //  inputs:
+                        //    PathtoPublish: '$(build.artifactstagingdirectory)'";
+
+                        //- name: publish build artifacts back to GitHub
+                        //  uses: actions/upload-artifact@master
+                        //  with:
+                        //    name: console exe
+                        //    path: /home/runner/work/AzurePipelinesToGitHubActionsConverter/AzurePipelinesToGitHubActionsConverter/AzurePipelinesToGitHubActionsConverter/AzurePipelinesToGitHubActionsConverter.ConsoleApp/bin/Release/netcoreapp3.0
+
                         break;
                     case "UseDotNet@2":
                         gitHubStep = new GitHubActions.Step
@@ -53,32 +89,9 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                         //  with:
                         //    dotnet-version: '2.2.103' # SDK Version to use.
                         break;
-                    case "PublishBuildArtifacts@1":
-                        gitHubStep = new GitHubActions.Step
-                        {
-                            name = step.displayName,
-                            uses = "actions/upload-artifact@master",
-                            with = new Dictionary<string, string>
-                            {
-                                {"path", step.inputs["PathtoPublish"] }
-                            }
-                        };
-                        //In publish task, I we need to delete any usage of build.artifactstagingdirectory variable as it's implied in github actions, and therefore not needed (Adding it adds the path twice)
-                        gitHubStep.with["path"].Replace("$(build.artifactstagingdirectory)", "");
-
+                    case "VSTest@2":
+                        gitHubStep = CreateScript("powershell", step);
                         break;
-                    //# Publish the artifacts
-                    //- task: PublishBuildArtifacts@1
-                    //  displayName: 'Publish Artifact'
-                    //  inputs:
-                    //    PathtoPublish: '$(build.artifactstagingdirectory)'";
-
-                    //- name: publish build artifacts back to GitHub
-                    //  uses: actions/upload-artifact@master
-                    //  with:
-                    //    name: console exe
-                    //    path: /home/runner/work/AzurePipelinesToGitHubActionsConverter/AzurePipelinesToGitHubActionsConverter/AzurePipelinesToGitHubActionsConverter/AzurePipelinesToGitHubActionsConverter.ConsoleApp/bin/Release/netcoreapp3.0
-
                     default:
                         return new GitHubActions.Step
                         {

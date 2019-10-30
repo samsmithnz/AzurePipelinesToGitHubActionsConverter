@@ -1,5 +1,6 @@
 ﻿using AzurePipelinesToGitHubActionsConverter.Core.AzurePipelines;
 using AzurePipelinesToGitHubActionsConverter.Core.GitHubActions;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -50,12 +51,31 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                 }
             }
 
-            //Stages
+            //Stages (Note: stages are not yet enabled in actions, we are merging them into one giant list of jobs)
             if (azurePipeline.stages != null)
             {
-                //TODO: Stages are not yet supported in GitHub actions (I think?)
-                //We are just going to take the first stage and use it's jobs
-                azurePipeline.jobs = azurePipeline.stages[0].jobs;
+                //Count the number of jobs and initialize the jobs array with that number
+                int jobCounter = 0;
+                foreach (Stage item in azurePipeline.stages)
+                {
+                    jobCounter += item.jobs.Length;
+                }
+                azurePipeline.jobs = new AzurePipelines.Job[jobCounter];
+
+                //We are going to take each stage and assign it a set of jobs
+                int currentIndex = 0;
+                foreach (Stage item in azurePipeline.stages)
+                {
+                    int j = 0;
+                    for (int i = currentIndex; i < currentIndex + item.jobs.Length; i++)
+                    {
+                        //Rename the job, using the stage name as prefix, so that we keep the job names unique
+                        item.jobs[j].job = item.stage + "_" + item.jobs[j].job;
+                        azurePipeline.jobs[i] = item.jobs[j];
+                        j++;
+                    }
+                    currentIndex += item.jobs.Length;
+                }
             }
 
             //Jobs (when no stages are defined)
@@ -214,7 +234,6 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
         }
 
         //process the build pool/agent
-        //TODO: Resolve bug where I can't use a variable for runs-on
         private string ProcessPool(Pool pool)
         {
             string newPool = null;
