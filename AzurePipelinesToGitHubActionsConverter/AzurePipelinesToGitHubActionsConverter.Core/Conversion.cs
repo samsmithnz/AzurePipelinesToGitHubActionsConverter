@@ -2,7 +2,6 @@
 using AzurePipelinesToGitHubActionsConverter.Core.GitHubActions;
 using System;
 using System.Collections.Generic;
-using System.Runtime.CompilerServices;
 using System.Text;
 using YamlDotNet.Serialization;
 
@@ -14,8 +13,6 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
 
         public string ConvertAzurePinelineTaskToGitHubActionTask(string input)
         {
-            List<string> variableList = new List<string>();
-
             input = StepsPreProcessing(input);
 
             GitHubActions.Step gitHubActionStep = new GitHubActions.Step();
@@ -30,8 +27,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                 gitHubActionStep = stepsProcessing.ProcessStep(azurePipelinesStep);
 
                 //Find all variables in this text block
-                variableList = SearchForVariables(input);
-                //Global.FindVariables();
+                List<string> variableList = SearchForVariables(input);
 
                 //Create the YAML and apply some adjustments
                 if (gitHubActionStep != null)
@@ -276,7 +272,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
             string[] stepLines = input.Split(Environment.NewLine);
             foreach (string line in stepLines)
             {
-                List<string> results = Global.FindVariables(line);
+                List<string> results = Global.FindPipelineVariablesInString(line);
                 if (results.Count > 0)
                 {
                     variableList.AddRange(results);

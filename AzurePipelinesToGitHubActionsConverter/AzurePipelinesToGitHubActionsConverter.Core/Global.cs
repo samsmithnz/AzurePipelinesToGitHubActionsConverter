@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
 
 namespace AzurePipelinesToGitHubActionsConverter.Core
@@ -24,7 +23,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
             return new String(' ', number);
         }
 
-        public static List<string> FindVariables(string text)
+        public static List<string> FindPipelineVariablesInString(string text)
         {
             //Used https://stackoverflow.com/questions/378415/how-do-i-extract-text-that-lies-between-parentheses-round-brackets
             //With the addition of the \$ search to capture strings like: "$(variable)"
@@ -43,7 +42,6 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                 string item = list[i];
 
                 //Remove leading "$(" and trailing ")"
-                //list[i] = item.Remove(item.Length - 2, item.Length - 1);
                 if (list[i].Length > 3)
                 {
                     list[i] = list[i].Substring(0, item.Length - 1);

@@ -1,7 +1,18 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+
+//#Example Pipeline YAML:
+//trigger:
+//- master
+
+//pool:
+//  vmImage: ubuntu-latest
+
+//variables:
+//  buildConfiguration: Release
+
+//steps:
+//- script: dotnet build --configuration $(buildConfiguration) WebApplication1/WebApplication1.Service/WebApplication1.Service.csproj
+//  displayName: dotnet build $(buildConfiguration)
 
 namespace AzurePipelinesToGitHubActionsConverter.Core.AzurePipelines
 {
@@ -36,16 +47,3 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.AzurePipelines
         public Step[] steps { get; set; }
     }
 }
-
-//trigger:
-//- master
-
-//pool:
-//  vmImage: ubuntu-latest
-
-//variables:
-//  buildConfiguration: Release
-
-//steps:
-//- script: dotnet build --configuration $(buildConfiguration) WebApplication1/WebApplication1.Service/WebApplication1.Service.csproj
-//  displayName: dotnet build $(buildConfiguration)

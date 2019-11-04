@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace AzurePipelinesToGitHubActionsConverter.Core.GitHubActions
+﻿namespace AzurePipelinesToGitHubActionsConverter.Core.GitHubActions
 {
     public class TriggerDetail
     {
