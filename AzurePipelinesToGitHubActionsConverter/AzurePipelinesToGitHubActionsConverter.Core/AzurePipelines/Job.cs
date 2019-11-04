@@ -14,8 +14,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.AzurePipelines
         public string job { get; set; }
         public string displayName { get; set; }
         public string dependsOn { get; set; }
-        //TODO: Add condition support
-        public string condition { get; set; }
+        public string condition { get; set; } //https://docs.microsoft.com/en-us/azure/devops/pipelines/process/conditions?tabs=yaml&view=azure-devops
         public string timeoutInMinutes { get; set; }
         public Strategy strategy { get; set; }
         public Pool pool { get; set; }
