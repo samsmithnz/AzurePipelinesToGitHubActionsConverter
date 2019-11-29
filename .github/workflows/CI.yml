@@ -8,41 +8,55 @@ jobs:
       matrix:
         os: [ubuntu-latest]
     runs-on: ${{ matrix.os }} 
+    env:
+      buildVersion: 0.1.0.0 #The initial build version, but this is updated below
     steps:
     - uses: actions/checkout@v1
-    #- name: Use .NET Core sdk
-    #  uses: actions/setup-dotnet@v1
-    #  with:
-    #    dotnet-version: 3.0.100
-    #- name: Restore with dotnet
-    #  run: dotnet restore AzurePipelinesToGitHubActionsConverter/AzurePipelinesToGitHubActionsConverter.Tests/AzurePipelinesToGitHubActionsConverter.Tests.csproj
-    #- name: Build with dotnet
-    #  run: dotnet build AzurePipelinesToGitHubActionsConverter/AzurePipelinesToGitHubActionsConverter.Tests/AzurePipelinesToGitHubActionsConverter.Tests.csproj --configuration Release
     - name: Test with dotnet
       run: dotnet test AzurePipelinesToGitHubActionsConverter/AzurePipelinesToGitHubActionsConverter.Tests/AzurePipelinesToGitHubActionsConverter.Tests.csproj --configuration Release
-    #- name: Publish with dotnet
-    #  run: dotnet publish AzurePipelinesToGitHubActionsConverter/AzurePipelinesToGitHubActionsConverter.ConsoleApp/AzurePipelinesToGitHubActionsConverter.ConsoleApp.csproj --configuration Release
-    #- name: test variables
-    #  run: echo ${GITHUB_WORKSPACE} 
-    #- name: publish build artifacts back to GitHub
-    #  uses: actions/upload-artifact@master
-    #  with:
-    #    name: console exe
-    #    path: AzurePipelinesToGitHubActionsConverter/AzurePipelinesToGitHubActionsConverter.ConsoleApp/bin/Release/netcoreapp3.0
+    - name: Custom script to create a unique application version number for this build
+      run: |
+        Write-Host "Generating Build Number"
+        #Get the version from the csproj file
+        $xml = [Xml] (Get-Content AzurePipelinesToGitHubActionsConverter/AzurePipelinesToGitHubActionsConverter.Core/AzurePipelinesToGitHubActionsConverter.Core.csproj)
+        $initialVersion = [Version] $xml.Project.PropertyGroup.Version
+        Write-Host "Initial Version: " $version
+        $spliteVersion = $initialVersion -Split "\."
+        #Get the build number (number of days since January 1, 2000)
+        $baseDate = [datetime]"01/01/2000"
+        $currentDate = $(Get-Date)
+        $interval = (NEW-TIMESPAN -Start $baseDate -End $currentDate)
+        $buildNumber = $interval.Days
+        #Get the revision number (number seconds (divided by two) into the day on which the compilation was performed)
+        $StartDate=[datetime]::Today
+        $EndDate=(GET-DATE)
+        $revisionNumber = [math]::Round((New-TimeSpan -Start $StartDate -End $EndDate).TotalSeconds / 2,0)
+        #Final version number
+        $finalBuildVersion = "$($spliteVersion[0]).$($spliteVersion[1]).$($buildNumber).$($revisionNumber)"
+        Write-Host "Major.Minor,Build,Revision"
+        Write-Host "Final build number: " $finalBuildVersion
+        #Writing final version number back to Github variable
+        Write-Host "Writing final version $finalBuildVersion back to Github variable"
+        echo "::set-env name=buildVersion::$finalBuildVersion"
+      shell: pwsh
+    - name: Pack with dotnet
+      run: dotnet pack AzurePipelinesToGitHubActionsConverter/AzurePipelinesToGitHubActionsConverter.Core/AzurePipelinesToGitHubActionsConverter.Core.csproj --configuration Release /p:PackageVersion=${{env.buildVersion}}-beta
+    - name: Upload nuget package back to GitHub
+      uses: actions/upload-artifact@master
+      with:
+        name: nugetPackage
+        path: AzurePipelinesToGitHubActionsConverter/AzurePipelinesToGitHubActionsConverter.Core/bin/Release      
 
   NuGetPush:
     runs-on: ubuntu-latest
     needs: build
-
+      
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v1
-    #- name: Build with dotnet
-    #  run: dotnet build --configuration Release --version-suffix prerelease-$(date +%Y%m%d%H%M%S)
-    #  shell: bash
-    - name: Pack with dotnet
-      run: dotnet pack AzurePipelinesToGitHubActionsConverter/AzurePipelinesToGitHubActionsConverter.Core/AzurePipelinesToGitHubActionsConverter.Core.csproj --configuration Release --version-suffix prerelease-$(date +%Y%m%d%H%M%S)
-    - name: Publish nuget
-      run: |
-             curl -vX PUT -u "[user]:${{ secrets.GHPackagesToken }}" -F package=./AzurePipelinesToGitHubActionsConverter/AzurePipelinesToGitHubActionsConverter.Core/bin/Release/*.nupkg https://nuget.pkg.github.com/samsmithnz/
-      shell: bash
+    - name: Download nuget package artifact
+      uses: actions/download-artifact@v1.0.0
+      with:
+        name: nugetPackage  
+    - name: Publish nuget package to nuget.org
+      run: dotnet nuget push nugetPackage\*.nupkg --api-key "${{ secrets.GHPackagesToken }}" --source "https://www.nuget.org/"
+      #curl -vX PUT -u "${{ secrets.GHPackagesUser }}:${{ secrets.GHPackagesToken }}" -F package=/home/runner/work/AzurePipelinesToGitHubActionsConverter/AzurePipelinesToGitHubActionsConverter/AzurePipelinesToGitHubActionsConverter/AzurePipelinesToGitHubActionsConverter.Core/bin/Release/*.nupkg https://nuget.pkg.github.com/samsmithnz/
+      shell: pwsh

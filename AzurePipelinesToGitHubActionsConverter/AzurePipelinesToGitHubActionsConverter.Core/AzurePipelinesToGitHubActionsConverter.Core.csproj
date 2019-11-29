@@ -2,7 +2,12 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.1</TargetFramework>
-    <VersionPrefix>0.1.0</VersionPrefix>
+    <Version>0.1.0.0</Version>
+    <Deterministic>false</Deterministic>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/samsmithnz/AzurePipelinesToGitHubActionsConverter</PackageProjectUrl>
+    <PackageDescription>A conversion tool to migrate from Azure Pipelines YAML to GitHub Actions YAML</PackageDescription>
+    <PackageTags>yaml;serialization;github;github actions;azure devops;azure pipelines</PackageTags>
   </PropertyGroup>
 
   <ItemGroup>

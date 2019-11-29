@@ -1,13 +1,14 @@
 # Convert Azure Pipelines YAML to GitHub Actions YAML 
 A project to create a conversion tool to make migrations between Azure Pipelines YAML and GitHub Actions YAML possible. As GitHub Actions becomes more popular, it's clear that a migration tool will be useful to move workloads to GitHub. 
 
-Current build: ![](https://github.com/samsmithnz/AzurePipelinesToGitHubActionsConverter/workflows/CI/badge.svg)
+![Current build](https://github.com/samsmithnz/AzurePipelinesToGitHubActionsConverter/workflows/CI/badge.svg)
+[![NuGet version (BlackBeltCoder.Silk)](https://img.shields.io/nuget/v/BlackBeltCoder.Silk.svg?style=flat-square)](https://www.nuget.org/packages/AzurePipelinesToGitHubActionsConverter.Core/)
 
 As GitHub Actions becomes more popular, it's clear that a migration tool will be useful to move workloads to GitHub. 
 
 # How to use
 In the future we will create a website for ease of converting results. 
-Today, you need to paste in your yaml to the text in the console application, "AzurePipelinesToGitHubActionsConverter.ConsoleApp"
+Today, you can add the (currently prerelease) [NuGet package](https://www.nuget.org/packages/AzurePipelinesToGitHubActionsConverter.Core/), or paste yaml into the text in the console application, "AzurePipelinesToGitHubActionsConverter.ConsoleApp".
 
 # How this works
 **Currently this only supports one-way migrations from Azure Pipelines to GitHub Actions. Also note that this is translating some steps, but is just supporting the basic .NET tasks so far. Check the [issues](https://github.com/samsmithnz/AzurePipelinesToGitHubActionsConverter/issues) for incomplete items, or the TODO's in the source code.**
