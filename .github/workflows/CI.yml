@@ -52,12 +52,12 @@ jobs:
     needs: build
       
     steps:
-    - name: Download serviceapp artifact
+    - name: Download nuget package artifact
       uses: actions/download-artifact@v1.0.0
       with:
         name: nugetPackage
   
-    - name: Publish nuget package to nuget.com
-      run: dotnet nuget push serviceapp\*.nupkg --api-key "${{ secrets.GHPackagesToken }}"
+    - name: Publish nuget package to nuget.org
+      run: dotnet nuget push nugetPackage\*.nupkg --api-key "${{ secrets.GHPackagesToken }}"
       #curl -vX PUT -u "${{ secrets.GHPackagesUser }}:${{ secrets.GHPackagesToken }}" -F package=/home/runner/work/AzurePipelinesToGitHubActionsConverter/AzurePipelinesToGitHubActionsConverter/AzurePipelinesToGitHubActionsConverter/AzurePipelinesToGitHubActionsConverter.Core/bin/Release/*.nupkg https://nuget.pkg.github.com/samsmithnz/
       shell: pwsh
