@@ -6,23 +6,23 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
     [TestClass]
     public class StepsTest
     {
-        [TestMethod]
-        public void InvalidStepIndividualStepTest()
-        {
-            //Arrange
-            Conversion conversion = new Conversion();
-            string yaml = @"
-- task: invalid fake task
-";
+//        [TestMethod]
+//        public void InvalidStepIndividualStepTest()
+//        {
+//            //Arrange
+//            Conversion conversion = new Conversion();
+//            string yaml = @"
+//- task: invalid fake task
+//";
 
-            //Act
-            string output = conversion.ConvertAzurePinelineTaskToGitHubActionTask(yaml);
+//            //Act
+//            string output = conversion.ConvertAzurePinelineTaskToGitHubActionTask(yaml);
 
-            //Assert
-            string expectedOutput = "- name: '***This step could not be migrated***: '\r\n  run: \r\n    #task: invalid fake task\r\n\r\n  shell: powershell";
+//            //Assert
+//            string expectedOutput = "- name: '***This step could not be migrated***: '\r\n  run: \r\n    #task: invalid fake task\r\n\r\n  shell: powershell";
 
-            Assert.AreEqual(output, TestUtility.TrimNewLines(expectedOutput));
-        }
+//            Assert.AreEqual(output, TestUtility.TrimNewLines(expectedOutput));
+//        }
 
         [TestMethod]
         public void CmdLineIndividualStepTest()
