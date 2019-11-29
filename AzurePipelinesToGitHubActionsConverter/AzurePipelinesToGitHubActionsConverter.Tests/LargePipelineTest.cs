@@ -319,7 +319,7 @@ stages:
             string output = conversion.ConvertAzurePipelineToGitHubAction(yaml);
 
             //Assert
-            Assert.IsTrue(output.IndexOf("***This step is not currently supported***") == -1);
+            Assert.IsTrue(output.IndexOf("***This step could not be migrated***") == -1);
         }
 
     }

@@ -12,16 +12,14 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             //Arrange
             Conversion conversion = new Conversion();
             string yaml = @"
-- task: invalid false test
+- task: invalid fake task
 ";
 
             //Act
             string output = conversion.ConvertAzurePinelineTaskToGitHubActionTask(yaml);
 
             //Assert
-            string expectedOutput = @"
-- name: '***This step is not currently supported***: '
-";
+            string expectedOutput = "- name: '***This step could not be migrated***: '\r\n  run: \r\n    #task: invalid fake task\r\n\r\n  shell: powershell";
 
             Assert.AreEqual(output, TestUtility.TrimNewLines(expectedOutput));
         }
@@ -47,8 +45,8 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
 ";
 
             Assert.AreEqual(output, TestUtility.TrimNewLines(expectedOutput));
-        }  
-        
+        }
+
         [TestMethod]
         public void PowerShellIndividualStepTest()
         {
@@ -70,8 +68,8 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
 ";
 
             Assert.AreEqual(output, TestUtility.TrimNewLines(expectedOutput));
-        }  
-        
+        }
+
         [TestMethod]
         public void PwshIndividualStepTest()
         {

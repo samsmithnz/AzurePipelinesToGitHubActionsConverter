@@ -3,7 +3,6 @@ using AzurePipelinesToGitHubActionsConverter.Core.GitHubActions;
 using System;
 using System.Collections.Generic;
 using System.Text;
-using YamlDotNet.Serialization;
 
 namespace AzurePipelinesToGitHubActionsConverter.Core
 {
@@ -18,7 +17,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
             GitHubActions.Step gitHubActionStep = new GitHubActions.Step();
             AzurePipelinesProcessing<string[]> processing = new AzurePipelinesProcessing<string[]>();
 
-            AzurePipelines.Job azurePipelinesJob = ReadYamlFile<AzurePipelines.Job>(input);
+            AzurePipelines.Job azurePipelinesJob = Global.ReadYamlFile<AzurePipelines.Job>(input);
             if (azurePipelinesJob != null && azurePipelinesJob.steps != null && azurePipelinesJob.steps.Length > 0)
             {
                 AzurePipelines.Step azurePipelinesStep = azurePipelinesJob.steps[0];
@@ -38,7 +37,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                         steps = new GitHubActions.Step[1]
                     };
                     gitHubJob.steps[0] = gitHubActionStep;
-                    string yaml = WriteYAMLFile<GitHubActions.Job>(gitHubJob);
+                    string yaml = Global.WriteYAMLFile<GitHubActions.Job>(gitHubJob);
 
                     //Fix some variables for serialization, the '-' character is not valid in property names, and some of the YAML standard uses reserved words (e.g. if)
                     yaml = PrepareYamlPropertiesForGitHubSerialization(yaml);
@@ -68,11 +67,11 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
             AzurePipelinesRoot<AzurePipelines.Trigger> azurePipelineWithComplexTrigger = null;
             try
             {
-                azurePipelineWithSimpleTrigger = ReadYamlFile<AzurePipelinesRoot<string[]>>(input);
+                azurePipelineWithSimpleTrigger = Global.ReadYamlFile<AzurePipelinesRoot<string[]>>(input);
             }
             catch (Exception)
             {
-                azurePipelineWithComplexTrigger = ReadYamlFile<AzurePipelinesRoot<AzurePipelines.Trigger>>(input);
+                azurePipelineWithComplexTrigger = Global.ReadYamlFile<AzurePipelinesRoot<AzurePipelines.Trigger>>(input);
             }
 
             //Generate the github actions
@@ -103,7 +102,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
             //Create the YAML and apply some adjustments
             if (gitHubActions != null)
             {
-                string yaml = WriteYAMLFile<GitHubActionsRoot>(gitHubActions);
+                string yaml = Global.WriteYAMLFile<GitHubActionsRoot>(gitHubActions);
 
                 //Fix some variables for serialization, the '-' character is not valid in property names, and some of the YAML standard uses reserved words (e.g. if)
                 yaml = PrepareYamlPropertiesForGitHubSerialization(yaml);
@@ -135,7 +134,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
             yaml = yaml.Replace("tags-ignore", "tags_ignore");
             yaml = yaml.Replace("max-parallel", "max_parallel");
 
-            return ReadYamlFile<GitHubActionsRoot>(yaml);
+            return Global.ReadYamlFile<GitHubActionsRoot>(yaml);
         }
 
         private string PrepareYamlPropertiesForGitHubSerialization(string yaml)
@@ -152,8 +151,10 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
             yaml = yaml.Replace("paths_ignore", "paths-ignore");
             yaml = yaml.Replace("tags_ignore", "tags-ignore");
             yaml = yaml.Replace(">-", "|"); //Replace a weird artifact in scripts when converting pipes
-
             yaml = yaml.Replace("max_parallel", "max-parallel");
+
+            //HACK: Sometimes when generating  yaml, a weird ">+" string appears. Not sure why yet, replacing it out of there for short term
+            yaml = yaml.Replace("run: >+", "run: ");
 
             return yaml;
         }
@@ -280,27 +281,6 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
             }
 
             return variableList;
-        }
-
-        //Read in a YAML file and convert it to a T object
-        public T ReadYamlFile<T>(string yaml)
-        {
-            IDeserializer deserializer = new DeserializerBuilder()
-                        .Build();
-            T yamlObject = deserializer.Deserialize<T>(yaml);
-
-            return yamlObject;
-        }
-
-        //Write a YAML file using the T object
-        public string WriteYAMLFile<T>(T obj)
-        {
-            //Convert the object into a YAML document
-            ISerializer serializer = new SerializerBuilder()
-                    .Build();
-            string yaml = serializer.Serialize(obj);
-
-            return yaml;
         }
 
     }

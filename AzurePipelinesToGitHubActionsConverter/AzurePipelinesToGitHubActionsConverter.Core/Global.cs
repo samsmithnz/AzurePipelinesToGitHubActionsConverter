@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
+using YamlDotNet.Serialization;
 
 namespace AzurePipelinesToGitHubActionsConverter.Core
 {
@@ -50,6 +51,25 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
             }
 
             return list;
+        }
+
+        //Read in a YAML file and convert it to a T object
+        public static T ReadYamlFile<T>(string yaml)
+        {
+            IDeserializer deserializer = new DeserializerBuilder().Build();
+            T yamlObject = deserializer.Deserialize<T>(yaml);
+
+            return yamlObject;
+        }
+
+        //Write a YAML file using the T object
+        public static string WriteYAMLFile<T>(T obj)
+        {
+            //Convert the object into a YAML document
+            ISerializer serializer = new SerializerBuilder().Build();
+            string yaml = serializer.Serialize(obj);
+
+            return yaml;
         }
 
     }
