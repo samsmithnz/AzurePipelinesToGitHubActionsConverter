@@ -5,6 +5,7 @@
     <Version>0.1.0.0</Version>
     <Deterministic>false</Deterministic>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/samsmithnz/AzurePipelinesToGitHubActionsConverter</PackageProjectUrl>
   </PropertyGroup>
 
   <ItemGroup>
