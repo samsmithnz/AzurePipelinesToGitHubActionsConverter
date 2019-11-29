@@ -1,7 +1,9 @@
 ﻿using AzurePipelinesToGitHubActionsConverter.Core.AzurePipelines;
 using AzurePipelinesToGitHubActionsConverter.Core.GitHubActions;
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 
 namespace AzurePipelinesToGitHubActionsConverter.Core
 {
@@ -16,11 +18,11 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                 switch (step.task)
                 {
                     case "AzureAppServiceManage@0":
-                        gitHubStep = CreateAzureManageResourcesStep(step);
+                        gitHubStep = CreateAzureAppServiceManageStep(step);
                         break;
-                    case "AzureResourceGroupDeployment@2":
-                        gitHubStep = CreateScriptStep("powershell", step);
-                        break;
+                    //case "AzureResourceGroupDeployment@2":
+                    //    gitHubStep = CreateAzureManageResourcesStep(step);
+                    //    break;
                     case "AzureRmWebAppDeployment@3":
                         gitHubStep = CreateScriptStep("powershell", step);
                         break;
@@ -68,14 +70,54 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                         //    dotnet-version: '2.2.103' # SDK Version to use.
                         break;
                     case "VSTest@2":
+                        step.script = @" |
+                            $vsTestConsoleExe = ""C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Enterprise\\Common7\\IDE\\Extensions\\TestPlatform\\vstest.console.exe""
+                            $targetTestDll = """ + step.inputs["testAssemblyVer2"] + @"""
+                            $testRunSettings = ""/Settings:`""" + step.inputs["runSettingsFile"] + @"`"" ""
+                            $parameters = "" -- TestEnvironment=""Beta123""  ServiceUrl=""https://featureflags-data-eu-service-staging.azurewebsites.net/"" WebsiteUrl=""https://featureflags-data-eu-web-staging.azurewebsites.net/"" ""
+                            #Note that the `"" is an escape character to quote strings, and the `& is needed to start the command
+                            $command = ""`& `""$vsTestConsoleExe`"" `""$targetTestDll`"" $testRunSettings $parameters ""                             
+                            Write-Host ""$command""
+                            Invoke-Expression $command
+                            ";
                         gitHubStep = CreateScriptStep("powershell", step);
+
+                        //- task: VSTest@2
+                        //displayName: 'Run functional smoke tests on website and web service'
+                        //inputs:
+                        //  searchFolder: '$(build.artifactstagingdirectory)'
+                        //  testAssemblyVer2: |
+                        //    **\FeatureFlags.FunctionalTests\FeatureFlags.FunctionalTests.dll
+                        //  uiTests: true
+                        //  runSettingsFile: '$(build.artifactstagingdirectory)/drop/FunctionalTests/FeatureFlags.FunctionalTests/test.runsettings'
+                        //  overrideTestrunParameters: |
+                        //   -ServiceUrl "https://$(WebServiceName)-staging.azurewebsites.net/" 
+                        //   -WebsiteUrl "https://$(WebsiteName)-staging.azurewebsites.net/" 
+                        //   -TestEnvironment "$(AppSettings.Environment)" 
                         break;
+
+
                     default:
-                        return new GitHubActions.Step
+                        gitHubStep = CreateScriptStep("powershell", step);
+                        gitHubStep.name = "***This step could not be migrated***: " + step.displayName;
+                        string newYaml = Global.WriteYAMLFile<AzurePipelines.Step>(step);
+                        string[] newYamlSplit = newYaml.Split(Environment.NewLine);
+                        StringBuilder yamlBuilder = new StringBuilder();
+                        for (int i = 0; i < newYamlSplit.Length; i++)
                         {
-                            name = "***This step is not currently supported***: " + step.displayName
-                      
-                        };
+                            string line = newYamlSplit[i];
+                            if (line.Trim().Length > 0)
+                            {
+                                yamlBuilder.Append("#");
+                                yamlBuilder.Append(line);
+                                if (i < newYamlSplit.Length - 1)
+                                {
+                                    yamlBuilder.Append(Environment.NewLine);
+                                }
+                            }
+                        }
+                        gitHubStep.run = yamlBuilder.ToString();
+                        break;
                 }
 
                 return gitHubStep;
@@ -151,8 +193,11 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                 }
                 else
                 {
-                    step.inputs.TryGetValue("script", out string value);
-                    gitHubStep.run = value;
+                    if (step.inputs != null)
+                    {
+                        step.inputs.TryGetValue("script", out string value);
+                        gitHubStep.run = value;
+                    }
                 }
             }
 
@@ -185,6 +230,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
             //    csmParametersFile: '$(build.artifactstagingdirectory)/drop/ARMTemplates/azuredeploy.parameters.json'
             //    overrideParameters: '-environment $(AppSettings.Environment) -locationShort $(ArmTemplateResourceGroupLocation)'
 
+            //Going to:
             //https://github.com/Azure/github-actions/tree/master/arm
             //action "Manage Azure Resources" {
             //  uses = "Azure/github-actions/arm@master"
@@ -209,6 +255,52 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                     { "AZURE_RESOURCE_GROUP", resourceGroup},
                     { "AZURE_TEMPLATE_LOCATION", armTemplateFile},
                     { "AZURE_TEMPLATE_PARAM_FILE", armTemplateParametersFile},
+                }
+            };
+
+            return null;
+        }
+        private GitHubActions.Step CreateAzureAppServiceManageStep(AzurePipelines.Step step)
+        {
+            //https://docs.microsoft.com/en-us/azure/devops/pipelines/tasks/deploy/azure-app-service-manage?view=azure-devops
+            //coming from:
+            //- task: AzureAppServiceManage@0
+            //displayName: 'Swap Slots: web service'
+            //inputs:
+            //  azureSubscription: 'SamLearnsAzure connection to Azure Portal'
+            //  WebAppName: $(WebServiceName)
+            //  ResourceGroupName: $(ResourceGroupName)
+            //  SourceSlot: 'staging'
+
+            //Going to:
+            //- name: Swap web service staging slot to production
+            //  uses: Azure/cli@v1.0.0
+            //  with:
+            //    inlineScript: az webapp deployment slot swap --resource-group SamLearnsAzureFeatureFlags --name featureflags-data-eu-service --slot staging --target-slot production
+
+
+            step.inputs.TryGetValue("resourceGroupName", out string resourceGroup);
+            step.inputs.TryGetValue("webappname", out string webAppName);
+            step.inputs.TryGetValue("sourceslot", out string sourceSlot);
+            step.inputs.TryGetValue("targetslot", out string targetSlot);
+            if (targetSlot == null)
+            {
+                targetSlot = "production";
+            }
+            //TODO: Add the other properties
+
+            string script = "az webapp deployment slot swap --resource-group " + resourceGroup +
+                " --name " + webAppName +
+                " --slot " + sourceSlot +
+                " --target-slot " + targetSlot + "";
+
+            GitHubActions.Step gitHubStep = new GitHubActions.Step
+            {
+                name = step.displayName,
+                uses = "Azure/cli@v1.0.0",
+                with = new Dictionary<string, string>
+                {
+                    { "inlineScript", script}
                 }
             };
 

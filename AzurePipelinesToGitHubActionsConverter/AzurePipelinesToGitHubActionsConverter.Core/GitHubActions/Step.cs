@@ -10,6 +10,5 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.GitHubActions
         public string shell { get; set; }
         public Dictionary<string, string> with { get; set; } //A key value pair similar to env
         public Dictionary<string, string> env { get; set; } //Similar to the job env: https://help.github.com/en/articles/workflow-syntax-for-github-actions#jobsjob_idenv
-
     }
 }

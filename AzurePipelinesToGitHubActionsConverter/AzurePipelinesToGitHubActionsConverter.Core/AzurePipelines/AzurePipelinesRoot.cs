@@ -34,8 +34,9 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.AzurePipelines
         //Trigger is a complicated case, where it can be a simple list, or a more complex trigger object
         //To solve this, we added a generic to try to convert to a string[], and failing that, try to convert with Trigger
         //All outputs will return the complex version
+        //https://docs.microsoft.com/en-us/azure/devops/pipelines/yaml-schema?view=azure-devops&tabs=schema#triggers
         public T trigger { get; set; }
-        //public string[] trigger { get; set; } //https://docs.microsoft.com/en-us/azure/devops/pipelines/yaml-schema?view=azure-devops&tabs=schema#triggers
+        //public string[] trigger { get; set; }         
         //public Trigger trigger { get; set; }
 
         public Trigger pr { get; set; }
