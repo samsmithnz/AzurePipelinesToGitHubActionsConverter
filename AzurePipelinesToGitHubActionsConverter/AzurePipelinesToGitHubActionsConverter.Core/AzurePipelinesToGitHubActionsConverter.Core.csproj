@@ -6,6 +6,7 @@
     <Deterministic>false</Deterministic>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/samsmithnz/AzurePipelinesToGitHubActionsConverter</PackageProjectUrl>
+    <PackageReleaseNotes>A project to create a conversion tool to make migrations between Azure Pipelines YAML and GitHub Actions YAML possible.</PackageReleaseNotes>
   </PropertyGroup>
 
   <ItemGroup>
