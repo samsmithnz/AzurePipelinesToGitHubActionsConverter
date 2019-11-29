@@ -68,7 +68,7 @@ jobs:
         echo "::set-env name=buildVersion::$finalBuildVersion"
       shell: pwsh
     - name: Pack with dotnet
-      run: dotnet pack AzurePipelinesToGitHubActionsConverter/AzurePipelinesToGitHubActionsConverter.Core/AzurePipelinesToGitHubActionsConverter.Core.csproj --configuration Release --p:Version="${{env.buildVersion}}-prerelease"
+      run: dotnet pack AzurePipelinesToGitHubActionsConverter/AzurePipelinesToGitHubActionsConverter.Core/AzurePipelinesToGitHubActionsConverter.Core.csproj --configuration Release /p:PackageVersion=${{env.buildVersion}}-prerelease
     - name: Publish nuget
       run: dotnet nuget push /home/runner/work/AzurePipelinesToGitHubActionsConverter/AzurePipelinesToGitHubActionsConverter/AzurePipelinesToGitHubActionsConverter/AzurePipelinesToGitHubActionsConverter.Core/bin/Release/AzurePipelinesToGitHubActionsConverter.Core.nupkg --api-key "${{ secrets.GHPackagesToken }}"
       #curl -vX PUT -u "${{ secrets.GHPackagesUser }}:${{ secrets.GHPackagesToken }}" -F package=/home/runner/work/AzurePipelinesToGitHubActionsConverter/AzurePipelinesToGitHubActionsConverter/AzurePipelinesToGitHubActionsConverter/AzurePipelinesToGitHubActionsConverter.Core/bin/Release/*.nupkg https://nuget.pkg.github.com/samsmithnz/
