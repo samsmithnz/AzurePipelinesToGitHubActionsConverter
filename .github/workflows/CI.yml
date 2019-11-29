@@ -46,7 +46,7 @@ jobs:
       run: |
         Write-Host "Generating Build Number"
         #Get the version from the csproj file
-        $xml = [Xml] (Get-Content FeatureFlags/FeatureFlags.Web/FeatureFlags.Web.csproj)
+        $xml = [Xml] (Get-Content AzurePipelinesToGitHubActionsConverter/AzurePipelinesToGitHubActionsConverter.Core/AzurePipelinesToGitHubActionsConverter.Core.csproj)
         $initialVersion = [Version] $xml.Project.PropertyGroup.Version
         Write-Host "Initial Version: " $version
         $spliteVersion = $initialVersion -Split "\."
