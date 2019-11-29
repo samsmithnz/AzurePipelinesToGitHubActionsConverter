@@ -44,5 +44,7 @@ jobs:
       run: dotnet pack AzurePipelinesToGitHubActionsConverter/AzurePipelinesToGitHubActionsConverter.Core/AzurePipelinesToGitHubActionsConverter.Core.csproj --configuration Release --version-suffix prerelease-$(date +%Y%m%d%H%M%S)
     - name: Publish nuget
       run: |
-             curl -vX PUT -u "${{ secrets.GHPackagesUser }}:${{ secrets.GHPackagesToken }}" -F package=/home/runner/work/AzurePipelinesToGitHubActionsConverter/AzurePipelinesToGitHubActionsConverter/AzurePipelinesToGitHubActionsConverter/AzurePipelinesToGitHubActionsConverter.Core/bin/Release/*.nupkg https://nuget.pkg.github.com/samsmithnz/
-      shell: bash
+          nuget nuget push /home/runner/work/AzurePipelinesToGitHubActionsConverter/AzurePipelinesToGitHubActionsConverter/AzurePipelinesToGitHubActionsConverter/AzurePipelinesToGitHubActionsConverter.Core/bin/Release/*.nupkg 
+            --api-key "${{ secrets.GHPackagesToken }}"
+          #curl -vX PUT -u "${{ secrets.GHPackagesUser }}:${{ secrets.GHPackagesToken }}" -F package=/home/runner/work/AzurePipelinesToGitHubActionsConverter/AzurePipelinesToGitHubActionsConverter/AzurePipelinesToGitHubActionsConverter/AzurePipelinesToGitHubActionsConverter.Core/bin/Release/*.nupkg https://nuget.pkg.github.com/samsmithnz/
+      shell: pwsh
