@@ -45,7 +45,7 @@ jobs:
       uses: actions/upload-artifact@master
       with:
         name: nugetPackage
-        path: AzurePipelinesToGitHubActionsConverter/AzurePipelinesToGitHubActionsConverter.Core/bin/Release/netstandard2.1/publish      
+        path: AzurePipelinesToGitHubActionsConverter/AzurePipelinesToGitHubActionsConverter.Core/bin/Release/publish      
 
   NuGetPush:
     runs-on: ubuntu-latest
