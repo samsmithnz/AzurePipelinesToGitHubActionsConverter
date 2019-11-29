@@ -58,6 +58,6 @@ jobs:
         name: nugetPackage
   
     - name: Publish nuget package to nuget.org
-      run: dotnet nuget push nugetPackage\*.nupkg --api-key "${{ secrets.GHPackagesToken }}"
+      run: dotnet nuget push nugetPackage\*.nupkg --api-key "${{ secrets.GHPackagesToken }}" --source "https://www.nuget.org/packages/AzurePipelinesToGitHubActionsConverter.Core/"
       #curl -vX PUT -u "${{ secrets.GHPackagesUser }}:${{ secrets.GHPackagesToken }}" -F package=/home/runner/work/AzurePipelinesToGitHubActionsConverter/AzurePipelinesToGitHubActionsConverter/AzurePipelinesToGitHubActionsConverter/AzurePipelinesToGitHubActionsConverter.Core/bin/Release/*.nupkg https://nuget.pkg.github.com/samsmithnz/
       shell: pwsh
