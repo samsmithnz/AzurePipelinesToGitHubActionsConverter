@@ -40,7 +40,7 @@ jobs:
         echo "::set-env name=buildVersion::$finalBuildVersion"
       shell: pwsh
     - name: Pack with dotnet
-      run: dotnet pack AzurePipelinesToGitHubActionsConverter/AzurePipelinesToGitHubActionsConverter.Core/AzurePipelinesToGitHubActionsConverter.Core.csproj --configuration Release /p:PackageVersion=${{env.buildVersion}}-prerelease
+      run: dotnet pack AzurePipelinesToGitHubActionsConverter/AzurePipelinesToGitHubActionsConverter.Core/AzurePipelinesToGitHubActionsConverter.Core.csproj --configuration Release /p:PackageVersion=${{env.buildVersion}}-beta
     - name: Upload nuget package back to GitHub
       uses: actions/upload-artifact@master
       with:
