@@ -10,8 +10,10 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
     {
         private string _matrixVariableName;
 
-        public string ConvertAzurePinelineTaskToGitHubActionTask(string input)
+        public GitHubConversion ConvertAzurePinelineTaskToGitHubActionTask(string input)
         {
+            string yamlResponse = "";
+
             input = StepsPreProcessing(input);
 
             GitHubActions.Step gitHubActionStep = new GitHubActions.Step();
@@ -34,33 +36,46 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                     //add the step into a github job so it renders correctly
                     GitHubActions.Job gitHubJob = new GitHubActions.Job
                     {
-                        steps = new GitHubActions.Step[1]
+                        steps = new GitHubActions.Step[1] //create an array of size 1
                     };
                     gitHubJob.steps[0] = gitHubActionStep;
-                    string yaml = Global.WriteYAMLFile<GitHubActions.Job>(gitHubJob);
+                    yamlResponse = Global.WriteYAMLFile<GitHubActions.Job>(gitHubJob);
 
                     //Fix some variables for serialization, the '-' character is not valid in property names, and some of the YAML standard uses reserved words (e.g. if)
-                    yaml = PrepareYamlPropertiesForGitHubSerialization(yaml);
+                    yamlResponse = PrepareYamlPropertiesForGitHubSerialization(yamlResponse);
 
                     //update variables from the $(variableName) format to ${{variableName}} format, by piping them into a list for replacement later.
-                    yaml = PrepareYamlVariablesForGitHubSerialization(yaml, variableList);
+                    yamlResponse = PrepareYamlVariablesForGitHubSerialization(yamlResponse, variableList);
 
-                    yaml = StepsPostProcessing(yaml);
+                    yamlResponse = StepsPostProcessing(yamlResponse);
 
                     //Trim off any leading of trailing new lines 
-                    yaml = yaml.TrimStart('\r', '\n');
-                    yaml = yaml.TrimEnd('\r', '\n');
-
-                    return yaml;
+                    yamlResponse = yamlResponse.TrimStart('\r', '\n');
+                    yamlResponse = yamlResponse.TrimEnd('\r', '\n');
                 }
             }
-            return "";
+            else
+            {
+                yamlResponse = "";
+            }
+
+            //Load failed tasks and comments for processing
+            List<string> stepComments = new List<string>();
+            stepComments.Add(gitHubActionStep.comment);
+
+            return new GitHubConversion
+            {
+                yaml = yamlResponse,
+                comments = stepComments
+
+            };
 
         }
 
-        public string ConvertAzurePipelineToGitHubAction(string input)
+        public GitHubConversion ConvertAzurePipelineToGitHubAction(string input)
         {
             List<string> variableList = new List<string>();
+            string yamlResponse;
 
             //Triggers are hard, as there are two data types that can exist, so we need to go with the most common type and handle the less common type with generics
             AzurePipelinesRoot<string[]> azurePipelineWithSimpleTrigger = null;
@@ -102,24 +117,47 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
             //Create the YAML and apply some adjustments
             if (gitHubActions != null)
             {
-                string yaml = Global.WriteYAMLFile<GitHubActionsRoot>(gitHubActions);
+                yamlResponse = Global.WriteYAMLFile<GitHubActionsRoot>(gitHubActions);
 
                 //Fix some variables for serialization, the '-' character is not valid in property names, and some of the YAML standard uses reserved words (e.g. if)
-                yaml = PrepareYamlPropertiesForGitHubSerialization(yaml);
+                yamlResponse = PrepareYamlPropertiesForGitHubSerialization(yamlResponse);
 
                 //update variables from the $(variableName) format to ${{variableName}} format, by piping them into a list for replacement later.
-                yaml = PrepareYamlVariablesForGitHubSerialization(yaml, variableList);
+                yamlResponse = PrepareYamlVariablesForGitHubSerialization(yamlResponse, variableList);
 
                 //Trim off any leading of trailing new lines 
-                yaml = yaml.TrimStart('\r', '\n');
-                yaml = yaml.TrimEnd('\r', '\n');
-
-                return yaml;
+                yamlResponse = yamlResponse.TrimStart('\r', '\n');
+                yamlResponse = yamlResponse.TrimEnd('\r', '\n');
             }
             else
             {
-                return "";
+                yamlResponse = "";
             }
+
+            //Load failed task comments for processing
+            List<string> stepComments = new List<string>();
+            if (gitHubActions != null && gitHubActions.jobs != null)
+            {
+                foreach (KeyValuePair<string, GitHubActions.Job> job in gitHubActions.jobs)
+                {
+                    if (job.Value.steps != null)
+                    {
+                        foreach (GitHubActions.Step step in job.Value.steps)
+                        {
+                            if (step != null && string.IsNullOrEmpty(step.comment) == false)
+                            {
+                                stepComments.Add(step.comment);
+                            }
+                        }
+                    }
+                }
+            }
+
+            return new GitHubConversion
+            {
+                yaml = yamlResponse,
+                comments = stepComments
+            };
         }
 
         public GitHubActionsRoot ReadGitHubActionsYaml(string yaml)
@@ -155,6 +193,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
 
             //HACK: Sometimes when generating  yaml, a weird ">+" string appears. Not sure why yet, replacing it out of there for short term
             yaml = yaml.Replace("run: >+", "run: ");
+            yaml = yaml.Replace("run: >", "run: ");
 
             return yaml;
         }

@@ -16,10 +16,10 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             Conversion conversion = new Conversion();
 
             //Act
-            string output = conversion.ConvertAzurePipelineToGitHubAction(input);
+            GitHubConversion gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(input);
 
             //Assert
-            Assert.AreEqual(output, "on:" + Environment.NewLine +
+            Assert.AreEqual(gitHubOutput.yaml, "on:" + Environment.NewLine +
                                     "  push:" + Environment.NewLine +
                                     "    branches:" + Environment.NewLine +
                                     "    - master");
@@ -35,10 +35,10 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             Conversion conversion = new Conversion();
 
             //Act
-            string output = conversion.ConvertAzurePipelineToGitHubAction(input);
+            GitHubConversion gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(input);
 
             //Assert
-            Assert.AreEqual(output, "on:" + Environment.NewLine +
+            Assert.AreEqual(gitHubOutput.yaml, "on:" + Environment.NewLine +
                                     "  push:" + Environment.NewLine +
                                     "    branches:" + Environment.NewLine +
                                     "    - master" + Environment.NewLine +
@@ -67,10 +67,10 @@ trigger:
             Conversion conversion = new Conversion();
 
             //Act
-            string output = conversion.ConvertAzurePipelineToGitHubAction(input);
+            GitHubConversion gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(input);
 
             //Assert
-            Assert.AreEqual(output,
+            Assert.AreEqual(gitHubOutput.yaml,
                         "on:" + Environment.NewLine +
                         "  push:" + Environment.NewLine +
                         "    branches:" + Environment.NewLine +
@@ -103,10 +103,10 @@ pr:
             Conversion conversion = new Conversion();
 
             //Act
-            string output = conversion.ConvertAzurePipelineToGitHubAction(input);
+            GitHubConversion gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(input);
 
             //Assert
-            Assert.AreEqual(output,
+            Assert.AreEqual(gitHubOutput.yaml,
                         "on:" + Environment.NewLine +
                         "  pull-request:" + Environment.NewLine +
                         "    branches:" + Environment.NewLine +
@@ -138,10 +138,10 @@ trigger:
             Conversion conversion = new Conversion();
 
             //Act
-            string output = conversion.ConvertAzurePipelineToGitHubAction(input);
+            GitHubConversion gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(input);
 
             //Assert
-            Assert.AreEqual(output,
+            Assert.AreEqual(gitHubOutput.yaml,
                         "on:" + Environment.NewLine +
                         "  push:" + Environment.NewLine +
                         "    branches-ignore:" + Environment.NewLine +
@@ -173,10 +173,10 @@ pr:
             Conversion conversion = new Conversion();
 
             //Act
-            string output = conversion.ConvertAzurePipelineToGitHubAction(input);
+            GitHubConversion gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(input);
 
             //Assert
-            Assert.AreEqual(output,
+            Assert.AreEqual(gitHubOutput.yaml,
                         "on:" + Environment.NewLine +
                         "  pull-request:" + Environment.NewLine +
                         "    branches-ignore:" + Environment.NewLine +
@@ -216,10 +216,10 @@ pr:
             Conversion conversion = new Conversion();
 
             //Act
-            string output = conversion.ConvertAzurePipelineToGitHubAction(input);
+            GitHubConversion gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(input);
 
             //Assert
-            Assert.AreEqual(output,
+            Assert.AreEqual(gitHubOutput.yaml,
                         "on:" + Environment.NewLine +
                         "  push:" + Environment.NewLine +
                         "    branches-ignore:" + Environment.NewLine +

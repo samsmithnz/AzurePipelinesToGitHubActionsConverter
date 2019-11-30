@@ -6,23 +6,22 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
     [TestClass]
     public class StepsTest
     {
-//        [TestMethod]
-//        public void InvalidStepIndividualStepTest()
-//        {
-//            //Arrange
-//            Conversion conversion = new Conversion();
-//            string yaml = @"
-//- task: invalid fake task
-//";
+        //TODO: Resolve difference between Ubuntu and Windows
+        //[TestMethod]
+        //public void InvalidStepIndividualStepTest()
+        //{
+        //    //Arrange
+        //    Conversion conversion = new Conversion();
+        //    string yaml = "- task: invalid fake task";
 
-//            //Act
-//            string output = conversion.ConvertAzurePinelineTaskToGitHubActionTask(yaml);
+        //    //Act
+        //    GitHubConversion gitHubOutput = conversion.ConvertAzurePinelineTaskToGitHubActionTask(yaml);
 
-//            //Assert
-//            string expectedOutput = "- name: '***This step could not be migrated***: '\r\n  run: \r\n    #task: invalid fake task\r\n\r\n  shell: powershell";
+        //    //Assert
+        //    string expectedOutput = "- name: '***This step could not be migrated***'\r\n  run: \r\n    #task: invalid fake task\r\n  shell: powershell";
 
-//            Assert.AreEqual(output, TestUtility.TrimNewLines(expectedOutput));
-//        }
+        //    Assert.AreEqual(gitHubOutput.yaml, TestUtility.TrimNewLines(expectedOutput));
+        //}
 
         [TestMethod]
         public void CmdLineIndividualStepTest()
@@ -36,7 +35,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
 ";
 
             //Act
-            string output = conversion.ConvertAzurePinelineTaskToGitHubActionTask(yaml);
+            GitHubConversion gitHubOutput = conversion.ConvertAzurePinelineTaskToGitHubActionTask(yaml);
 
             //Assert
             string expectedOutput = @"
@@ -44,7 +43,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
   shell: cmd
 ";
 
-            Assert.AreEqual(output, TestUtility.TrimNewLines(expectedOutput));
+            Assert.AreEqual(gitHubOutput.yaml, TestUtility.TrimNewLines(expectedOutput));
         }
 
         [TestMethod]
@@ -58,7 +57,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
 ";
 
             //Act
-            string output = conversion.ConvertAzurePinelineTaskToGitHubActionTask(yaml);
+            GitHubConversion gitHubOutput = conversion.ConvertAzurePinelineTaskToGitHubActionTask(yaml);
 
             //Assert
             string expectedOutput = @"
@@ -67,7 +66,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
   shell: powershell
 ";
 
-            Assert.AreEqual(output, TestUtility.TrimNewLines(expectedOutput));
+            Assert.AreEqual(gitHubOutput.yaml, TestUtility.TrimNewLines(expectedOutput));
         }
 
         [TestMethod]
@@ -81,7 +80,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
 ";
 
             //Act
-            string output = conversion.ConvertAzurePinelineTaskToGitHubActionTask(yaml);
+            GitHubConversion gitHubOutput = conversion.ConvertAzurePinelineTaskToGitHubActionTask(yaml);
 
             //Assert
             string expectedOutput = @"
@@ -90,7 +89,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
   shell: pwsh
 ";
 
-            Assert.AreEqual(output, TestUtility.TrimNewLines(expectedOutput));
+            Assert.AreEqual(gitHubOutput.yaml, TestUtility.TrimNewLines(expectedOutput));
         }
 
         [TestMethod]
@@ -104,7 +103,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
 ";
 
             //Act
-            string output = conversion.ConvertAzurePinelineTaskToGitHubActionTask(yaml);
+            GitHubConversion gitHubOutput = conversion.ConvertAzurePinelineTaskToGitHubActionTask(yaml);
 
             //Assert
             string expectedOutput = @"
@@ -113,7 +112,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
   shell: bash
 ";
 
-            Assert.AreEqual(output, TestUtility.TrimNewLines(expectedOutput));
+            Assert.AreEqual(gitHubOutput.yaml, TestUtility.TrimNewLines(expectedOutput));
         }
 
 
@@ -130,7 +129,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
     version: 2.2.203";
 
             //Act
-            string output = conversion.ConvertAzurePinelineTaskToGitHubActionTask(yaml);
+            GitHubConversion gitHubOutput = conversion.ConvertAzurePinelineTaskToGitHubActionTask(yaml);
 
             //Assert
             string expectedOutput = @"
@@ -140,7 +139,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
     dotnet-version: 2.2.203
 ";
 
-            Assert.AreEqual(output, TestUtility.TrimNewLines(expectedOutput));
+            Assert.AreEqual(gitHubOutput.yaml, TestUtility.TrimNewLines(expectedOutput));
         }
 
         [TestMethod]
@@ -153,7 +152,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
   displayName: dotnet build $(buildConfiguration) part 1";
 
             //Act
-            string output = conversion.ConvertAzurePinelineTaskToGitHubActionTask(yaml);
+            GitHubConversion gitHubOutput = conversion.ConvertAzurePinelineTaskToGitHubActionTask(yaml);
 
             //Assert
             string expectedOutput = @"
@@ -161,7 +160,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
   run: dotnet build --configuration $buildConfiguration WebApplication1/WebApplication1.Service/WebApplication1.Service.csproj
 ";
 
-            Assert.AreEqual(output, TestUtility.TrimNewLines(expectedOutput));
+            Assert.AreEqual(gitHubOutput.yaml, TestUtility.TrimNewLines(expectedOutput));
         }
 
 
@@ -178,10 +177,10 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
     script: Write-Host 'Hello World'";
 
             //Act
-            string output = conversion.ConvertAzurePinelineTaskToGitHubActionTask(yaml);
+            GitHubConversion gitHubOutput = conversion.ConvertAzurePinelineTaskToGitHubActionTask(yaml);
 
             //Assert
-            Assert.IsTrue(output != null);
+            Assert.IsTrue(gitHubOutput.yaml != null);
         }
 
         [TestMethod]
@@ -199,10 +198,10 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
       Write-Host 'Hello World2'";
 
             //Act
-            string output = conversion.ConvertAzurePinelineTaskToGitHubActionTask(yaml);
+            GitHubConversion gitHubOutput = conversion.ConvertAzurePinelineTaskToGitHubActionTask(yaml);
 
             //Assert
-            Assert.IsTrue(output != null);
+            Assert.IsTrue(gitHubOutput.yaml != null);
         }
 
     }
