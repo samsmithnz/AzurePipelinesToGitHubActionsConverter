@@ -11,15 +11,13 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
         {
             //Arrange
             Conversion conversion = new Conversion();
-            string yaml = @"
-- task: invalid fake task
-";
+            string yaml = "- task: invalid fake task";
 
             //Act
             GitHubConversion gitHubOutput = conversion.ConvertAzurePinelineTaskToGitHubActionTask(yaml);
 
             //Assert
-            string expectedOutput = "- name: '***This step could not be migrated***: '\r\n  run: \r\n    #task: invalid fake task\r\n\r\n  shell: powershell";
+            string expectedOutput = "- name: '***This step could not be migrated***'\r\n  run: \r\n    #task: invalid fake task\r\n\r\n  shell: powershell";
 
             Assert.AreEqual(gitHubOutput.yaml, TestUtility.TrimNewLines(expectedOutput));
         }
