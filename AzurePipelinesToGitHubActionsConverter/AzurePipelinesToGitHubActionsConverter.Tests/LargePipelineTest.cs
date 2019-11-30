@@ -119,11 +119,11 @@ stages:
         PathtoPublish: '$(build.artifactstagingdirectory)'";
 
             //Act
-            string output = conversion.ConvertAzurePipelineToGitHubAction(yaml);
+            GitHubConversion gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(yaml);
 
             //Assert
-            Assert.IsTrue(output.IndexOf("unknown") == -1);
-        }
+            Assert.IsTrue(gitHubOutput.yaml.IndexOf("unknown") == -1);
+        }   
 
         [TestMethod]
         public void LargeMultiStagePipelineTest()
@@ -316,11 +316,11 @@ stages:
 ";
 
             //Act
-            string output = conversion.ConvertAzurePipelineToGitHubAction(yaml);
+            GitHubConversion gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(yaml);
 
             //Assert
-            //Assert.IsTrue(output.IndexOf("***This step could not be migrated***") == -1);
-            Assert.IsTrue(true);
+            Assert.IsTrue(gitHubOutput.yaml.IndexOf("***This step could not be migrated***") == -1);
+            //Assert.IsTrue(true);
         }
 
     }

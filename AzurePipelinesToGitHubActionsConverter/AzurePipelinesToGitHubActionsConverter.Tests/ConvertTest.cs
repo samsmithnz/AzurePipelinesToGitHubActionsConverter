@@ -16,10 +16,10 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             Conversion conversion = new Conversion();
 
             //Act
-            string output = conversion.ConvertAzurePipelineToGitHubAction(input);
+            GitHubConversion gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(input);
 
             //Assert
-            Assert.AreEqual(output, "name: test ci pipelines");
+            Assert.AreEqual(gitHubOutput.yaml, "name: test ci pipelines");
         }
 
         [TestMethod]
@@ -30,10 +30,10 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             Conversion conversion = new Conversion();
 
             //Act
-            string output = conversion.ConvertAzurePipelineToGitHubAction(input);
+            GitHubConversion gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(input);
 
             //Assert
-            Assert.AreEqual(output, "");
+            Assert.AreEqual(gitHubOutput.yaml, "");
         }
 
         [TestMethod]
@@ -45,10 +45,10 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             Conversion conversion = new Conversion();
 
             //Act
-            string output = conversion.ConvertAzurePipelineToGitHubAction(input);
+            GitHubConversion gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(input);
 
             //Assert
-            Assert.AreEqual(output, "jobs:" + Environment.NewLine +
+            Assert.AreEqual(gitHubOutput.yaml, "jobs:" + Environment.NewLine +
                                     "  build:" + Environment.NewLine +
                                     "    runs-on: ubuntu-latest");
         }
@@ -62,10 +62,10 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             Conversion conversion = new Conversion();
 
             //Act
-            string output = conversion.ConvertAzurePipelineToGitHubAction(input);
+            GitHubConversion gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(input);
 
             //Assert
-            Assert.AreEqual(output, "jobs:" + Environment.NewLine +
+            Assert.AreEqual(gitHubOutput.yaml, "jobs:" + Environment.NewLine +
                                     "  build:" + Environment.NewLine +
                                     "    runs-on: windows-latest");
         }
@@ -92,7 +92,7 @@ jobs:
             Conversion conversion = new Conversion();
 
             //Act
-            string output = conversion.ConvertAzurePipelineToGitHubAction(input);
+            GitHubConversion gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(input);
 
             //Assert
             string expectedOutput = @"
@@ -114,7 +114,7 @@ jobs:
       run: dotnet build WebApplication1/WebApplication1.Service/WebApplication1.Service.csproj --configuration $buildConfiguration";
             
 
-            Assert.AreEqual(output, TestUtility.TrimNewLines(expectedOutput));
+            Assert.AreEqual(gitHubOutput.yaml, TestUtility.TrimNewLines(expectedOutput));
         }
 
         [TestMethod]
@@ -139,7 +139,7 @@ jobs:
             Conversion conversion = new Conversion();
 
             //Act
-            string output = conversion.ConvertAzurePipelineToGitHubAction(input);
+            GitHubConversion gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(input);
 
             //Assert
             string expectedOutput = @"
@@ -160,7 +160,7 @@ jobs:
     - name: dotnet build $myJobVariable
       run: dotnet build WebApplication1/WebApplication1.Service/WebApplication1.Service.csproj --configuration $buildConfiguration";
             
-            Assert.AreEqual(output, TestUtility.TrimNewLines(expectedOutput));
+            Assert.AreEqual(gitHubOutput.yaml, TestUtility.TrimNewLines(expectedOutput));
         }
 
         [TestMethod]
@@ -230,7 +230,7 @@ jobs:
         //      displayName: dotnet build $(buildConfiguration)";
 
         //            //Act
-        //            string output = conversion.ConvertAzurePipelineToGitHubAction(yaml);
+        //            GitHubConversion gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(yaml);
 
         //            //Assert
         //            Assert.IsTrue(output != null);
@@ -274,7 +274,7 @@ jobs:
     displayName: dotnet build part 3";
 
             //Act
-            string output = conversion.ConvertAzurePipelineToGitHubAction(yaml);
+            GitHubConversion gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(yaml);
 
             //Assert
             string expectedOutput = @"
@@ -313,7 +313,7 @@ jobs:
 ";
 
 
-            Assert.AreEqual(output, TestUtility.TrimNewLines(expectedOutput));
+            Assert.AreEqual(gitHubOutput.yaml, TestUtility.TrimNewLines(expectedOutput));
         }
 
     }

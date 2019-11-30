@@ -40,12 +40,12 @@ jobs:
 
             //Process the input
             Conversion conversion = new Conversion();
-            string output = conversion.ConvertAzurePipelineToGitHubAction(input);
+            GitHubConversion gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(input);
 
             //Output the result
             Console.WriteLine("Azure Pipelines YAML: " + Environment.NewLine + input);
             Console.WriteLine(Environment.NewLine);
-            Console.WriteLine("GitHub Actions YAML: " + Environment.NewLine + output);
+            Console.WriteLine("GitHub Actions YAML: " + Environment.NewLine + gitHubOutput.yaml);
         }
     }
 }
