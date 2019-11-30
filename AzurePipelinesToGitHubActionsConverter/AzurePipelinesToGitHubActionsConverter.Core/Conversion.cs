@@ -136,13 +136,19 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
 
             //Load failed task comments for processing
             List<string> stepComments = new List<string>();
-            foreach (KeyValuePair<string, GitHubActions.Job> job in gitHubActions.jobs)
+            if (gitHubActions != null && gitHubActions.jobs != null)
             {
-                foreach (GitHubActions.Step step in job.Value.steps)
+                foreach (KeyValuePair<string, GitHubActions.Job> job in gitHubActions.jobs)
                 {
-                    if (step != null && string.IsNullOrEmpty(step.comment) == false)
+                    if (job.Value.steps != null)
                     {
-                        stepComments.Add(step.comment);
+                        foreach (GitHubActions.Step step in job.Value.steps)
+                        {
+                            if (step != null && string.IsNullOrEmpty(step.comment) == false)
+                            {
+                                stepComments.Add(step.comment);
+                            }
+                        }
                     }
                 }
             }
