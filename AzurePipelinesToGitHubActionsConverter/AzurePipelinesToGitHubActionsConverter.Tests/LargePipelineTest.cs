@@ -319,6 +319,7 @@ stages:
             GitHubConversion gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(yaml);
 
             //Assert
+            Assert.IsTrue(gitHubOutput.comments.Count == 0);
             Assert.IsTrue(gitHubOutput.yaml.IndexOf("***This step could not be migrated***") == -1);
             //Assert.IsTrue(true);
         }

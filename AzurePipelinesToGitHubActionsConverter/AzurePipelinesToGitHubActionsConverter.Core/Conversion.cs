@@ -36,7 +36,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                     //add the step into a github job so it renders correctly
                     GitHubActions.Job gitHubJob = new GitHubActions.Job
                     {
-                        steps = new GitHubActions.Step[1]
+                        steps = new GitHubActions.Step[1] //create an array of size 1
                     };
                     gitHubJob.steps[0] = gitHubActionStep;
                     yamlResponse = Global.WriteYAMLFile<GitHubActions.Job>(gitHubJob);
@@ -59,9 +59,15 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                 yamlResponse = "";
             }
 
+            //Load failed tasks and comments for processing
+            List<string> stepComments = new List<string>();
+            stepComments.Add(gitHubActionStep.comment);
+
             return new GitHubConversion
             {
-                yaml = yamlResponse
+                yaml = yamlResponse,
+                comments = stepComments
+
             };
 
         }
@@ -128,9 +134,23 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                 yamlResponse = "";
             }
 
+            //Load failed task comments for processing
+            List<string> stepComments = new List<string>();
+            foreach (KeyValuePair<string, GitHubActions.Job> job in gitHubActions.jobs)
+            {
+                foreach (GitHubActions.Step step in job.Value.steps)
+                {
+                    if (step != null && string.IsNullOrEmpty(step.comment) == false)
+                    {
+                        stepComments.Add(step.comment);
+                    }
+                }
+            }
+
             return new GitHubConversion
             {
-                yaml = yamlResponse
+                yaml = yamlResponse,
+                comments = stepComments
             };
         }
 
@@ -167,6 +187,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
 
             //HACK: Sometimes when generating  yaml, a weird ">+" string appears. Not sure why yet, replacing it out of there for short term
             yaml = yaml.Replace("run: >+", "run: ");
+            yaml = yaml.Replace("run: >", "run: ");
 
             return yaml;
         }

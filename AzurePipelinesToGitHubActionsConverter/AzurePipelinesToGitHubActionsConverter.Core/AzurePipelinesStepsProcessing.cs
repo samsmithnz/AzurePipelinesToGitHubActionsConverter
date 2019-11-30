@@ -24,7 +24,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                         gitHubStep = CreateAzureManageResourcesStep(step);
                         break;
                     case "AzureRmWebAppDeployment@3":
-                        gitHubStep = CreateScriptStep("powershell", step);
+                        gitHubStep = CreateAzureWebAppDeploymentStep(step);
                         break;
                     case "CmdLine@2":
                         gitHubStep = CreateScriptStep("cmd", step);
@@ -36,7 +36,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                         gitHubStep = CreateDotNetCommandStep(step);
                         break;
                     case "DownloadBuildArtifacts@0":
-                        gitHubStep = CreateScriptStep("powershell", step);
+                        gitHubStep = CreateDownloadBuildArtifacts(step);
                         break;
                     case "PowerShell@2":
                         gitHubStep = CreateScriptStep("powershell", step);
@@ -75,6 +75,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                             }
                         }
                         gitHubStep.run = yamlBuilder.ToString();
+                        gitHubStep.comment = "This step does not have a conversion yet: " + step.task;
                         break;
                 }
 
@@ -122,6 +123,37 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
             //Remove the new line characters
             gitHubStep.run = gitHubStep.run.Replace("\n", "");
 
+            return gitHubStep;
+        }
+
+        private GitHubActions.Step CreateDownloadBuildArtifacts(AzurePipelines.Step step)
+        {
+            step.inputs.TryGetValue("artifactName", out string artifactName);
+
+            GitHubActions.Step gitHubStep = new GitHubActions.Step
+            {
+                name = step.displayName,
+                uses = "actions/download-artifact@v1.0.0",
+                with = new Dictionary<string, string>
+                {
+                    { "name", artifactName }
+                }
+            };
+
+            //From: 
+            //- task: DownloadBuildArtifacts@0
+            //  displayName: 'Download the build artifacts'
+            //  inputs:
+            //    buildType: 'current'
+            //    downloadType: 'single'
+            //    artifactName: 'drop'
+            //    downloadPath: '$(build.artifactstagingdirectory)'
+
+            //To:
+            //- name: Download serviceapp artifact
+            //  uses: actions/download-artifact@v1.0.0
+            //  with:
+            //    name: serviceapp
             return gitHubStep;
         }
 
@@ -258,6 +290,48 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
             //  }
             //  needs = ["Azure Login"]
             //}}
+
+            return gitHubStep;
+        }
+
+        private GitHubActions.Step CreateAzureWebAppDeploymentStep(AzurePipelines.Step step)
+        {
+            step.inputs.TryGetValue("webappname", out string webappName);
+            step.inputs.TryGetValue("package", out string package);
+            step.inputs.TryGetValue("slotname", out string slotName);
+
+            GitHubActions.Step gitHubStep = new GitHubActions.Step
+            {
+                name = step.displayName,
+                uses = "Azure/webapps-deploy@v1",
+                with = new Dictionary<string, string>
+                {
+                    { "app-name", webappName},
+                    { "package", package},
+                    { "slot-name", slotName},
+                }
+            };
+
+            //coming from:
+            //- task: AzureRmWebAppDeployment@3
+            //  displayName: 'Azure App Service Deploy: web service'
+            //  inputs:
+            //    azureSubscription: 'SamLearnsAzure connection to Azure Portal'
+            //    WebAppName: $(WebServiceName)
+            //    DeployToSlotFlag: true
+            //    ResourceGroupName: $(ResourceGroupName)
+            //    SlotName: 'staging'
+            //    Package: '$(build.artifactstagingdirectory)/drop/FeatureFlags.Service.zip'
+            //    TakeAppOfflineFlag: true
+            //    JSONFiles: '**/appsettings.json'
+
+            //Going to:
+            //- name: Deploy web service to Azure WebApp
+            //  uses: Azure/webapps-deploy@v1
+            //  with:
+            //    app-name: featureflags-data-eu-service
+            //    package: serviceapp
+            //    slot-name: staging   
 
             return gitHubStep;
         }
