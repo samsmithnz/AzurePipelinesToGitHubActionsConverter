@@ -49,7 +49,7 @@ jobs:
 
             //Assert
             //Note that we are using the longer form, as sequence flow (showing an array like: [ubuntu-16.04, macos-10.13, vs2017-win2016]), doesn't exist in this YAML Serializer yet.
-            string expectedOutput = @"
+            string expected = @"
 on:
   push:
     branches:
@@ -72,7 +72,8 @@ jobs:
       run: dotnet build WebApplication1/WebApplication1.Service/WebApplication1.Service.csproj --configuration $buildConfiguration
 ";
 
-            Assert.AreEqual(gitHubOutput.actionsYaml, TestUtility.TrimNewLines(expectedOutput));
+            expected = TestUtility.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
         }
 
     }

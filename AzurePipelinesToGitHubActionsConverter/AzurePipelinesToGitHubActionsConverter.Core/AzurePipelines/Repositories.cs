@@ -1,0 +1,21 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
+
+namespace AzurePipelinesToGitHubActionsConverter.Core.AzurePipelines
+{
+  //repositories:
+  //- repository: string  # identifier (A-Z, a-z, 0-9, and underscore)
+  //  type: enum  # see below
+  //  name: string  # repository name (format depends on `type`)
+  //  ref: string  # ref name to use, defaults to 'refs/heads/master'
+  //  endpoint: string  # name of the service connection to use (for non-Azure Repos types)
+    public class Repositories
+    {
+        public string repository { get; set; }
+        public string type { get; set; }
+        public string name { get; set; }
+        public string _ref { get; set; }
+        public string endpoint { get; set; }
+    }
+}

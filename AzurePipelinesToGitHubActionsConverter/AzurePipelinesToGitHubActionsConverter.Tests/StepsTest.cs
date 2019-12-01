@@ -15,12 +15,12 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
         //    string yaml = "- task: invalid fake task";
 
         //    //Act
-        //    GitHubConversion gitHubOutput = conversion.ConvertAzurePinelineTaskToGitHubActionTask(yaml);
+        //    ConversionResult gitHubOutput = conversion.ConvertAzurePinelineTaskToGitHubActionTask(yaml);
 
         //    //Assert
-        //    string expectedOutput = "- name: '***This step could not be migrated***'\r\n  run: \r\n    #task: invalid fake task\r\n  shell: powershell";
+        //    string expected = "- name: '***This step could not be migrated***'\r\n  run: \r\n    #task: invalid fake task\r\n  shell: powershell";
 
-        //    Assert.AreEqual(gitHubOutput.actionsYaml, TestUtility.TrimNewLines(expectedOutput));
+        //    Assert.AreEqual(gitHubOutput.actionsYaml, TestUtility.TrimNewLines(expected));
         //}
 
         [TestMethod]
@@ -38,12 +38,12 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             ConversionResult gitHubOutput = conversion.ConvertAzurePinelineTaskToGitHubActionTask(yaml);
 
             //Assert
-            string expectedOutput = @"
+            string expected = @"
 - run: echo your commands here
   shell: cmd
 ";
-
-            Assert.AreEqual(gitHubOutput.actionsYaml, TestUtility.TrimNewLines(expectedOutput));
+            expected = TestUtility.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
         }
 
         [TestMethod]
@@ -60,13 +60,13 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             ConversionResult gitHubOutput = conversion.ConvertAzurePinelineTaskToGitHubActionTask(yaml);
 
             //Assert
-            string expectedOutput = @"
+            string expected = @"
 - name: test PowerShell
   run: Write-Host 'some text'
   shell: powershell
 ";
-
-            Assert.AreEqual(gitHubOutput.actionsYaml, TestUtility.TrimNewLines(expectedOutput));
+            expected = TestUtility.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
         }
 
         [TestMethod]
@@ -83,13 +83,13 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             ConversionResult gitHubOutput = conversion.ConvertAzurePinelineTaskToGitHubActionTask(yaml);
 
             //Assert
-            string expectedOutput = @"
+            string expected = @"
 - name: test pwsh
   run: Write-Host 'some text'
   shell: pwsh
 ";
-
-            Assert.AreEqual(gitHubOutput.actionsYaml, TestUtility.TrimNewLines(expectedOutput));
+            expected = TestUtility.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
         }
 
         [TestMethod]
@@ -106,13 +106,13 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             ConversionResult gitHubOutput = conversion.ConvertAzurePinelineTaskToGitHubActionTask(yaml);
 
             //Assert
-            string expectedOutput = @"
+            string expected = @"
 - name: test bash
   run: Write-Host 'some text'
   shell: bash
 ";
-
-            Assert.AreEqual(gitHubOutput.actionsYaml, TestUtility.TrimNewLines(expectedOutput));
+            expected = TestUtility.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
         }
 
 
@@ -132,14 +132,14 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             ConversionResult gitHubOutput = conversion.ConvertAzurePinelineTaskToGitHubActionTask(yaml);
 
             //Assert
-            string expectedOutput = @"
+            string expected = @"
 - name: Use .NET Core sdk
   uses: actions/setup-dotnet@v1
   with:
     dotnet-version: 2.2.203
 ";
-
-            Assert.AreEqual(gitHubOutput.actionsYaml, TestUtility.TrimNewLines(expectedOutput));
+            expected = TestUtility.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
         }
 
         [TestMethod]
@@ -155,12 +155,12 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             ConversionResult gitHubOutput = conversion.ConvertAzurePinelineTaskToGitHubActionTask(yaml);
 
             //Assert
-            string expectedOutput = @"
+            string expected = @"
 - name: dotnet build $buildConfiguration part 1
   run: dotnet build --configuration $buildConfiguration WebApplication1/WebApplication1.Service/WebApplication1.Service.csproj
 ";
-
-            Assert.AreEqual(gitHubOutput.actionsYaml, TestUtility.TrimNewLines(expectedOutput));
+            expected = TestUtility.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
         }
 
 
