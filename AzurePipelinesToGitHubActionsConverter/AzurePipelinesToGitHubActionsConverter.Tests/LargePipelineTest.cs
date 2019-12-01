@@ -321,7 +321,73 @@ stages:
             //Assert
             Assert.IsTrue(gitHubOutput.comments.Count == 0);
             Assert.IsTrue(gitHubOutput.actionsYaml.IndexOf("***This step could not be migrated***") == -1);
-            //Assert.IsTrue(true);
+        }
+
+
+        [TestMethod]
+        public void NuGetPackagePipelineTest()
+        {
+            //Arrange
+            Conversion conversion = new Conversion();
+            string yaml = @"
+resources:
+- repo: self
+  containers:
+  - container: test123
+
+trigger:
+- master
+
+pool:
+  vmImage: 'windows-latest'
+
+variables:
+  BuildConfiguration: 'Release'
+  BuildPlatform : 'Any CPU'
+  BuildVersion: 1.1.$(Build.BuildId)
+
+steps:
+- task: DotNetCoreCLI@2
+  displayName: Restore
+  inputs:
+    command: restore
+    projects: SamLearnsAzure/SamLearnsAzure.Models/SamLearnsAzure.Models.csproj
+
+- task: DotNetCoreCLI@2
+  displayName: Build
+  inputs:
+    projects: SamLearnsAzure/SamLearnsAzure.Models/SamLearnsAzure.Models.csproj
+    arguments: '--configuration $(BuildConfiguration)'
+
+- task: DotNetCoreCLI@2
+  displayName: Publish
+  inputs:
+    command: publish
+    publishWebProjects: false
+    projects: SamLearnsAzure/SamLearnsAzure.Models/SamLearnsAzure.Models.csproj
+    arguments: '--configuration $(BuildConfiguration) --output $(build.artifactstagingdirectory)'
+    zipAfterPublish: false
+
+- task: DotNetCoreCLI@2
+  displayName: 'dotnet pack'
+  inputs:
+    command: pack
+    packagesToPack: SamLearnsAzure/SamLearnsAzure.Models/SamLearnsAzure.Models.csproj
+    versioningScheme: byEnvVar
+    versionEnvVar: BuildVersion
+
+- task: PublishBuildArtifacts@1
+  displayName: 'Publish Artifact'
+  inputs:
+    PathtoPublish: '$(build.artifactstagingdirectory)'
+";
+
+            //Act
+            ConversionResult gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(yaml);
+
+            //Assert
+            Assert.IsTrue(gitHubOutput.comments.Count == 1); //TODO: Resources are not done yet, generating one comment
+            Assert.IsTrue(gitHubOutput.actionsYaml.IndexOf("***This step could not be migrated***") == -1);
         }
 
     }

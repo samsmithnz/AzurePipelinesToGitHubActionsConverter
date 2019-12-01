@@ -28,8 +28,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.AzurePipelines
     public class AzurePipelinesRoot<T>
     {
         public string name { get; set; }
-        //TODO: add resources support
-        //public string resources { get; set; }
+        public Resources resources { get; set; }
 
         //Trigger is a complicated case, where it can be a simple list, or a more complex trigger object
         //To solve this, we added a generic to try to convert to a string[], and failing that, try to convert with Trigger

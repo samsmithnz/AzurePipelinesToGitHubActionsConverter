@@ -75,7 +75,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                             }
                         }
                         gitHubStep.run = yamlBuilder.ToString();
-                        gitHubStep.comment = "This step does not have a conversion yet: " + step.task;
+                        gitHubStep.step_message = "This step does not have a conversion yet: " + step.task;
                         break;
                 }
 
@@ -114,11 +114,20 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
             GitHubActions.Step gitHubStep = new GitHubActions.Step
             {
                 name = step.displayName,
-                run = "dotnet " +
-                    step.inputs["command"] + " " +
-                    step.inputs["projects"] + " " +
-                    step.inputs["arguments"]
+                run = "dotnet "
             };
+            if (step.inputs.ContainsKey("command") == true)
+            {
+                gitHubStep.run += step.inputs["command"] + " ";
+            }
+            if (step.inputs.ContainsKey("projects") == true)
+            {
+                gitHubStep.run += step.inputs["projects"] + " ";
+            }
+            if (step.inputs.ContainsKey("arguments") == true)
+            {
+                gitHubStep.run += step.inputs["arguments"] + " ";
+            }
 
             //Remove the new line characters
             gitHubStep.run = gitHubStep.run.Replace("\n", "");
