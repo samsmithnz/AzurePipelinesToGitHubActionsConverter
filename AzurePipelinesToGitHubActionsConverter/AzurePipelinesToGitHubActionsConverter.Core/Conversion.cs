@@ -77,6 +77,12 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
             List<string> variableList = new List<string>();
             string yamlResponse;
 
+            //Handle a null input
+            if (input == null)
+            {
+                input = "";
+            }
+
             //HACK: Not well documented, and repo:self is redundent (https://stackoverflow.com/questions/53860194/azure-devops-resources-repo-self)
             input = input.Replace("- repo: self", "");
 
