@@ -10,7 +10,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
     {
         private string _matrixVariableName;
 
-        public GitHubConversion ConvertAzurePinelineTaskToGitHubActionTask(string input)
+        public ConversionResult ConvertAzurePinelineTaskToGitHubActionTask(string input)
         {
             string yamlResponse = "";
 
@@ -63,16 +63,17 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
             List<string> stepComments = new List<string>();
             stepComments.Add(gitHubActionStep.comment);
 
-            return new GitHubConversion
+            return new ConversionResult
             {
-                yaml = yamlResponse,
+                pipelinesYaml = input,
+                actionsYaml = yamlResponse,
                 comments = stepComments
 
             };
 
         }
 
-        public GitHubConversion ConvertAzurePipelineToGitHubAction(string input)
+        public ConversionResult ConvertAzurePipelineToGitHubAction(string input)
         {
             List<string> variableList = new List<string>();
             string yamlResponse;
@@ -153,9 +154,10 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                 }
             }
 
-            return new GitHubConversion
+            return new ConversionResult
             {
-                yaml = yamlResponse,
+                pipelinesYaml = input,
+                actionsYaml = yamlResponse,
                 comments = stepComments
             };
         }
