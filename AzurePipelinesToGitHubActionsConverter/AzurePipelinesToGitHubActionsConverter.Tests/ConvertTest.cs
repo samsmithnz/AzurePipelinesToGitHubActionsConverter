@@ -39,6 +39,21 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
         }
 
         [TestMethod]
+        public void NullStringTest()
+        {
+            //Arrange
+            string input = null;
+            Conversion conversion = new Conversion();
+
+            //Act
+            ConversionResult gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(input);
+
+            //Assert
+            string expected = "";
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+        }
+
+        [TestMethod]
         public void PoolUbuntuLatestStringTest()
         {
             //Arrange
