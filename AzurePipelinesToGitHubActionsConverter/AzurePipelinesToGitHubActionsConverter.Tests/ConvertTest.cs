@@ -19,7 +19,8 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             ConversionResult gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(input);
 
             //Assert
-            Assert.AreEqual(gitHubOutput.actionsYaml, "name: test ci pipelines");
+            string expected = "name: test ci pipelines";
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
         }
 
         [TestMethod]
@@ -33,7 +34,8 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             ConversionResult gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(input);
 
             //Assert
-            Assert.AreEqual(gitHubOutput.actionsYaml, "");
+            string expected = "";
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
         }
 
         [TestMethod]
@@ -48,9 +50,10 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             ConversionResult gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(input);
 
             //Assert
-            Assert.AreEqual(gitHubOutput.actionsYaml, "jobs:" + Environment.NewLine +
+            string expected = "jobs:" + Environment.NewLine +
                                     "  build:" + Environment.NewLine +
-                                    "    runs-on: ubuntu-latest");
+                                    "    runs-on: ubuntu-latest";
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
         }
 
         [TestMethod]
@@ -65,9 +68,10 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             ConversionResult gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(input);
 
             //Assert
-            Assert.AreEqual(gitHubOutput.actionsYaml, "jobs:" + Environment.NewLine +
+            string expected = "jobs:" + Environment.NewLine +
                                     "  build:" + Environment.NewLine +
-                                    "    runs-on: windows-latest");
+                                    "    runs-on: windows-latest";
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
         }
 
         [TestMethod]
@@ -95,7 +99,7 @@ jobs:
             ConversionResult gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(input);
 
             //Assert
-            string expectedOutput = @"
+            string expected = @"
 on:
   push:
     branches:
@@ -112,9 +116,8 @@ jobs:
     - uses: actions/checkout@v1
     - name: dotnet build $myJobVariable
       run: dotnet build WebApplication1/WebApplication1.Service/WebApplication1.Service.csproj --configuration $buildConfiguration";
-            
-
-            Assert.AreEqual(gitHubOutput.actionsYaml, TestUtility.TrimNewLines(expectedOutput));
+            expected = TestUtility.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
         }
 
         [TestMethod]
@@ -142,7 +145,7 @@ jobs:
             ConversionResult gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(input);
 
             //Assert
-            string expectedOutput = @"
+            string expected = @"
 on:
   push:
     branches:
@@ -159,8 +162,8 @@ jobs:
     - uses: actions/checkout@v1
     - name: dotnet build $myJobVariable
       run: dotnet build WebApplication1/WebApplication1.Service/WebApplication1.Service.csproj --configuration $buildConfiguration";
-            
-            Assert.AreEqual(gitHubOutput.actionsYaml, TestUtility.TrimNewLines(expectedOutput));
+            expected = TestUtility.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
         }
 
         [TestMethod]
@@ -277,7 +280,7 @@ jobs:
             ConversionResult gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(yaml);
 
             //Assert
-            string expectedOutput = @"
+            string expected = @"
 on:
   push:
     branches:
@@ -312,8 +315,8 @@ jobs:
       run: dotnet build WebApplication1/WebApplication1.Service/WebApplication1.Service.csproj --configuration $buildConfiguration
 ";
 
-
-            Assert.AreEqual(gitHubOutput.actionsYaml, TestUtility.TrimNewLines(expectedOutput));
+            expected = TestUtility.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
         }
 
     }

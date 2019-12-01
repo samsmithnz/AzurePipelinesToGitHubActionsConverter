@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using YamlDotNet.Serialization;
 
 namespace AzurePipelinesToGitHubActionsConverter.Core.GitHubActions
 {
@@ -8,5 +9,9 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.GitHubActions
         public Trigger on { get; set; }
         public Dictionary<string, string> env { get; set; }
         public Dictionary<string, Job> jobs { get; set; }
+
+        //This is used for tracking errors, so we don't want it to convert to YAML
+        [YamlIgnore]
+        public string message;
     }
 }

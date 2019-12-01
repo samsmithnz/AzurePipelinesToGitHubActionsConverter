@@ -11,13 +11,13 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
         public void GetGlobalHeaderTest()
         {
             //Arrange
-            string expectedString = "# converted to GitHub Actions by https://github.com/samsmithnz/AzurePipelinesToGitHubActionsConverter on " + DateTime.Now.ToString("dd-MMM-yyyy hh:mm:sstt");
+            string expected = "# converted to GitHub Actions by https://github.com/samsmithnz/AzurePipelinesToGitHubActionsConverter on " + DateTime.Now.ToString("dd-MMM-yyyy hh:mm:sstt");
 
             //Act
-            string output = Global.GetHeaderComment();
+            string result = Global.GetHeaderComment();
 
             //Assert
-            Assert.AreEqual(output, expectedString);
+            Assert.AreEqual(expected, result);
         }
 
         [TestMethod]
@@ -26,10 +26,10 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             //Arrange
 
             //Act
-            string output = Global.GetLineComment();
+            string result = Global.GetLineComment();
 
             //Assert
-            Assert.IsTrue(string.IsNullOrEmpty(output) == false);
+            Assert.IsTrue(string.IsNullOrEmpty(result) == false);
         }
 
         [TestMethod]
@@ -42,16 +42,16 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             int number9 = 9;
 
             //Act
-            string output0 = Global.GenerateSpaces(number0);
-            string output1 = Global.GenerateSpaces(number1);
-            string output4 = Global.GenerateSpaces(number4);
-            string output9 = Global.GenerateSpaces(number9);
+            string results0 = Global.GenerateSpaces(number0);
+            string results1 = Global.GenerateSpaces(number1);
+            string results4 = Global.GenerateSpaces(number4);
+            string results9 = Global.GenerateSpaces(number9);
 
             //Assert
-            Assert.AreEqual(output0, "");
-            Assert.AreEqual(output1, " ");
-            Assert.AreEqual(output4, "    ");
-            Assert.AreEqual(output9, "         ");
+            Assert.AreEqual( "", results0);
+            Assert.AreEqual( " ", results1);
+            Assert.AreEqual( "    ", results4);
+            Assert.AreEqual( "         ", results9);
         }
 
     }
