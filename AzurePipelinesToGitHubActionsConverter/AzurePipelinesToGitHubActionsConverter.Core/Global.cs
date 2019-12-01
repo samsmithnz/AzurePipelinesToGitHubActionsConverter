@@ -66,7 +66,9 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
         public static string WriteYAMLFile<T>(T obj)
         {
             //Convert the object into a YAML document
-            ISerializer serializer = new SerializerBuilder().Build();
+            ISerializer serializer = new SerializerBuilder()
+                .ConfigureDefaultValuesHandling(DefaultValuesHandling.OmitNull) //New as of YamlDotNet 8.0.0: https://github.com/aaubry/YamlDotNet/wiki/Serialization.Serializer#configuredefaultvalueshandlingdefaultvalueshandling
+                .Build();
             string yaml = serializer.Serialize(obj);
 
             return yaml;
