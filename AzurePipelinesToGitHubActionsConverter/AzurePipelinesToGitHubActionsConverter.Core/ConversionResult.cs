@@ -4,9 +4,10 @@ using System.Text;
 
 namespace AzurePipelinesToGitHubActionsConverter.Core
 {
-    public class GitHubConversion
+    public class ConversionResult
     {
-        public string yaml { get; set; }
+        public string pipelinesYaml { get; set; }
+        public string actionsYaml { get; set; }
         public List<string> comments { get; set; }
     }
 }

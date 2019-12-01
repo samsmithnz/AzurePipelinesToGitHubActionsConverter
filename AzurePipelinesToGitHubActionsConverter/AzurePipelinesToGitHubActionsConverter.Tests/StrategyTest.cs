@@ -45,7 +45,7 @@ jobs:
 ";
 
             //Act
-            GitHubConversion gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(yaml);
+            ConversionResult gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(yaml);
 
             //Assert
             //Note that we are using the longer form, as sequence flow (showing an array like: [ubuntu-16.04, macos-10.13, vs2017-win2016]), doesn't exist in this YAML Serializer yet.
@@ -72,7 +72,7 @@ jobs:
       run: dotnet build WebApplication1/WebApplication1.Service/WebApplication1.Service.csproj --configuration $buildConfiguration
 ";
 
-            Assert.AreEqual(gitHubOutput.yaml, TestUtility.TrimNewLines(expectedOutput));
+            Assert.AreEqual(gitHubOutput.actionsYaml, TestUtility.TrimNewLines(expectedOutput));
         }
 
     }
