@@ -68,7 +68,6 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                 pipelinesYaml = input,
                 actionsYaml = yamlResponse,
                 comments = stepComments
-
             };
 
         }
