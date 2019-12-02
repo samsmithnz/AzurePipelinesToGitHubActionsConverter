@@ -24,7 +24,13 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
             //Resources
             if (azurePipeline.resources != null)
             {
-                gitHubActions.message = "TODO: Resource conversion not yet done: https://github.com/samsmithnz/AzurePipelinesToGitHubActionsConverter/issues/8";
+                gitHubActions.messages.Add( "TODO: Resource conversion not yet done: https://github.com/samsmithnz/AzurePipelinesToGitHubActionsConverter/issues/8");
+            }
+
+            //Container
+            if (azurePipeline.container != null)
+            {
+                gitHubActions.messages.Add( "TODO: Container conversion not yet done: https://github.com/samsmithnz/AzurePipelinesToGitHubActionsConverter/issues/39");
             }
 
             //Triggers for pushs 

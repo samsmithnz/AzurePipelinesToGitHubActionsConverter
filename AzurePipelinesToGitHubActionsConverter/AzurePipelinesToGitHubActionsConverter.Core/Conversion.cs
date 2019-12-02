@@ -148,9 +148,12 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
             if (gitHubActions != null && gitHubActions.jobs != null)
             {
                 //Add any header messages
-                if (gitHubActions.message != null)
+                if (gitHubActions.messages != null)
                 {
-                    stepComments.Add(gitHubActions.message);
+                    foreach (string message in gitHubActions.messages)
+                    {
+                        stepComments.Add(message);
+                    }
                 }
                 //Add each individual step comments
                 foreach (KeyValuePair<string, GitHubActions.Job> job in gitHubActions.jobs)
