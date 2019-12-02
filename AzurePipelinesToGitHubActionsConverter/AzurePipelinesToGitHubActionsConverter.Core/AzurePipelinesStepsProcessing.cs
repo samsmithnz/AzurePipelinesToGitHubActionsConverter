@@ -14,6 +14,8 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
         {
             if (step.task != null)
             {
+                step = CleanStepInputs(step);
+
                 GitHubActions.Step gitHubStep;
                 switch (step.task)
                 {
@@ -107,6 +109,19 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
             }
         }
 
+        //Convert all of the input keys to lowercase, to make pattern matching easier later
+        private AzurePipelines.Step CleanStepInputs(AzurePipelines.Step step)
+        {
+            Dictionary<string, string> newInputs = new Dictionary<string, string>();
+            foreach (KeyValuePair<string,string> item in step.inputs)
+            {
+                newInputs.Add(item.Key.ToLower(), item.Value);
+            }
+            step.inputs = newInputs;
+
+            return step;
+        }
+
         private GitHubActions.Step CreateDotNetCommandStep(AzurePipelines.Step step)
         {
 
@@ -117,15 +132,15 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
             };
             if (step.inputs.ContainsKey("command") == true)
             {
-                gitHubStep.run += step.inputs["command"] + " ";
+                gitHubStep.run += GetStepInput(step, "command") + " ";
             }
             if (step.inputs.ContainsKey("projects") == true)
             {
-                gitHubStep.run += step.inputs["projects"] + " ";
+                gitHubStep.run += GetStepInput(step, "projects") + " ";
             }
             if (step.inputs.ContainsKey("arguments") == true)
             {
-                gitHubStep.run += step.inputs["arguments"] + " ";
+                gitHubStep.run += GetStepInput(step, "arguments") + " ";
             }
 
             //Remove the new line characters
@@ -136,7 +151,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
 
         private GitHubActions.Step CreateDownloadBuildArtifacts(AzurePipelines.Step step)
         {
-            step.inputs.TryGetValue("artifactName", out string artifactName);
+            step.inputs.TryGetValue("artifactname", out string artifactName);
 
             GitHubActions.Step gitHubStep = new GitHubActions.Step
             {
@@ -168,7 +183,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
         private GitHubActions.Step CreateCopyFilesStep(AzurePipelines.Step step)
         {
             //Use PowerShell to copy files
-            step.script = "Copy " + step.inputs["SourceFolder"] + "/" + step.inputs["Contents"] + " " + step.inputs["TargetFolder"];
+            step.script = "Copy " + GetStepInput(step, "sourcefolder") + "/" + GetStepInput(step, "contents") + " " + GetStepInput(step, "targetfolder");
 
             GitHubActions.Step gitHubStep = CreateScriptStep("powershell", step);
             return gitHubStep;
@@ -241,9 +256,9 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                 name = step.displayName,
                 uses = "actions/setup-dotnet@v1",
                 with = new Dictionary<string, string>
-                        {
-                            {"dotnet-version", step.inputs["version"]}
-                        }
+                {
+                    {"dotnet-version", GetStepInput(step, "version")}
+                }
             };
             //Pipelines
             //- task: UseDotNet@2
@@ -262,9 +277,9 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
 
         private GitHubActions.Step CreateAzureManageResourcesStep(AzurePipelines.Step step)
         {
-            step.inputs.TryGetValue("resourceGroupName", out string resourceGroup);
-            step.inputs.TryGetValue("csmFile", out string armTemplateFile);
-            step.inputs.TryGetValue("csmParametersFile", out string armTemplateParametersFile);
+            step.inputs.TryGetValue("resourcegroupname", out string resourceGroup);
+            step.inputs.TryGetValue("csmfile", out string armTemplateFile);
+            step.inputs.TryGetValue("csmparametersfile", out string armTemplateParametersFile);
 
             GitHubActions.Step gitHubStep = new GitHubActions.Step
             {
@@ -366,8 +381,8 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
             GitHubActions.Step gitHubStep = CreateScriptStep("powershell", step);
             gitHubStep.run = @" |
                             $vsTestConsoleExe = ""C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Enterprise\\Common7\\IDE\\Extensions\\TestPlatform\\vstest.console.exe""
-                            $targetTestDll = """ + step.inputs["testAssemblyVer2"] + @"""
-                            $testRunSettings = ""/Settings:`""" + step.inputs["runSettingsFile"] + @"`"" ""
+                            $targetTestDll = """ + GetStepInput(step, "testassemblyver2") + @"""
+                            $testRunSettings = ""/Settings:`""" + GetStepInput(step, "runsettingsfile") + @"`"" ""
                             $parameters = "" -- TestEnvironment=""Beta123""  ServiceUrl=""https://featureflags-data-eu-service-staging.azurewebsites.net/"" WebsiteUrl=""https://featureflags-data-eu-web-staging.azurewebsites.net/"" ""
                             #Note that the `"" is an escape character to quote strings, and the `& is needed to start the command
                             $command = ""`& `""$vsTestConsoleExe`"" `""$targetTestDll`"" $testRunSettings $parameters ""                             
@@ -396,7 +411,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
             //    inlineScript: az webapp deployment slot swap --resource-group SamLearnsAzureFeatureFlags --name featureflags-data-eu-service --slot staging --target-slot production
 
 
-            step.inputs.TryGetValue("resourceGroupName", out string resourceGroup);
+            step.inputs.TryGetValue("resourcegroupname", out string resourceGroup);
             step.inputs.TryGetValue("webappname", out string webAppName);
             step.inputs.TryGetValue("sourceslot", out string sourceSlot);
             step.inputs.TryGetValue("targetslot", out string targetSlot);
@@ -449,16 +464,16 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
             string name = "";
             if (step.inputs.ContainsKey("artifactName") == true)
             {
-                name = step.inputs["artifactName"];
+                name = GetStepInput(step, "artifactname");
             }
             string path = "";
             if (step.task == "PublishBuildArtifacts@1")
             {
-                path = step.inputs["PathtoPublish"];
+                path = GetStepInput(step, "pathtopublish");
             }
             else if (step.task == "PublishPipelineArtifact@0")
             {
-                path = step.inputs["targetPath"];
+                path = GetStepInput(step, "targetpath");
             }
 
             GitHubActions.Step gitHubStep = new GitHubActions.Step
@@ -481,6 +496,17 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                 gitHubStep.with["path"].Replace("$(build.artifactstagingdirectory)", "");
             }
             return gitHubStep;
+        }
+
+        //Safely extract the step input, if it exists
+        private string GetStepInput(AzurePipelines.Step step, string name)
+        {
+            string input = "";
+            if (step.inputs.ContainsKey(name) == true)
+            {
+                input =  step.inputs[name];
+            }
+            return input;
         }
     }
 }

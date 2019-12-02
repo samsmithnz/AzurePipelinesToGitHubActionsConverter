@@ -246,6 +246,40 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             //Assert
             Assert.IsTrue(gitHubOutput.actionsYaml != null);
         }
+                [TestMethod]
+        public void DeployWebAppIndividualStepTest()
+        {
+            //Arrange
+            Conversion conversion = new Conversion();
+            string yaml = @"
+    - task: AzureRmWebAppDeployment@3
+      displayName: 'Azure App Service Deploy: web site'
+      inputs:
+        azureSubscription: 'SamLearnsAzure connection to Azure Portal'
+        WebAppName: $(WebsiteName)
+        DeployToSlotFlag: true
+        ResourceGroupName: $(ResourceGroupName)
+        SlotName: 'staging'
+        Package: '$(build.artifactstagingdirectory)/drop/MyProject.Web.zip'
+        TakeAppOfflineFlag: true
+        JSONFiles: '**/appsettings.json'        
+";
+
+            //Act
+            ConversionResult gitHubOutput = conversion.ConvertAzurePinelineTaskToGitHubActionTask(yaml);
+
+            //Assert
+            string expected = @"
+- name: 'Azure App Service Deploy: web site'
+  uses: Azure/webapps-deploy@v1
+  with:
+    app-name: $WebsiteName
+    package: ${GITHUB_WORKSPACE}/drop/MyProject.Web.zip
+    slot-name: staging
+";
+            expected = TestUtility.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+        }
 
     }
 }

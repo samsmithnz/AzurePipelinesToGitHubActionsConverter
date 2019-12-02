@@ -17,7 +17,6 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
             input = StepsPreProcessing(input);
 
             GitHubActions.Step gitHubActionStep = new GitHubActions.Step();
-            AzurePipelinesProcessing<string[]> processing = new AzurePipelinesProcessing<string[]>();
 
             AzurePipelines.Job azurePipelinesJob = Global.ReadYamlFile<AzurePipelines.Job>(input);
             if (azurePipelinesJob != null && azurePipelinesJob.steps != null && azurePipelinesJob.steps.Length > 0)
