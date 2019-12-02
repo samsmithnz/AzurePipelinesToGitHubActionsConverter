@@ -123,7 +123,7 @@ stages:
 
             //Assert
             Assert.IsTrue(gitHubOutput.actionsYaml.IndexOf("unknown") == -1);
-        }   
+        }
 
         [TestMethod]
         public void LargeMultiStagePipelineTest()
@@ -320,7 +320,7 @@ stages:
 
             //Assert
             Assert.IsTrue(gitHubOutput.comments.Count == 0);
-            Assert.IsTrue(gitHubOutput.actionsYaml.IndexOf("***This step could not be migrated***") == -1);
+            Assert.IsTrue(gitHubOutput.actionsYaml.IndexOf("This step does not have a conversion yet") == -1);
         }
 
 
@@ -387,9 +387,9 @@ steps:
 
             //Assert
             Assert.IsTrue(gitHubOutput.comments.Count == 1); //TODO: Resources are not done yet, generating one comment
-            Assert.IsTrue(gitHubOutput.actionsYaml.IndexOf("***This step could not be migrated***") == -1);
-        }     
-        
+            Assert.IsTrue(gitHubOutput.actionsYaml.IndexOf("This step does not have a conversion yet") == -1);
+        }
+
         [TestMethod]
         public void ContainerPipelineTest()
         {
@@ -457,8 +457,8 @@ steps:
             ConversionResult gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(yaml);
 
             //Assert
-            Assert.IsTrue(gitHubOutput.comments.Count == 3); 
-            Assert.IsTrue(gitHubOutput.actionsYaml.IndexOf("***This step could not be migrated***") > -1);
+            Assert.AreEqual(3, gitHubOutput.comments.Count);
+            Assert.IsTrue(gitHubOutput.actionsYaml.IndexOf("This step does not have a conversion yet") > -1);
         }
 
     }

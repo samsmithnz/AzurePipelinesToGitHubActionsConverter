@@ -53,10 +53,9 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
 
                     default:
                         gitHubStep = CreateScriptStep("powershell", step);
-                        gitHubStep.name = "***This step could not be migrated***";
                         if (step.displayName != null)
                         {
-                            gitHubStep.name += ": " + step.displayName;
+                            gitHubStep.name = step.displayName;
                         }
                         string newYaml = Global.WriteYAMLFile<AzurePipelines.Step>(step);
                         string[] newYamlSplit = newYaml.Split(Environment.NewLine);

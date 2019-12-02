@@ -171,6 +171,12 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                 }
             }
 
+            //Append all of the comments to the top of the file
+            foreach (string item in stepComments)
+            {
+                yamlResponse = item + Environment.NewLine + yamlResponse;
+            }
+
             return new ConversionResult
             {
                 pipelinesYaml = input,
