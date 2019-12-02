@@ -18,9 +18,11 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
         //    ConversionResult gitHubOutput = conversion.ConvertAzurePinelineTaskToGitHubActionTask(yaml);
 
         //    //Assert
-        //    string expected = "- name: '***This step could not be migrated***'\r\n  run: \r\n    #task: invalid fake task\r\n  shell: powershell";
+        //    string expected = "- #: 'This step does not have a conversion yet: invalid fake task'\r\n  run: '#task: invalid fake task'\r\n  shell: powershell";
 
-        //    Assert.AreEqual(gitHubOutput.actionsYaml, TestUtility.TrimNewLines(expected));
+
+        //    expected = TestUtility.TrimNewLines(expected);
+        //    Assert.AreEqual(expected, gitHubOutput.actionsYaml);
         //}
 
         [TestMethod]
@@ -216,6 +218,26 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
     azureSubscription: ""$(azureSubscription)""
     appType: 'functionApp'
     webAppName: ""$(functionappName)""
+";
+
+            //Act
+            ConversionResult gitHubOutput = conversion.ConvertAzurePinelineTaskToGitHubActionTask(yaml);
+
+            //Assert
+            Assert.IsTrue(gitHubOutput.actionsYaml != null);
+        }      
+        
+        [TestMethod]
+        public void PublishPipelineArtifactsIndividualStepTest()
+        {
+            //Arrange
+            Conversion conversion = new Conversion();
+            string yaml = @"
+- task: PublishPipelineArtifact@0
+  displayName: Store artifact
+  inputs:
+    artifactName: 'MyProject'
+    targetPath: 'MyProject/bin/release/netcoreapp2.2/publish/'
 ";
 
             //Act

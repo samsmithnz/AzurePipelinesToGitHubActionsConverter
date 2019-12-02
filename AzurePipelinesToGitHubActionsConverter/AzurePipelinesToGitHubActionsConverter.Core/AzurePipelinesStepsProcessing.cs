@@ -53,10 +53,9 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
 
                     default:
                         gitHubStep = CreateScriptStep("powershell", step);
-                        gitHubStep.name = "***This step could not be migrated***";
                         if (step.displayName != null)
                         {
-                            gitHubStep.name += ": " + step.displayName;
+                            gitHubStep.name = step.displayName;
                         }
                         string newYaml = Global.WriteYAMLFile<AzurePipelines.Step>(step);
                         string[] newYamlSplit = newYaml.Split(Environment.NewLine);
@@ -68,10 +67,10 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                             {
                                 yamlBuilder.Append("#");
                                 yamlBuilder.Append(line);
-                                if (i < newYamlSplit.Length - 1)
-                                {
-                                    yamlBuilder.Append(Environment.NewLine);
-                                }
+                                //if (i < newYamlSplit.Length - 1)
+                                //{
+                                //    yamlBuilder.Append(Environment.NewLine);
+                                //}
                             }
                         }
                         gitHubStep.run = yamlBuilder.ToString();
@@ -214,6 +213,11 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
 
         private GitHubActions.Step CreateAzureLoginStep()
         {
+            //Goal:
+            //- name: Log into Azure
+            //  uses: azure/login@v1
+            //  with:
+            //    creds: ${{ secrets.AZURE_SP }}
             GitHubActions.Step gitHubStep = new GitHubActions.Step
             {
                 name = "Azure Login",
@@ -224,12 +228,9 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                 }
             };
 
-            //TODO: Add note that "AZURE_SP" secret is required
+            //Add note that "AZURE_SP" secret is required
+            gitHubStep.step_message = @"Note that ""AZURE_SP"" secret is required to be setup and added into GitHub Secrets: https://help.github.com/en/actions/automating-your-workflow-with-github-actions/creating-and-using-encrypted-secrets";
 
-            //- name: Log into Azure
-            //  uses: azure/login@v1
-            //  with:
-            //    creds: ${{ secrets.AZURE_SP }}
             return gitHubStep;
         }
 
@@ -429,7 +430,15 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
             //- task: PublishBuildArtifacts@1
             //  displayName: 'Publish Artifact'
             //  inputs:
+            //    artifactName: drop
             //    PathtoPublish: '$(build.artifactstagingdirectory)'";
+
+            //# Publishing pipeline artifacts is almost identical
+            //- task: PublishPipelineArtifact@0
+            //  displayName: Store artifact
+            //  inputs:
+            //    artifactName: 'MyProject'
+            //    targetPath: 'MyProject/bin/release/netcoreapp2.2/publish/'
 
             //- name: publish build artifacts back to GitHub
             //  uses: actions/upload-artifact@master
@@ -437,18 +446,40 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
             //    name: console exe
             //    path: /home/runner/work/AzurePipelinesToGitHubActionsConverter/AzurePipelinesToGitHubActionsConverter/AzurePipelinesToGitHubActionsConverter/AzurePipelinesToGitHubActionsConverter.ConsoleApp/bin/Release/netcoreapp3.0
 
+            string name = "";
+            if (step.inputs.ContainsKey("artifactName") == true)
+            {
+                name = step.inputs["artifactName"];
+            }
+            string path = "";
+            if (step.task == "PublishBuildArtifacts@1")
+            {
+                path = step.inputs["PathtoPublish"];
+            }
+            else if (step.task == "PublishPipelineArtifact@0")
+            {
+                path = step.inputs["targetPath"];
+            }
+
             GitHubActions.Step gitHubStep = new GitHubActions.Step
             {
                 name = step.displayName,
                 uses = "actions/upload-artifact@master",
                 with = new Dictionary<string, string>
                 {
-                    {"path", step.inputs["PathtoPublish"] }
+                    {"path", path}
                 }
             };
-            //In publish task, I we need to delete any usage of build.artifactstagingdirectory variable as it's implied in github actions, and therefore not needed (Adding it adds the path twice)
-            gitHubStep.with["path"].Replace("$(build.artifactstagingdirectory)", "");
+            if (string.IsNullOrEmpty(name) == false)
+            {
+                gitHubStep.with.Add("name", name);
+            }
 
+            //In publish task, I we need to delete any usage of build.artifactstagingdirectory variable as it's implied in github actions, and therefore not needed (Adding it adds the path twice)
+            if (gitHubStep.with.ContainsKey("path") == true)
+            {
+                gitHubStep.with["path"].Replace("$(build.artifactstagingdirectory)", "");
+            }
             return gitHubStep;
         }
     }

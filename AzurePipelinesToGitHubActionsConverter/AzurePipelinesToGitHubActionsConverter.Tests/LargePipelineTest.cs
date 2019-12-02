@@ -123,7 +123,7 @@ stages:
 
             //Assert
             Assert.IsTrue(gitHubOutput.actionsYaml.IndexOf("unknown") == -1);
-        }   
+        }
 
         [TestMethod]
         public void LargeMultiStagePipelineTest()
@@ -320,7 +320,7 @@ stages:
 
             //Assert
             Assert.IsTrue(gitHubOutput.comments.Count == 0);
-            Assert.IsTrue(gitHubOutput.actionsYaml.IndexOf("***This step could not be migrated***") == -1);
+            Assert.IsTrue(gitHubOutput.actionsYaml.IndexOf("This step does not have a conversion yet") == -1);
         }
 
 
@@ -387,9 +387,9 @@ steps:
 
             //Assert
             Assert.IsTrue(gitHubOutput.comments.Count == 1); //TODO: Resources are not done yet, generating one comment
-            Assert.IsTrue(gitHubOutput.actionsYaml.IndexOf("***This step could not be migrated***") == -1);
-        }     
-        
+            Assert.IsTrue(gitHubOutput.actionsYaml.IndexOf("This step does not have a conversion yet") == -1);
+        }
+
         [TestMethod]
         public void ContainerPipelineTest()
         {
@@ -399,7 +399,14 @@ steps:
 pool:
   vmImage: 'ubuntu-16.04'
 
-container: mcr.microsoft.com/dotnet/core/sdk:2.2
+strategy:
+  matrix:
+    DotNetCore22:
+      containerImage: mcr.microsoft.com/dotnet/core/sdk:2.2
+    DotNetCore22Nightly:
+      containerImage: mcr.microsoft.com/dotnet/core-nightly/sdk:2.2
+
+container: $[ variables['containerImage'] ]
 
 resources:
   containers:
@@ -439,18 +446,19 @@ steps:
     arguments: '--configuration release'
 
 - task: PublishPipelineArtifact@0
-  displayName: Store artefact
+  displayName: Store artifact
   inputs:
     artifactName: 'MyProject'
     targetPath: 'MyProject/bin/release/netcoreapp2.2/publish/'
+  condition: and(succeeded(), endsWith(variables['Agent.JobName'], 'DotNetCore22'))
 ";
 
             //Act
             ConversionResult gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(yaml);
 
             //Assert
-            Assert.IsTrue(gitHubOutput.comments.Count == 2); 
-            Assert.IsTrue(gitHubOutput.actionsYaml.IndexOf("***This step could not be migrated***") > -1);
+            Assert.AreEqual(3, gitHubOutput.comments.Count);
+            Assert.IsTrue(gitHubOutput.actionsYaml.IndexOf("This step does not have a conversion yet") > -1);
         }
 
     }

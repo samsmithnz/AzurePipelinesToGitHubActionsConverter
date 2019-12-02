@@ -12,6 +12,11 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.GitHubActions
 
         //This is used for tracking errors, so we don't want it to convert to YAML
         [YamlIgnore]
-        public string message;
+        public List<string> messages;
+
+        public GitHubActionsRoot()
+        {
+            messages = new List<string>();
+        }
     }
 }

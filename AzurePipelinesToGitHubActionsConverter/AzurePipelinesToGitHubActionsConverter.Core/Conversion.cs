@@ -148,9 +148,12 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
             if (gitHubActions != null && gitHubActions.jobs != null)
             {
                 //Add any header messages
-                if (gitHubActions.message != null)
+                if (gitHubActions.messages != null)
                 {
-                    stepComments.Add(gitHubActions.message);
+                    foreach (string message in gitHubActions.messages)
+                    {
+                        stepComments.Add(message);
+                    }
                 }
                 //Add each individual step comments
                 foreach (KeyValuePair<string, GitHubActions.Job> job in gitHubActions.jobs)
@@ -166,6 +169,12 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                         }
                     }
                 }
+            }
+
+            //Append all of the comments to the top of the file
+            foreach (string item in stepComments)
+            {
+                yamlResponse = item + Environment.NewLine + yamlResponse;
             }
 
             return new ConversionResult
@@ -211,8 +220,8 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
 
             //HACK: Sometimes when generating  yaml, a weird ">+" string appears. Not sure why yet, replacing it out of there for short term
             yaml = yaml.Replace("run: >-", "run: |"); //Replace a weird artifact in scripts when converting pipes
-            yaml = yaml.Replace("run: >+", "run: ");
-            yaml = yaml.Replace("run: >", "run: ");
+            //yaml = yaml.Replace("run: >+", "run: ");
+            //yaml = yaml.Replace("run: >", "run: ");
 
             return yaml;
         }
