@@ -204,5 +204,26 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             Assert.IsTrue(gitHubOutput.actionsYaml != null);
         }
 
+        [TestMethod]
+        public void AzureWebAppDeploymentIndividualStepTest()
+        {
+            //Arrange
+            Conversion conversion = new Conversion();
+            string yaml = @"
+- task: AzureRmWebAppDeployment@4
+  inputs:
+    connectionType: 'AzureRM'
+    azureSubscription: ""$(azureSubscription)""
+    appType: 'functionApp'
+    webAppName: ""$(functionappName)""
+";
+
+            //Act
+            ConversionResult gitHubOutput = conversion.ConvertAzurePinelineTaskToGitHubActionTask(yaml);
+
+            //Assert
+            Assert.IsTrue(gitHubOutput.actionsYaml != null);
+        }
+
     }
 }
