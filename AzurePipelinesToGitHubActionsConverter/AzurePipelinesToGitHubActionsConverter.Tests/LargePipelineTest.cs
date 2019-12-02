@@ -388,6 +388,69 @@ steps:
             //Assert
             Assert.IsTrue(gitHubOutput.comments.Count == 1); //TODO: Resources are not done yet, generating one comment
             Assert.IsTrue(gitHubOutput.actionsYaml.IndexOf("***This step could not be migrated***") == -1);
+        }     
+        
+        [TestMethod]
+        public void ContainerPipelineTest()
+        {
+            //Arrange
+            Conversion conversion = new Conversion();
+            string yaml = @"
+pool:
+  vmImage: 'ubuntu-16.04'
+
+container: mcr.microsoft.com/dotnet/core/sdk:2.2
+
+resources:
+  containers:
+  - container: redis
+    image: redis
+
+services:
+  redis: redis
+
+variables:
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
+
+steps:
+- task: DotNetCoreCLI@2
+  displayName: Build
+  inputs:
+    command: build
+    projects: '**/*.csproj'
+    arguments: '--configuration release'
+
+- task: DotNetCoreCLI@2
+  displayName: Test
+  inputs:
+    command: test
+    projects: '**/*Tests.csproj'
+    arguments: '--configuration release'
+  env:
+    CONNECTIONSTRINGS_REDIS: redis:6379
+
+- task: DotNetCoreCLI@2
+  displayName: Publish
+  inputs:
+    command: publish
+    projects: 'MyProject/MyProject.csproj'
+    publishWebProjects: false
+    zipAfterPublish: false
+    arguments: '--configuration release'
+
+- task: PublishPipelineArtifact@0
+  displayName: Store artefact
+  inputs:
+    artifactName: 'MyProject'
+    targetPath: 'MyProject/bin/release/netcoreapp2.2/publish/'
+";
+
+            //Act
+            ConversionResult gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(yaml);
+
+            //Assert
+            Assert.IsTrue(gitHubOutput.comments.Count == 2); 
+            Assert.IsTrue(gitHubOutput.actionsYaml.IndexOf("***This step could not be migrated***") > -1);
         }
 
     }
