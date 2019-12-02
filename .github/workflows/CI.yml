@@ -10,7 +10,7 @@ jobs:
   build:
     strategy:
       matrix:
-        os: [ubuntu-latest]
+        os: [windows-latest]
     runs-on: ${{ matrix.os }} 
     env:
       buildVersion: 0.2.0.0 #The initial build version, but this is updated below
