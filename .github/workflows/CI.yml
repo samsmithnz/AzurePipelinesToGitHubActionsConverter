@@ -1,10 +1,6 @@
-name: CI
+name: 'CI/ CD'
 
-on:
-  push:
-    branches:    
-      - master # Push events on master branch
-  pull_request: 
+on: [push]
  
 jobs:
   build:
