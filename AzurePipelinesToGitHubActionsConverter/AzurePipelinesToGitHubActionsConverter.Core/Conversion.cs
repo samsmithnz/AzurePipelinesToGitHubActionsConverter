@@ -60,7 +60,10 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
 
             //Load failed tasks and comments for processing
             List<string> stepComments = new List<string>();
-            stepComments.Add(gitHubActionStep.step_message);
+            if (gitHubActionStep != null)
+            {
+                stepComments.Add(gitHubActionStep.step_message);
+            }
 
             return new ConversionResult
             {
@@ -82,7 +85,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                 input = "";
             }
 
-            //HACK: Not well documented, and repo:self is redundent (https://stackoverflow.com/questions/53860194/azure-devops-resources-repo-self)
+            //Not well documented, and repo:self is redundent, and hence we remove it if detected (https://stackoverflow.com/questions/53860194/azure-devops-resources-repo-self)
             input = input.Replace("- repo: self", "");
 
             //Triggers are hard, as there are two data types that can exist, so we need to go with the most common type and handle the less common type with generics

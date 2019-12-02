@@ -182,7 +182,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             ConversionResult gitHubOutput = conversion.ConvertAzurePinelineTaskToGitHubActionTask(yaml);
 
             //Assert
-            Assert.IsTrue(gitHubOutput.actionsYaml != null);
+            Assert.IsTrue(string.IsNullOrEmpty(gitHubOutput.actionsYaml) == false);
         }
 
         [TestMethod]
@@ -203,7 +203,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             ConversionResult gitHubOutput = conversion.ConvertAzurePinelineTaskToGitHubActionTask(yaml);
 
             //Assert
-            Assert.IsTrue(gitHubOutput.actionsYaml != null);
+            Assert.IsTrue(string.IsNullOrEmpty(gitHubOutput.actionsYaml) == false);
         }
 
         [TestMethod]
@@ -224,9 +224,9 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             ConversionResult gitHubOutput = conversion.ConvertAzurePinelineTaskToGitHubActionTask(yaml);
 
             //Assert
-            Assert.IsTrue(gitHubOutput.actionsYaml != null);
-        }      
-        
+            Assert.IsTrue(string.IsNullOrEmpty(gitHubOutput.actionsYaml) == false);
+        }
+
         [TestMethod]
         public void PublishPipelineArtifactsIndividualStepTest()
         {
@@ -244,9 +244,10 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             ConversionResult gitHubOutput = conversion.ConvertAzurePinelineTaskToGitHubActionTask(yaml);
 
             //Assert
-            Assert.IsTrue(gitHubOutput.actionsYaml != null);
+            Assert.IsTrue(string.IsNullOrEmpty(gitHubOutput.actionsYaml) == false);
         }
-                [TestMethod]
+
+        [TestMethod]
         public void DeployWebAppIndividualStepTest()
         {
             //Arrange
@@ -276,6 +277,35 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
     app-name: $WebsiteName
     package: ${GITHUB_WORKSPACE}/drop/MyProject.Web.zip
     slot-name: staging
+";
+            expected = TestUtility.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+        }
+
+        [TestMethod]
+        public void SwapSlotsIndividualStepTest()
+        {
+            //Arrange
+            Conversion conversion = new Conversion();
+            string yaml = @"
+    - task: AzureAppServiceManage@0
+      displayName: 'Swap Slots: website'
+      inputs:
+        azureSubscription: 'SamLearnsAzure connection to Azure Portal'
+        WebAppName: $(WebsiteName)
+        ResourceGroupName: $(ResourceGroupName)
+        SourceSlot: 'staging'      
+";
+
+            //Act
+            ConversionResult gitHubOutput = conversion.ConvertAzurePinelineTaskToGitHubActionTask(yaml);
+
+            //Assert
+            string expected = @"
+- name: 'Swap Slots: website'
+  uses: Azure/cli@v1.0.0
+  with:
+    inlineScript: az webapp deployment slot swap --resource-group $ResourceGroupName --name $WebsiteName --slot staging --target-slot production
 ";
             expected = TestUtility.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
