@@ -7,21 +7,22 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
     public class StepsTest
     {
         //TODO: Resolve difference between Ubuntu and Windows
-        //[TestMethod]
-        //public void InvalidStepIndividualStepTest()
-        //{
-        //    //Arrange
-        //    Conversion conversion = new Conversion();
-        //    string yaml = "- task: invalid fake task";
+        [TestMethod]
+        public void InvalidStepIndividualStepTest()
+        {
+            //Arrange
+            Conversion conversion = new Conversion();
+            string yaml = "- task: invalid fake task";
 
-        //    //Act
-        //    ConversionResult gitHubOutput = conversion.ConvertAzurePinelineTaskToGitHubActionTask(yaml);
+            //Act
+            ConversionResult gitHubOutput = conversion.ConvertAzurePinelineTaskToGitHubActionTask(yaml);
 
-        //    //Assert
-        //    string expected = "- name: '***This step could not be migrated***'\r\n  run: \r\n    #task: invalid fake task\r\n  shell: powershell";
+            //Assert
+            string expected = "- #: 'This step does not have a conversion yet: invalid fake task'\r\n  name: '***This step could not be migrated***'\r\n  run: '#task: invalid fake task'\r\n  shell: powershell";
 
-        //    Assert.AreEqual(gitHubOutput.actionsYaml, TestUtility.TrimNewLines(expected));
-        //}
+            expected = TestUtility.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+        }
 
         [TestMethod]
         public void CmdLineIndividualStepTest()
