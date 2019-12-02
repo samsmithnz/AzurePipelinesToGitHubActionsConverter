@@ -20,6 +20,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             //Assert
             string expected = "- #: 'This step does not have a conversion yet: invalid fake task'\r\n  name: '***This step could not be migrated***'\r\n  run: '#task: invalid fake task'\r\n  shell: powershell";
 
+
             expected = TestUtility.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
         }

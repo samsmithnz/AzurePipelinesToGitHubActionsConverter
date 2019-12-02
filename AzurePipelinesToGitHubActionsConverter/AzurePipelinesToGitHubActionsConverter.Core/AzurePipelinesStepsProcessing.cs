@@ -214,6 +214,11 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
 
         private GitHubActions.Step CreateAzureLoginStep()
         {
+            //Goal:
+            //- name: Log into Azure
+            //  uses: azure/login@v1
+            //  with:
+            //    creds: ${{ secrets.AZURE_SP }}
             GitHubActions.Step gitHubStep = new GitHubActions.Step
             {
                 name = "Azure Login",
@@ -224,12 +229,9 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                 }
             };
 
-            //TODO: Add note that "AZURE_SP" secret is required
+            //Add note that "AZURE_SP" secret is required
+            gitHubStep.step_message = @"Note that ""AZURE_SP"" secret is required to be setup and added into GitHub Secrets: https://help.github.com/en/actions/automating-your-workflow-with-github-actions/creating-and-using-encrypted-secrets";
 
-            //- name: Log into Azure
-            //  uses: azure/login@v1
-            //  with:
-            //    creds: ${{ secrets.AZURE_SP }}
             return gitHubStep;
         }
 
