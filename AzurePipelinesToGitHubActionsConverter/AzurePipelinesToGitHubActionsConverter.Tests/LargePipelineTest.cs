@@ -399,7 +399,14 @@ steps:
 pool:
   vmImage: 'ubuntu-16.04'
 
-container: mcr.microsoft.com/dotnet/core/sdk:2.2
+strategy:
+  matrix:
+    DotNetCore22:
+      containerImage: mcr.microsoft.com/dotnet/core/sdk:2.2
+    DotNetCore22Nightly:
+      containerImage: mcr.microsoft.com/dotnet/core-nightly/sdk:2.2
+
+container: $[ variables['containerImage'] ]
 
 resources:
   containers:
@@ -439,10 +446,11 @@ steps:
     arguments: '--configuration release'
 
 - task: PublishPipelineArtifact@0
-  displayName: Store artefact
+  displayName: Store artifact
   inputs:
     artifactName: 'MyProject'
     targetPath: 'MyProject/bin/release/netcoreapp2.2/publish/'
+  condition: and(succeeded(), endsWith(variables['Agent.JobName'], 'DotNetCore22'))
 ";
 
             //Act

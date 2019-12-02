@@ -223,6 +223,26 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
 
             //Assert
             Assert.IsTrue(gitHubOutput.actionsYaml != null);
+        }      
+        
+        [TestMethod]
+        public void PublishPipelineArtifactsIndividualStepTest()
+        {
+            //Arrange
+            Conversion conversion = new Conversion();
+            string yaml = @"
+- task: PublishPipelineArtifact@0
+  displayName: Store artifact
+  inputs:
+    artifactName: 'MyProject'
+    targetPath: 'MyProject/bin/release/netcoreapp2.2/publish/'
+";
+
+            //Act
+            ConversionResult gitHubOutput = conversion.ConvertAzurePinelineTaskToGitHubActionTask(yaml);
+
+            //Assert
+            Assert.IsTrue(gitHubOutput.actionsYaml != null);
         }
 
     }
