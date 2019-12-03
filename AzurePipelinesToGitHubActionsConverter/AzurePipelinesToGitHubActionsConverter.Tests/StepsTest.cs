@@ -311,5 +311,43 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
         }
 
+        [TestMethod]
+        public void FunctionalTestIndividualStepTest()
+        {
+            //Arrange
+            Conversion conversion = new Conversion();
+            string yaml = @"
+- task: VSTest@2
+  displayName: 'Run Selenium smoke tests on website'
+  inputs:
+    searchFolder: '$(build.artifactstagingdirectory)'
+    testAssemblyVer2: |
+      **\MyProject.FunctionalTests\MyProject.FunctionalTests.dll
+    uiTests: true
+    runSettingsFile: '$(build.artifactstagingdirectory)/drop/FunctionalTests/MyProject.FunctionalTests/test.runsettings'    
+";
+
+            //Act
+            ConversionResult gitHubOutput = conversion.ConvertAzurePinelineTaskToGitHubActionTask(yaml);
+
+            //Assert
+            string expected = @"
+- name: Run Selenium smoke tests on website
+  run: |
+        $vsTestConsoleExe = ""C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\Common7\IDE\Extensions\TestPlatform\vstest.console.exe""
+        $targetTestDll = ""**\MyProject.FunctionalTests\MyProject.FunctionalTests.dll""
+        $testRunSettings = ""/Settings:`""${GITHUB_WORKSPACE}/drop/FunctionalTests/MyProject.FunctionalTests/test.runsettings`""
+        $parameters = """"
+        #Note that the `"" is an escape character to quote strings, and the `& is needed to start the command
+        $command = ""`& `""$vsTestConsoleExe`"" `""$targetTestDll`"" $testRunSettings $parameters ""                             
+        Write-Host ""$command""
+        Invoke-Expression $command
+   shell: powershell
+";
+            //expected = TestUtility.TrimNewLines(expected);
+            //Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+            Assert.IsTrue(string.IsNullOrEmpty(gitHubOutput.actionsYaml) == false);
+        }
+
     }
 }

@@ -297,7 +297,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
             //- task: AzureResourceGroupDeployment@2
             //  displayName: 'Deploy ARM Template to resource group'
             //  inputs:
-            //    azureSubscription: 'SamLearnsAzure connection to Azure Portal'
+            //    azureSubscription: 'connection to Azure Portal'
             //    resourceGroupName: $(ResourceGroupName)
             //    location: '[resourceGroup().location]'
             //    csmFile: '$(build.artifactstagingdirectory)/drop/ARMTemplates/azuredeploy.json'
@@ -341,12 +341,12 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
             //- task: AzureRmWebAppDeployment@3
             //  displayName: 'Azure App Service Deploy: web service'
             //  inputs:
-            //    azureSubscription: 'SamLearnsAzure connection to Azure Portal'
+            //    azureSubscription: 'connection to Azure Portal'
             //    WebAppName: $(WebServiceName)
             //    DeployToSlotFlag: true
             //    ResourceGroupName: $(ResourceGroupName)
             //    SlotName: 'staging'
-            //    Package: '$(build.artifactstagingdirectory)/drop/FeatureFlags.Service.zip'
+            //    Package: '$(build.artifactstagingdirectory)/drop/MyProject.Service.zip'
             //    TakeAppOfflineFlag: true
             //    JSONFiles: '**/appsettings.json'
 
@@ -354,7 +354,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
             //- name: Deploy web service to Azure WebApp
             //  uses: Azure/webapps-deploy@v1
             //  with:
-            //    app-name: featureflags-data-eu-service
+            //    app-name: myproject-service
             //    package: serviceapp
             //    slot-name: staging   
 
@@ -369,26 +369,41 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
             //inputs:
             //  searchFolder: '$(build.artifactstagingdirectory)'
             //  testAssemblyVer2: |
-            //    **\FeatureFlags.FunctionalTests\FeatureFlags.FunctionalTests.dll
+            //    **\MyProject.FunctionalTests\MyProject.FunctionalTests.dll
             //  uiTests: true
-            //  runSettingsFile: '$(build.artifactstagingdirectory)/drop/FunctionalTests/FeatureFlags.FunctionalTests/test.runsettings'
+            //  runSettingsFile: '$(build.artifactstagingdirectory)/drop/FunctionalTests/MyProject.FunctionalTests/test.runsettings'
             //  overrideTestrunParameters: |
             //   -ServiceUrl "https://$(WebServiceName)-staging.azurewebsites.net/" 
             //   -WebsiteUrl "https://$(WebsiteName)-staging.azurewebsites.net/" 
             //   -TestEnvironment "$(AppSettings.Environment)" 
 
+            //Defined in the github windows runner
+            string vsTestConsoleLocation = @"C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\Common7\IDE\Extensions\TestPlatform\";
+
+            string run = " |\n";
+            run += "    $vsTestConsoleExe = \"" + vsTestConsoleLocation + "vstest.console.exe\"\n";
+            run += "    $targetTestDll = \"" + GetStepInput(step, "testassemblyver2") + "\"\n";
+            run += "    $testRunSettings = \" / Settings:`\"" + GetStepInput(step, "runsettingsfile") + "`\" \"\n";
+            //TODO: Add override parameter processing
+            run += "    $parameters = \"\""; //\"-- TestEnvironment = \"Beta123\"  ServiceUrl = \"https://myproject-service-staging.azurewebsites.net/\" WebsiteUrl=\"https://myproject-web-staging.azurewebsites.net/\" \"" + "\n";
+            run += "    #Note that the `\" is an escape character sequence to quote strings, and `& is needed to start the command\n";
+            run += "    $command = \"`& `\"$vsTestConsoleExe`\" `\"$targetTestDll`\" $testRunSettings $parameters \"\n";
+            run += "    Write - Host \"$command\"\n";
+            run += "    Invoke - Expression $command";
+
             //To PowerShell script
             GitHubActions.Step gitHubStep = CreateScriptStep("powershell", step);
-            gitHubStep.run = @" |
-                            $vsTestConsoleExe = ""C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Enterprise\\Common7\\IDE\\Extensions\\TestPlatform\\vstest.console.exe""
-                            $targetTestDll = """ + GetStepInput(step, "testassemblyver2") + @"""
-                            $testRunSettings = ""/Settings:`""" + GetStepInput(step, "runsettingsfile") + @"`"" ""
-                            $parameters = "" -- TestEnvironment=""Beta123""  ServiceUrl=""https://featureflags-data-eu-service-staging.azurewebsites.net/"" WebsiteUrl=""https://featureflags-data-eu-web-staging.azurewebsites.net/"" ""
-                            #Note that the `"" is an escape character to quote strings, and the `& is needed to start the command
-                            $command = ""`& `""$vsTestConsoleExe`"" `""$targetTestDll`"" $testRunSettings $parameters ""                             
-                            Write-Host ""$command""
-                            Invoke-Expression $command
-                            ";
+            gitHubStep.run = run;
+            //gitHubStep.run = @" |
+            //    $vsTestConsoleExe = ""C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Enterprise\\Common7\\IDE\\Extensions\\TestPlatform\\vstest.console.exe""
+            //    $targetTestDll = """ + GetStepInput(step, "testassemblyver2") + @"""
+            //    $testRunSettings = "" / Settings:`""" + GetStepInput(step, "runsettingsfile") + @"`"" ""
+            //    $parameters = ""-- TestEnvironment = ""Beta123""  ServiceUrl = ""https://myproject-service-staging.azurewebsites.net/"" WebsiteUrl=""https://myproject-web-staging.azurewebsites.net/"" ""
+            //    #Note that the `"" is an escape character to quote strings, and the `& is needed to start the command
+            //    $command = ""`& `""$vsTestConsoleExe`"" `""$targetTestDll`"" $testRunSettings $parameters ""
+            //    Write - Host ""$command""
+            //    Invoke - Expression $command
+            //    ";
 
             return gitHubStep;
         }
@@ -399,7 +414,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
             //- task: AzureAppServiceManage@0
             //displayName: 'Swap Slots: web service'
             //inputs:
-            //  azureSubscription: 'SamLearnsAzure connection to Azure Portal'
+            //  azureSubscription: 'connection to Azure Portal'
             //  WebAppName: $(WebServiceName)
             //  ResourceGroupName: $(ResourceGroupName)
             //  SourceSlot: 'staging'
@@ -408,7 +423,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
             //- name: Swap web service staging slot to production
             //  uses: Azure/cli@v1.0.0
             //  with:
-            //    inlineScript: az webapp deployment slot swap --resource-group SamLearnsAzureFeatureFlags --name featureflags-data-eu-service --slot staging --target-slot production
+            //    inlineScript: az webapp deployment slot swap --resource-group MyProjectRG --name featureflags-data-eu-service --slot staging --target-slot production
 
 
             string resourceGroup = GetStepInput(step, "resourcegroupname");
