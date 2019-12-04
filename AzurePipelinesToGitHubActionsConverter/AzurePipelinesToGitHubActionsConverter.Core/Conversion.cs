@@ -17,7 +17,6 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
             input = StepsPreProcessing(input);
 
             GitHubActions.Step gitHubActionStep = new GitHubActions.Step();
-            AzurePipelinesProcessing<string[]> processing = new AzurePipelinesProcessing<string[]>();
 
             AzurePipelines.Job azurePipelinesJob = Global.ReadYamlFile<AzurePipelines.Job>(input);
             if (azurePipelinesJob != null && azurePipelinesJob.steps != null && azurePipelinesJob.steps.Length > 0)
@@ -60,14 +59,17 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
             }
 
             //Load failed tasks and comments for processing
-            List<string> stepComments = new List<string>();
-            stepComments.Add(gitHubActionStep.step_message);
+            List<string> allComments = new List<string>();
+            if (gitHubActionStep != null)
+            {
+                allComments.Add(gitHubActionStep.step_message);
+            }
 
             return new ConversionResult
             {
                 pipelinesYaml = input,
                 actionsYaml = yamlResponse,
-                comments = stepComments
+                comments = allComments
             };
 
         }
@@ -83,7 +85,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                 input = "";
             }
 
-            //HACK: Not well documented, and repo:self is redundent (https://stackoverflow.com/questions/53860194/azure-devops-resources-repo-self)
+            //Not well documented, and repo:self is redundent, and hence we remove it if detected (https://stackoverflow.com/questions/53860194/azure-devops-resources-repo-self)
             input = input.Replace("- repo: self", "");
 
             //Triggers are hard, as there are two data types that can exist, so we need to go with the most common type and handle the less common type with generics
@@ -160,6 +162,10 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                 {
                     if (job.Value.steps != null)
                     {
+                        if (job.Value.job_message != null)
+                        {
+                            stepComments.Add(job.Value.job_message);
+                        }
                         foreach (GitHubActions.Step step in job.Value.steps)
                         {
                             if (step != null && string.IsNullOrEmpty(step.step_message) == false)
@@ -217,12 +223,15 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
             yaml = yaml.Replace("max_parallel", "max-parallel");
             yaml = yaml.Replace("_ref", "ref");
             yaml = yaml.Replace("step_message", "#");
+            yaml = yaml.Replace("job_message", "#");
 
             //HACK: Sometimes when generating  yaml, a weird ">+" string appears. Not sure why yet, replacing it out of there for short term
             yaml = yaml.Replace("run: >-", "run: |"); //Replace a weird artifact in scripts when converting pipes
-            //yaml = yaml.Replace("run: >+", "run: ");
-            //yaml = yaml.Replace("run: >", "run: ");
-
+            yaml = yaml.Replace("run: >2-\r\n     |", "run: |");
+            yaml = yaml.Replace("run: >2-\r\n         | ", "run: |");
+            yaml = yaml.Replace("run: >+", "run: ");
+            yaml = yaml.Replace("run: >", "run: ");
+            
             return yaml;
         }
 

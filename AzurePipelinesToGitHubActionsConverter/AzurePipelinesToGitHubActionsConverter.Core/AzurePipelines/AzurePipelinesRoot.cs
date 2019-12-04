@@ -28,8 +28,8 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.AzurePipelines
     public class AzurePipelinesRoot<T>
     {
         public string name { get; set; }
-        public Resources resources { get; set; }
         public string container { get; set; }
+        public Resources resources { get; set; }
 
         //Trigger is a complicated case, where it can be a simple list, or a more complex trigger object
         //To solve this, we added a generic to try to convert to a string[], and failing that, try to convert with Trigger
@@ -46,6 +46,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.AzurePipelines
         public Stage[] stages { get; set; }
         public Job[] jobs { get; set; }
         public Step[] steps { get; set; }
+        //TODO: Add code for services
         public Dictionary<string, string> services { get; set; }
     }
 }

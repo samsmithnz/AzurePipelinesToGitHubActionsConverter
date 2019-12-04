@@ -18,7 +18,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
         //    ConversionResult gitHubOutput = conversion.ConvertAzurePinelineTaskToGitHubActionTask(yaml);
 
         //    //Assert
-        //    string expected = "- #: 'This step does not have a conversion yet: invalid fake task'\r\n  run: '#task: invalid fake task'\r\n  shell: powershell";
+        //    string expected = "- #: 'This step does not have a conversion path yet: invalid fake task'\r\n  run: '#task: invalid fake task'\r\n  shell: powershell";
 
 
         //    expected = TestUtility.TrimNewLines(expected);
@@ -182,7 +182,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             ConversionResult gitHubOutput = conversion.ConvertAzurePinelineTaskToGitHubActionTask(yaml);
 
             //Assert
-            Assert.IsTrue(gitHubOutput.actionsYaml != null);
+            Assert.IsTrue(string.IsNullOrEmpty(gitHubOutput.actionsYaml) == false);
         }
 
         [TestMethod]
@@ -203,7 +203,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             ConversionResult gitHubOutput = conversion.ConvertAzurePinelineTaskToGitHubActionTask(yaml);
 
             //Assert
-            Assert.IsTrue(gitHubOutput.actionsYaml != null);
+            Assert.IsTrue(string.IsNullOrEmpty(gitHubOutput.actionsYaml) == false);
         }
 
         [TestMethod]
@@ -224,9 +224,9 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             ConversionResult gitHubOutput = conversion.ConvertAzurePinelineTaskToGitHubActionTask(yaml);
 
             //Assert
-            Assert.IsTrue(gitHubOutput.actionsYaml != null);
-        }      
-        
+            Assert.IsTrue(string.IsNullOrEmpty(gitHubOutput.actionsYaml) == false);
+        }
+
         [TestMethod]
         public void PublishPipelineArtifactsIndividualStepTest()
         {
@@ -244,7 +244,116 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             ConversionResult gitHubOutput = conversion.ConvertAzurePinelineTaskToGitHubActionTask(yaml);
 
             //Assert
-            Assert.IsTrue(gitHubOutput.actionsYaml != null);
+            string expected = @"
+- name: Store artifact
+  uses: actions/upload-artifact@master
+  with:
+    path: MyProject/bin/release/netcoreapp2.2/publish/
+";
+            expected = TestUtility.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+        }
+
+        [TestMethod]
+        public void DeployWebAppIndividualStepTest()
+        {
+            //Arrange
+            Conversion conversion = new Conversion();
+            string yaml = @"
+    - task: AzureRmWebAppDeployment@3
+      displayName: 'Azure App Service Deploy: web site'
+      inputs:
+        azureSubscription: 'SamLearnsAzure connection to Azure Portal'
+        WebAppName: $(WebsiteName)
+        DeployToSlotFlag: true
+        ResourceGroupName: $(ResourceGroupName)
+        SlotName: 'staging'
+        Package: '$(build.artifactstagingdirectory)/drop/MyProject.Web.zip'
+        TakeAppOfflineFlag: true
+        JSONFiles: '**/appsettings.json'        
+";
+
+            //Act
+            ConversionResult gitHubOutput = conversion.ConvertAzurePinelineTaskToGitHubActionTask(yaml);
+
+            //Assert
+            string expected = @"
+- name: 'Azure App Service Deploy: web site'
+  uses: Azure/webapps-deploy@v1
+  with:
+    app-name: $WebsiteName
+    package: ${GITHUB_WORKSPACE}/drop/MyProject.Web.zip
+    slot-name: staging
+";
+            expected = TestUtility.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+        }
+
+        [TestMethod]
+        public void SwapSlotsIndividualStepTest()
+        {
+            //Arrange
+            Conversion conversion = new Conversion();
+            string yaml = @"
+    - task: AzureAppServiceManage@0
+      displayName: 'Swap Slots: website'
+      inputs:
+        azureSubscription: 'SamLearnsAzure connection to Azure Portal'
+        WebAppName: $(WebsiteName)
+        ResourceGroupName: $(ResourceGroupName)
+        SourceSlot: 'staging'      
+";
+
+            //Act
+            ConversionResult gitHubOutput = conversion.ConvertAzurePinelineTaskToGitHubActionTask(yaml);
+
+            //Assert
+            string expected = @"
+- name: 'Swap Slots: website'
+  uses: Azure/cli@v1.0.0
+  with:
+    inlineScript: az webapp deployment slot swap --resource-group $ResourceGroupName --name $WebsiteName --slot staging --target-slot production
+";
+            expected = TestUtility.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+        }
+
+        [TestMethod]
+        public void FunctionalTestIndividualStepTest()
+        {
+            //Arrange
+            Conversion conversion = new Conversion();
+            string yaml = @"
+- task: VSTest@2
+  displayName: 'Run Selenium smoke tests on website'
+  inputs:
+    searchFolder: '$(build.artifactstagingdirectory)'
+    testAssemblyVer2: |
+      **\MyProject.FunctionalTests\MyProject.FunctionalTests.dll
+    uiTests: true
+    runSettingsFile: '$(build.artifactstagingdirectory)/drop/FunctionalTests/MyProject.FunctionalTests/test.runsettings'    
+";
+
+            //Act
+            ConversionResult gitHubOutput = conversion.ConvertAzurePinelineTaskToGitHubActionTask(yaml);
+
+            //Assert
+            string expected = @"
+- name: Run Selenium smoke tests on website
+  run: |
+        $vsTestConsoleExe = ""C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\Common7\IDE\Extensions\TestPlatform\vstest.console.exe""
+        $targetTestDll = ""**\MyProject.FunctionalTests\MyProject.FunctionalTests.dll""
+        $testRunSettings = ""/Settings:`""${GITHUB_WORKSPACE}/drop/FunctionalTests/MyProject.FunctionalTests/test.runsettings`""
+        $parameters = """"
+        #Note that the `"" is an escape character to quote strings, and the `& is needed to start the command
+        $command = ""`& `""$vsTestConsoleExe`"" `""$targetTestDll`"" $testRunSettings $parameters ""                             
+        Write-Host ""$command""
+        Invoke-Expression $command
+   shell: powershell
+";
+            //expected = TestUtility.TrimNewLines(expected);
+            //Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+            Assert.IsTrue(string.IsNullOrEmpty(gitHubOutput.actionsYaml) == false);
         }
 
     }
