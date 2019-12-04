@@ -10,8 +10,8 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
     public class AzurePipelinesStepsProcessing
     {
         //This section is very much in Alpha. It has long way to go.
-        //TODO: Add more tasks
-        //TODO: Add logic to handle different versions
+        //TODO: Add more task types
+        //TODO: Add logic to handle different versions of tasks
         public GitHubActions.Step ProcessStep(AzurePipelines.Step step)
         {
             if (step.task != null)

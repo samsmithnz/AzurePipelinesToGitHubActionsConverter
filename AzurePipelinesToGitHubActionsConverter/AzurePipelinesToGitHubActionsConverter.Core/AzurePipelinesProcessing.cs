@@ -21,16 +21,10 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                 gitHubActions.name = azurePipeline.name;
             }
 
-            //Resources
-            if (azurePipeline.resources != null)
-            {
-                gitHubActions.messages.Add( "TODO: Resource conversion not yet done: https://github.com/samsmithnz/AzurePipelinesToGitHubActionsConverter/issues/8");
-            }
-
             //Container
             if (azurePipeline.container != null)
             {
-                gitHubActions.messages.Add( "TODO: Container conversion not yet done: https://github.com/samsmithnz/AzurePipelinesToGitHubActionsConverter/issues/39");
+                gitHubActions.messages.Add("TODO: Container conversion not yet done: https://github.com/samsmithnz/AzurePipelinesToGitHubActionsConverter/issues/39");
             }
 
             //Triggers for pushs 
@@ -63,7 +57,25 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                 }
             }
 
-            //Stages (Note: stages are not yet enabled in actions, we are merging them into one giant list of jobs)
+            //Resources
+            if (azurePipeline.resources != null)
+            {
+                //NOTE: Containers is in the jobs - this note should be removed once pipeliens and repositories is moved too
+
+                //TODO: Add code for pipelines
+                if (azurePipeline.resources.pipelines != null)
+                {
+                    gitHubActions.messages.Add("TODO: Resource pipelines conversion not yet done: https://github.com/samsmithnz/AzurePipelinesToGitHubActionsConverter/issues/8");
+                }
+
+                //TODO: Add code for repositories
+                if (azurePipeline.resources.repositories != null)
+                {
+                    gitHubActions.messages.Add("TODO: Resource services conversion not yet done: https://github.com/samsmithnz/AzurePipelinesToGitHubActionsConverter/issues/8");
+                }
+            }
+
+            //Stages (Note: stages are not yet present in actions, we are merging them into one giant list of jobs, appending the stage name to jobs to keep names unique)
             if (azurePipeline.stages != null)
             {
                 //Count the number of jobs and initialize the jobs array with that number
@@ -106,7 +118,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                         }
                     }
                 }
-                gitHubActions.jobs = ProcessJobs(azurePipeline.jobs);
+                gitHubActions.jobs = ProcessJobs(azurePipeline.jobs, azurePipeline.resources);
             }
 
             //Pool + Steps (When there are no jobs defined)
@@ -122,6 +134,8 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                         {
                             runs_on = ProcessPool(azurePipeline.pool),
                             strategy = ProcessStrategy(azurePipeline.strategy),
+                            container = ProcessContainer(azurePipeline.resources),
+                            //resources = ProcessResources(azurePipeline.resources),
                             steps = ProcessSteps(azurePipeline.steps)
                         }
                     }
@@ -308,6 +322,63 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
             }
         }
 
+        private Container ProcessContainer(Resources resources)
+        {
+            //FROM
+            //resources:
+            //  containers:
+            //  - container: string  # identifier (A-Z, a-z, 0-9, and underscore)
+            //    image: string  # container image name
+            //    options: string  # arguments to pass to container at startup
+            //    endpoint: string  # reference to a service connection for the private registry
+            //    env: { string: string }  # list of environment variables to add
+            //    ports: [ string ] # ports to expose on the container
+            //    volumes: [ string ] # volumes to mount on the container
+
+            //TO
+            //jobs:
+            //  my_job:
+            //    container:
+            //      image: node:10.16-jessie
+            //      env:
+            //        NODE_ENV: development
+            //      ports:
+            //        - 80
+            //      volumes:
+            //        - my_docker_volume:/volume_mount
+            //      options: --cpus 1
+
+            if (resources != null && resources.containers != null && resources.containers.Length > 0)
+            {
+                Container container = new Container();
+                //All containers have at least the image name
+                container.image = resources.containers[0].image;
+
+                //Optionally, these next 4 properties could also exist
+                if (resources.containers[0].env != null)
+                {
+                    container.env = resources.containers[0].env;
+                }
+                if (resources.containers[0].ports != null)
+                {
+                    container.ports = resources.containers[0].ports;
+                }
+                if (resources.containers[0].volumes != null)
+                {
+                    container.volumes = resources.containers[0].volumes;
+                }
+                if (resources.containers[0].options != null)
+                {
+                    container.options = resources.containers[0].options;
+                }
+                return container;
+            }
+            else
+            {
+                return null;
+            }
+        }
+
         //process all variables
         private Dictionary<string, string> ProcessVariables(Dictionary<string, string> variables)
         {
@@ -324,7 +395,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
         }
 
         //process the jobs
-        private Dictionary<string, GitHubActions.Job> ProcessJobs(AzurePipelines.Job[] jobs)
+        private Dictionary<string, GitHubActions.Job> ProcessJobs(AzurePipelines.Job[] jobs, Resources resources)
         {
             //A dictonary is perfect here, as the job_id (a string), must be unique in the action
             Dictionary<string, GitHubActions.Job> newJobs = null;
@@ -333,13 +404,13 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                 newJobs = new Dictionary<string, GitHubActions.Job>();
                 for (int i = 0; i < jobs.Length; i++)
                 {
-                    newJobs.Add(jobs[i].job, ProcessIndividualJob(jobs[i]));
+                    newJobs.Add(jobs[i].job, ProcessIndividualJob(jobs[i], resources));
                 }
             }
             return newJobs;
         }
 
-        private GitHubActions.Job ProcessIndividualJob(AzurePipelines.Job job)
+        private GitHubActions.Job ProcessIndividualJob(AzurePipelines.Job job, AzurePipelines.Resources resources)
         {
             GitHubActions.Job newJob = new GitHubActions.Job
             {
@@ -348,6 +419,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                 _if = job.condition,
                 runs_on = ProcessPool(job.pool),
                 strategy = ProcessStrategy(job.strategy),
+                container = ProcessContainer(resources),
                 env = ProcessVariables(job.variables),
                 timeout_minutes = job.timeoutInMinutes,
                 steps = ProcessSteps(job.steps)

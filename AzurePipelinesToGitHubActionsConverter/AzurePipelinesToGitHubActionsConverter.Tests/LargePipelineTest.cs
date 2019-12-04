@@ -386,7 +386,7 @@ steps:
             ConversionResult gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(yaml);
 
             //Assert
-            Assert.IsTrue(gitHubOutput.comments.Count == 1); //TODO: Resources are not done yet, generating one comment
+            Assert.IsTrue(gitHubOutput.comments.Count == 0);
             Assert.IsTrue(gitHubOutput.actionsYaml.IndexOf("This step does not have a conversion path yet") == -1);
         }
 
@@ -457,10 +457,10 @@ steps:
             ConversionResult gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(yaml);
 
             //Assert
-            Assert.AreEqual(2, gitHubOutput.comments.Count);
+            Assert.AreEqual(1, gitHubOutput.comments.Count);
             Assert.IsTrue(gitHubOutput.actionsYaml.IndexOf("This step does not have a conversion path yet") == -1);
-        } 
-        
+        }
+
         [TestMethod]
         public void ConditionOnStagePipelineTest()
         {
@@ -487,6 +487,34 @@ stages:
         downloadType: 'single'
         artifactName: 'drop'
         downloadPath: '$(build.artifactstagingdirectory)'
+";
+
+            //Act
+            ConversionResult gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(yaml);
+
+            //Assert
+            Assert.AreEqual(1, gitHubOutput.comments.Count);
+            Assert.IsTrue(gitHubOutput.actionsYaml.IndexOf("This step does not have a conversion path yet") == -1);
+        }
+
+        [TestMethod]
+        public void ResourcesContainersPipelineTest()
+        {
+            //Arrange
+            Conversion conversion = new Conversion();
+            string yaml = @"
+trigger:
+- master
+
+pool:
+  vmImage: 'ubuntu-16.04'
+
+container: 'mcr.microsoft.com/dotnet/core/sdk:2.2'
+
+resources:
+  containers:
+  - container: redis
+    image: redis
 ";
 
             //Act
