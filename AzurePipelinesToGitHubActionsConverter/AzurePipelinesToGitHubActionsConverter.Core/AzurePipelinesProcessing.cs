@@ -82,7 +82,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                     for (int i = currentIndex; i < currentIndex + item.jobs.Length; i++)
                     {
                         //Rename the job, using the stage name as prefix, so that we keep the job names unique
-                        item.jobs[j].job = item.stage + "_" + item.jobs[j].job;
+                        item.jobs[j].job = item.stage + "_Stage_" + item.jobs[j].job;
                         azurePipeline.jobs[i] = item.jobs[j];
                         azurePipeline.jobs[i].condition = item.condition;
                         j++;
@@ -341,7 +341,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
 
         private GitHubActions.Job ProcessIndividualJob(AzurePipelines.Job job)
         {
-            return new GitHubActions.Job
+            GitHubActions.Job newJob = new GitHubActions.Job
             {
                 name = job.displayName,
                 needs = job.dependsOn,
@@ -352,6 +352,13 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                 timeout_minutes = job.timeoutInMinutes,
                 steps = ProcessSteps(job.steps)
             };
+
+            if (newJob._if != null)
+            {
+                newJob.job_message = "NOTE: Condition has been copied, but not converted";
+            }
+
+            return newJob;
         }
 
         //process the steps

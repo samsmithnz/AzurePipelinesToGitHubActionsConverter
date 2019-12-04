@@ -13,5 +13,9 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.GitHubActions
         public Dictionary<string, string> env { get; set; } //https://help.github.com/en/articles/workflow-syntax-for-github-actions#jobsjob_idenv
         public string _if { get; set; } //https://help.github.com/en/articles/workflow-syntax-for-github-actions#jobsjob_idif
         public Step[] steps { get; set; } //https://help.github.com/en/articles/workflow-syntax-for-github-actions#jobsjob_idsteps
+
+        //This is used for tracking errors, so we don't want it to convert to YAML
+        //[YamlIgnore]
+        public string job_message;
     }
 }

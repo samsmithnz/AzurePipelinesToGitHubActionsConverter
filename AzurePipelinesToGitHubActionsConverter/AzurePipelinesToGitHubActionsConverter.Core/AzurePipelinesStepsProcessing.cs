@@ -79,7 +79,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                             }
                         }
                         gitHubStep.run = yamlBuilder.ToString();
-                        gitHubStep.step_message = "NOTE: This step does not have a conversion yet: " + step.task;
+                        gitHubStep.step_message = "NOTE: This step does not have a conversion path yet: " + step.task;
                         break;
                 }
 

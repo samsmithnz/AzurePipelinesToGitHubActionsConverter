@@ -320,7 +320,7 @@ stages:
 
             //Assert
             Assert.IsTrue(gitHubOutput.comments.Count == 0);
-            Assert.IsTrue(gitHubOutput.actionsYaml.IndexOf("This step does not have a conversion yet") == -1);
+            Assert.IsTrue(gitHubOutput.actionsYaml.IndexOf("This step does not have a conversion path yet") == -1);
         }
 
 
@@ -387,7 +387,7 @@ steps:
 
             //Assert
             Assert.IsTrue(gitHubOutput.comments.Count == 1); //TODO: Resources are not done yet, generating one comment
-            Assert.IsTrue(gitHubOutput.actionsYaml.IndexOf("This step does not have a conversion yet") == -1);
+            Assert.IsTrue(gitHubOutput.actionsYaml.IndexOf("This step does not have a conversion path yet") == -1);
         }
 
         [TestMethod]
@@ -457,8 +457,44 @@ steps:
             ConversionResult gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(yaml);
 
             //Assert
-            Assert.AreEqual(3, gitHubOutput.comments.Count);
-            Assert.IsTrue(gitHubOutput.actionsYaml.IndexOf("This step does not have a conversion yet") > -1);
+            Assert.AreEqual(2, gitHubOutput.comments.Count);
+            Assert.IsTrue(gitHubOutput.actionsYaml.IndexOf("This step does not have a conversion path yet") == -1);
+        } 
+        
+        [TestMethod]
+        public void ConditionOnStagePipelineTest()
+        {
+            //Arrange
+            Conversion conversion = new Conversion();
+            string yaml = @"
+trigger:
+- master
+
+stages:
+- stage: Deploy
+  displayName: 'Deploy Prod'
+  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
+  jobs:
+  - job: Deploy
+    displayName: 'Deploy job'
+    pool:
+      vmImage: ubuntu-latest  
+    steps:
+    - task: DownloadBuildArtifacts@0
+      displayName: 'Download the build artifacts'
+      inputs:
+        buildType: 'current'
+        downloadType: 'single'
+        artifactName: 'drop'
+        downloadPath: '$(build.artifactstagingdirectory)'
+";
+
+            //Act
+            ConversionResult gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(yaml);
+
+            //Assert
+            Assert.AreEqual(1, gitHubOutput.comments.Count);
+            Assert.IsTrue(gitHubOutput.actionsYaml.IndexOf("This step does not have a conversion path yet") == -1);
         }
 
     }
