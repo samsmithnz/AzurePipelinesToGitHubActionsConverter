@@ -223,6 +223,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
             //HACK: Sometimes when generating  yaml, a weird ">+" string appears. Not sure why yet, replacing it out of there for short term
             yaml = yaml.Replace("run: >-", "run: |"); //Replace a weird artifact in scripts when converting pipes
             yaml = yaml.Replace("run: >2-\r\n     |", "run: |");
+            yaml = yaml.Replace("run: >2-\r\n         | ", "run: |");
             yaml = yaml.Replace("run: >+", "run: ");
             yaml = yaml.Replace("run: >", "run: ");
             

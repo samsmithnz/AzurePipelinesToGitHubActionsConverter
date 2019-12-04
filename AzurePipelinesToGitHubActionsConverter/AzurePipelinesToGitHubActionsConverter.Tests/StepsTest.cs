@@ -244,7 +244,14 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             ConversionResult gitHubOutput = conversion.ConvertAzurePinelineTaskToGitHubActionTask(yaml);
 
             //Assert
-            Assert.IsTrue(string.IsNullOrEmpty(gitHubOutput.actionsYaml) == false);
+            string expected = @"
+- name: Store artifact
+  uses: actions/upload-artifact@master
+  with:
+    path: MyProject/bin/release/netcoreapp2.2/publish/
+";
+            expected = TestUtility.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
         }
 
         [TestMethod]

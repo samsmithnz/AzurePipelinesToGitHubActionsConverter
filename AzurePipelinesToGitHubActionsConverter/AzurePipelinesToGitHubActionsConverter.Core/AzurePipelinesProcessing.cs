@@ -84,6 +84,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                         //Rename the job, using the stage name as prefix, so that we keep the job names unique
                         item.jobs[j].job = item.stage + "_" + item.jobs[j].job;
                         azurePipeline.jobs[i] = item.jobs[j];
+                        azurePipeline.jobs[i].condition = item.condition;
                         j++;
                     }
                     currentIndex += item.jobs.Length;

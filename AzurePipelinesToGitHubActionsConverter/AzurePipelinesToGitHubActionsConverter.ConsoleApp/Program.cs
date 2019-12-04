@@ -56,11 +56,13 @@ namespace AzurePipelinesToGitHubActionsConverter.ConsoleApp
             //   shell: powershell
             //";
             string expected = @"
--name: Run Selenium smoke tests on website
- shell: powershell
+- name: Run Selenium smoke tests on website
+  run: |
+    Write-Host ""Line 1"" 
+    Write-Host ""Line 2"";
+  shell: powershell
 ";
 
-            Conversion conversion = new Conversion();
             Temp tmpObj = ReadYamlFile<Temp>(expected);
             string result = WriteYAMLFile<Temp>(tmpObj);
             Console.WriteLine("Result: " + Environment.NewLine + result);

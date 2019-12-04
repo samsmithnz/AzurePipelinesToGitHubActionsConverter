@@ -10,6 +10,8 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
     public class AzurePipelinesStepsProcessing
     {
         //This section is very much in Alpha. It has long way to go.
+        //TODO: Add more tasks
+        //TODO: Add logic to handle different versions
         public GitHubActions.Step ProcessStep(AzurePipelines.Step step)
         {
             if (step.task != null)
@@ -43,6 +45,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                     case "PowerShell@2":
                         gitHubStep = CreateScriptStep("powershell", step);
                         break;
+                    case "PublishPipelineArtifact@0":
                     case "PublishBuildArtifacts@1":
                         gitHubStep = CreatePublishBuildArtifactsStep(step);
                         break;
@@ -76,7 +79,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                             }
                         }
                         gitHubStep.run = yamlBuilder.ToString();
-                        gitHubStep.step_message = "This step does not have a conversion yet: " + step.task;
+                        gitHubStep.step_message = "NOTE: This step does not have a conversion yet: " + step.task;
                         break;
                 }
 
