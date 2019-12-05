@@ -158,8 +158,8 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
 
             //Assert
             string expected = @"
-- name: dotnet build $buildConfiguration part 1
-  run: dotnet build --configuration $buildConfiguration WebApplication1/WebApplication1.Service/WebApplication1.Service.csproj
+- name: dotnet build ${{ env.buildConfiguration }} part 1
+  run: dotnet build --configuration ${{ env.buildConfiguration }} WebApplication1/WebApplication1.Service/WebApplication1.Service.csproj
 ";
             expected = TestUtility.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
@@ -281,7 +281,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
 - name: 'Azure App Service Deploy: web site'
   uses: Azure/webapps-deploy@v1
   with:
-    app-name: $WebsiteName
+    app-name: ${{ env.WebsiteName }}
     package: ${GITHUB_WORKSPACE}/drop/MyProject.Web.zip
     slot-name: staging
 ";
@@ -312,7 +312,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
 - name: 'Swap Slots: website'
   uses: Azure/cli@v1.0.0
   with:
-    inlineScript: az webapp deployment slot swap --resource-group $ResourceGroupName --name $WebsiteName --slot staging --target-slot production
+    inlineScript: az webapp deployment slot swap --resource-group ${{ env.ResourceGroupName }} --name ${{ env.WebsiteName }} --slot staging --target-slot production
 ";
             expected = TestUtility.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);

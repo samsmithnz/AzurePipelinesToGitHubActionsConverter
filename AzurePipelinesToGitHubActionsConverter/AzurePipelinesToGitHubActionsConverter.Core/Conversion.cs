@@ -229,6 +229,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
             yaml = yaml.Replace("run: >-", "run: |"); //Replace a weird artifact in scripts when converting pipes
             yaml = yaml.Replace("run: >2-\r\n     |", "run: |");
             yaml = yaml.Replace("run: >2-\r\n         | ", "run: |");
+            yaml = yaml.Replace("run: 2-\r\n         | ", "run: |");
             yaml = yaml.Replace("run: >+", "run: ");
             yaml = yaml.Replace("run: >", "run: ");
             
@@ -252,10 +253,11 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                 else
                 {
                     //Replace variables with the format "$(MyVar)" with the format "$MyVar"
-                    yaml = yaml.Replace("$(" + item + ")", "$" + item);
-                    yaml = yaml.Replace("$( " + item + " )", "$" + item);
-                    yaml = yaml.Replace("$(" + item + " )", "$" + item);
-                    yaml = yaml.Replace("$( " + item + ")", "$" + item);
+                    yaml = yaml.Replace("$(" + item + ")", "${{ env." + item + " }}");
+                    yaml = yaml.Replace("$( " + item + " )", "${{ env." + item + " }}");
+                    yaml = yaml.Replace("$(" + item + " )", "${{ env." + item + " }}");
+                    yaml = yaml.Replace("$( " + item + ")", "${{ env." + item + " }}");
+                    yaml = yaml.Replace("$" + item + "", "${{ env." + item + " }}");
                 }
             }
 

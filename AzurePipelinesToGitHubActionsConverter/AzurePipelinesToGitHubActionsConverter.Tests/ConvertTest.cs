@@ -129,8 +129,8 @@ jobs:
       myJobVariable: data
     steps:
     - uses: actions/checkout@v1
-    - name: dotnet build $myJobVariable
-      run: dotnet build WebApplication1/WebApplication1.Service/WebApplication1.Service.csproj --configuration $buildConfiguration";
+    - name: dotnet build ${{ env.myJobVariable }}
+      run: dotnet build WebApplication1/WebApplication1.Service/WebApplication1.Service.csproj --configuration ${{ env.buildConfiguration }}";
             expected = TestUtility.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
         }
@@ -152,8 +152,9 @@ jobs:
   variables:
     myJobVariable: 'data'
   steps: 
-  - script: dotnet build WebApplication1/WebApplication1.Service/WebApplication1.Service.csproj --configuration $(buildConfiguration) 
-    displayName: dotnet build $( myJobVariable )";
+  - script: dotnet build WebApplication1/WebApplication1.Service/WebApplication1.Service.csproj --configuration $buildConfiguration
+    displayName: dotnet build $myJobVariable
+"; 
             Conversion conversion = new Conversion();
 
             //Act
@@ -175,8 +176,10 @@ jobs:
       myJobVariable: data
     steps:
     - uses: actions/checkout@v1
-    - name: dotnet build $myJobVariable
-      run: dotnet build WebApplication1/WebApplication1.Service/WebApplication1.Service.csproj --configuration $buildConfiguration";
+    - name: dotnet build ${{ env.myJobVariable }}
+      run: dotnet build WebApplication1/WebApplication1.Service/WebApplication1.Service.csproj --configuration ${{ env.buildConfiguration }}
+";
+
             expected = TestUtility.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
         }
@@ -315,7 +318,7 @@ jobs:
     steps:
     - uses: actions/checkout@v1
     - name: dotnet build part 1
-      run: dotnet build WebApplication1/WebApplication1.Service/WebApplication1.Service.csproj --configuration $buildConfiguration
+      run: dotnet build WebApplication1/WebApplication1.Service/WebApplication1.Service.csproj --configuration ${{ env.buildConfiguration }}
   Build2:
     name: Build job
     runs-on: ubuntu-latest
@@ -325,9 +328,9 @@ jobs:
     steps:
     - uses: actions/checkout@v1
     - name: dotnet build part 2
-      run: dotnet build WebApplication1/WebApplication1.Service/WebApplication1.Service.csproj --configuration $buildConfiguration
+      run: dotnet build WebApplication1/WebApplication1.Service/WebApplication1.Service.csproj --configuration ${{ env.buildConfiguration }}
     - name: dotnet build part 3
-      run: dotnet build WebApplication1/WebApplication1.Service/WebApplication1.Service.csproj --configuration $buildConfiguration
+      run: dotnet build WebApplication1/WebApplication1.Service/WebApplication1.Service.csproj --configuration ${{ env.buildConfiguration }}
 ";
 
             expected = TestUtility.TrimNewLines(expected);
