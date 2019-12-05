@@ -116,11 +116,14 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
         private AzurePipelines.Step CleanStepInputs(AzurePipelines.Step step)
         {
             Dictionary<string, string> newInputs = new Dictionary<string, string>();
-            foreach (KeyValuePair<string, string> item in step.inputs)
+            if (step.inputs != null)
             {
-                newInputs.Add(item.Key.ToLower(), item.Value);
+                foreach (KeyValuePair<string, string> item in step.inputs)
+                {
+                    newInputs.Add(item.Key.ToLower(), item.Value);
+                }
+                step.inputs = newInputs;
             }
-            step.inputs = newInputs;
 
             return step;
         }
