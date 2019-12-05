@@ -387,8 +387,37 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
             run += "    $vsTestConsoleExe = \"" + vsTestConsoleLocation + "vstest.console.exe\"\n";
             run += "    $targetTestDll = \"" + GetStepInput(step, "testassemblyver2") + "\"\n";
             run += "    $testRunSettings = \" / Settings:`\"" + GetStepInput(step, "runsettingsfile") + "`\" \"\n";
-            //TODO: Add override parameter processing
-            run += "    $parameters = \"\""; //\"-- TestEnvironment = \"Beta123\"  ServiceUrl = \"https://myproject-service-staging.azurewebsites.net/\" WebsiteUrl=\"https://myproject-web-staging.azurewebsites.net/\" \"" + "\n";
+
+            string parametersInput = GetStepInput(step, "overridetestrunparameters");
+            //Split it two ways, there are 3 combinations, parameters are on each new line, parameters are all on one line, a combination of both multi and single lines.
+            //1. Multiline
+            string[] multiLineParameters = parametersInput.Split("\n-");
+            StringBuilder parameters = new StringBuilder();
+            foreach (string multiLineItem in multiLineParameters)
+            {
+                //2. Single line 
+                string[] singleLineParameters = multiLineItem.Split(" -");
+                foreach (string item in singleLineParameters)
+                {
+                    string[] items = item.Split(" ");
+                    if (items.Length >= 2)
+                    {
+                        //Sometimes the first item has an extra -, remove this.
+                        if (items[0].ToString().StartsWith("-") == true)
+                        {
+                            items[0] = items[0].TrimStart('-');
+                        }
+                        //build the new format [var name]=[var value]
+                        parameters.Append(items[0]);
+                        parameters.Append("=");
+                        parameters.Append(items[1]);
+                        parameters.Append("  ");
+                    }
+                }
+            }
+            run += "    $parameters = \"-- " + parameters.ToString() + "\"";
+
+            //run += "    $parameters = \"\""; //\"-- TestEnvironment = \"Beta123\"  ServiceUrl = \"https://myproject-service-staging.azurewebsites.net/\" WebsiteUrl=\"https://myproject-web-staging.azurewebsites.net/\" \"" + "\n";
             run += "    #Note that the `\" is an escape character sequence to quote strings, and `& is needed to start the command\n";
             run += "    $command = \"`& `\"$vsTestConsoleExe`\" `\"$targetTestDll`\" $testRunSettings $parameters \"\n";
             run += "    Write - Host \"$command\"\n";
@@ -437,7 +466,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
             {
                 targetSlot = "production";
             }
-            //TODO: Add the other properties
+            //TODO: Add other properties for az webapp deployment
 
             string script = "az webapp deployment slot swap --resource-group " + resourceGroup +
                 " --name " + webAppName +
