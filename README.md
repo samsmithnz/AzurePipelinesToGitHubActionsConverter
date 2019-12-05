@@ -44,7 +44,7 @@ Dictionary<string, string> variables = new Dictionary<string, string>
 - job: Build
   displayName: 'Build job'
   pool:
-    vmImage: $(vmImage)
+    vmImage: ubuntu-latest
 ```
 ```C#
 public string job { get; set; }
@@ -54,8 +54,8 @@ public Pool pool { get; set; }
 
 ## Architecture
 The core functionality is a .NET Standard 2.1 class, "AzurePipelinesToGitHubActionsConverter.Core" 
-- There is a .NET CORE 3.0 mstest project for tests, "AzurePipelinesToGitHubActionsConverter.Tests" 
-- There is a .NET CORE 3.0 console app for running specific workloads, "AzurePipelinesToGitHubActionsConverter.ConsoleApp" 
+- There is a .NET CORE 3.0 MSTest project for tests, "AzurePipelinesToGitHubActionsConverter.Tests" 
+- There is a website in (https://github.com/samsmithnz/AzurePipelinesToGitHubActionsConverterWeb)[another project] where you can test this interactively, at: https://pipelinestoactions.azurewebsites.net/ 
 
 ## Example: 
 The Azure Pipelines YAML to build a dotnet application on ubuntu:
@@ -91,8 +91,8 @@ jobs:
       myJobVariable: data
     steps:
     - uses: actions/checkout@v1
-    - name: dotnet build $myJobVariable
-      run: dotnet build WebApplication1/WebApplication1.Service/WebApplication1.Service.csproj --configuration $buildConfiguration
+    - name: dotnet build ${{ env.myJobVariable }}
+      run: dotnet build WebApplication1/WebApplication1.Service/WebApplication1.Service.csproj --configuration ${{ env.buildConfiguration }}";
 ```
 ## References
 Made with help from https://github.com/aaubry/YamlDotNet and https://en.wikipedia.org/wiki/YAML.

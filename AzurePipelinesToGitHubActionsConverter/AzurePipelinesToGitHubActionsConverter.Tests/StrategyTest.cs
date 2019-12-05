@@ -69,7 +69,7 @@ jobs:
     steps:
     - uses: actions/checkout@v1
     - name: dotnet build part 1
-      run: dotnet build WebApplication1/WebApplication1.Service/WebApplication1.Service.csproj --configuration $buildConfiguration
+      run: dotnet build WebApplication1/WebApplication1.Service/WebApplication1.Service.csproj --configuration ${{ env.buildConfiguration }}
 ";
 
             expected = TestUtility.TrimNewLines(expected);
