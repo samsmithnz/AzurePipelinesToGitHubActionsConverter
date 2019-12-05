@@ -55,7 +55,7 @@ public Pool pool { get; set; }
 ## Architecture
 The core functionality is a .NET Standard 2.1 class, "AzurePipelinesToGitHubActionsConverter.Core" 
 - There is a .NET CORE 3.0 MSTest project for tests, "AzurePipelinesToGitHubActionsConverter.Tests" 
-- There is a website in (https://github.com/samsmithnz/AzurePipelinesToGitHubActionsConverterWeb)[another project] where you can test this interactively, at: https://pipelinestoactions.azurewebsites.net/ 
+- There is a website in [another project](https://github.com/samsmithnz/AzurePipelinesToGitHubActionsConverterWeb) where you can test this interactively, at: https://pipelinestoactions.azurewebsites.net/ 
 
 ## Example: 
 The Azure Pipelines YAML to build a dotnet application on ubuntu:
