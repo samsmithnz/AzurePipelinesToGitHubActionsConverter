@@ -19,7 +19,7 @@ jobs:
         $xml = [Xml] (Get-Content AzurePipelinesToGitHubActionsConverter/AzurePipelinesToGitHubActionsConverter.Core/AzurePipelinesToGitHubActionsConverter.Core.csproj)
         $initialVersion = [Version] $xml.Project.PropertyGroup.Version
         Write-Host "Initial Version: " $version
-        $spliteVersion = $initialVersion -Split "\."
+        $splitVersion = $initialVersion -Split "\."
         #Get the build number (number of days since January 1, 2000)
         $baseDate = [datetime]"01/01/2000"
         $currentDate = $(Get-Date)
@@ -30,7 +30,7 @@ jobs:
         $EndDate=(GET-DATE)
         $revisionNumber = [math]::Round((New-TimeSpan -Start $StartDate -End $EndDate).TotalSeconds / 2,0)
         #Final version number
-        $finalBuildVersion = "$($spliteVersion[0]).$($spliteVersion[1]).$($buildNumber).$($revisionNumber)"
+        $finalBuildVersion = "$($splitVersion[0]).$($splitVersion[1]).$($splitVersion[2]).$($buildNumber)$($revisionNumber)"
         Write-Host "Major.Minor,Build,Revision"
         Write-Host "Final build number: $finalBuildVersion"
         #Writing final version number back to Github variable
