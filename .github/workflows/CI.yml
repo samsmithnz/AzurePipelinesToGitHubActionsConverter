@@ -12,10 +12,6 @@ jobs:
       buildVersion: 0.0.0.0 #The initial build version, calculated and updated in the script below
     steps:
     - uses: actions/checkout@v1
-    - name: Build with dotnet
-      run: dotnet build AzurePipelinesToGitHubActionsConverter/AzurePipelinesToGitHubActionsConverter.Core/AzurePipelinesToGitHubActionsConverter.Core.csproj --configuration Release
-    - name: Test with dotnet
-      run: dotnet test AzurePipelinesToGitHubActionsConverter/AzurePipelinesToGitHubActionsConverter.Tests/AzurePipelinesToGitHubActionsConverter.Tests.csproj --configuration Release
     - name: Custom script to create a unique application version number for this build
       run: |
         Write-Host "Generating Build Number"
@@ -36,11 +32,15 @@ jobs:
         #Final version number
         $finalBuildVersion = "$($spliteVersion[0]).$($spliteVersion[1]).$($buildNumber).$($revisionNumber)"
         Write-Host "Major.Minor,Build,Revision"
-        Write-Host "Final build number: " $finalBuildVersion
+        Write-Host "Final build number: $finalBuildVersion"
         #Writing final version number back to Github variable
         Write-Host "Writing final version $finalBuildVersion back to Github variable"
         echo "::set-env name=buildVersion::$finalBuildVersion"
       shell: pwsh
+    - name: Build with dotnet
+      run: dotnet build AzurePipelinesToGitHubActionsConverter/AzurePipelinesToGitHubActionsConverter.Core/AzurePipelinesToGitHubActionsConverter.Core.csproj --configuration Release
+    - name: Test with dotnet
+      run: dotnet test AzurePipelinesToGitHubActionsConverter/AzurePipelinesToGitHubActionsConverter.Tests/AzurePipelinesToGitHubActionsConverter.Tests.csproj --configuration Release
     - name: Pack with dotnet
       run: dotnet pack AzurePipelinesToGitHubActionsConverter/AzurePipelinesToGitHubActionsConverter.Core/AzurePipelinesToGitHubActionsConverter.Core.csproj --configuration Release /p:PackageVersion=${{env.buildVersion}}
     - name: Upload nuget package back to GitHub
