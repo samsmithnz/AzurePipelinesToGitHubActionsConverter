@@ -512,7 +512,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
             //    path: /home/runner/work/AzurePipelinesToGitHubActionsConverter/AzurePipelinesToGitHubActionsConverter/AzurePipelinesToGitHubActionsConverter/AzurePipelinesToGitHubActionsConverter.ConsoleApp/bin/Release/netcoreapp3.0
 
             string name = "";
-            if (step.inputs.ContainsKey("artifactName") == true)
+            if (step.inputs.ContainsKey("artifactname") == true)
             {
                 name = GetStepInput(step, "artifactname");
             }

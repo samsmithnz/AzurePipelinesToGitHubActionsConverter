@@ -159,6 +159,24 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
         }
 
+//        [TestMethod]
+//        public void AzureLoginIndividualStepTest()
+//        {
+//            //Arrange
+//            Conversion conversion = new Conversion();
+//            string yaml = @"
+//";
+
+//            //Act
+//            ConversionResult gitHubOutput = conversion.ConvertAzurePinelineTaskToGitHubActionTask(yaml);
+
+//            //Assert
+
+//";
+//            expected = TestUtility.TrimNewLines(expected);
+//            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+//        }
+
         [TestMethod]
         public void BuildDotNetIndividualStepTest()
         {
@@ -251,7 +269,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
 - task: PublishPipelineArtifact@0
   displayName: Store artifact
   inputs:
-    artifactName: 'MyProject'
+    artifactName: 'drop'
     targetPath: 'MyProject/bin/release/netcoreapp2.2/publish/'
 ";
 
@@ -264,6 +282,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
   uses: actions/upload-artifact@master
   with:
     path: MyProject/bin/release/netcoreapp2.2/publish/
+    name: drop
 ";
             expected = TestUtility.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
