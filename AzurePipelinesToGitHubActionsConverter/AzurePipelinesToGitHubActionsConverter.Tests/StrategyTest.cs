@@ -25,6 +25,8 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
 trigger:
 - master
 strategy:
+  maxParallel: 3
+  parallel: 1
   matrix:
     linux:
       imageName: ubuntu-16.04
@@ -64,6 +66,7 @@ jobs:
         - ubuntu-16.04
         - macos-10.13
         - vs2017-win2016
+      max-parallel: 3
     env:
       buildConfiguration: Debug
     steps:
