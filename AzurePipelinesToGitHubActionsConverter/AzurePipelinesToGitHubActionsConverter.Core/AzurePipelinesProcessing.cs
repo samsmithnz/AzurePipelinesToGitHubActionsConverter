@@ -80,26 +80,27 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
             {
                 //Count the number of jobs and initialize the jobs array with that number
                 int jobCounter = 0;
-                foreach (Stage item in azurePipeline.stages)
+                foreach (Stage stage in azurePipeline.stages)
                 {
-                    jobCounter += item.jobs.Length;
+                    jobCounter += stage.jobs.Length;
                 }
                 azurePipeline.jobs = new AzurePipelines.Job[jobCounter];
 
                 //We are going to take each stage and assign it a set of jobs
                 int currentIndex = 0;
-                foreach (Stage item in azurePipeline.stages)
+                foreach (Stage stage in azurePipeline.stages)
                 {
                     int j = 0;
-                    for (int i = currentIndex; i < currentIndex + item.jobs.Length; i++)
+                    for (int i = currentIndex; i < currentIndex + stage.jobs.Length; i++)
                     {
                         //Rename the job, using the stage name as prefix, so that we keep the job names unique
-                        item.jobs[j].job = item.stage + "_Stage_" + item.jobs[j].job;
-                        azurePipeline.jobs[i] = item.jobs[j];
-                        azurePipeline.jobs[i].condition = item.condition;
+                        stage.jobs[j].job = stage.stage + "_Stage_" + stage.jobs[j].job;
+                        Console.WriteLine("This variable is not needed in actions: " + stage.displayName);
+                        azurePipeline.jobs[i] = stage.jobs[j];
+                        azurePipeline.jobs[i].condition = stage.condition;
                         j++;
                     }
-                    currentIndex += item.jobs.Length;
+                    currentIndex += stage.jobs.Length;
                 }
             }
 
@@ -306,6 +307,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                     matrix[i] = strategy.matrix[entry.Key][MatrixVariableName];
                     i++;
                 }
+                Console.WriteLine("This variable is not needed in actions: " + strategy.parallel);
                 return new GitHubActions.Strategy()
                 {
                     matrix = new Dictionary<string, string[]>
