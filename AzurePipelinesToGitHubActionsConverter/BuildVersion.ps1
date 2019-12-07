@@ -7,7 +7,7 @@ Write-Host "Generating Build Number"
 #Get the version from the csproj file
 $xml = [Xml] (Get-Content $ProjectFile)
 $initialVersion = [Version] $xml.Project.PropertyGroup.Version
-Write-Host "Initial Version: $initialVersion" 
+Write-Host "Initial version read from project file: $initialVersion" 
 $splitVersion = $initialVersion -Split "\."
 #Get the build number (number of days since January 1, 2000)
 $baseDate = [datetime]"01/01/2000"
@@ -18,9 +18,9 @@ $buildNumber = $interval.Days
 $StartDate=[datetime]::Today
 $EndDate=(GET-DATE)
 $revisionNumber = [math]::Round((New-TimeSpan -Start $StartDate -End $EndDate).TotalSeconds / 2,0)
-#Final version number
+#Final version number, using the Major, Minor and Patch versions, and then appends build and revision number together
 $finalBuildVersion = "$($splitVersion[0]).$($splitVersion[1]).$($splitVersion[2]).$($buildNumber)$($revisionNumber)"
-#Write-Host "Major.Minor,Build,Revision"
+#Write-Host "Major.Minor,patch,Build+Revision"
 Write-Host "Final build number: $finalBuildVersion" 
 #Writing final version number back to Github variable
 #Write-Host "Writing final version $finalBuildVersion back to Github variable"
