@@ -6,7 +6,7 @@ jobs:
   build:
     strategy:
       matrix:
-        os: [ubuntu-latest]
+        os: [windows-latest]
     runs-on: ${{ matrix.os }} 
     env:
       buildVersion: 0.0.0.0 #The initial build version, calculated and updated in the script below
@@ -14,7 +14,6 @@ jobs:
     - uses: actions/checkout@v1
     - name: Custom script to create a unique application version number for this build
       run: AzurePipelinesToGitHubActionsConverter/BuildVersion.ps1 -ProjectFile "AzurePipelinesToGitHubActionsConverter/AzurePipelinesToGitHubActionsConverter.Core/AzurePipelinesToGitHubActionsConverter.Core.csproj"
-      shell: pwsh
     - name: Build with dotnet
       run: dotnet build AzurePipelinesToGitHubActionsConverter/AzurePipelinesToGitHubActionsConverter.Core/AzurePipelinesToGitHubActionsConverter.Core.csproj --configuration Release
     - name: Test with dotnet
