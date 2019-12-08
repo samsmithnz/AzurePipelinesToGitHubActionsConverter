@@ -379,21 +379,17 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
         private GitHubActions.Step CreateNuGetCommandStep(AzurePipelines.Step step)
         {
             string command = GetStepInput(step, "command");
-            //string webappName = GetStepInput(step, "webappname");
-            //string package = GetStepInput(step, "package");
-            //string slotName = GetStepInput(step, "slotname");
+            if (string.IsNullOrEmpty(command) == false)
+            {
+                command = "restore";
+            }
+            string restoresolution = GetStepInput(step, "restoresolution");
 
-            //GitHubActions.Step gitHubStep = new GitHubActions.Step
-            //{
-            //    name = step.displayName,
-            //    uses = "Azure/webapps-deploy@v1",
-            //    with = new Dictionary<string, string>
-            //    {
-            //        { "app-name", webappName},
-            //        { "package", package},
-            //        { "slot-name", slotName},
-            //    }
-            //};
+            GitHubActions.Step gitHubStep = CreateScriptStep("powershell", step);
+            gitHubStep.run = "nuget " + command + " " + restoresolution;
+
+            //          - name: Nuget Push
+            //run: nuget push *.nupkg
 
             //coming from:
             //# NuGet
@@ -441,23 +437,15 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
             return gitHubStep;
         }
 
+        //https://github.com/warrenbuckley/Setup-Nuget
         private GitHubActions.Step CreateNuGetToolInstallerStep(AzurePipelines.Step step)
         {
-            string command = GetStepInput(step, "command");
-            //string package = GetStepInput(step, "package");
-            //string slotName = GetStepInput(step, "slotname");
-
-            //GitHubActions.Step gitHubStep = new GitHubActions.Step
-            //{
-            //    name = step.displayName,
-            //    uses = "Azure/webapps-deploy@v1",
-            //    with = new Dictionary<string, string>
-            //    {
-            //        { "app-name", webappName},
-            //        { "package", package},
-            //        { "slot-name", slotName},
-            //    }
-            //};
+            GitHubActions.Step gitHubStep = new GitHubActions.Step
+            {
+                name = step.displayName,
+                uses = "warrenbuckley/Setup-Nuget@v1",
+                step_message = "Note: Needs to be installed from marketplace: https://github.com/warrenbuckley/Setup-Nuget"
+            };
 
             //coming from:
             //# NuGet tool installer
@@ -468,7 +456,8 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
             //    #checkLatest: false # Optional
 
             //Going to:
-
+            //- name: Setup Nuget.exe
+            //  uses: warrenbuckley/Setup-Nuget@v1
 
             return gitHubStep;
         }
