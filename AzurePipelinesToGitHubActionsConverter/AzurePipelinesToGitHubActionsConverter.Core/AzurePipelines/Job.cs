@@ -26,6 +26,8 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.AzurePipelines
         //  steps: [ script | bash | pwsh | powershell | checkout | task | templateReference ]
         //  services: { string: string | container } # container resources to run as a service container
         public string job { get; set; }
+        public string deployment { get; set; }
+        public string environment { get; set; }
         public string displayName { get; set; }
         public string dependsOn { get; set; }
         public string condition { get; set; } //https://docs.microsoft.com/en-us/azure/devops/pipelines/process/conditions?tabs=yaml&view=azure-devops

@@ -4,7 +4,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace AzurePipelinesToGitHubActionsConverter.Tests
 {
     [TestClass]
-    public class StrategyTest
+    public class StrategyTests
     {
 
         [TestMethod]
@@ -75,7 +75,7 @@ jobs:
       run: dotnet build WebApplication1/WebApplication1.Service/WebApplication1.Service.csproj --configuration ${{ env.buildConfiguration }}
 ";
 
-            expected = TestUtility.TrimNewLines(expected);
+            expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
         }
 

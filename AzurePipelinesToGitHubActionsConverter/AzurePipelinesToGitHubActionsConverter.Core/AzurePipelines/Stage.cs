@@ -5,6 +5,7 @@
         //stages:
         //- stage: Build
         //  displayName: 'Build/Test Stage'
+        //  dependsOn: PreBuild
         //  jobs:
         //  - job: Build
         //    displayName: 'Build job'
@@ -13,6 +14,7 @@
         //    steps:
         public string stage { get; set; }
         public string displayName { get; set; }
+        public string dependsOn { get; set; }
         public string condition { get; set; }
         public Job[] jobs { get; set; }
     }

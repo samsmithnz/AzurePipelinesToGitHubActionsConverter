@@ -4,7 +4,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace AzurePipelinesToGitHubActionsConverter.Tests
 {
     [TestClass]
-    public class StepsTest
+    public class StepsTests
     {
         //TODO: Resolve difference between Ubuntu and Windows
         //[TestMethod]
@@ -36,7 +36,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
 
         //    string result = System.Text.Encoding.UTF8.GetString(byteArray);
 
-        //    expected = TestUtility.TrimNewLines(expected);
+        //    expected = UtilityTests.TrimNewLines(expected);
         //    Assert.AreEqual(expected, gitHubOutput.actionsYaml);
         //}
 
@@ -59,7 +59,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
 - run: echo your commands here
   shell: cmd
 ";
-            expected = TestUtility.TrimNewLines(expected);
+            expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
         }
 
@@ -82,7 +82,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
   run: Write-Host 'some text'
   shell: powershell
 ";
-            expected = TestUtility.TrimNewLines(expected);
+            expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
         }
 
@@ -105,7 +105,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
   run: Write-Host 'some text'
   shell: pwsh
 ";
-            expected = TestUtility.TrimNewLines(expected);
+            expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
         }
 
@@ -128,7 +128,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
   run: Write-Host 'some text'
   shell: bash
 ";
-            expected = TestUtility.TrimNewLines(expected);
+            expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
         }
 
@@ -155,7 +155,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
   with:
     dotnet-version: 2.2.203
 ";
-            expected = TestUtility.TrimNewLines(expected);
+            expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
         }
 
@@ -173,7 +173,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
 //            //Assert
 
 //";
-//            expected = TestUtility.TrimNewLines(expected);
+//            expected = UtilityTests.TrimNewLines(expected);
 //            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
 //        }
 
@@ -194,7 +194,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
 - name: dotnet build ${{ env.buildConfiguration }} part 1
   run: dotnet build --configuration ${{ env.buildConfiguration }} WebApplication1/WebApplication1.Service/WebApplication1.Service.csproj
 ";
-            expected = TestUtility.TrimNewLines(expected);
+            expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
         }
 
@@ -284,7 +284,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
     path: MyProject/bin/release/netcoreapp2.2/publish/
     name: drop
 ";
-            expected = TestUtility.TrimNewLines(expected);
+            expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
         }
 
@@ -319,7 +319,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
     package: ${GITHUB_WORKSPACE}/drop/MyProject.Web.zip
     slot-name: staging
 ";
-            expected = TestUtility.TrimNewLines(expected);
+            expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
         }
 
@@ -348,7 +348,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
   with:
     inlineScript: az webapp deployment slot swap --resource-group ${{ env.ResourceGroupName }} --name ${{ env.WebsiteName }} --slot staging --target-slot production
 ";
-            expected = TestUtility.TrimNewLines(expected);
+            expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
         }
 
@@ -389,7 +389,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             //        Invoke-Expression $command
             //   shell: powershell
             //";
-            //expected = TestUtility.TrimNewLines(expected);
+            //expected = UtilityTests.TrimNewLines(expected);
             //Assert.AreEqual(expected, gitHubOutput.actionsYaml);
             Assert.IsTrue(string.IsNullOrEmpty(gitHubOutput.actionsYaml) == false);
         }
