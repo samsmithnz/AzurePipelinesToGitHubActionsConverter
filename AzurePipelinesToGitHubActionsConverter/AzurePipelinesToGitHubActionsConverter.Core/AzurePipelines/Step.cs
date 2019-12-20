@@ -17,6 +17,8 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.AzurePipelines
         //public string checkout { get; set; }
         public string task { get; set; }
         //public string templateReference { get; set; }
+        public string publish { get; set; }
+        public string artifact { get; set; }
         public string displayName { get; set; }
         public string name { get; set; }
         public string condition { get; set; }

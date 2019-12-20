@@ -21,6 +21,9 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                 GitHubActions.Step gitHubStep;
                 switch (step.task)
                 {
+                    case "ArchiveFiles@2":
+                        gitHubStep = CreateArchiveFilesStep(step);
+                        break;
                     case "AzureAppServiceManage@0":
                         gitHubStep = CreateAzureAppServiceManageStep(step);
                         break;
@@ -35,6 +38,9 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                         break;
                     case "CopyFiles@2":
                         gitHubStep = CreateCopyFilesStep(step);
+                        break;
+                    case "Docker@2":
+                        gitHubStep = CreateDockerStep(step);
                         break;
                     case "DotNetCoreCLI@2":
                         gitHubStep = CreateDotNetCommandStep(step);
@@ -114,6 +120,11 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
             else if (step.bash != null)
             {
                 return CreateScriptStep("bash", step);
+            }
+            else if (step.publish != null)
+            {
+                //https://docs.microsoft.com/en-us/azure/devops/pipelines/yaml-schema?view=azure-devops&tabs=schema#publish
+                return CreatePublishBuildArtifactsStep(step);
             }
             else
             {
@@ -202,6 +213,46 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
 
             GitHubActions.Step gitHubStep = CreateScriptStep("powershell", step);
             return gitHubStep;
+        }
+
+        private GitHubActions.Step CreateDockerStep(AzurePipelines.Step step)
+        {
+            //Use PowerShell to copy files
+            step.script = "Copy " + GetStepInput(step, "sourcefolder") + "/" + GetStepInput(step, "contents") + " " + GetStepInput(step, "targetfolder");
+
+            GitHubActions.Step gitHubStep = CreateScriptStep("powershell", step);
+            return gitHubStep;
+
+
+            //From: https://docs.microsoft.com/en-us/azure/devops/pipelines/tasks/build/docker?view=azure-devops
+            //- task: Docker@2
+            //  displayName: Login to ACR
+            //  inputs:
+            //    command: login
+            //    containerRegistry: dockerRegistryServiceConnection1
+            //- task: Docker@2
+            //  displayName: Build
+            //  inputs:
+            //    command: build
+            //    repository: contosoRepository
+            //    tags: tag1
+            //    arguments: --secret id=mysecret,src=mysecret.txt
+            //- task: Docker@2
+            //  displayName: Build and Push
+            //  inputs:
+            //    command: buildAndPush
+            //    repository: someUser/contoso
+            //    tags: |
+            //      tag1
+            //      tag2
+            //- task: Docker@2
+            //  displayName: Logout of ACR
+            //  inputs:
+            //    command: logout
+            //    containerRegistry: dockerRegistryServiceConnection1
+
+            //To: https://github.com/marketplace/actions/docker-build-push
+
         }
 
         private GitHubActions.Step CreateScriptStep(string shellType, AzurePipelines.Step step)
@@ -584,6 +635,43 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
 
             return gitHubStep;
         }
+
+        private GitHubActions.Step CreateArchiveFilesStep(AzurePipelines.Step step)
+        {
+            //coming from:
+            //- task: ArchiveFiles@2
+            //  displayName: 'Archive files'
+            //  inputs:
+            //    rootFolderOrFile: '$(System.DefaultWorkingDirectory)/publish_output'
+            //    includeRootFolder: false
+            //    archiveType: zip
+            //    archiveFile: $(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip
+            //    replaceExistingArchive: true
+
+            //Going to: //https://github.com/marketplace/actions/create-zip-file
+            //- uses: montudor/action-zip@v0.1.0
+            //  with:
+            //    args: zip -qq -r ./dir.zip ./dir
+
+            string rootFolderOrFile = GetStepInput(step, "rootFolderOrFile");
+            string archiveFile = GetStepInput(step, "archiveFile");
+
+            string zipCommand = "zip -qq -r " + archiveFile + " " + rootFolderOrFile;
+
+            GitHubActions.Step gitHubStep = new GitHubActions.Step
+            {
+                name = step.displayName,
+                uses = "montudor/action-zip@v0.1.0",
+                with = new Dictionary<string, string>
+                {
+                    { "args", zipCommand}
+                },
+                step_message = "Note: Needs to be installed from marketplace: https://github.com/marketplace/actions/create-zip-file"
+            };
+
+            return gitHubStep;
+        }
+
         private GitHubActions.Step CreateAzureAppServiceManageStep(AzurePipelines.Step step)
         {
             //https://docs.microsoft.com/en-us/azure/devops/pipelines/tasks/deploy/azure-app-service-manage?view=azure-devops
@@ -633,6 +721,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
 
         private GitHubActions.Step CreatePublishBuildArtifactsStep(AzurePipelines.Step step)
         {
+            //There are 3 Azure DevOps variations
             //# Publish the artifacts
             //- task: PublishBuildArtifacts@1
             //  displayName: 'Publish Artifact'
@@ -647,6 +736,9 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
             //    artifactName: 'MyProject'
             //    targetPath: 'MyProject/bin/release/netcoreapp2.2/publish/'
 
+            //- publish: $(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip
+            //  artifact: drop
+
             //- name: publish build artifacts back to GitHub
             //  uses: actions/upload-artifact@master
             //  with:
@@ -654,7 +746,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
             //    path: /home/runner/work/AzurePipelinesToGitHubActionsConverter/AzurePipelinesToGitHubActionsConverter/AzurePipelinesToGitHubActionsConverter/AzurePipelinesToGitHubActionsConverter.ConsoleApp/bin/Release/netcoreapp3.0
 
             string name = "";
-            if (step.inputs.ContainsKey("artifactname") == true)
+            if (step.inputs != null && step.inputs.ContainsKey("artifactname") == true)
             {
                 name = GetStepInput(step, "artifactname");
             }
@@ -666,6 +758,11 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
             else if (step.task == "PublishPipelineArtifact@0")
             {
                 path = GetStepInput(step, "targetpath");
+            }
+            else if (step.publish != null)
+            {
+                name = step.artifact;
+                path = step.publish;
             }
 
             GitHubActions.Step gitHubStep = new GitHubActions.Step

@@ -297,25 +297,38 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
 
             if (strategy != null)
             {
-                string[] matrix = new string[strategy.matrix.Count];
-                KeyValuePair<string, Dictionary<string, string>> matrixVariable = strategy.matrix.First();
-                MatrixVariableName = matrixVariable.Value.Keys.First();
-                //VariableList.Add("$(" + _matrixVariableName + ")");
-                int i = 0;
-                foreach (KeyValuePair<string, Dictionary<string, string>> entry in strategy.matrix)
+                GitHubActions.Strategy newStrategy = new GitHubActions.Strategy();
+
+                if (strategy.matrix != null)
                 {
-                    matrix[i] = strategy.matrix[entry.Key][MatrixVariableName];
-                    i++;
-                }
-                Console.WriteLine("This variable is not needed in actions: " + strategy.parallel);
-                return new GitHubActions.Strategy()
-                {
-                    matrix = new Dictionary<string, string[]>
+                    string[] matrix = new string[strategy.matrix.Count];
+                    KeyValuePair<string, Dictionary<string, string>> matrixVariable = strategy.matrix.First();
+                    MatrixVariableName = matrixVariable.Value.Keys.First();
+                    //VariableList.Add("$(" + _matrixVariableName + ")");
+                    int i = 0;
+                    foreach (KeyValuePair<string, Dictionary<string, string>> entry in strategy.matrix)
+                    {
+                        matrix[i] = strategy.matrix[entry.Key][MatrixVariableName];
+                        i++;
+                    }
+                    newStrategy.matrix = new Dictionary<string, string[]>
                     {
                         { MatrixVariableName, matrix }
-                    },
-                    max_parallel = strategy.maxParallel
-                };
+                    };
+                }
+                if (strategy.parallel != null)
+                {
+                    Console.WriteLine("This variable is not needed in actions: " + strategy.parallel);
+                }
+                if (strategy.maxParallel != null)
+                {
+                    newStrategy.max_parallel = strategy.maxParallel;
+                }
+                if (strategy.runOnce != null)
+                {
+                    Console.WriteLine("TODO: " + strategy.runOnce);
+                }
+                return newStrategy;
 
             }
             else

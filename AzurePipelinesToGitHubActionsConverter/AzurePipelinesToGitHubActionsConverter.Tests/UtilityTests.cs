@@ -5,7 +5,7 @@ using System;
 namespace AzurePipelinesToGitHubActionsConverter.Tests
 {
     [TestClass]
-    public class GlobalTest
+    public class UtilityTests
     {
         [TestMethod]
         public void GetGlobalHeaderTest()
@@ -52,6 +52,15 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             Assert.AreEqual( " ", results1);
             Assert.AreEqual( "    ", results4);
             Assert.AreEqual( "         ", results9);
+        }
+
+        public static string TrimNewLines(string input)
+        {
+            //Trim off any leading of trailing new lines 
+            input = input.TrimStart('\r', '\n');
+            input = input.TrimEnd('\r', '\n');
+
+            return input;
         }
 
     }

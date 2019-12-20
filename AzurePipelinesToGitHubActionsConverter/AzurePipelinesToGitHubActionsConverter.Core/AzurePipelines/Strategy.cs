@@ -31,5 +31,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.AzurePipelines
         public string parallel { get; set; }
         public Dictionary<string, Dictionary<string, string>> matrix { get; set; }
         public string maxParallel { get; set; }
+
+        public RunOnce runOnce { get; set; }
     }
 }
