@@ -57,6 +57,7 @@ The core functionality is contained in a .NET Standard 2.1 class, "AzurePipeline
 - In the [conversion object](https://github.com/samsmithnz/AzurePipelinesToGitHubActionsConverter/blob/master/AzurePipelinesToGitHubActionsConverter/AzurePipelinesToGitHubActionsConverter.Core/Conversion.cs), is a public call, "ConvertAzurePipelineToGitHubAction", to convert Azure DevOps yaml to GitHub Actions yaml: 
 - In the same conversion object is a call to convert individual tasks/steps: "ConvertAzurePinelineTaskToGitHubActionTask"
 - The [GitHubActionsSerialization object](https://github.com/samsmithnz/AzurePipelinesToGitHubActionsConverter/blob/master/AzurePipelinesToGitHubActionsConverter/AzurePipelinesToGitHubActionsConverter.Core/GitHubActionsSerialization.cs) has calls to serialize and deserialize GitHub actions 
+
 Testing:
 - There is a .NET CORE 3.1 MSTest project for tests, "AzurePipelinesToGitHubActionsConverter.Tests" 
 Current projects consuming it:
