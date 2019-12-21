@@ -9,12 +9,12 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
     {
         public static GitHubActionsRoot Deserialize(string yaml)
         {
-            return ReadGitHubActionsYaml(yaml);
+            return DeserializeGitHubActionsYaml(yaml);
         }
 
         public static string Serialize(GitHubActionsRoot gitHubActions, List<string> variableList = null, string matrixVariableName = null)
         {
-            string yaml = Global.DeserializeYaml<GitHubActionsRoot>(gitHubActions);
+            string yaml = Global.SerializeYaml<GitHubActionsRoot>(gitHubActions);
 
             yaml = ProcessGitHubActionYAML(yaml, variableList, matrixVariableName);
 
@@ -23,7 +23,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
 
         public static string SerializeJob(GitHubActions.Job gitHubActionJob, List<string> variableList = null)
         {
-            string yaml = Global.DeserializeYaml<GitHubActions.Job>(gitHubActionJob);
+            string yaml = Global.SerializeYaml<GitHubActions.Job>(gitHubActionJob);
 
             yaml = ProcessGitHubActionYAML(yaml, variableList);
 
@@ -50,7 +50,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
             return yaml;
         }
 
-        private static GitHubActionsRoot ReadGitHubActionsYaml(string yaml)
+        private static GitHubActionsRoot DeserializeGitHubActionsYaml(string yaml)
         {
             //Fix some variables that we can't use for property names because the - character is not allowed or it's a reserved word (e.g. if)
             yaml = yaml.Replace("runs-on", "runs_on");
@@ -63,7 +63,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
             yaml = yaml.Replace("max-parallel", "max_parallel");
             yaml = yaml.Replace("ref", "_ref");
 
-            return Global.SerializeYaml<GitHubActionsRoot>(yaml);
+            return Global.DeserializeYaml<GitHubActionsRoot>(yaml);
         }
 
         private static string PrepareYamlPropertiesForGitHubSerialization(string yaml)

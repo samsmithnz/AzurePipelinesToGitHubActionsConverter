@@ -7,33 +7,42 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
 {
     public class AzurePipelinesSerialization<T>
     {
-
-        public static AzurePipelinesRoot<string[]> DeserializeSimpleTrigger(string input)
+        /// <summary>
+        /// Deserialize an Azure DevOps Pipeline with a simple trigger (string[])
+        /// </summary>
+        /// <param name="yaml">yaml to convert</param>
+        /// <returns>Azure DevOps Pipeline with simple trigger</returns>
+        public static AzurePipelinesRoot<string[]> DeserializeSimpleTrigger(string yaml)
         {
-            input = CleanInput(input);
-            AzurePipelinesRoot<string[]> azurePipeline = Global.SerializeYaml<AzurePipelinesRoot<string[]>>(input);
+            yaml = CleanYaml(yaml);
+            AzurePipelinesRoot<string[]> azurePipeline = Global.DeserializeYaml<AzurePipelinesRoot<string[]>>(yaml);
             return azurePipeline;
         }
 
-        public static AzurePipelinesRoot<AzurePipelines.Trigger> DeserializeComplexTrigger(string input)
+        /// <summary>
+        /// Deserialize an Azure DevOps Pipeline with a complex trigger
+        /// </summary>
+        /// <param name="yaml">yaml to convert</param>
+        /// <returns>Azure DevOps Pipeline with complex trigger</returns>
+        public static AzurePipelinesRoot<AzurePipelines.Trigger> DeserializeComplexTrigger(string yaml)
         {
-            input = CleanInput(input);
-            AzurePipelinesRoot<AzurePipelines.Trigger> azurePipeline = Global.SerializeYaml<AzurePipelinesRoot<AzurePipelines.Trigger>>(input);
+            yaml = CleanYaml(yaml);
+            AzurePipelinesRoot<AzurePipelines.Trigger> azurePipeline = Global.DeserializeYaml<AzurePipelinesRoot<AzurePipelines.Trigger>>(yaml);
             return azurePipeline;
         }
 
-        private static string CleanInput(string input)
+        private static string CleanYaml(string yaml)
         {
             //Handle a null input
-            if (input == null)
+            if (yaml == null)
             {
-                input = "";
+                yaml = "";
             }
 
             //Not well documented, but repo:self is redundent, and hence we remove it if detected (https://stackoverflow.com/questions/53860194/azure-devops-resources-repo-self)
-            input = input.Replace("- repo: self", "");
+            yaml = yaml.Replace("- repo: self", "");
 
-            return input;
+            return yaml;
         }
     }
 }

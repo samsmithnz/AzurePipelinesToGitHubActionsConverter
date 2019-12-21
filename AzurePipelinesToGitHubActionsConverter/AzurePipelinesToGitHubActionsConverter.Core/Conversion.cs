@@ -2,7 +2,9 @@
 using AzurePipelinesToGitHubActionsConverter.Core.GitHubActions;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace AzurePipelinesToGitHubActionsConverter.Core
 {
@@ -10,22 +12,26 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
     {
         private string _matrixVariableName;
 
+        /// <summary>
+        /// Convert a single Azure DevOps Pipeline task to a GitHub Actions task
+        /// </summary>
+        /// <param name="input">Yaml to convert</param>
+        /// <returns>Converion object, with original yaml, processed yaml, and comments on the conversion</returns>
         public ConversionResult ConvertAzurePinelineTaskToGitHubActionTask(string input)
         {
             string yaml = "";
             string processedInput = StepsPreProcessing(input);
-
             GitHubActions.Step gitHubActionStep = new GitHubActions.Step();
 
-            AzurePipelines.Job azurePipelinesJob = Global.SerializeYaml<AzurePipelines.Job>(processedInput);
+            //Process the YAML for the individual job
+            AzurePipelines.Job azurePipelinesJob = Global.DeserializeYaml<AzurePipelines.Job>(processedInput);
             if (azurePipelinesJob != null && azurePipelinesJob.steps != null && azurePipelinesJob.steps.Length > 0)
             {
-                AzurePipelines.Step azurePipelinesStep = azurePipelinesJob.steps[0];
-
+                //As we needed to create an entire (but minimal) pipelines job, we need to now extract the step for processing
                 AzurePipelinesStepsProcessing stepsProcessing = new AzurePipelinesStepsProcessing();
-                gitHubActionStep = stepsProcessing.ProcessStep(azurePipelinesStep);
+                gitHubActionStep = stepsProcessing.ProcessStep(azurePipelinesJob.steps[0]);
 
-                //Find all variables in this text block
+                //Find all variables in this text block, we need this for a bit later
                 List<string> variableList = SearchForVariables(processedInput);
 
                 //Create the YAML and apply some adjustments
@@ -36,14 +42,12 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                     {
                         steps = new GitHubActions.Step[1] //create an array of size 1
                     };
+                    //Load the step into the single item array
                     gitHubJob.steps[0] = gitHubActionStep;
 
+                    //Finally, we can serialize the job back to yaml
                     yaml = GitHubActionsSerialization.SerializeJob(gitHubJob, variableList);
                 }
-            }
-            else
-            {
-                yaml = "";
             }
 
             //Load failed tasks and comments for processing
@@ -53,6 +57,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                 allComments.Add(gitHubActionStep.step_message);
             }
 
+            //Return the final conversion result, with the original (pipeline) yaml, processed (actions) yaml, and any comments
             return new ConversionResult
             {
                 pipelinesYaml = input,
@@ -62,6 +67,11 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
 
         }
 
+        /// <summary>
+        /// Convert an entire Azure DevOps Pipeline to a GitHub Actions 
+        /// </summary>
+        /// <param name="input">Yaml to convert</param>
+        /// <returns>Converion object, with original yaml, processed yaml, and comments on the conversion</returns>
         public ConversionResult ConvertAzurePipelineToGitHubAction(string input)
         {
             List<string> variableList = new List<string>();
@@ -152,6 +162,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                 yaml = item + Environment.NewLine + yaml;
             }
 
+            //Return the final conversion result, with the original (pipeline) yaml, processed (actions) yaml, and any comments
             return new ConversionResult
             {
                 pipelinesYaml = input,
@@ -204,7 +215,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
             string[] stepLines = input.Split(Environment.NewLine);
             foreach (string line in stepLines)
             {
-                List<string> results = Global.FindPipelineVariablesInString(line);
+                List<string> results = FindPipelineVariablesInString(line);
                 if (results.Count > 0)
                 {
                     variableList.AddRange(results);
@@ -214,6 +225,33 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
             return variableList;
         }
 
-    }
+        private static List<string> FindPipelineVariablesInString(string text)
+        {
+            //Used https://stackoverflow.com/questions/378415/how-do-i-extract-text-that-lies-between-parentheses-round-brackets
+            //With the addition of the \$ search to capture strings like: "$(variable)"
+            //\$\(            # $ char and escaped parenthesis, means "starts with a '$(' character"
+            //    (          # Parentheses in a regex mean "put (capture) the stuff 
+            //               #     in between into the Groups array" 
+            //       [^)]    # Any character that is not a ')' character
+            //       *       # Zero or more occurrences of the aforementioned "non ')' char"
+            //    )          # Close the capturing group
+            //\)             # "Ends with a ')' character"  
+            MatchCollection results = Regex.Matches(text, @"\$\(([^)]*)\)");
+            List<string> list = results.Cast<Match>().Select(match => match.Value).ToList();
 
+            for (int i = 0; i < list.Count; i++)
+            {
+                string item = list[i];
+
+                //Remove leading "$(" and trailing ")"
+                if (list[i].Length > 3)
+                {
+                    list[i] = list[i].Substring(0, item.Length - 1);
+                    list[i] = list[i].Remove(0, 2);
+                }
+            }
+
+            return list;
+        }
+    }
 }

@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text.RegularExpressions;
 using YamlDotNet.Serialization;
 
 namespace AzurePipelinesToGitHubActionsConverter.Core
@@ -24,37 +21,8 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
             return new String(' ', number);
         }
 
-        public static List<string> FindPipelineVariablesInString(string text)
-        {
-            //Used https://stackoverflow.com/questions/378415/how-do-i-extract-text-that-lies-between-parentheses-round-brackets
-            //With the addition of the \$ search to capture strings like: "$(variable)"
-            //\$\(            # $ char and escaped parenthesis, means "starts with a '$(' character"
-            //    (          # Parentheses in a regex mean "put (capture) the stuff 
-            //               #     in between into the Groups array" 
-            //       [^)]    # Any character that is not a ')' character
-            //       *       # Zero or more occurrences of the aforementioned "non ')' char"
-            //    )          # Close the capturing group
-            //\)             # "Ends with a ')' character"  
-            MatchCollection results = Regex.Matches(text, @"\$\(([^)]*)\)");
-            List<string> list = results.Cast<Match>().Select(match => match.Value).ToList();
-
-            for (int i = 0; i < list.Count; i++)
-            {
-                string item = list[i];
-
-                //Remove leading "$(" and trailing ")"
-                if (list[i].Length > 3)
-                {
-                    list[i] = list[i].Substring(0, item.Length - 1);
-                    list[i] = list[i].Remove(0, 2);
-                }
-            }
-
-            return list;
-        }
-
         //Read in a YAML file and convert it to a T object
-        public static T SerializeYaml<T>(string yaml)
+        public static T DeserializeYaml<T>(string yaml)
         {
             IDeserializer deserializer = new DeserializerBuilder().Build();
             T yamlObject = deserializer.Deserialize<T>(yaml);
@@ -63,7 +31,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
         }
 
         //Write a YAML file using the T object
-        public static string DeserializeYaml<T>(T obj)
+        public static string SerializeYaml<T>(T obj)
         {
             //Convert the object into a YAML document
             ISerializer serializer = new SerializerBuilder()

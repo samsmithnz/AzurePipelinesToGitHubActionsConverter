@@ -11,6 +11,13 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
         public List<string> VariableList;
         public string MatrixVariableName;
 
+        /// <summary>
+        /// Process an Azure DevOps Pipeline, converting it to a GitHub Action
+        /// </summary>
+        /// <param name="azurePipeline">Azure DevOps Pipeline object</param>
+        /// <param name="simpleTrigger">When the YAML has a simple trigger, (String[]). Can be null</param>
+        /// <param name="complexTrigger">When the YAML has a complex trigger. Can be null</param>
+        /// <returns>GitHub Actions object</returns>
         public GitHubActionsRoot ProcessPipeline(AzurePipelinesRoot<T> azurePipeline, string[] simpleTrigger, AzurePipelines.Trigger complexTrigger)
         {
             VariableList = new List<string>();
