@@ -7,11 +7,11 @@ A project to create a conversion tool to make migrations between Azure Pipelines
 As GitHub Actions becomes more popular, it's clear that a migration tool will be useful to move workloads to GitHub. 
 
 # How to use
-In the future we will create a website for ease of converting results. 
-Today, you can add the (currently prerelease) [NuGet package](https://www.nuget.org/packages/AzurePipelinesToGitHubActionsConverter.Core/), or paste yaml into the text in the console application, "AzurePipelinesToGitHubActionsConverter.ConsoleApp".
+There is a website that consumes this module at: https://pipelinestoactions.azurewebsites.net/ 
+You can also use the (currently prerelease) [NuGet package](https://www.nuget.org/packages/AzurePipelinesToGitHubActionsConverter.Core/)
 
 # How this works
-**Currently this only supports one-way migrations from Azure Pipelines to GitHub Actions. Also note that this is translating some steps, but is just supporting the basic .NET tasks so far. Check the [issues](https://github.com/samsmithnz/AzurePipelinesToGitHubActionsConverter/issues) for incomplete items, or the TODO's in the source code.**
+**Currently this only supports one-way migrations from Azure Pipelines to GitHub Actions. There are functions to deserialize Azure Pipelines, and Serialize and Deserialize GitHub Actions. While this is translating many  steps, it has so far been targeted to just supporting the basic .NET pipelines so far. Check the [issues](https://github.com/samsmithnz/AzurePipelinesToGitHubActionsConverter/issues) for incomplete items, or the TODO's in the source code.**
  
 Yaml can be challenging. The wikipedia page lays out the rules nicely, but when we are talking about converting yaml to C#, there are a few things to know
 
@@ -54,7 +54,7 @@ public Pool pool { get; set; }
 
 ## Architecture
 The core functionality is a .NET Standard 2.1 class, "AzurePipelinesToGitHubActionsConverter.Core" 
-- There is a .NET CORE 3.0 MSTest project for tests, "AzurePipelinesToGitHubActionsConverter.Tests" 
+- There is a .NET CORE 3.1 MSTest project for tests, "AzurePipelinesToGitHubActionsConverter.Tests" 
 - There is a website in [another project](https://github.com/samsmithnz/AzurePipelinesToGitHubActionsConverterWeb) where you can test this interactively, at: https://pipelinestoactions.azurewebsites.net/ 
 
 ## Example: 
