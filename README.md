@@ -7,17 +7,17 @@ A project to create a conversion tool to make migrations between Azure Pipelines
 As GitHub Actions becomes more popular, it's clear that a migration tool will be useful to move workloads to GitHub. 
 
 # How to use
-There is a website that consumes this module at: https://pipelinestoactions.azurewebsites.net/ 
+There is a website that consumes this module at: https://pipelinestoactions.azurewebsites.net/.  
 You can also use the (currently prerelease) [NuGet package](https://www.nuget.org/packages/AzurePipelinesToGitHubActionsConverter.Core/)
 
 # How this works
-**Currently this only supports one-way migrations from Azure Pipelines to GitHub Actions. There are functions to deserialize Azure Pipelines, and Serialize and Deserialize GitHub Actions. While this is translating many  steps, it has so far been targeted to just supporting the basic .NET pipelines so far. Check the [issues](https://github.com/samsmithnz/AzurePipelinesToGitHubActionsConverter/issues) for incomplete items, or the TODO's in the source code.**
+**Currently this only supports one-way migrations from Azure Pipelines to GitHub Actions. There are functions to deserialize Azure Pipelines, and serialize and deserialize GitHub Actions. While this is translating many steps, it has so far been targeted to just supporting the basic .NET pipelines so far. Check the [issues](https://github.com/samsmithnz/AzurePipelinesToGitHubActionsConverter/issues) for incomplete items, or the TODO's in the source code.**
  
-Yaml can be challenging. The wikipedia page lays out the rules nicely, but when we are talking about converting yaml to C#, there are a few things to know
+Yaml can be challenging. The [yaml wikipedia](https://en.wikipedia.org/wiki/YAML) page does a very good job of laying out the rules, but when we are talking about converting yaml to C#, there are a few things to know:
 
-1. Yaml is wack. The white spaces will destroy you, as the errors returned are often not helpful at all. Take lots of breaks.
-2. Use a good editor - Visual Studio Code has a decent YAML extension (https://marketplace.visualstudio.com/items?itemName=docsmsft.docs-yaml), or if using Visual Studio, enable spaces with CTRL+R,CTRL+W
-3. String arrays (string[]) are useful for lists (e.g -job). Note both of the following pieces of code for triggers are effectively the same (although our serializer does not support the single line 'sequence flow' format)
+1. Yaml is wack. The white spaces can destroy you, as the errors returned are often not helpful at all. Take lots of breaks.
+2. Use a good editor - Visual Studio Code has a decent YAML extension (https://marketplace.visualstudio.com/items?itemName=docsmsft.docs-yaml), or if using Visual Studio, enable spaces with CTRL+R,CTRL+W. The GitHub and Azure DevOps in-browser editors are decent too. 
+3. String arrays (string[]) are useful for lists (e.g -job). Note both of the following pieces of code for triggers are effectively the same (although the YamlDotNet serializer does not currently support the single line 'sequence flow' format)
 ```YAML
 trigger: [master,develop]
 
@@ -53,9 +53,15 @@ public Pool pool { get; set; }
 ```
 
 ## Architecture
-The core functionality is a .NET Standard 2.1 class, "AzurePipelinesToGitHubActionsConverter.Core" 
+The core functionality is contained in a .NET Standard 2.1 class, "AzurePipelinesToGitHubActionsConverter.Core".
+- In the [conversion object](https://github.com/samsmithnz/AzurePipelinesToGitHubActionsConverter/blob/master/AzurePipelinesToGitHubActionsConverter/AzurePipelinesToGitHubActionsConverter.Core/Conversion.cs), is a public call, "ConvertAzurePipelineToGitHubAction", to convert Azure DevOps yaml to GitHub Actions yaml: 
+- In the same conversion object is a call to convert individual tasks/steps: "ConvertAzurePinelineTaskToGitHubActionTask"
+- The [GitHubActionsSerialization object](https://github.com/samsmithnz/AzurePipelinesToGitHubActionsConverter/blob/master/AzurePipelinesToGitHubActionsConverter/AzurePipelinesToGitHubActionsConverter.Core/GitHubActionsSerialization.cs) has calls to serialize and deserialize GitHub actions 
+
+Testing:
 - There is a .NET CORE 3.1 MSTest project for tests, "AzurePipelinesToGitHubActionsConverter.Tests" 
-- There is a website in [another project](https://github.com/samsmithnz/AzurePipelinesToGitHubActionsConverterWeb) where you can test this interactively, at: https://pipelinestoactions.azurewebsites.net/ 
+Current projects consuming it:
+- There is a website in [another GitHub project](https://github.com/samsmithnz/AzurePipelinesToGitHubActionsConverterWeb) where you can test this interactively, at: https://pipelinestoactions.azurewebsites.net/ 
 
 ## Example: 
 The Azure Pipelines YAML to build a dotnet application on ubuntu:
