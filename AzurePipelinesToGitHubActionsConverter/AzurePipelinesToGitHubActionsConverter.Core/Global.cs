@@ -54,7 +54,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
         }
 
         //Read in a YAML file and convert it to a T object
-        public static T ReadYamlFile<T>(string yaml)
+        public static T SerializeYaml<T>(string yaml)
         {
             IDeserializer deserializer = new DeserializerBuilder().Build();
             T yamlObject = deserializer.Deserialize<T>(yaml);
@@ -63,7 +63,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
         }
 
         //Write a YAML file using the T object
-        public static string WriteYAMLFile<T>(T obj)
+        public static string DeserializeYaml<T>(T obj)
         {
             //Convert the object into a YAML document
             ISerializer serializer = new SerializerBuilder()

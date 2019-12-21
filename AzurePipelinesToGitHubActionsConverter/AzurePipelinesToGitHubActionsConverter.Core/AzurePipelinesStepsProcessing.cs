@@ -77,7 +77,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                         {
                             gitHubStep.name = step.displayName;
                         }
-                        string newYaml = Global.WriteYAMLFile<AzurePipelines.Step>(step);
+                        string newYaml = Global.DeserializeYaml<AzurePipelines.Step>(step);
                         string[] newYamlSplit = newYaml.Split(Environment.NewLine);
                         StringBuilder yamlBuilder = new StringBuilder();
                         for (int i = 0; i < newYamlSplit.Length; i++)
