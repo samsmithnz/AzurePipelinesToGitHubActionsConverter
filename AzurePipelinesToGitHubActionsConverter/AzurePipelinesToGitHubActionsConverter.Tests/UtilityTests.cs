@@ -56,7 +56,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
 
         public static string TrimNewLines(string input)
         {
-            //Trim off any leading of trailing new lines 
+            //Trim off any leading or trailing new lines 
             input = input.TrimStart('\r', '\n');
             input = input.TrimEnd('\r', '\n');
 

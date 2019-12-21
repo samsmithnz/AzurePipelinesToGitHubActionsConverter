@@ -154,7 +154,7 @@ jobs:
   steps: 
   - script: dotnet build WebApplication1/WebApplication1.Service/WebApplication1.Service.csproj --configuration $buildConfiguration
     displayName: dotnet build $myJobVariable
-"; 
+";
             Conversion conversion = new Conversion();
 
             //Act
@@ -188,7 +188,6 @@ jobs:
         public void GitHubActionYamlToObjectTest()
         {
             //Arrange
-            Conversion conversion = new Conversion();
             string yaml = "name: CI" + Environment.NewLine +
                         "on:" + Environment.NewLine +
                         "  push:" + Environment.NewLine +
@@ -210,7 +209,7 @@ jobs:
                         "        path: WebApplication1/WebApplication1.Service/bin/Release/netcoreapp3.0/publish";
 
             //Act
-            GitHubActionsRoot yamlObject = conversion.ReadGitHubActionsYaml(yaml);
+            GitHubActionsRoot yamlObject = GitHubActionsSerialization.Deserialize(yaml);
 
             //Assert
             Assert.IsTrue(yamlObject != null);

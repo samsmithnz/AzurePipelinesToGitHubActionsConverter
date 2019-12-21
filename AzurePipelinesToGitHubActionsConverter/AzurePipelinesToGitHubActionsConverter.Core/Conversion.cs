@@ -2,7 +2,9 @@
 using AzurePipelinesToGitHubActionsConverter.Core.GitHubActions;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace AzurePipelinesToGitHubActionsConverter.Core
 {
@@ -10,24 +12,27 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
     {
         private string _matrixVariableName;
 
+        /// <summary>
+        /// Convert a single Azure DevOps Pipeline task to a GitHub Actions task
+        /// </summary>
+        /// <param name="input">Yaml to convert</param>
+        /// <returns>Converion object, with original yaml, processed yaml, and comments on the conversion</returns>
         public ConversionResult ConvertAzurePinelineTaskToGitHubActionTask(string input)
         {
-            string yamlResponse = "";
-
-            input = StepsPreProcessing(input);
-
+            string yaml = "";
+            string processedInput = StepsPreProcessing(input);
             GitHubActions.Step gitHubActionStep = new GitHubActions.Step();
 
-            AzurePipelines.Job azurePipelinesJob = Global.ReadYamlFile<AzurePipelines.Job>(input);
+            //Process the YAML for the individual job
+            AzurePipelines.Job azurePipelinesJob = Global.DeserializeYaml<AzurePipelines.Job>(processedInput);
             if (azurePipelinesJob != null && azurePipelinesJob.steps != null && azurePipelinesJob.steps.Length > 0)
             {
-                AzurePipelines.Step azurePipelinesStep = azurePipelinesJob.steps[0];
-
+                //As we needed to create an entire (but minimal) pipelines job, we need to now extract the step for processing
                 AzurePipelinesStepsProcessing stepsProcessing = new AzurePipelinesStepsProcessing();
-                gitHubActionStep = stepsProcessing.ProcessStep(azurePipelinesStep);
+                gitHubActionStep = stepsProcessing.ProcessStep(azurePipelinesJob.steps[0]);
 
-                //Find all variables in this text block
-                List<string> variableList = SearchForVariables(input);
+                //Find all variables in this text block, we need this for a bit later
+                List<string> variableList = SearchForVariables(processedInput);
 
                 //Create the YAML and apply some adjustments
                 if (gitHubActionStep != null)
@@ -37,25 +42,12 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                     {
                         steps = new GitHubActions.Step[1] //create an array of size 1
                     };
+                    //Load the step into the single item array
                     gitHubJob.steps[0] = gitHubActionStep;
-                    yamlResponse = Global.WriteYAMLFile<GitHubActions.Job>(gitHubJob);
 
-                    //Fix some variables for serialization, the '-' character is not valid in property names, and some of the YAML standard uses reserved words (e.g. if)
-                    yamlResponse = PrepareYamlPropertiesForGitHubSerialization(yamlResponse);
-
-                    //update variables from the $(variableName) format to ${{variableName}} format, by piping them into a list for replacement later.
-                    yamlResponse = PrepareYamlVariablesForGitHubSerialization(yamlResponse, variableList);
-
-                    yamlResponse = StepsPostProcessing(yamlResponse);
-
-                    //Trim off any leading of trailing new lines 
-                    yamlResponse = yamlResponse.TrimStart('\r', '\n');
-                    yamlResponse = yamlResponse.TrimEnd('\r', '\n');
+                    //Finally, we can serialize the job back to yaml
+                    yaml = GitHubActionsSerialization.SerializeJob(gitHubJob, variableList);
                 }
-            }
-            else
-            {
-                yamlResponse = "";
             }
 
             //Load failed tasks and comments for processing
@@ -65,43 +57,40 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                 allComments.Add(gitHubActionStep.step_message);
             }
 
+            //Return the final conversion result, with the original (pipeline) yaml, processed (actions) yaml, and any comments
             return new ConversionResult
             {
                 pipelinesYaml = input,
-                actionsYaml = yamlResponse,
+                actionsYaml = yaml,
                 comments = allComments
             };
 
         }
 
+        /// <summary>
+        /// Convert an entire Azure DevOps Pipeline to a GitHub Actions 
+        /// </summary>
+        /// <param name="input">Yaml to convert</param>
+        /// <returns>Converion object, with original yaml, processed yaml, and comments on the conversion</returns>
         public ConversionResult ConvertAzurePipelineToGitHubAction(string input)
         {
             List<string> variableList = new List<string>();
-            string yamlResponse;
-
-            //Handle a null input
-            if (input == null)
-            {
-                input = "";
-            }
-
-            //Not well documented, and repo:self is redundent, and hence we remove it if detected (https://stackoverflow.com/questions/53860194/azure-devops-resources-repo-self)
-            input = input.Replace("- repo: self", "");
+            string yaml;
+            GitHubActionsRoot gitHubActions = null;
 
             //Triggers are hard, as there are two data types that can exist, so we need to go with the most common type and handle the less common type with generics
             AzurePipelinesRoot<string[]> azurePipelineWithSimpleTrigger = null;
             AzurePipelinesRoot<AzurePipelines.Trigger> azurePipelineWithComplexTrigger = null;
             try
             {
-                azurePipelineWithSimpleTrigger = Global.ReadYamlFile<AzurePipelinesRoot<string[]>>(input);
+                azurePipelineWithSimpleTrigger = AzurePipelinesSerialization<string[]>.DeserializeSimpleTrigger(input);
             }
-            catch (Exception)
+            catch
             {
-                azurePipelineWithComplexTrigger = Global.ReadYamlFile<AzurePipelinesRoot<AzurePipelines.Trigger>>(input);
+                azurePipelineWithComplexTrigger = AzurePipelinesSerialization<AzurePipelines.Trigger>.DeserializeComplexTrigger(input);
             }
 
             //Generate the github actions
-            GitHubActionsRoot gitHubActions = null;
             if (azurePipelineWithSimpleTrigger != null)
             {
                 AzurePipelinesProcessing<string[]> processing = new AzurePipelinesProcessing<string[]>();
@@ -128,21 +117,11 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
             //Create the YAML and apply some adjustments
             if (gitHubActions != null)
             {
-                yamlResponse = Global.WriteYAMLFile<GitHubActionsRoot>(gitHubActions);
-
-                //Fix some variables for serialization, the '-' character is not valid in property names, and some of the YAML standard uses reserved words (e.g. if)
-                yamlResponse = PrepareYamlPropertiesForGitHubSerialization(yamlResponse);
-
-                //update variables from the $(variableName) format to ${{variableName}} format, by piping them into a list for replacement later.
-                yamlResponse = PrepareYamlVariablesForGitHubSerialization(yamlResponse, variableList);
-
-                //Trim off any leading of trailing new lines 
-                yamlResponse = yamlResponse.TrimStart('\r', '\n');
-                yamlResponse = yamlResponse.TrimEnd('\r', '\n');
+                yaml = GitHubActionsSerialization.Serialize(gitHubActions, variableList, _matrixVariableName);
             }
             else
             {
-                yamlResponse = "";
+                yaml = "";
             }
 
             //Load failed task comments for processing
@@ -180,91 +159,17 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
             //Append all of the comments to the top of the file
             foreach (string item in stepComments)
             {
-                yamlResponse = item + Environment.NewLine + yamlResponse;
+                yaml = item + Environment.NewLine + yaml;
             }
 
+            //Return the final conversion result, with the original (pipeline) yaml, processed (actions) yaml, and any comments
             return new ConversionResult
             {
                 pipelinesYaml = input,
-                actionsYaml = yamlResponse,
+                actionsYaml = yaml,
                 comments = stepComments
             };
         }
-
-        public GitHubActionsRoot ReadGitHubActionsYaml(string yaml)
-        {
-            //Fix some variables that we can't use for property names because the - character is not allowed or it's a reserved word (e.g. if)
-            yaml = yaml.Replace("runs-on", "runs_on");
-            yaml = yaml.Replace("if", "_if");
-            yaml = yaml.Replace("timeout-minutes", "timeout_minutes");
-            yaml = yaml.Replace("pull-request", "pull_request");
-            yaml = yaml.Replace("branches-ignore", "branches_ignore");
-            yaml = yaml.Replace("paths-ignore", "paths_ignore");
-            yaml = yaml.Replace("tags-ignore", "tags_ignore");
-            yaml = yaml.Replace("max-parallel", "max_parallel");
-            yaml = yaml.Replace("ref", "_ref");
-
-            return Global.ReadYamlFile<GitHubActionsRoot>(yaml);
-        }
-
-        private string PrepareYamlPropertiesForGitHubSerialization(string yaml)
-        {
-            //Fix system variables
-            yaml = yaml.Replace("$(build.artifactstagingdirectory)", "${GITHUB_WORKSPACE}");
-
-            //Fix some variables that we can't use for property names because the - character is not allowed or it's a reserved word (e.g. if)
-            yaml = yaml.Replace("runs_on", "runs-on");
-            yaml = yaml.Replace("_if", "if");
-            yaml = yaml.Replace("timeout_minutes", "timeout-minutes");
-            yaml = yaml.Replace("pull_request", "pull-request");
-            yaml = yaml.Replace("branches_ignore", "branches-ignore");
-            yaml = yaml.Replace("paths_ignore", "paths-ignore");
-            yaml = yaml.Replace("tags_ignore", "tags-ignore");
-            yaml = yaml.Replace("max_parallel", "max-parallel");
-            yaml = yaml.Replace("_ref", "ref");
-            yaml = yaml.Replace("step_message", "#");
-            yaml = yaml.Replace("job_message", "#");
-
-            //HACK: Sometimes when generating  yaml, a weird ">+" string appears. Not sure why yet, replacing it out of there for short term
-            yaml = yaml.Replace("run: >-", "run: |"); //Replace a weird artifact in scripts when converting pipes
-            yaml = yaml.Replace("run: >2-\r\n     |", "run: |");
-            yaml = yaml.Replace("run: >2-\r\n         |", "run: |");
-            yaml = yaml.Replace("run: 2-\r\n         |", "run: |");
-            yaml = yaml.Replace("run: 2-\r\n         |", "run: |");
-            yaml = yaml.Replace("run: >+", "run: ");
-            yaml = yaml.Replace("run: >", "run: ");
-            
-            return yaml;
-        }
-
-        private string PrepareYamlVariablesForGitHubSerialization(string yaml, List<string> variableList)
-        {
-            if (_matrixVariableName != null)
-            {
-                variableList.Add(_matrixVariableName);
-            }
-
-            foreach (string item in variableList)
-            {
-                if (item == _matrixVariableName)
-                {
-                    yaml = yaml.Replace("$(" + item + ")", "${{ matrix." + item + " }}");
-                    yaml = yaml.Replace("$( " + item + " )", "${{ matrix." + item + " }}");
-                }
-                else
-                {
-                    //Replace variables with the format "$(MyVar)" with the format "$MyVar"
-                    yaml = yaml.Replace("$(" + item + ")", "${{ env." + item + " }}");
-                    yaml = yaml.Replace("$( " + item + " )", "${{ env." + item + " }}");
-                    yaml = yaml.Replace("$(" + item + " )", "${{ env." + item + " }}");
-                    yaml = yaml.Replace("$( " + item + ")", "${{ env." + item + " }}");
-                    yaml = yaml.Replace("$" + item + "", "${{ env." + item + " }}");
-                }
-            }
-
-            return yaml;
-        }
-
 
         //Add a steps parent, to allow the processing of an individual step to proceed
         private string StepsPreProcessing(string input)
@@ -303,48 +208,6 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
             return input;
         }
 
-        //Strip the steps off to focus on just the individual step
-        private string StepsPostProcessing(string input)
-        {
-            if (input.Trim().StartsWith("steps:") == true)
-            {
-                //we need to remove steps, before we do, we need to see if the task needs to remove indent
-                string[] stepLines = input.Split(Environment.NewLine);
-                if (stepLines.Length > 0)
-                {
-                    int i = 0;
-                    //Search for the first non empty line
-                    while (string.IsNullOrEmpty(stepLines[i].Trim()) == true || stepLines[i].Trim().StartsWith("steps:") == true)
-                    {
-                        i++;
-                    }
-                    if (stepLines[i].StartsWith("-") == true)
-                    {
-                        int indentLevel = stepLines[i].IndexOf("-");
-                        if (indentLevel >= 2)
-                        {
-                            indentLevel -= 2;
-                        }
-                        string buffer = Global.GenerateSpaces(indentLevel);
-                        StringBuilder newInput = new StringBuilder();
-                        foreach (string line in stepLines)
-                        {
-                            if (line.Trim().StartsWith("steps:") == false)
-                            {
-                                newInput.Append(buffer);
-                                newInput.Append(line);
-                                newInput.Append(Environment.NewLine);
-                            }
-                        }
-                        input = newInput.ToString();
-                    }
-                }
-            }
-
-            return input;
-
-        }
-
         private static List<string> SearchForVariables(string input)
         {
             List<string> variableList = new List<string>();
@@ -352,7 +215,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
             string[] stepLines = input.Split(Environment.NewLine);
             foreach (string line in stepLines)
             {
-                List<string> results = Global.FindPipelineVariablesInString(line);
+                List<string> results = FindPipelineVariablesInString(line);
                 if (results.Count > 0)
                 {
                     variableList.AddRange(results);
@@ -362,6 +225,33 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
             return variableList;
         }
 
-    }
+        private static List<string> FindPipelineVariablesInString(string text)
+        {
+            //Used https://stackoverflow.com/questions/378415/how-do-i-extract-text-that-lies-between-parentheses-round-brackets
+            //With the addition of the \$ search to capture strings like: "$(variable)"
+            //\$\(            # $ char and escaped parenthesis, means "starts with a '$(' character"
+            //    (          # Parentheses in a regex mean "put (capture) the stuff 
+            //               #     in between into the Groups array" 
+            //       [^)]    # Any character that is not a ')' character
+            //       *       # Zero or more occurrences of the aforementioned "non ')' char"
+            //    )          # Close the capturing group
+            //\)             # "Ends with a ')' character"  
+            MatchCollection results = Regex.Matches(text, @"\$\(([^)]*)\)");
+            List<string> list = results.Cast<Match>().Select(match => match.Value).ToList();
 
+            for (int i = 0; i < list.Count; i++)
+            {
+                string item = list[i];
+
+                //Remove leading "$(" and trailing ")"
+                if (list[i].Length > 3)
+                {
+                    list[i] = list[i].Substring(0, item.Length - 1);
+                    list[i] = list[i].Remove(0, 2);
+                }
+            }
+
+            return list;
+        }
+    }
 }

@@ -90,7 +90,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             };
 
             //Act
-            string yaml = Global.WriteYAMLFile<GitHubActionsRoot>(githubActionsYAML);
+            string yaml = Global.SerializeYaml<GitHubActionsRoot>(githubActionsYAML);
 
 
             //Assert
@@ -141,7 +141,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             };
 
             //Act
-            string yaml = Global.WriteYAMLFile<AzurePipelinesRoot<string[]>>(azurePipelinesYAML);
+            string yaml = Global.SerializeYaml<AzurePipelinesRoot<string[]>>(azurePipelinesYAML);
 
             //Assert
             Assert.IsTrue(yaml != null);

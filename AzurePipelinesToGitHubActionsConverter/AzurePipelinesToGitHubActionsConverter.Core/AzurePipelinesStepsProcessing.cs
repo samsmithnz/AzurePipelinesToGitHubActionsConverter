@@ -9,9 +9,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
 {
     public class AzurePipelinesStepsProcessing
     {
-        //This section is very much in Alpha. It has long way to go.
         //TODO: Add more task types
-        //TODO: Add logic to handle different versions of tasks
         public GitHubActions.Step ProcessStep(AzurePipelines.Step step)
         {
             if (step.task != null)
@@ -77,7 +75,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                         {
                             gitHubStep.name = step.displayName;
                         }
-                        string newYaml = Global.WriteYAMLFile<AzurePipelines.Step>(step);
+                        string newYaml = Global.SerializeYaml<AzurePipelines.Step>(step);
                         string[] newYamlSplit = newYaml.Split(Environment.NewLine);
                         StringBuilder yamlBuilder = new StringBuilder();
                         for (int i = 0; i < newYamlSplit.Length; i++)
@@ -123,6 +121,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
             }
             else if (step.publish != null)
             {
+                //The shortcut to the build publish step
                 //https://docs.microsoft.com/en-us/azure/devops/pipelines/yaml-schema?view=azure-devops&tabs=schema#publish
                 return CreatePublishBuildArtifactsStep(step);
             }
