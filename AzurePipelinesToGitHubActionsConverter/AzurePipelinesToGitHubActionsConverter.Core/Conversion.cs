@@ -133,7 +133,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                 {
                     foreach (string message in gitHubActions.messages)
                     {
-                        stepComments.Add(message);
+                        stepComments.Add(ConvertMessageToYamlComment(message));
                     }
                 }
                 //Add each individual step comments
@@ -143,13 +143,13 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                     {
                         if (job.Value.job_message != null)
                         {
-                            stepComments.Add(job.Value.job_message);
+                            stepComments.Add(ConvertMessageToYamlComment(job.Value.job_message));
                         }
                         foreach (GitHubActions.Step step in job.Value.steps)
                         {
                             if (step != null && string.IsNullOrEmpty(step.step_message) == false)
                             {
-                                stepComments.Add(step.step_message);
+                                stepComments.Add(ConvertMessageToYamlComment(step.step_message));
                             }
                         }
                     }
@@ -169,6 +169,16 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                 actionsYaml = yaml,
                 comments = stepComments
             };
+        }
+
+        private string ConvertMessageToYamlComment(string message)
+        {
+            //Append a comment to the message if one doesn't already exist
+            if (message.TrimStart().StartsWith("#") == false)
+            {
+                message = "#" + message;
+            }
+            return message;
         }
 
         //Add a steps parent, to allow the processing of an individual step to proceed
