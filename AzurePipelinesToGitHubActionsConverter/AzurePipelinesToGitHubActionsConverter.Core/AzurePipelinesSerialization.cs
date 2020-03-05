@@ -5,29 +5,53 @@ using System.Text;
 
 namespace AzurePipelinesToGitHubActionsConverter.Core
 {
-    public class AzurePipelinesSerialization<T>
+    public class AzurePipelinesSerialization<T, T2>
     {
         /// <summary>
-        /// Deserialize an Azure DevOps Pipeline with a simple trigger (string[])
+        /// Deserialize an Azure DevOps Pipeline with a simple trigger/ string[] and simple variable list/ Dictionary<string, string>
         /// </summary>
         /// <param name="yaml">yaml to convert</param>
-        /// <returns>Azure DevOps Pipeline with simple trigger</returns>
-        public static AzurePipelinesRoot<string[]> DeserializeSimpleTrigger(string yaml)
+        /// <returns>Azure DevOps Pipeline with simple trigger and simple variables</returns>
+        public static AzurePipelinesRoot<string[], Dictionary<string, string>> DeserializeSimpleTriggerAndSimpleVariables(string yaml)
         {
             yaml = CleanYaml(yaml);
-            AzurePipelinesRoot<string[]> azurePipeline = Global.DeserializeYaml<AzurePipelinesRoot<string[]>>(yaml);
+            AzurePipelinesRoot<string[], Dictionary<string, string>> azurePipeline = Global.DeserializeYaml<AzurePipelinesRoot<string[], Dictionary<string, string>>>(yaml);
             return azurePipeline;
         }
 
         /// <summary>
-        /// Deserialize an Azure DevOps Pipeline with a complex trigger
+        /// Deserialize an Azure DevOps Pipeline with a simple trigger/ string[] and simple variable list/ Dictionary<string, string>
         /// </summary>
         /// <param name="yaml">yaml to convert</param>
-        /// <returns>Azure DevOps Pipeline with complex trigger</returns>
-        public static AzurePipelinesRoot<AzurePipelines.Trigger> DeserializeComplexTrigger(string yaml)
+        /// <returns>Azure DevOps Pipeline with simple trigger and complex variables</returns>
+        public static AzurePipelinesRoot<string[], AzurePipelines.Variables[]> DeserializeSimpleTriggerAndComplexVariables(string yaml)
         {
             yaml = CleanYaml(yaml);
-            AzurePipelinesRoot<AzurePipelines.Trigger> azurePipeline = Global.DeserializeYaml<AzurePipelinesRoot<AzurePipelines.Trigger>>(yaml);
+            AzurePipelinesRoot<string[], AzurePipelines.Variables[]> azurePipeline = Global.DeserializeYaml<AzurePipelinesRoot<string[], AzurePipelines.Variables[]>>(yaml);
+            return azurePipeline;
+        }
+
+        /// <summary>
+        /// Deserialize an Azure DevOps Pipeline with a complex trigger and simple variable list
+        /// </summary>
+        /// <param name="yaml">yaml to convert</param>
+        /// <returns>Azure DevOps Pipeline with complex trigger and simple variables</returns>
+        public static AzurePipelinesRoot<AzurePipelines.Trigger, Dictionary<string, string>> DeserializeComplexTriggerAndSimpleVariables(string yaml)
+        {
+            yaml = CleanYaml(yaml);
+            AzurePipelinesRoot<AzurePipelines.Trigger, Dictionary<string, string>> azurePipeline = Global.DeserializeYaml<AzurePipelinesRoot<AzurePipelines.Trigger, Dictionary<string, string>>>(yaml);
+            return azurePipeline;
+        }
+
+        /// <summary>
+        /// Deserialize an Azure DevOps Pipeline with a complex trigger and complex variable list
+        /// </summary>
+        /// <param name="yaml">yaml to convert</param>
+        /// <returns>Azure DevOps Pipeline with complex trigger and complex variables</returns>
+        public static AzurePipelinesRoot<AzurePipelines.Trigger, AzurePipelines.Variables[]> DeserializeComplexTriggerAndComplexVariables(string yaml)
+        {
+            yaml = CleanYaml(yaml);
+            AzurePipelinesRoot<AzurePipelines.Trigger, AzurePipelines.Variables[]> azurePipeline = Global.DeserializeYaml<AzurePipelinesRoot<AzurePipelines.Trigger, AzurePipelines.Variables[]>>(yaml);
             return azurePipeline;
         }
 

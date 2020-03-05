@@ -25,7 +25,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.AzurePipelines
     //pr: pr
     //stages: [ stage | templateReference ]
 
-    public class AzurePipelinesRoot<T>
+    public class AzurePipelinesRoot<T, T2>
     {
         public string name { get; set; }
         public string container { get; set; }
@@ -42,7 +42,11 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.AzurePipelines
         public Trigger pr { get; set; }
         public Pool pool { get; set; }
         public Strategy strategy { get; set; }
-        public Dictionary<string, string> variables { get; set; }
+
+        //Variables is similar to triggers, this can be a simple list, or a more complex variable object
+        public T2 variables { get; set; }
+        //public Dictionary<string, string> variables { get; set; }
+
         public Stage[] stages { get; set; }
         public Job[] jobs { get; set; }
         public Step[] steps { get; set; }

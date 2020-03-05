@@ -6,7 +6,7 @@ using System.Linq;
 
 namespace AzurePipelinesToGitHubActionsConverter.Core
 {
-    public class AzurePipelinesProcessing<T>
+    public class AzurePipelinesProcessing<T, T2>
     {
         public List<string> VariableList;
         public string MatrixVariableName;
@@ -18,7 +18,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
         /// <param name="simpleTrigger">When the YAML has a simple trigger, (String[]). Can be null</param>
         /// <param name="complexTrigger">When the YAML has a complex trigger. Can be null</param>
         /// <returns>GitHub Actions object</returns>
-        public GitHubActionsRoot ProcessPipeline(AzurePipelinesRoot<T> azurePipeline, string[] simpleTrigger, AzurePipelines.Trigger complexTrigger)
+        public GitHubActionsRoot ProcessPipeline(AzurePipelinesRoot<T, T2> azurePipeline, string[] simpleTrigger, AzurePipelines.Trigger complexTrigger, Dictionary<string, string> simpleVariables, AzurePipelines.Variables[] complexVariables)
         {
             VariableList = new List<string>();
             GitHubActionsRoot gitHubActions = new GitHubActionsRoot();
@@ -153,7 +153,15 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
             //Variables
             if (azurePipeline.variables != null)
             {
-                gitHubActions.env = ProcessVariables(azurePipeline.variables);
+                if (complexVariables != null)
+                {
+                    gitHubActions.env = ProcessComplexVariables(complexVariables);
+                }
+                else
+                if (simpleVariables != null)
+                {
+                    gitHubActions.env = ProcessSimpleVariables(simpleVariables);
+                }
             }
 
             return gitHubActions;
@@ -401,8 +409,8 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
             }
         }
 
-        //process all variables
-        private Dictionary<string, string> ProcessVariables(Dictionary<string, string> variables)
+        //process all (simple) variables
+        private Dictionary<string, string> ProcessSimpleVariables(Dictionary<string, string> variables)
         {
             if (variables != null)
             {
@@ -414,6 +422,26 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
             }
 
             return variables;
+        }
+
+        //process all (complex) variables
+        private Dictionary<string, string> ProcessComplexVariables(AzurePipelines.Variables[] variables)
+        {
+            Dictionary<string, string> processedVariables = new Dictionary<string, string>();
+            if (variables != null)
+            {
+                //update variables from the $(variableName) format to ${{variableName}} format, by piping them into a list for replacement later.
+                for (int i = 0; i < variables.Length; i++)
+                {
+                    if (variables[i].name != null && variables[i].value != null)
+                    {
+                        processedVariables.Add(variables[i].name, variables[i].value);
+                    }
+                }
+                //TODO: Add groups
+                //TODO: Add template
+            }
+            return processedVariables;
         }
 
         //process the jobs
@@ -442,7 +470,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                 runs_on = ProcessPool(job.pool),
                 strategy = ProcessStrategy(job.strategy),
                 container = ProcessContainer(resources),
-                env = ProcessVariables(job.variables),
+                env = ProcessSimpleVariables(job.variables),
                 timeout_minutes = job.timeoutInMinutes,
                 steps = ProcessSteps(job.steps)
             };
