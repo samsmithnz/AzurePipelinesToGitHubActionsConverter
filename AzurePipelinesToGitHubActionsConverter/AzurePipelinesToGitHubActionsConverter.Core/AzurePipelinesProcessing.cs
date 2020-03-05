@@ -380,9 +380,11 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
 
             if (resources != null && resources.containers != null && resources.containers.Length > 0)
             {
-                Container container = new Container();
-                //All containers have at least the image name
-                container.image = resources.containers[0].image;
+                Container container = new Container
+                {
+                    //All containers have at least the image name
+                    image = resources.containers[0].image
+                };
 
                 //Optionally, these next 4 properties could also exist
                 if (resources.containers[0].env != null)

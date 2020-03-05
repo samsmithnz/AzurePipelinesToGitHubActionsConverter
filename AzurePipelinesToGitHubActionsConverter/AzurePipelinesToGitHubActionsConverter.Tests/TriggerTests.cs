@@ -8,7 +8,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
     public class TriggerTests
     {
         [TestMethod]
-        public void TestTriggerSimpleString()
+        public void TriggerSimpleStringTest()
         {
             //Arrange
             string input = "trigger:" + Environment.NewLine +
@@ -27,7 +27,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
         }
 
         [TestMethod]
-        public void TestTriggerSimpleWithMultipleBranchesString()
+        public void TriggerSimpleWithMultipleBranchesStringTest()
         {
             //Arrange
             string input = "trigger:" + Environment.NewLine +
@@ -48,7 +48,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
         }
 
         [TestMethod]
-        public void TestTriggerComplexString()
+        public void TriggerComplexStringTest()
         {
             //Arrange
             string input = @"
@@ -85,7 +85,7 @@ trigger:
         }
 
         [TestMethod]
-        public void TestTriggerComplexWithPRString()
+        public void TriggerComplexWithPRStringTest()
         {
             //Arrange
             string input = @"
@@ -121,7 +121,7 @@ pr:
         }
 
         [TestMethod]
-        public void TestTriggerComplexWithIgnoresString()
+        public void TriggerComplexWithIgnoresStringTest()
         {
             //Arrange
             string input = @"
@@ -156,7 +156,7 @@ trigger:
         }
 
         [TestMethod]
-        public void TestTriggerComplexPRWithIgnoresString()
+        public void TriggerComplexPRWithIgnoresStringTest()
         {
             //Arrange
             string input = @"
@@ -191,7 +191,7 @@ pr:
         }
 
         [TestMethod]
-        public void TestTriggerComplexMasterAndPRWithIgnoresString()
+        public void TriggerComplexMasterAndPRWithIgnoresStringTest()
         {
             //Arrange
             string input = @"
