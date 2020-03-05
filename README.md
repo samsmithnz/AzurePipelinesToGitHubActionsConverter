@@ -15,9 +15,8 @@ You can also use the (currently prerelease) [NuGet package](https://www.nuget.or
  
 Yaml can be challenging. The [yaml wikipedia](https://en.wikipedia.org/wiki/YAML) page does a very good job of laying out the rules, but when we are talking about converting yaml to C#, there are a few things to know:
 
-1. Yaml is wack. The white spaces can destroy you, as the errors returned are often not helpful at all. Take lots of breaks.
-2. Use a good editor - Visual Studio Code has a decent YAML extension (https://marketplace.visualstudio.com/items?itemName=docsmsft.docs-yaml), or if using Visual Studio, enable spaces with CTRL+R,CTRL+W. The GitHub and Azure DevOps in-browser editors are decent too. 
-3. String arrays (string[]) are useful for lists (e.g -job). Note both of the following pieces of code for triggers are effectively the same (although the YamlDotNet serializer does not currently support the single line 'sequence flow' format)
+1. Use a good editor - Visual Studio Code has a decent YAML extension (https://marketplace.visualstudio.com/items?itemName=docsmsft.docs-yaml), or if using Visual Studio, enable spaces with CTRL+R,CTRL+W. The GitHub and Azure DevOps in-browser editors are decent too. 
+2. String arrays (string[]) are useful for lists (e.g -job). Note both of the following pieces of code for triggers are effectively the same (although the YamlDotNet serializer does not currently support the single line 'sequence flow' format)
 ```YAML
 trigger: [master,develop]
 
@@ -25,7 +24,7 @@ trigger:
 - master
 - develop
 ```
-4. The dictonary object (dictonary<string,string>) is useful for dynamic key value pairs, for example, variables
+3. The dictonary object (dictonary<string,string>) is useful for dynamic key value pairs, for example, variables
 ```YAML
 variables:
   MY_VAR: 'my value'
@@ -39,7 +38,7 @@ Dictionary<string, string> variables = new Dictionary<string, string>
     { "ANOTHER_VAR", "another value" }
 };
 ```
-5. Just about everything else can be a string or object. Here is an example of a simple job:
+4. Just about everything else can be a string or object. Here is an example of a simple job:
 ```YAML
 - job: Build
   displayName: 'Build job'
@@ -51,6 +50,7 @@ public string job { get; set; }
 public string displayName { get; set; }
 public Pool pool { get; set; }
 ```
+5. Yaml is wack. The white spaces can destroy you, as the errors returned are often not helpful at all. Take lots of breaks.
 
 ## Architecture
 The core functionality is contained in a .NET Standard 2.1 class, "AzurePipelinesToGitHubActionsConverter.Core".

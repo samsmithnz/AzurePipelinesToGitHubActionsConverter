@@ -117,7 +117,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             //  displayName: dotnet build $(buildConfiguration)
 
             //Build the Azure Pipelines object
-            AzurePipelinesRoot<string[]> azurePipelinesYAML = new AzurePipelinesRoot<string[]>
+            AzurePipelinesRoot<string[], Dictionary<string, string>> azurePipelinesYAML = new AzurePipelinesRoot<string[], Dictionary<string, string>>
             {
                 trigger = new string[]
                 {
@@ -141,7 +141,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             };
 
             //Act
-            string yaml = Global.SerializeYaml<AzurePipelinesRoot<string[]>>(azurePipelinesYAML);
+            string yaml = Global.SerializeYaml<AzurePipelinesRoot<string[], Dictionary<string, string>>>(azurePipelinesYAML);
 
             //Assert
             Assert.IsTrue(yaml != null);
