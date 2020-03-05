@@ -8,7 +8,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
     {
 
         [TestMethod]
-        public void TestStrategy()
+        public void StrategyTest()
         {
             //strategy:
             //  matrix:

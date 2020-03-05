@@ -11,7 +11,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
     {
 
         [TestMethod]
-        public void TestSampleGitHubActionObjectToYaml()
+        public void SampleGitHubActionObjectToYamlTest()
         {
             //Arrange
             Conversion conversion = new Conversion();
@@ -99,7 +99,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
 
 
         [TestMethod]
-        public void TestSampleAzurePipelineObjectToYaml()
+        public void SampleAzurePipelineObjectToYamlTest()
         {
             //Arrange
             Conversion conversion = new Conversion();
