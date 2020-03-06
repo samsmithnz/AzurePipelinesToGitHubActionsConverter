@@ -100,8 +100,14 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                     int j = 0;
                     for (int i = currentIndex; i < currentIndex + stage.jobs.Length; i++)
                     {
+                        //Get the job name
+                        string jobName = stage.jobs[j].job;
+                        if (jobName == null && stage.jobs[j].template != null)
+                        {
+                            jobName = "Template";
+                        }
                         //Rename the job, using the stage name as prefix, so that we keep the job names unique
-                        stage.jobs[j].job = stage.stage + "_Stage_" + stage.jobs[j].job;
+                        stage.jobs[j].job = stage.stage + "_Stage_" + jobName;
                         Console.WriteLine("This variable is not needed in actions: " + stage.displayName);
                         azurePipeline.jobs[i] = stage.jobs[j];
                         azurePipeline.jobs[i].condition = stage.condition;
@@ -157,11 +163,15 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                 {
                     gitHubActions.env = ProcessComplexVariables(complexVariables);
                 }
-                else
-                if (simpleVariables != null)
+                else if (simpleVariables != null)
                 {
                     gitHubActions.env = ProcessSimpleVariables(simpleVariables);
                 }
+            }
+            else if (azurePipeline.parameters != null)
+            {
+                //For now, convert the parameters to variables
+                gitHubActions.env = ProcessSimpleVariables(azurePipeline.parameters);
             }
 
             return gitHubActions;
@@ -477,9 +487,24 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                 steps = ProcessSteps(job.steps)
             };
 
+            if (newJob.steps == null & job.template != null)
+            {
+                //Initialize the array with no items
+                job.steps = new AzurePipelines.Step[0];
+                //Process the steps, adding the default checkout step
+                newJob.steps = ProcessSteps(job.steps, true);
+                //TODO: Find a way to allow GitHub jobs to reference another job as a template
+                newJob.job_message += "NOTE: Azure DevOps template does not have an equivalent in GitHub Actions yet";
+            }
+
             if (newJob._if != null)
             {
-                newJob.job_message = "NOTE: Condition has been copied, but not converted";
+                if (newJob.job_message != null)
+                {
+                    newJob.job_message += Environment.NewLine;
+                }
+                //TODO: migrate conditions
+                newJob.job_message += "NOTE: Condition has been copied, but not converted";
             }
 
             return newJob;

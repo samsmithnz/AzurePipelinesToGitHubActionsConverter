@@ -38,5 +38,8 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.AzurePipelines
         public Step[] steps { get; set; }
         //TODO: Add code for services
         public Dictionary<string, string> services { get; set; }
+        public string template { get; set; }
+        public Dictionary<string, string> parameters { get; set; }
+
     }
 }

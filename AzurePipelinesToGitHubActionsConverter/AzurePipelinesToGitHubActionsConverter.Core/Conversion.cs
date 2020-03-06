@@ -78,7 +78,8 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
             string yaml;
             GitHubActionsRoot gitHubActions = null;
 
-            //Triggers are hard, as there are two data types that can exist, so we need to go with the most common type and handle the less common type with generics
+            //Triggers and variables are hard, as there are two data types for each that can exist, so we need to go with the most common type and handle the less common type with exceptions. 
+            //There are 4 combinations here, simple/simple, simple/complex, complex/simple, and complex/complex
             AzurePipelinesRoot<string[], Dictionary<string, string>> azurePipelineWithSimpleTriggerAndSimpleVariables = null;
             AzurePipelinesRoot<string[], AzurePipelines.Variables[]> azurePipelineWithSimpleTriggerAndComplexVariables = null;
             AzurePipelinesRoot<AzurePipelines.Trigger, Dictionary<string, string>> azurePipelineWithComplexTriggerAndSimpleVariables = null;
