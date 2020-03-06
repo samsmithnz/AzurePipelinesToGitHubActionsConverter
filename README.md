@@ -52,6 +52,13 @@ public Pool pool { get; set; }
 ```
 5. Yaml is wack. The white spaces can destroy you, as the errors returned are often not helpful at all. Take lots of breaks.
 
+## Current limitations
+There are a number of Azure Pipeline features that don't currently match up well with a GitHub feature, and hence, these migrate with a change in functionality (e.g. parameters become variables and stages become jobs), or not at all (e.g. )
+- Stages: become jobs. For example, a job "JobA" in a stage "Stage1", becomes a job named "Stage1_JobA"
+- Parameters
+- Deployment jobs
+- oneonce strategy
+
 ## Architecture
 The core functionality is contained in a .NET Standard 2.1 class, "AzurePipelinesToGitHubActionsConverter.Core".
 - In the [conversion object](https://github.com/samsmithnz/AzurePipelinesToGitHubActionsConverter/blob/master/AzurePipelinesToGitHubActionsConverter/AzurePipelinesToGitHubActionsConverter.Core/Conversion.cs), is a public call, "ConvertAzurePipelineToGitHubAction", to convert Azure DevOps yaml to GitHub Actions yaml: 
