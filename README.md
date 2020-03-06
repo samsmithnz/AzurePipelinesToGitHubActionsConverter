@@ -54,39 +54,52 @@ public Pool pool { get; set; }
 
 ## Current limitations
 There are a number of Azure Pipeline features that don't currently match up well with a GitHub feature, and hence, these migrate with a change in functionality (e.g. parameters become variables and stages become jobs), or not at all (e.g. )
-- Stages: become jobs. For example, a job "JobA" in a stage "Stage1", becomes a job named "Stage1_JobA"
+- **Stages**: become jobs. For example, a job "JobA" in a stage "Stage1", becomes a job named "Stage1_JobA"
+###### Azure Pipelines YAML
 ```YAML
 
 ```
-```YAML
-
-```
-
-- Parameters: become variables
-```YAML
-
-```
+###### GitHub Actions YAML
 ```YAML
 
 ```
 
-- Deployment jobs: The strategy is removed and it becomes a regular job
+- **Parameters**: become variables
+###### Azure Pipelines YAML
 ```YAML
+parameters: 
+  buildConfiguration: 'Release'
+  buildPlatform: 'Any CPU'
+
 jobs:
-  Build:
-    name: Build job
-    runs-on: windows-latest
+  - job: Build
+    displayName: 'Build job'
+    pool:
+      vmImage: windows-latest
     steps:
-    - uses: actions/checkout@v1
-    - name: Test
-      run: Write-Host ""Hello world ${{ env.buildConfiguration }} ${{ env.buildPlatform }}""
-      shell: powershell";
+    - task: PowerShell@2
+      displayName: 'Test'
+      inputs:
+        targetType: inline
+        script: |
+          Write-Host "Hello world ${{parameters.buildConfiguration}} ${{parameters.buildPlatform}}"
 ```
+###### GitHub Actions YAML
 ```YAML
 
 ```
 
-- runOnce deployment strategy: the strategy is removed and consolidated to a job
+- **Deployment jobs**: 
+###### Azure Pipelines YAML
+```YAML
+
+```
+###### GitHub Actions YAML
+```YAML
+
+```
+
+- **runOnce deployment strategy and deployment jobs**: the strategy and deployment job is consolidated to a job
 ###### Azure Pipelines YAML
 ```YAML
 jobs:

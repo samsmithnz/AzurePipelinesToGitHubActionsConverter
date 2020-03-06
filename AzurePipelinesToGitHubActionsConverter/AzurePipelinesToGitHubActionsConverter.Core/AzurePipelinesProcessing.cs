@@ -136,8 +136,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
             }
 
             //Pool + Steps (When there are no jobs defined)
-            if (azurePipeline.pool != null ||
-                    (azurePipeline.steps != null && azurePipeline.steps.Length > 0))
+            if (azurePipeline.pool != null || (azurePipeline.steps != null && azurePipeline.steps.Length > 0))
             {
                 //Steps only have one job, so we just create it here
                 gitHubActions.jobs = new Dictionary<string, GitHubActions.Job>

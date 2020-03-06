@@ -58,7 +58,7 @@ jobs:
       inputs:
         targetType: inline
         script: |
-          Write-Host ""Hello world $(buildConfiguration) $(buildPlatform)""";
+          Write-Host ""Hello world ${{parameters.buildConfiguration}} ${{parameters.buildPlatform}}""";
             Conversion conversion = new Conversion();
 
             //Act
