@@ -195,7 +195,7 @@ jobs:
     - uses: actions/checkout@v1
 ```
 ### **Conditions**
-Conditions are not currently being processed due to the possible complexity of them. It's on the backlog (#47) 
+Conditions are not currently being processed due to the possible complexity of them. It's on the backlog (https://github.com/samsmithnz/AzurePipelinesToGitHubActionsConverter/issues/47) 
 
 
 ## Architecture
