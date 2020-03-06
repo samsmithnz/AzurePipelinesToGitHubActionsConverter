@@ -54,7 +54,7 @@ public Pool pool { get; set; }
 
 ## Current limitations
 There are a number of Azure Pipeline features that don't currently match up well with a GitHub feature, and hence, these migrate with a change in functionality (e.g. parameters become variables and stages become jobs), or not at all (e.g. )
-- **Stages**: become jobs. For example, a job "JobA" in a stage "Stage1", becomes a job named "Stage1_JobA"
+- ### **Stages**: become jobs. For example, a job "JobA" in a stage "Stage1", becomes a job named "Stage1_JobA"
 ###### Azure Pipelines YAML
 ```YAML
 
@@ -64,7 +64,7 @@ There are a number of Azure Pipeline features that don't currently match up well
 
 ```
 
-- **Parameters**: become variables
+- ### **Parameters**: become variables
 ###### Azure Pipelines YAML
 ```YAML
 parameters: 
@@ -89,7 +89,7 @@ jobs:
 
 ```
 
-- **Deployment jobs**: 
+- ### **Deployment jobs**: 
 ###### Azure Pipelines YAML
 ```YAML
 
@@ -99,7 +99,7 @@ jobs:
 
 ```
 
-### **runOnce deployment strategy and deployment jobs**: the strategy and deployment job is consolidated to a job
+- ### **runOnce deployment strategy and deployment jobs**: the strategy and deployment job is consolidated to a job
 ###### Azure Pipelines YAML
 ```YAML
 jobs:
@@ -131,7 +131,7 @@ jobs:
       shell: powershell
 ```
 
-- Templates
+- ### Templates
 ```YAML
 
 ```
