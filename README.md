@@ -55,7 +55,7 @@ public Pool pool { get; set; }
 ## Current limitations
 There are a number of Azure Pipeline features that don't currently match up well with a GitHub feature, and hence, these migrate with a change in functionality (e.g. parameters become variables and stages become jobs), or not at all (e.g. )
 
-### **Stages**
+#### **Stages**
 Stages are converted to jobs. For example, a job "JobA" in a stage "Stage1", becomes a job named "Stage1_JobA"
 ###### Azure Pipelines YAML
 ```YAML
@@ -106,7 +106,7 @@ jobs:
       shell: powershell
 ```
 
-### **Parameters**
+#### **Parameters**
 Parameters become variables
 ###### Azure Pipelines YAML
 ```YAML
@@ -143,7 +143,7 @@ jobs:
       shell: powershell
 ```
 
-### **runOnce deployment strategy and deployment jobs**
+#### **runOnce deployment strategy and deployment jobs**
 The strategy and deployment job is consolidated to a job
 
 ###### Azure Pipelines YAML
@@ -177,7 +177,7 @@ jobs:
       shell: powershell
 ```
 
-### Templates
+#### Templates
 There are no templates in GitHub actions. At this time we are converting the template into an (almost) empty job.
 ```YAML
 jobs:
@@ -194,7 +194,7 @@ jobs:
     steps:
     - uses: actions/checkout@v1
 ```
-### **Conditions**
+#### **Conditions**
 Conditions are not currently being processed due to the possible complexity of them. It's on the backlog (https://github.com/samsmithnz/AzurePipelinesToGitHubActionsConverter/issues/47) 
 
 
