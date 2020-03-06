@@ -143,7 +143,7 @@ jobs:
       shell: powershell
 ```
 
-#### **runOnce deployment strategy and deployment jobs**
+#### **RunOnce deployment strategy and deployment jobs**
 The strategy and deployment job is consolidated to a job
 
 ###### Azure Pipelines YAML
@@ -194,6 +194,7 @@ jobs:
     steps:
     - uses: actions/checkout@v1
 ```
+
 #### **Conditions**
 Conditions are not currently being processed due to the possible complexity of them. It's on the backlog (https://github.com/samsmithnz/AzurePipelinesToGitHubActionsConverter/issues/47) 
 
