@@ -474,9 +474,13 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                 for (int i = 0; i < jobs.Length; i++)
                 {
                     string jobName = jobs[i].job;
-                    if (jobName == null)
+                    if (jobName == null && jobs[i].deployment != null)
                     {
                         jobName = jobs[i].deployment;
+                    }
+                    else if (jobName == null && jobs[i].template != null)
+                    {
+                        jobName = "job_" + (i + 1).ToString() + "_template";
                     }
                     newJobs.Add(jobName, ProcessIndividualJob(jobs[i], resources));
                 }

@@ -12,15 +12,12 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
         {
             //Arrange
             string input = @"
-stages:
-- stage: Build
-  displayName: 'Build stage'
-  jobs:
-  - template: azure-pipelines-build-template.yml
-    parameters:
-      buildConfiguration: 'Release'
-      buildPlatform: 'Any CPU'
-      vmImage: windows-latest";
+jobs:
+- template: azure-pipelines-build-template.yml
+  parameters:
+    buildConfiguration: 'Release'
+    buildPlatform: 'Any CPU'
+    vmImage: windows-latest";
             Conversion conversion = new Conversion();
 
             //Act
@@ -30,7 +27,7 @@ stages:
             string expected = @"
 #NOTE: Azure DevOps template does not have an equivalent in GitHub Actions yet
 jobs:
-  Build_Stage_Template:
+  job_1_template:
     #: 'NOTE: Azure DevOps template does not have an equivalent in GitHub Actions yet'
     steps:
     - uses: actions/checkout@v1";

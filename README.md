@@ -54,17 +54,60 @@ public Pool pool { get; set; }
 
 ## Current limitations
 There are a number of Azure Pipeline features that don't currently match up well with a GitHub feature, and hence, these migrate with a change in functionality (e.g. parameters become variables and stages become jobs), or not at all (e.g. )
-- ### **Stages**: become jobs. For example, a job "JobA" in a stage "Stage1", becomes a job named "Stage1_JobA"
+
+### **Stages**
+Stages are converted to jobs. For example, a job "JobA" in a stage "Stage1", becomes a job named "Stage1_JobA"
 ###### Azure Pipelines YAML
 ```YAML
+stages:
+- stage: Build
+  displayName: 'Build Stage'
+  jobs:
+  - job: Build
+    displayName: 'Build job'
+    pool:
+      vmImage: windows-latest
+    steps:
+    - task: PowerShell@2
+      inputs:
+        targetType: 'inline'
+        script: |
+         Write-Host "Hello world!"
 
+  - job: Build2
+    displayName: 'Build job 2'
+    pool:
+      vmImage: windows-latest
+    steps:
+    - task: PowerShell@2
+      inputs:
+        targetType: 'inline'
+        script: |
+         Write-Host "Hello world 2!"
 ```
 ###### GitHub Actions YAML
 ```YAML
-
+jobs:
+  Build_Stage_Build:
+    name: Build job
+    runs-on: windows-latest
+    steps:
+    - uses: actions/checkout@v1
+    - run: 
+        Write-Host "Hello world!"
+      shell: powershell
+  Build_Stage_Build2:
+    name: Build job 2
+    runs-on: windows-latest
+    steps:
+    - uses: actions/checkout@v1
+    - run: 
+        Write-Host "Hello world 2!"
+      shell: powershell
 ```
 
-- ### **Parameters**: become variables
+### **Parameters**
+Parameters become variables
 ###### Azure Pipelines YAML
 ```YAML
 parameters: 
@@ -86,20 +129,21 @@ jobs:
 ```
 ###### GitHub Actions YAML
 ```YAML
-
+env:
+  buildConfiguration: Release
+  buildPlatform: Any CPU
+jobs:
+  Build:
+    name: Build job
+    runs-on: windows-latest
+    steps:
+    - uses: actions/checkout@v1
+    - name: Test
+      run: Write-Host "Hello world ${{ env.buildConfiguration }} ${{ env.buildPlatform }}"
+      shell: powershell
 ```
 
-- ### **Deployment jobs**: 
-###### Azure Pipelines YAML
-```YAML
-
-```
-###### GitHub Actions YAML
-```YAML
-
-```
-
-### **runOnce deployment strategy and deployment jobs**: 
+### **runOnce deployment strategy and deployment jobs**
 The strategy and deployment job is consolidated to a job
 
 ###### Azure Pipelines YAML
@@ -133,12 +177,22 @@ jobs:
       shell: powershell
 ```
 
-- ### Templates
+### Templates
+There are no templates in GitHub actions. At this time we are converting the template into an (almost) empty job.
 ```YAML
-
+jobs:
+- template: azure-pipelines-build-template.yml
+  parameters:
+    buildConfiguration: 'Release'
+    buildPlatform: 'Any CPU'
+    vmImage: windows-latest
 ```
 ```YAML
-
+jobs:
+  job_1_template:
+    #: 'NOTE: Azure DevOps template does not have an equivalent in GitHub Actions yet'
+    steps:
+    - uses: actions/checkout@v1
 ```
 
 ## Architecture
