@@ -99,7 +99,8 @@ jobs:
 
 ```
 
-- ### **runOnce deployment strategy and deployment jobs**: the strategy and deployment job is consolidated to a job
+- ### **runOnce deployment strategy and deployment jobs**: 
+the strategy and deployment job is consolidated to a job
 ###### Azure Pipelines YAML
 ```YAML
 jobs:
