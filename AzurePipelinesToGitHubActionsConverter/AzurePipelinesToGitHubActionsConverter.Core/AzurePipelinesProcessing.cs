@@ -136,8 +136,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
             }
 
             //Pool + Steps (When there are no jobs defined)
-            if (azurePipeline.pool != null ||
-                    (azurePipeline.steps != null && azurePipeline.steps.Length > 0))
+            if (azurePipeline.pool != null || (azurePipeline.steps != null && azurePipeline.steps.Length > 0))
             {
                 //Steps only have one job, so we just create it here
                 gitHubActions.jobs = new Dictionary<string, GitHubActions.Job>
@@ -322,10 +321,14 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
 
             if (strategy != null)
             {
-                GitHubActions.Strategy newStrategy = new GitHubActions.Strategy();
+                GitHubActions.Strategy newStrategy = null;
 
                 if (strategy.matrix != null)
                 {
+                    if (newStrategy == null)
+                    {
+                        newStrategy = new GitHubActions.Strategy();
+                    }
                     string[] matrix = new string[strategy.matrix.Count];
                     KeyValuePair<string, Dictionary<string, string>> matrixVariable = strategy.matrix.First();
                     MatrixVariableName = matrixVariable.Value.Keys.First();
@@ -347,6 +350,10 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                 }
                 if (strategy.maxParallel != null)
                 {
+                    if (newStrategy == null)
+                    {
+                        newStrategy = new GitHubActions.Strategy();
+                    }
                     newStrategy.max_parallel = strategy.maxParallel;
                 }
                 if (strategy.runOnce != null)
@@ -467,9 +474,13 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                 for (int i = 0; i < jobs.Length; i++)
                 {
                     string jobName = jobs[i].job;
-                    if (jobName == null)
+                    if (jobName == null && jobs[i].deployment != null)
                     {
                         jobName = jobs[i].deployment;
+                    }
+                    else if (jobName == null && jobs[i].template != null)
+                    {
+                        jobName = "job_" + (i + 1).ToString() + "_template";
                     }
                     newJobs.Add(jobName, ProcessIndividualJob(jobs[i], resources));
                 }

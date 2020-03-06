@@ -2,6 +2,7 @@
 using AzurePipelinesToGitHubActionsConverter.Core.GitHubActions;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -112,7 +113,6 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
             {
                 AzurePipelinesProcessing<string[], Dictionary<string, string>> processing = new AzurePipelinesProcessing<string[], Dictionary<string, string>>();
                 gitHubActions = processing.ProcessPipeline(azurePipelineWithSimpleTriggerAndSimpleVariables, azurePipelineWithSimpleTriggerAndSimpleVariables.trigger, null, azurePipelineWithSimpleTriggerAndSimpleVariables.variables, null);
-
                 if (processing.MatrixVariableName != null)
                 {
                     _matrixVariableName = processing.MatrixVariableName;
@@ -123,7 +123,6 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
             {
                 AzurePipelinesProcessing<string[], AzurePipelines.Variables[]> processing = new AzurePipelinesProcessing<string[], AzurePipelines.Variables[]>();
                 gitHubActions = processing.ProcessPipeline(azurePipelineWithSimpleTriggerAndComplexVariables, azurePipelineWithSimpleTriggerAndComplexVariables.trigger, null, null, azurePipelineWithSimpleTriggerAndComplexVariables.variables);
-
                 if (processing.MatrixVariableName != null)
                 {
                     _matrixVariableName = processing.MatrixVariableName;
@@ -134,7 +133,6 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
             {
                 AzurePipelinesProcessing<AzurePipelines.Trigger, Dictionary<string, string>> processing = new AzurePipelinesProcessing<AzurePipelines.Trigger, Dictionary<string, string>>();
                 gitHubActions = processing.ProcessPipeline(azurePipelineWithComplexTriggerAndSimpleVariables, null, azurePipelineWithComplexTriggerAndSimpleVariables.trigger, azurePipelineWithComplexTriggerAndSimpleVariables.variables, null);
-
                 if (processing.MatrixVariableName != null)
                 {
                     _matrixVariableName = processing.MatrixVariableName;
@@ -145,13 +143,14 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
             {
                 AzurePipelinesProcessing<AzurePipelines.Trigger, AzurePipelines.Variables[]> processing = new AzurePipelinesProcessing<AzurePipelines.Trigger, AzurePipelines.Variables[]>();
                 gitHubActions = processing.ProcessPipeline(azurePipelineWithComplexTriggerAndComplexVariables, null, azurePipelineWithComplexTriggerAndComplexVariables.trigger, null, azurePipelineWithComplexTriggerAndComplexVariables.variables);
-
                 if (processing.MatrixVariableName != null)
                 {
                     _matrixVariableName = processing.MatrixVariableName;
                 }
                 variableList.AddRange(processing.VariableList);
             }
+            //Search for any other variables. Duplicates are ok, they are processed the same
+            variableList.AddRange(SearchForVariables(input));
 
             //Create the YAML and apply some adjustments
             if (gitHubActions != null)
@@ -261,13 +260,17 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
         {
             List<string> variableList = new List<string>();
 
-            string[] stepLines = input.Split(Environment.NewLine);
-            foreach (string line in stepLines)
+            if (input != null)
             {
-                List<string> results = FindPipelineVariablesInString(line);
-                if (results.Count > 0)
+                string[] stepLines = input.Split(Environment.NewLine);
+                foreach (string line in stepLines)
                 {
-                    variableList.AddRange(results);
+                    List<string> variableResults = FindPipelineVariablesInString(line);
+                    variableResults.AddRange(FindPipelineParametersInString(line));
+                    if (variableResults.Count > 0)
+                    {
+                        variableList.AddRange(variableResults);
+                    }
                 }
             }
 
@@ -278,7 +281,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
         {
             //Used https://stackoverflow.com/questions/378415/how-do-i-extract-text-that-lies-between-parentheses-round-brackets
             //With the addition of the \$ search to capture strings like: "$(variable)"
-            //\$\(            # $ char and escaped parenthesis, means "starts with a '$(' character"
+            //\$\(           # $ char and escaped parenthesis, means "starts with a '$(' character"
             //    (          # Parentheses in a regex mean "put (capture) the stuff 
             //               #     in between into the Groups array" 
             //       [^)]    # Any character that is not a ')' character
@@ -297,6 +300,35 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                 {
                     list[i] = list[i].Substring(0, item.Length - 1);
                     list[i] = list[i].Remove(0, 2);
+                }
+            }
+
+            return list;
+        }
+
+        private static List<string> FindPipelineParametersInString(string text)
+        {
+            //Used https://stackoverflow.com/questions/378415/how-do-i-extract-text-that-lies-between-parentheses-round-brackets
+            //With the addition of the \$ search to capture strings like: "$(variable)"
+            //\$\(           # $ char and escaped parenthesis, means "starts with a '$(' character"
+            //    (          # Parentheses in a regex mean "put (capture) the stuff 
+            //               #     in between into the Groups array" 
+            //       [^)]    # Any character that is not a ')' character
+            //       *       # Zero or more occurrences of the aforementioned "non ')' char"
+            //    )          # Close the capturing group
+            //\)             # "Ends with a ')' character"  
+            MatchCollection results = Regex.Matches(text, @"\$\{\{([^}}]*)\}\}");
+            List<string> list = results.Cast<Match>().Select(match => match.Value).ToList();
+
+            for (int i = 0; i < list.Count; i++)
+            {
+                string item = list[i];
+
+                //Remove leading "${{" and trailing "}}"
+                if (list[i].Length > 5)
+                {
+                    list[i] = list[i].Substring(0, item.Length - 2);
+                    list[i] = list[i].Remove(0, 3);
                 }
             }
 

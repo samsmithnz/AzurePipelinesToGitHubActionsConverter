@@ -52,6 +52,153 @@ public Pool pool { get; set; }
 ```
 5. Yaml is wack. The white spaces can destroy you, as the errors returned are often not helpful at all. Take lots of breaks.
 
+## Current limitations
+There are a number of Azure Pipeline features that don't currently match up well with a GitHub feature, and hence, these migrate with a change in functionality (e.g. parameters become variables and stages become jobs), or not at all (e.g. )
+
+#### **Stages**
+Stages are converted to jobs. For example, a job "JobA" in a stage "Stage1", becomes a job named "Stage1_JobA"
+###### Azure Pipelines YAML
+```YAML
+stages:
+- stage: Build
+  displayName: 'Build Stage'
+  jobs:
+  - job: Build
+    displayName: 'Build job'
+    pool:
+      vmImage: windows-latest
+    steps:
+    - task: PowerShell@2
+      inputs:
+        targetType: 'inline'
+        script: |
+         Write-Host "Hello world!"
+
+  - job: Build2
+    displayName: 'Build job 2'
+    pool:
+      vmImage: windows-latest
+    steps:
+    - task: PowerShell@2
+      inputs:
+        targetType: 'inline'
+        script: |
+         Write-Host "Hello world 2!"
+```
+###### GitHub Actions YAML
+```YAML
+jobs:
+  Build_Stage_Build:
+    name: Build job
+    runs-on: windows-latest
+    steps:
+    - uses: actions/checkout@v1
+    - run: 
+        Write-Host "Hello world!"
+      shell: powershell
+  Build_Stage_Build2:
+    name: Build job 2
+    runs-on: windows-latest
+    steps:
+    - uses: actions/checkout@v1
+    - run: 
+        Write-Host "Hello world 2!"
+      shell: powershell
+```
+
+#### **Parameters**
+Parameters become variables
+###### Azure Pipelines YAML
+```YAML
+parameters: 
+  buildConfiguration: 'Release'
+  buildPlatform: 'Any CPU'
+
+jobs:
+  - job: Build
+    displayName: 'Build job'
+    pool:
+      vmImage: windows-latest
+    steps:
+    - task: PowerShell@2
+      displayName: 'Test'
+      inputs:
+        targetType: inline
+        script: |
+          Write-Host "Hello world ${{parameters.buildConfiguration}} ${{parameters.buildPlatform}}"
+```
+###### GitHub Actions YAML
+```YAML
+env:
+  buildConfiguration: Release
+  buildPlatform: Any CPU
+jobs:
+  Build:
+    name: Build job
+    runs-on: windows-latest
+    steps:
+    - uses: actions/checkout@v1
+    - name: Test
+      run: Write-Host "Hello world ${{ env.buildConfiguration }} ${{ env.buildPlatform }}"
+      shell: powershell
+```
+
+#### **RunOnce deployment strategy and deployment jobs**
+The strategy and deployment job is consolidated to a job
+
+###### Azure Pipelines YAML
+```YAML
+jobs:
+  - deployment: DeployInfrastructure
+    displayName: Deploy job
+    environment: Dev
+    pool:
+      vmImage: windows-latest     
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - task: PowerShell@2
+            displayName: 'Test'
+            inputs:
+              targetType: inline
+              script: |
+                Write-Host ""Hello world""";
+```
+###### GitHub Actions YAML
+```YAML
+jobs:
+  DeployInfrastructure:
+    name: Deploy job
+    runs-on: windows-latest
+    steps:
+    - name: Test
+      run: Write-Host ""Hello world""
+      shell: powershell
+```
+
+#### Templates
+There are no templates in GitHub actions. At this time we are converting the template into an (almost) empty job.
+```YAML
+jobs:
+- template: azure-pipelines-build-template.yml
+  parameters:
+    buildConfiguration: 'Release'
+    buildPlatform: 'Any CPU'
+    vmImage: windows-latest
+```
+```YAML
+jobs:
+  job_1_template:
+    #: 'NOTE: Azure DevOps template does not have an equivalent in GitHub Actions yet'
+    steps:
+    - uses: actions/checkout@v1
+```
+
+#### **Conditions**
+Conditions are not currently being processed due to the possible complexity of them. It's on the backlog (https://github.com/samsmithnz/AzurePipelinesToGitHubActionsConverter/issues/47) 
+
+
 ## Architecture
 The core functionality is contained in a .NET Standard 2.1 class, "AzurePipelinesToGitHubActionsConverter.Core".
 - In the [conversion object](https://github.com/samsmithnz/AzurePipelinesToGitHubActionsConverter/blob/master/AzurePipelinesToGitHubActionsConverter/AzurePipelinesToGitHubActionsConverter.Core/Conversion.cs), is a public call, "ConvertAzurePipelineToGitHubAction", to convert Azure DevOps yaml to GitHub Actions yaml: 

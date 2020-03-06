@@ -325,6 +325,65 @@ stages:
 
 
         [TestMethod]
+        public void StagingPipelineTest()
+        {
+            //Arrange
+            Conversion conversion = new Conversion();
+            string yaml = @"
+stages:
+- stage: Build
+  displayName: 'Build Stage'
+  jobs:
+  - job: Build
+    displayName: 'Build job'
+    pool:
+      vmImage: windows-latest
+    steps:
+    - task: PowerShell@2
+      inputs:
+        targetType: 'inline'
+        script: |
+         Write-Host ""Hello world!""
+
+  - job: Build2
+    displayName: 'Build job 2'
+    pool:
+      vmImage: windows-latest
+    steps:
+    - task: PowerShell@2
+      inputs:
+        targetType: 'inline'
+        script: |
+         Write-Host ""Hello world 2!""
+";
+
+            //Act
+            ConversionResult gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(yaml);
+
+            //Assert
+            string expected = @"
+jobs:
+  Build_Stage_Build:
+    name: Build job
+    runs-on: windows-latest
+    steps:
+    - uses: actions/checkout@v1
+    - run: 
+        Write-Host ""Hello world!""
+      shell: powershell
+  Build_Stage_Build2:
+    name: Build job 2
+    runs-on: windows-latest
+    steps:
+    - uses: actions/checkout@v1
+    - run: 
+        Write-Host ""Hello world 2!""
+      shell: powershell";
+            expected = UtilityTests.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+        }
+
+        [TestMethod]
         public void NuGetPackagePipelineTest()
         {
             //Arrange

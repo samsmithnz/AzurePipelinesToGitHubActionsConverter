@@ -118,6 +118,11 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                     yaml = yaml.Replace("$(" + item + " )", "${{ env." + item + " }}");
                     yaml = yaml.Replace("$( " + item + ")", "${{ env." + item + " }}");
                     yaml = yaml.Replace("$" + item + "", "${{ env." + item + " }}");
+                    yaml = yaml.Replace("${{" + item + "}}", "${{ env." + item + " }}");
+                    yaml = yaml.Replace("${{ " + item + " }}", "${{ env." + item + " }}");
+                    yaml = yaml.Replace("${{" + item + " }}", "${{ env." + item + " }}");
+                    yaml = yaml.Replace("${{ " + item + "}}", "${{ env." + item + " }}");
+                    yaml = yaml.Replace("env.parameters.", "env.");
                 }
             }
 

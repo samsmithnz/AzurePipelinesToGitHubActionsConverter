@@ -9,7 +9,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
     public class ConversionTest
     {
         [TestMethod]
-        public void NameTest()
+        public void PipelineNameTest()
         {
             //Arrange
             string input = "name: test ci pipelines";
@@ -24,7 +24,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
         }
 
         [TestMethod]
-        public void InvalidStringTest()
+        public void PipelineInvalidStringTest()
         {
             //Arrange
             string input = "     ";
@@ -39,7 +39,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
         }
 
         [TestMethod]
-        public void NullStringTest()
+        public void PipelineNullStringTest()
         {
             //Arrange
             string input = null;
@@ -86,101 +86,6 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             string expected = "jobs:" + Environment.NewLine +
                                     "  build:" + Environment.NewLine +
                                     "    runs-on: windows-latest";
-            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
-        }
-
-        [TestMethod]
-        public void VariablesTest()
-        {
-            //Arrange
-            string input = @"
-trigger:
-- master
-variables:
-  buildConfiguration: Release
-jobs:
-- job: Build
-  displayName: Build job
-  pool: 
-    vmImage: ubuntu-latest
-  variables:
-    myJobVariable: 'data'
-  steps: 
-  - script: dotnet build WebApplication1/WebApplication1.Service/WebApplication1.Service.csproj --configuration $(buildConfiguration) 
-    displayName: dotnet build $(myJobVariable)";
-            Conversion conversion = new Conversion();
-
-            //Act
-            ConversionResult gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(input);
-
-            //Assert
-            string expected = @"
-on:
-  push:
-    branches:
-    - master
-env:
-  buildConfiguration: Release
-jobs:
-  Build:
-    name: Build job
-    runs-on: ubuntu-latest
-    env:
-      myJobVariable: data
-    steps:
-    - uses: actions/checkout@v1
-    - name: dotnet build ${{ env.myJobVariable }}
-      run: dotnet build WebApplication1/WebApplication1.Service/WebApplication1.Service.csproj --configuration ${{ env.buildConfiguration }}";
-            expected = UtilityTests.TrimNewLines(expected);
-            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
-        }
-
-        [TestMethod]
-        public void VariablesWithSpacesTest()
-        {
-            //Arrange
-            string input = @"
-trigger:
-- master
-variables:
-  buildConfiguration: Release
-jobs:
-- job: Build
-  displayName: Build job
-  pool: 
-    vmImage: ubuntu-latest
-  variables:
-    myJobVariable: 'data'
-  steps: 
-  - script: dotnet build WebApplication1/WebApplication1.Service/WebApplication1.Service.csproj --configuration $buildConfiguration
-    displayName: dotnet build $myJobVariable
-";
-            Conversion conversion = new Conversion();
-
-            //Act
-            ConversionResult gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(input);
-
-            //Assert
-            string expected = @"
-on:
-  push:
-    branches:
-    - master
-env:
-  buildConfiguration: Release
-jobs:
-  Build:
-    name: Build job
-    runs-on: ubuntu-latest
-    env:
-      myJobVariable: data
-    steps:
-    - uses: actions/checkout@v1
-    - name: dotnet build ${{ env.myJobVariable }}
-      run: dotnet build WebApplication1/WebApplication1.Service/WebApplication1.Service.csproj --configuration ${{ env.buildConfiguration }}
-";
-
-            expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
         }
 
