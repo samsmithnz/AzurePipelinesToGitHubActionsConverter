@@ -55,9 +55,21 @@ public Pool pool { get; set; }
 ## Current limitations
 There are a number of Azure Pipeline features that don't currently match up well with a GitHub feature, and hence, these migrate with a change in functionality (e.g. parameters become variables and stages become jobs), or not at all (e.g. )
 - Stages: become jobs. For example, a job "JobA" in a stage "Stage1", becomes a job named "Stage1_JobA"
-- Parameters
-- Deployment jobs
-- oneonce strategy
+```Azure Pipelines YAML
+
+```
+- Parameters: become variables
+```Azure Pipelines YAML
+
+```
+- Deployment jobs: The strategy is removed and it becomes a regular job
+```Azure Pipelines YAML
+
+```
+- oneonce deployment strategy
+```Azure Pipelines YAML
+
+```
 
 ## Architecture
 The core functionality is contained in a .NET Standard 2.1 class, "AzurePipelinesToGitHubActionsConverter.Core".
