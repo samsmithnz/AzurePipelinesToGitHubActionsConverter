@@ -466,7 +466,12 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                 newJobs = new Dictionary<string, GitHubActions.Job>();
                 for (int i = 0; i < jobs.Length; i++)
                 {
-                    newJobs.Add(jobs[i].job, ProcessIndividualJob(jobs[i], resources));
+                    string jobName = jobs[i].job;
+                    if (jobName == null)
+                    {
+                        jobName = jobs[i].deployment;
+                    }
+                    newJobs.Add(jobName, ProcessIndividualJob(jobs[i], resources));
                 }
             }
             return newJobs;
@@ -495,6 +500,15 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                 newJob.steps = ProcessSteps(job.steps, true);
                 //TODO: Find a way to allow GitHub jobs to reference another job as a template
                 newJob.job_message += "NOTE: Azure DevOps template does not have an equivalent in GitHub Actions yet";
+            }
+            else if (newJob.steps == null && job.strategy?.runOnce?.deploy?.steps != null)
+            {
+                //Initialize the array with no items
+                job.steps = new AzurePipelines.Step[0];
+                //Process the steps, adding the default checkout step
+                newJob.steps = ProcessSteps(job.strategy?.runOnce?.deploy?.steps, false);
+                //TODO: Find a way to allow GitHub jobs to reference another job as a template
+                newJob.job_message += "NOTE: Azure DevOps strategy>runOnce>deploy does not have an equivalent in GitHub Actions yet";
             }
 
             if (newJob._if != null)
