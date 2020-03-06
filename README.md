@@ -58,16 +58,69 @@ There are a number of Azure Pipeline features that don't currently match up well
 ```Azure Pipelines YAML
 
 ```
+```GitHub Actions YAML
+
+```
+
 - Parameters: become variables
 ```Azure Pipelines YAML
 
 ```
+```GitHub Actions YAML
+
+```
+
 - Deployment jobs: The strategy is removed and it becomes a regular job
+```Azure Pipelines YAML
+jobs:
+  Build:
+    name: Build job
+    runs-on: windows-latest
+    steps:
+    - uses: actions/checkout@v1
+    - name: Test
+      run: Write-Host ""Hello world ${{ env.buildConfiguration }} ${{ env.buildPlatform }}""
+      shell: powershell";
+```
+```GitHub Actions YAML
+
+```
+
+- oneonce deployment strategy
+```Azure Pipelines YAML
+jobs:
+  - deployment: DeployInfrastructure
+    displayName: Deploy job
+    environment: Dev
+    pool:
+      vmImage: windows-latest     
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - task: PowerShell@2
+            displayName: 'Test'
+            inputs:
+              targetType: inline
+              script: |
+                Write-Host ""Hello world""";
+```
+```GitHub Actions YAML
+jobs:
+  DeployInfrastructure:
+    name: Deploy job
+    runs-on: windows-latest
+    steps:
+    - name: Test
+      run: Write-Host ""Hello world""
+      shell: powershell
+```
+
+- Templates
 ```Azure Pipelines YAML
 
 ```
-- oneonce deployment strategy
-```Azure Pipelines YAML
+```GitHub Actions YAML
 
 ```
 

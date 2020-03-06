@@ -322,10 +322,14 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
 
             if (strategy != null)
             {
-                GitHubActions.Strategy newStrategy = new GitHubActions.Strategy();
+                GitHubActions.Strategy newStrategy = null;
 
                 if (strategy.matrix != null)
                 {
+                    if (newStrategy == null)
+                    {
+                        newStrategy = new GitHubActions.Strategy();
+                    }
                     string[] matrix = new string[strategy.matrix.Count];
                     KeyValuePair<string, Dictionary<string, string>> matrixVariable = strategy.matrix.First();
                     MatrixVariableName = matrixVariable.Value.Keys.First();
@@ -347,6 +351,10 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                 }
                 if (strategy.maxParallel != null)
                 {
+                    if (newStrategy == null)
+                    {
+                        newStrategy = new GitHubActions.Strategy();
+                    }
                     newStrategy.max_parallel = strategy.maxParallel;
                 }
                 if (strategy.runOnce != null)

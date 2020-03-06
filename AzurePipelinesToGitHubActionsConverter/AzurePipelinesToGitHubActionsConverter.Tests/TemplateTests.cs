@@ -116,7 +116,6 @@ jobs:
     #: 'NOTE: Azure DevOps strategy>runOnce>deploy does not have an equivalent in GitHub Actions yet'
     name: Deploy job
     runs-on: windows-latest
-    strategy: {}
     steps:
     - name: Test
       run: Write-Host ""Hello world""
