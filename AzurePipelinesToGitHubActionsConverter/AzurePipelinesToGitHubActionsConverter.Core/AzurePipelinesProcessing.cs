@@ -534,8 +534,6 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                 {
                     newJob.job_message += Environment.NewLine;
                 }
-                //TODO: migrate conditions
-                newJob.job_message += "NOTE: Condition has been copied, but not converted";
             }
 
             return newJob;

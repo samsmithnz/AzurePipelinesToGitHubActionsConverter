@@ -31,6 +31,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                 int bracketsCount = CountCharactersInString(contents, ')');
                 if (bracketsCount > 1)
                 {
+                    //Split the strings by "," - but also respecting brackets
                     List<string> innerContents = SplitContents(contents);
                     string innerContentsProcessed = "";
                     for (int i = 0; i < innerContents.Count; i++)
@@ -59,7 +60,6 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                 //Job/step status check functions: 
                 //Azure DevOps: https://docs.microsoft.com/en-us/azure/devops/pipelines/process/expressions?view=azure-devops#job-status-functions
                 //GitHub Actions: https://help.github.com/en/actions/reference/context-and-expression-syntax-for-github-actions#job-status-check-functions
-
                 case "always":
                 case "canceled":
                     return condition + "(" + contents + ")";
@@ -67,13 +67,12 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                     return "failure(" + contents + ")";
                 case "succeeded":
                     return "success(" + contents + ")";
-                case "succeededOrFailed":
-                    return ""; //TODO
+                case "succeededOrFailed": //Essentially the same as always, but not cancelled
+                    return "ne(${{ job.status }}, 'cancelled')";
 
                 //Functions: 
                 //Azure DevOps: https://docs.microsoft.com/en-us/azure/devops/pipelines/process/expressions?view=azure-devops#functions
                 //GitHub Actions: https://help.github.com/en/actions/reference/context-and-expression-syntax-for-github-actions#functions
-
                 case "le": //le
                 case "lt": //lt
                 case "ne": //ne
@@ -84,18 +83,17 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                 case "and": //and
                 case "or": //or
                 case "contains": //contains( search, item )
+                case "coalesce": //coalesce
+                case "containsValue": //containsValue
+                case "endsWith": //endsWith
+                case "format": //format
+                case "in": //in
+                case "join": //join
+                case "notin": //notin
+                case "startsWith": //startsWith
+                case "xor": //xor
+                case "counter": //counter
                     return condition + "(" + contents + ")";
-
-                //coalesce
-                //containsValue
-                //counter
-                //endsWith
-                //format
-                //in
-                //join
-                //notin
-                //startsWith
-                //xor
 
                 default:
                     return "";
@@ -135,7 +133,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                 }
                 else if (ch == ')')
                 {
-                    //TODO: you may want to check if close ']' has corresponding open '['
+                    //Possible Future enhancement: you may want to check if close ']' has corresponding open '('
                     // i.e. stack has values: if (!brackets.Any()) throw ...
                     int openBracket = brackets.Pop();
 
@@ -143,7 +141,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                 }
             }
 
-            //TODO: you may want to check here if there're too many '['
+            //Possible Future enhancement: you may want to check here if there're too many '('
             // i.e. stack still has values: if (brackets.Any()) throw ... 
             yield return value;
         }
