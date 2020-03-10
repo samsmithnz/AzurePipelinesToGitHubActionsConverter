@@ -76,7 +76,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             string result = ConditionsProcessing.GenerateConditions(condition);
 
             //Assert
-            string expected = "and(eq('ABCDE', 'BCD'), ne(0, 1))";
+            string expected = "and(eq('ABCDE', 'BCD'),ne(0, 1))";
             Assert.AreEqual(expected, result);
         }
 

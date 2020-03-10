@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text.RegularExpressions;
 using YamlDotNet.Serialization;
@@ -17,20 +18,31 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
             List<string> contentList = FindBracketedContentsInString(condition);
 
             //Examine the contents for last set of contents, the most complete piece of the contents, to get the keywords, recursively, otherwise, convert the contents to GitHub
-            string contents = GenerateConditions(contentList[contentList.Count - 1]);
-            string conditionKeyWord = condition.Replace("(" + contentList[contentList.Count - 1] + ")", contents);
+            string contents = contentList[contentList.Count - 1];
+            string conditionKeyWord = condition.Replace("(" + contents + ")", "");
+            if (contents.IndexOf("(") >= 0)
+            {
+                //Need to count the number "(" brackets. If it's > 1, then iterate to get to one.
+                int bracketsCount = CountCharactersInString(contents, ')');
+                if (bracketsCount > 1)
+                {
+                    List<string> innerContents = SplitContents(contents);
+                    string innerContentsProcessed = "";
+                    for (int i = 0; i < innerContents.Count; i++)
+                    {
+                        string innerContent = innerContents[i];
+                        innerContentsProcessed += GenerateConditions(innerContent);
+                        if (i != innerContents.Count - 1)
+                        {
+                            innerContentsProcessed += ",";
+                        }
+                    }
+                    contents = innerContentsProcessed;
+                }
+            }
 
             //Join the pieces back together again
             processedCondition += ProcessCondition(conditionKeyWord, contents);
-
-            //string processedCondition = "";
-            //List<string> contentList = FindBracketedContentsInString(condition);
-            //for (int i = contentList.Count - 1; i >= 0; i--)
-            //{
-            //    string contents = contentList[i];
-            //    string conditionKeyWord = condition.Replace("(" + contentList[i] + ")", "");
-            //    processedCondition += ProcessCondition(conditionKeyWord, contents);
-            //}
 
             return processedCondition;
         }
@@ -45,9 +57,11 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
 
                 case "always":
                 case "canceled":
-                case "failed":
-                case "succeeded":
                     return condition + "(" + contents + ")";
+                case "failed":
+                    return "failure(" + contents + ")";
+                case "succeeded":
+                    return "success(" + contents + ")";
                 case "succeededOrFailed":
                     return ""; //TODO
 
@@ -127,6 +141,30 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
             //TODO: you may want to check here if there're too many '['
             // i.e. stack still has values: if (brackets.Any()) throw ... 
             yield return value;
+        }
+
+        private static int CountCharactersInString(string text, char character)
+        {
+            return text.Count(x => x == character);
+        }
+
+        //Takes a string, and splits it by commas, respecting (). For example, 
+        // the string "eq('ABCDE', 'BCD'), ne(0, 1)", is split into "eq('ABCDE', 'BCD')" and "ne(0, 1)"
+        private static List<string> SplitContents(string text)
+        {
+            MatchCollection results = Regex.Matches(text, @",(?![^\(\[]*[\]\)])");
+            List<string> list = new List<string>();
+            int startIndex = 0;
+            int endIndex = 0;
+            foreach (Match result in results)
+            {
+                endIndex = result.Index;
+                list.Add(text.Substring(startIndex, (endIndex - startIndex)).Trim());
+                startIndex = result.Index + 1;
+            }
+            endIndex = text.Length;
+            list.Add(text.Substring(startIndex, (endIndex - startIndex)).Trim());
+            return list;
         }
 
     }
