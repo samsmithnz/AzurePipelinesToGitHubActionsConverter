@@ -12,6 +12,11 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
 
         public static string GenerateConditions(string condition)
         {
+            if (condition == null)
+            {
+                return null;
+            }
+
             string processedCondition = "";
 
             //Get the condition. split the key word from the contents
