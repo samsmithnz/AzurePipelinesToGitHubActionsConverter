@@ -11,17 +11,28 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
 
         public static string GenerateConditions(string condition)
         {
-            string[] individualConditions = condition.Split(',');
-
             string processedCondition = "";
-            foreach (string individualCondition in individualConditions)
-            {
-                string contents = "";
-                processedCondition += ProcessCondition(individualCondition, contents);
-            }
+
+            //Get the condition. split the key word from the contents
+            List<string> contentList = FindBracketedContentsInString(condition);
+
+            //Examine the contents for last set of contents, the most complete piece of the contents, to get the keywords, recursively, otherwise, convert the contents to GitHub
+            string contents = GenerateConditions(contentList[contentList.Count - 1]);
+            string conditionKeyWord = condition.Replace("(" + contentList[contentList.Count - 1] + ")", contents);
+
+            //Join the pieces back together again
+            processedCondition += ProcessCondition(conditionKeyWord, contents);
+
+            //string processedCondition = "";
+            //List<string> contentList = FindBracketedContentsInString(condition);
+            //for (int i = contentList.Count - 1; i >= 0; i--)
+            //{
+            //    string contents = contentList[i];
+            //    string conditionKeyWord = condition.Replace("(" + contentList[i] + ")", "");
+            //    processedCondition += ProcessCondition(conditionKeyWord, contents);
+            //}
 
             return processedCondition;
-            //return condition;
         }
 
         private static string ProcessCondition(string condition, string contents)
@@ -32,14 +43,11 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                 //Azure DevOps: https://docs.microsoft.com/en-us/azure/devops/pipelines/process/expressions?view=azure-devops#job-status-functions
                 //GitHub Actions: https://help.github.com/en/actions/reference/context-and-expression-syntax-for-github-actions#job-status-check-functions
 
-                case "always()":
-                    return "always()";
-                case "canceled()":
-                    return "cancelled()";
-                case "failed()":
-                    return "failure()";
-                case "succeeded()":
-                    return "success()";
+                case "always":
+                case "canceled":
+                case "failed":
+                case "succeeded":
+                    return condition + "(" + contents + ")";
                 case "succeededOrFailed":
                     return ""; //TODO
 
@@ -47,30 +55,29 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                 //Azure DevOps: https://docs.microsoft.com/en-us/azure/devops/pipelines/process/expressions?view=azure-devops#functions
                 //GitHub Actions: https://help.github.com/en/actions/reference/context-and-expression-syntax-for-github-actions#functions
 
-                //contains( search, item )
-                case "contains()":
-                    return "contains(" + contents + ")";
+                case "le": //le
+                case "lt": //lt
+                case "ne": //ne
+                case "not": //not
+                case "ge": //ge
+                case "gt": //gt
+                case "eq": //eq
+                case "and": //and
+                case "or": //or
+                case "contains": //contains( search, item )
+                    return condition + "(" + contents + ")";
 
-                //and
                 //coalesce
-
                 //containsValue
                 //counter
                 //endsWith
-                //eq
                 //format
-                //ge
-                //gt
                 //in
                 //join
-                //le
-                //lt
-                //ne
-                //not
                 //notin
-                //or
                 //startsWith
                 //xor
+
                 default:
                     return "";
             }
@@ -78,31 +85,48 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
 
         public static List<string> FindBracketedContentsInString(string text)
         {
-            //Used https://stackoverflow.com/questions/378415/how-do-i-extract-text-that-lies-between-parentheses-round-brackets
-            //With the addition of the \$ search to capture strings like: "$(variable)"
-            //\$\(           # $ char and escaped parenthesis, means "starts with a '$(' character"
-            //    (          # Parentheses in a regex mean "put (capture) the stuff 
-            //               #     in between into the Groups array" 
-            //       [^)]    # Any character that is not a ')' character
-            //       *       # Zero or more occurrences of the aforementioned "non ')' char"
-            //    )          # Close the capturing group
-            //\)             # "Ends with a ')' character"  
-            MatchCollection results = Regex.Matches(text, @"(?<=\[).+?(?=\])");
-            List<string> list = results.Cast<Match>().Select(match => match.Value).ToList();
-
-            for (int i = 0; i < list.Count; i++)
+            IEnumerable<string> results = Nested(text);
+            List<string> list = results.ToList<string>();
+            //Remove the last item
+            if (list.Count > 1)
             {
-                string item = list[i];
-
-                //Remove leading "$(" and trailing ")"
-                //if (list[i].Length > 3)
-                //{
-                //    list[i] = list[i].Substring(0, item.Length - 1);
-                //    list[i] = list[i].Remove(0, 2);
-                //}
+                list.RemoveAt(list.Count - 1);
             }
 
             return list;
+        }
+
+        private static IEnumerable<string> Nested(string value)
+        {
+            //From: https://stackoverflow.com/questions/38479148/separate-nested-parentheses-in-c-sharp
+            if (string.IsNullOrEmpty(value))
+            {
+                yield break; // or throw exception
+            }
+
+            Stack<int> brackets = new Stack<int>();
+
+            for (int i = 0; i < value.Length; ++i)
+            {
+                char ch = value[i];
+
+                if (ch == '(')
+                {
+                    brackets.Push(i);
+                }
+                else if (ch == ')')
+                {
+                    //TODO: you may want to check if close ']' has corresponding open '['
+                    // i.e. stack has values: if (!brackets.Any()) throw ...
+                    int openBracket = brackets.Pop();
+
+                    yield return value.Substring(openBracket + 1, i - openBracket - 1);
+                }
+            }
+
+            //TODO: you may want to check here if there're too many '['
+            // i.e. stack still has values: if (brackets.Any()) throw ... 
+            yield return value;
         }
 
     }
