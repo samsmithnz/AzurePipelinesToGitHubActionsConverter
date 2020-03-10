@@ -196,7 +196,7 @@ jobs:
 ```
 
 #### **Conditions**
-Conditions are not currently being processed due to the possible complexity of them. It's on the backlog (https://github.com/samsmithnz/AzurePipelinesToGitHubActionsConverter/issues/47) 
+Conditions are processing with about 95% accuracy.  
 
 
 ## Architecture
