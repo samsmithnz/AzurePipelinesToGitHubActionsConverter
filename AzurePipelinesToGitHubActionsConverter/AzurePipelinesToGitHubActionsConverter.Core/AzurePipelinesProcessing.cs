@@ -294,6 +294,12 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                 newPool = pool.vmImage;
             }
             return newPool;
+        } 
+        
+        //process the conditions
+        public string ProcessCondition(string condition)
+        {
+            return ConditionsProcessing.GenerateConditions(condition);
         }
 
         //process the strategy matrix
@@ -494,7 +500,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
             {
                 name = job.displayName,
                 needs = job.dependsOn,
-                _if = job.condition,
+                _if = ProcessCondition(job.condition),
                 runs_on = ProcessPool(job.pool),
                 strategy = ProcessStrategy(job.strategy),
                 container = ProcessContainer(resources),
