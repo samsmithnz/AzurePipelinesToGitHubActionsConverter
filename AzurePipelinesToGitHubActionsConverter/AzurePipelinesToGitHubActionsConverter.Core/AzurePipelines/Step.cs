@@ -25,6 +25,9 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.AzurePipelines
         public string continueOnError { get; set; }
         public string enabled { get; set; }
         public string timeoutInMinutes { get; set; }
+        public string workingDirectory { get; set; }
+        public string failOnStderr { get; set; }
+        public Target target { get; set; }
         public Dictionary<string, string> inputs { get; set; }
         public Dictionary<string, string> env { get; set; }
     }
