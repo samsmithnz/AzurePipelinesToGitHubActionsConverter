@@ -304,7 +304,8 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
         SlotName: 'staging'
         Package: '$(build.artifactstagingdirectory)/drop/MyProject.Web.zip'
         TakeAppOfflineFlag: true
-        JSONFiles: '**/appsettings.json'        
+        JSONFiles: '**/appsettings.json'  
+      condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
 ";
 
             //Act
@@ -318,6 +319,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
     app-name: ${{ env.WebsiteName }}
     package: ${GITHUB_WORKSPACE}/drop/MyProject.Web.zip
     slot-name: staging
+  if: and(success(),eq(variables['Build.SourceBranch'], 'refs/heads/master'))
 ";
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
