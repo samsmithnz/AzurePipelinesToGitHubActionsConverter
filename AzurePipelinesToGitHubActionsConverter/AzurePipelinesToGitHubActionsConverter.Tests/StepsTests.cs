@@ -319,7 +319,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
     app-name: ${{ env.WebsiteName }}
     package: ${GITHUB_WORKSPACE}/drop/MyProject.Web.zip
     slot-name: staging
-  if: and(success(),eq(variables['Build.SourceBranch'], 'refs/heads/master'))
+  if: and(success(),eq(github.ref, 'refs/heads/master'))
 ";
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);

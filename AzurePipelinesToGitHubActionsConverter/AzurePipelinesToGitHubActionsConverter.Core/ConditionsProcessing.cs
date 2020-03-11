@@ -10,7 +10,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
     public static class ConditionsProcessing
     {
 
-        public static string GenerateConditions(string condition)
+        public static string TranslateConditions(string condition)
         {
             if (condition == null)
             {
@@ -37,7 +37,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                     for (int i = 0; i < innerContents.Count; i++)
                     {
                         string innerContent = innerContents[i];
-                        innerContentsProcessed += GenerateConditions(innerContent);
+                        innerContentsProcessed += TranslateConditions(innerContent);
                         if (i != innerContents.Count - 1)
                         {
                             innerContentsProcessed += ",";
@@ -49,8 +49,25 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
 
             //Join the pieces back together again
             processedCondition += ProcessCondition(conditionKeyWord, contents);
+            
+            //Translate any system variables
+            processedCondition = ProcessVariables(processedCondition);
 
             return processedCondition;
+        }
+
+        private static string ProcessVariables(string condition)
+        {
+            if (condition.IndexOf("variables['Build.SourceBranch']") >= 0)
+            {
+                condition = condition.Replace("variables['Build.SourceBranch']", "github.ref");
+            }
+            else if (condition.IndexOf("eq(variables['Build.SourceBranchName']") >= 0)
+            {
+                condition = condition.Replace("eq(variables['Build.SourceBranchName']", "endsWith(github.ref");
+            }
+
+            return condition;
         }
 
         private static string ProcessCondition(string condition, string contents)

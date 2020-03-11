@@ -299,7 +299,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
         //process the conditions
         public string ProcessCondition(string condition)
         {
-            return ConditionsProcessing.GenerateConditions(condition);
+            return ConditionsProcessing.TranslateConditions(condition);
         }
 
         //process the strategy matrix

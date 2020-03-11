@@ -126,7 +126,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                 }
                 if (step.condition != null)
                 {
-                    gitHubStep._if = ConditionsProcessing.GenerateConditions(step.condition);
+                    gitHubStep._if = ConditionsProcessing.TranslateConditions(step.condition);
                 }
             }
             return gitHubStep;
@@ -287,7 +287,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
             }
             if (step.condition != null)
             {
-                gitHubStep._if = ConditionsProcessing.GenerateConditions(step.condition);
+                gitHubStep._if = ConditionsProcessing.TranslateConditions(step.condition);
             }
 
             return gitHubStep;

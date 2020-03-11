@@ -17,7 +17,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             string condition = "succeeded()";
 
             //Act
-            string result = ConditionsProcessing.GenerateConditions(condition);
+            string result = ConditionsProcessing.TranslateConditions(condition);
 
             //Assert
             string expected = "success()";
@@ -31,7 +31,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             string condition = "contains('ABCDE', 'BCD')";
 
             //Act
-            string result = ConditionsProcessing.GenerateConditions(condition);
+            string result = ConditionsProcessing.TranslateConditions(condition);
 
             //Assert
             string expected = "contains('ABCDE', 'BCD')";
@@ -45,7 +45,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             string condition = "not(contains('ABCDE', 'BCD'))";
 
             //Act
-            string result = ConditionsProcessing.GenerateConditions(condition);
+            string result = ConditionsProcessing.TranslateConditions(condition);
 
             //Assert
             string expected = "not(contains('ABCDE', 'BCD'))";
@@ -59,7 +59,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             string condition = "eq('ABCDE', 'BCD')";
 
             //Act
-            string result = ConditionsProcessing.GenerateConditions(condition);
+            string result = ConditionsProcessing.TranslateConditions(condition);
 
             //Assert
             string expected = "eq('ABCDE', 'BCD')";
@@ -73,10 +73,40 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             string condition = "and(eq('ABCDE', 'BCD'), ne(0, 1))";
 
             //Act
-            string result = ConditionsProcessing.GenerateConditions(condition);
+            string result = ConditionsProcessing.TranslateConditions(condition);
 
             //Assert
             string expected = "and(eq('ABCDE', 'BCD'),ne(0, 1))";
+            Assert.AreEqual(expected, result);
+        }
+
+        [TestMethod]
+        public void BranchVariableTest()
+        {
+            //Arrange
+            string condition = "and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))";
+
+            //Act
+            string result = ConditionsProcessing.TranslateConditions(condition);
+
+            //Assert
+            string expected = "and(success(),eq(github.ref, 'refs/heads/master'))";
+            Assert.AreEqual(expected, result);
+        }
+
+
+
+        [TestMethod]
+        public void BranchNameVariableTest()
+        {
+            //Arrange
+            string condition = "and(succeeded(), eq(variables['Build.SourceBranchName'], 'master'))";
+
+            //Act
+            string result = ConditionsProcessing.TranslateConditions(condition);
+
+            //Assert
+            string expected = "and(success(),endsWith(github.ref, 'master'))";
             Assert.AreEqual(expected, result);
         }
 
