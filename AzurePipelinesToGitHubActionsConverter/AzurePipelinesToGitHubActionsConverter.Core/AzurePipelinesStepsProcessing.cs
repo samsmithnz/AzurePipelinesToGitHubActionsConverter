@@ -58,6 +58,9 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                     case "NuGetToolInstaller@1":
                         gitHubStep = CreateNuGetToolInstallerStep(step);
                         break;
+                    case "SqlAzureDacpacDeployment@1":
+                        gitHubStep = CreateSQLAzureDacPacDeployStep(step);
+                        break;
                     case "UseDotNet@2":
                         gitHubStep = CreateUseDotNetStep(step);
                         break;
@@ -494,7 +497,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                 uses = "warrenbuckley/Setup-Nuget@v1",
                 step_message = "Note: Needs to be installed from marketplace: https://github.com/warrenbuckley/Setup-Nuget"
             };
-            
+
             //coming from:
             //# NuGet tool installer
             //# Acquires a specific version of NuGet from the internet or the tools cache and adds it to the PATH. Use this task to change the version of NuGet used in the NuGet tasks.
@@ -502,6 +505,45 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
             //  inputs:
             //    #versionSpec: '4.3.0' 
             //    #checkLatest: false # Optional
+
+            //Going to:
+            //- name: Setup Nuget.exe
+            //  uses: warrenbuckley/Setup-Nuget@v1
+
+            return gitHubStep;
+        }
+
+        //https://github.com/Azure/sql-action
+        private GitHubActions.Step CreateSQLAzureDacPacDeployStep(AzurePipelines.Step step)
+        {
+            string serverName = GetStepInput(step, "servername");
+            string dacPacFile = GetStepInput(step, "dacpacfile");
+            string arguments = GetStepInput(step, "additionalarguments");
+
+            GitHubActions.Step gitHubStep = new GitHubActions.Step
+            {
+                uses = "azure/sql-action@v1",
+                with = new Dictionary<string, string>
+                {
+                    { "server-name", serverName},
+                    { "connection-string", "${{ secrets.AZURE_SQL_CONNECTION_STRING }}"},
+                    { "dacpac-package", dacPacFile},
+                    { "arguments", arguments }
+                },
+                step_message = "Note: Connection string needs to be specified - this is different than Pipelines where the server, database, user, and password were specified separately. It's recommended you use secrets for the connection string."
+            };
+
+            //coming from:
+            //- task: SqlAzureDacpacDeployment@1
+            //  displayName: 'Azure SQL dacpac publish'
+            //  inputs:
+            //    azureSubscription: 'my connection to Azure Portal'
+            //    ServerName: '$(databaseServerName).database.windows.net'
+            //    DatabaseName: '$(databaseName)'
+            //    SqlUsername: '$(databaseLoginName)'
+            //    SqlPassword: '$(databaseLoginPassword)'
+            //    DacpacFile: '$(build.artifactstagingdirectory)/drop/MyDatabase.dacpac'
+            //    additionalArguments: '/p:BlockOnPossibleDataLoss=true'  
 
             //Going to:
             //- name: Setup Nuget.exe

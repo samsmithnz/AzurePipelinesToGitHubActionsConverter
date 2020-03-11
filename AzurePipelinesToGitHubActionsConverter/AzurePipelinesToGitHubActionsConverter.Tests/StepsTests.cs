@@ -1,4 +1,4 @@
-using AzurePipelinesToGitHubActionsConverter.Core;
+﻿using AzurePipelinesToGitHubActionsConverter.Core;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace AzurePipelinesToGitHubActionsConverter.Tests
@@ -394,6 +394,44 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             //expected = UtilityTests.TrimNewLines(expected);
             //Assert.AreEqual(expected, gitHubOutput.actionsYaml);
             Assert.IsTrue(string.IsNullOrEmpty(gitHubOutput.actionsYaml) == false);
+        }
+
+
+
+
+        [TestMethod]
+        public void SQLAzureDacPacDeployStepTest()
+        {
+            //Arrange
+            Conversion conversion = new Conversion();
+            string yaml = @"
+          - task: SqlAzureDacpacDeployment@1
+            displayName: 'Azure SQL dacpac publish'
+            inputs:
+              azureSubscription: 'my connection to Azure Portal'
+              ServerName: '$(databaseServerName).database.windows.net'
+              DatabaseName: '$(databaseName)'
+              SqlUsername: '$(databaseLoginName)'
+              SqlPassword: '$(databaseLoginPassword)'
+              DacpacFile: '$(build.artifactstagingdirectory)/drop/MyDatabase.dacpac'
+              additionalArguments: '/p:BlockOnPossibleDataLoss=true'   
+";
+
+            //Act
+            ConversionResult gitHubOutput = conversion.ConvertAzurePipelineTaskToGitHubActionTask(yaml);
+
+            //Assert
+            string expected = @"
+- #: ""Note: Connection string needs to be specified - this is different than Pipelines where the server, database, user, and password were specified separately. It's recommended you use secrets for the connection string.""
+  name: Azure SQL dacpac publish
+  uses: azure/sql-action@v1
+  with:
+    server-name: ${{ env.databaseServerName }}.database.windows.net
+    connection-string: ${{ secrets.AZURE_SQL_CONNECTION_STRING }}
+    dacpac-package: ${GITHUB_WORKSPACE}/drop/MyDatabase.dacpac
+    arguments: /p:BlockOnPossibleDataLoss=true";
+            expected = UtilityTests.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
         }
 
     }
