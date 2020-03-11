@@ -236,10 +236,10 @@ stages:
 
 - stage: Deploy
   displayName: 'Deploy Prod'
-  #condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
+  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
   jobs:
   - job: Deploy
-    displayName: ""Deploy job""
+    displayName: 'Deploy job'
     pool:
       vmImage: $(vmImage)   
     variables:

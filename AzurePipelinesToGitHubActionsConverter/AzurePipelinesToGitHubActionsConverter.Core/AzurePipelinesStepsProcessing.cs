@@ -12,11 +12,10 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
         //TODO: Add more task types
         public GitHubActions.Step ProcessStep(AzurePipelines.Step step)
         {
+            GitHubActions.Step gitHubStep = null;
             if (step.task != null)
             {
                 step = CleanStepInputs(step);
-
-                GitHubActions.Step gitHubStep;
                 switch (step.task)
                 {
                     case "ArchiveFiles@2":
@@ -71,10 +70,6 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
 
                     default:
                         gitHubStep = CreateScriptStep("powershell", step);
-                        if (step.displayName != null)
-                        {
-                            gitHubStep.name = step.displayName;
-                        }
                         string newYaml = Global.SerializeYaml<AzurePipelines.Step>(step);
                         string[] newYamlSplit = newYaml.Split(Environment.NewLine);
                         StringBuilder yamlBuilder = new StringBuilder();
@@ -95,40 +90,46 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                         gitHubStep.step_message = "NOTE: This step does not have a conversion path yet: " + step.task;
                         break;
                 }
-
-                return gitHubStep;
             }
             else if (step.script != null)
             {
-                return new GitHubActions.Step
+                gitHubStep = new GitHubActions.Step
                 {
-                    name = step.displayName,
                     run = step.script,
                     with = step.inputs
                 };
             }
             else if (step.pwsh != null)
             {
-                return CreateScriptStep("pwsh", step);
+                gitHubStep = CreateScriptStep("pwsh", step);
             }
             else if (step.powershell != null)
             {
-                return CreateScriptStep("powershell", step);
+                gitHubStep = CreateScriptStep("powershell", step);
             }
             else if (step.bash != null)
             {
-                return CreateScriptStep("bash", step);
+                gitHubStep = CreateScriptStep("bash", step);
             }
             else if (step.publish != null)
             {
                 //The shortcut to the build publish step
                 //https://docs.microsoft.com/en-us/azure/devops/pipelines/yaml-schema?view=azure-devops&tabs=schema#publish
-                return CreatePublishBuildArtifactsStep(step);
+                gitHubStep = CreatePublishBuildArtifactsStep(step);
             }
-            else
+
+            if (gitHubStep != null)
             {
-                return null;
+                if (step.displayName != null)
+                {
+                    gitHubStep.name = step.displayName;
+                }
+                if (step.condition != null)
+                {
+                    gitHubStep._if = ConditionsProcessing.GenerateConditions(step.condition);
+                }
             }
+            return gitHubStep;
         }
 
         //Convert all of the input keys to lowercase, to make pattern matching easier later
@@ -152,7 +153,6 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
 
             GitHubActions.Step gitHubStep = new GitHubActions.Step
             {
-                name = step.displayName,
                 run = "dotnet "
             };
             if (step.inputs.ContainsKey("command") == true)
@@ -180,7 +180,6 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
 
             GitHubActions.Step gitHubStep = new GitHubActions.Step
             {
-                name = step.displayName,
                 uses = "actions/download-artifact@v1.0.0",
                 with = new Dictionary<string, string>
                 {
@@ -258,7 +257,6 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
         {
             GitHubActions.Step gitHubStep = new GitHubActions.Step
             {
-                name = step.displayName,
                 run = step.script,
                 shell = shellType//,
                 //with = step.inputs
@@ -286,6 +284,10 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                         gitHubStep.run = runValue;
                     }
                 }
+            }
+            if (step.condition != null)
+            {
+                gitHubStep._if = ConditionsProcessing.GenerateConditions(step.condition);
             }
 
             return gitHubStep;
@@ -318,7 +320,6 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
         {
             GitHubActions.Step gitHubStep = new GitHubActions.Step
             {
-                name = step.displayName,
                 uses = "actions/setup-dotnet@v1",
                 with = new Dictionary<string, string>
                 {
@@ -348,7 +349,6 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
 
             GitHubActions.Step gitHubStep = new GitHubActions.Step
             {
-                name = step.displayName,
                 uses = "Azure/github-actions/arm@master",
                 env = new Dictionary<string, string>
                 {
@@ -392,7 +392,6 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
 
             GitHubActions.Step gitHubStep = new GitHubActions.Step
             {
-                name = step.displayName,
                 uses = "Azure/webapps-deploy@v1",
                 with = new Dictionary<string, string>
                 {
@@ -492,11 +491,10 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
         {
             GitHubActions.Step gitHubStep = new GitHubActions.Step
             {
-                name = step.displayName,
                 uses = "warrenbuckley/Setup-Nuget@v1",
                 step_message = "Note: Needs to be installed from marketplace: https://github.com/warrenbuckley/Setup-Nuget"
             };
-
+            
             //coming from:
             //# NuGet tool installer
             //# Acquires a specific version of NuGet from the internet or the tools cache and adds it to the PATH. Use this task to change the version of NuGet used in the NuGet tasks.
@@ -659,7 +657,6 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
 
             GitHubActions.Step gitHubStep = new GitHubActions.Step
             {
-                name = step.displayName,
                 uses = "montudor/action-zip@v0.1.0",
                 with = new Dictionary<string, string>
                 {
@@ -707,7 +704,6 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
 
             GitHubActions.Step gitHubStep = new GitHubActions.Step
             {
-                name = step.displayName,
                 uses = "Azure/cli@v1.0.0",
                 with = new Dictionary<string, string>
                 {
@@ -766,7 +762,6 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
 
             GitHubActions.Step gitHubStep = new GitHubActions.Step
             {
-                name = step.displayName,
                 uses = "actions/upload-artifact@master",
                 with = new Dictionary<string, string>
                 {
