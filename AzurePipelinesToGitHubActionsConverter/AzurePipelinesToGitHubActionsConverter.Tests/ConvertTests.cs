@@ -120,46 +120,6 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             Assert.IsTrue(yamlObject != null);
         }
 
-        //        [TestMethod]
-        //        public void TestStagesWithAzurePipelineYamlToObject()
-        //        {
-        //            //stages:
-        //            //- stage: Build
-        //            //  displayName: 'Build/Test Stage'
-        //            //  jobs:
-        //            //  - job: Build
-        //            //    displayName: 'Build job'
-        //            //    pool:
-        //            //      vmImage: $(vmImage)
-        //            //    steps:
-
-        //            //Arrange
-        //            Conversion conversion = new Conversion();
-        //            string yaml =
-        //@"name: test dotnet build with stages 
-        //trigger: 
-        //- master 
-        //variables: 
-        //  buildConfiguration: Release 
-        //  randomVariable: 14 
-        //stages: 
-        //- stage: Build 
-        //  displayName: Build/Test Stage 
-        //  jobs: 
-        //  - job: Build 
-        //    displayName: Build job 
-        //    pool: 
-        //      vmImage: $(vmImage) 
-        //    steps: 
-        //    - script: dotnet build --configuration $(buildConfiguration) WebApplication1/WebApplication1.Service/WebApplication1.Service.csproj 
-        //      displayName: dotnet build $(buildConfiguration)";
-
-        //            //Act
-        //            GitHubConversion gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(yaml);
-
-        //            //Assert
-        //            Assert.IsTrue(output != null);
-        //        }
 
         [TestMethod]
         public void TestJobsWithAzurePipelineYamlToObject()
@@ -239,6 +199,23 @@ jobs:
 
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+        }
+
+        [TestMethod]
+        public void GitHubActionYamlToGenericObjectTest()
+        {
+            //Arrange
+            string yaml = @"
+on:
+  schedule:
+  - cron: ""0 0 * * *""
+";
+
+            //Act
+            object yamlObject = GenericObjectSerialization.Deserialize(yaml);
+
+            //Assert
+            Assert.IsTrue(yamlObject != null);
         }
 
     }
