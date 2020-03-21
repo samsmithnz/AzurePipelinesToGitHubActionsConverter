@@ -546,8 +546,11 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
             //    additionalArguments: '/p:BlockOnPossibleDataLoss=true'  
 
             //Going to:
-            //- name: Setup Nuget.exe
-            //  uses: warrenbuckley/Setup-Nuget@v1
+            //- uses: azure/sql-action@v1
+            //  with:
+            //    server-name: REPLACE_THIS_WITH_YOUR_SQL_SERVER_NAME
+            //    connection-string: ${{ secrets.AZURE_SQL_CONNECTION_STRING }}
+            //    dacpac-package: './yourdacpacfile.dacpac'
 
             return gitHubStep;
         }
