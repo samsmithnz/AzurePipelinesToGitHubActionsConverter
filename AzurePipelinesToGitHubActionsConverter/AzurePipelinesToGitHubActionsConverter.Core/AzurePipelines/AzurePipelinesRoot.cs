@@ -40,6 +40,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.AzurePipelines
         //public Trigger trigger { get; set; }
 
         public Trigger pr { get; set; }
+        public Schedule[] schedules { get; set; }
         public Pool pool { get; set; }
         public Strategy strategy { get; set; }
 

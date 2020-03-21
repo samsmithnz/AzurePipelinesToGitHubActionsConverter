@@ -50,18 +50,26 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
             //Triggers for pull requests
             if (azurePipeline.pr != null)
             {
-                if (azurePipeline.pr != null)
+                GitHubActions.Trigger pr = ProcessPullRequest(azurePipeline.pr);
+                if (gitHubActions.on == null)
                 {
-                    GitHubActions.Trigger pr = ProcessPullRequest(azurePipeline.pr);
-                    if (gitHubActions.on == null)
-                    {
-                        gitHubActions.on = pr;
-                    }
-                    else
-                    {
-                        gitHubActions.on.pull_request = pr.pull_request;
-                    }
+                    gitHubActions.on = pr;
                 }
+                else
+                {
+                    gitHubActions.on.pull_request = pr.pull_request;
+                }
+            }
+
+            //schedules
+            if (azurePipeline.schedules != null)
+            {
+                string[] schedules = ProcessSchedules(azurePipeline.schedules);
+                if (gitHubActions.on == null)
+                {
+                    gitHubActions.on = new GitHubActions.Trigger();
+                }
+                gitHubActions.on.schedule = schedules;
             }
 
             //Resources
@@ -285,6 +293,30 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
             };
         }
 
+        //process the schedule
+        private string[] ProcessSchedules(AzurePipelines.Schedule[] schedules)
+        {
+            string [] newSchedules = new string[schedules.Length];
+            // Dictionary<string, string> newSchedules = new Dictionary<string, string>();
+            //newSchedules.cron = schedules[0].cron;
+            //newSchedules.cron = new Dictionary<string, string>();
+            //newSchedules.cron = new string[schedules.Length];
+            //for (int i = 0; i < schedules.Length; i++)
+            //{
+            //    newSchedules.cron[i] = schedules[i].cron;
+            //}
+            //for (int i = 0; i < schedules.Length; i++)
+            //{
+            //newSchedules.cron.Add("cron", schedules[0].cron);
+            //}
+            for (int i = 0; i < schedules.Length; i++)
+            {
+                newSchedules[i] = "cron: '" + schedules[i].cron + "'";
+            }
+
+            return newSchedules;
+        }
+
         //process the build pool/agent
         private string ProcessPool(Pool pool)
         {
@@ -294,8 +326,8 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                 newPool = pool.vmImage;
             }
             return newPool;
-        } 
-        
+        }
+
         //process the conditions
         public string ProcessCondition(string condition)
         {
