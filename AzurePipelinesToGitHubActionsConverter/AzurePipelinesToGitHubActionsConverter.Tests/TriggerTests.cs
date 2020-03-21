@@ -238,5 +238,104 @@ pr:
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
         }
 
+        [TestMethod]
+        public void ScheduleCronTriggerTest()
+        {
+            //Arrange
+            string input = @"
+schedules:
+- cron: '0 0 3/4 ? * * *'
+";
+            Conversion conversion = new Conversion();
+
+            //Act
+            ConversionResult gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(input);
+
+            //Assert
+            string expected = @"
+on:
+  schedule:
+  - cron: '0 0 3/4 ? * * *'
+";
+            expected = UtilityTests.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+        }
+
+        [TestMethod]
+        public void ScheduleCronWithDoubleQuotesTriggerTest()
+        {
+            //Arrange
+            string input = @"
+schedules:
+- cron: ""0 0 1/4 ? * * *""
+";
+            Conversion conversion = new Conversion();
+
+            //Act
+            ConversionResult gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(input);
+
+            //Assert
+            string expected = @"
+on:
+  schedule:
+  - cron: '0 0 1/4 ? * * *'
+";
+            expected = UtilityTests.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+        }
+
+        [TestMethod]
+        public void CronRemoveExtraStringTest()
+        {
+            //Arrange
+            string input = @"
+schedules:
+- cron: '0 0 * * *'
+- cron: '0 2 * * *'
+";
+            Conversion conversion = new Conversion();
+
+            //Act
+            ConversionResult gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(input);
+
+            //Assert
+            string expected = @"
+on:
+  schedule:
+  - cron: '0 0 * * *'
+  - cron: '0 2 * * *'
+";
+            expected = UtilityTests.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+        }
+
+        [TestMethod]
+        public void ScheduleTriggerTest()
+        {
+            //Arrange
+            string input = @"
+schedules:
+- cron: '0 0 * **'
+  displayName: Test schedule
+  branches:
+    include: [ master ] 
+    exclude: 
+    - 'features/experimental/*'
+  always: true";
+            Conversion conversion = new Conversion();
+
+            //Act
+            ConversionResult gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(input);
+
+            //Assert
+            string expected = @"
+on:
+  schedule:
+  - cron: '0 0 * **'
+";
+            expected = UtilityTests.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+        }
+
     }
 }

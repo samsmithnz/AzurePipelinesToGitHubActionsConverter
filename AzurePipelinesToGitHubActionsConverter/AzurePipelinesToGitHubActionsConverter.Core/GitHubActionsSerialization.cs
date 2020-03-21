@@ -1,6 +1,8 @@
 ﻿using AzurePipelinesToGitHubActionsConverter.Core.GitHubActions;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
 using System.Text;
 
 namespace AzurePipelinesToGitHubActionsConverter.Core
@@ -26,7 +28,6 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
             string yaml = Global.SerializeYaml<GitHubActions.Job>(gitHubActionJob);
 
             yaml = ProcessGitHubActionYAML(yaml, variableList);
-
             yaml = StepsPostProcessing(yaml);
 
             return yaml;
@@ -41,6 +42,28 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
             if (variableList != null)
             {
                 yaml = PrepareYamlVariablesForGitHubSerialization(yaml, variableList, matrixVariableName);
+            }
+
+            //If there is a cron in the conversion, we need to do a special processing to remove the quotes. 
+            //This is hella custom and ugly, but otherwise the yaml comes out funky
+            //Here we look at every line, removing the double quotes
+            StringBuilder processedYaml = new StringBuilder();
+            if (yaml.IndexOf("cron") >= 0)
+            {
+                using (StringReader reader = new StringReader(yaml))
+                {
+                    string line;
+                    while ((line = reader.ReadLine()) != null)
+                    {
+                        if (line.IndexOf("cron") >= 0)
+                        {
+                            line = line.Replace(@"""", "");
+                        }
+                        processedYaml.AppendLine(line);
+                    }
+
+                }
+                yaml = processedYaml.ToString();
             }
 
             //Trim off any leading of trailing new lines 
