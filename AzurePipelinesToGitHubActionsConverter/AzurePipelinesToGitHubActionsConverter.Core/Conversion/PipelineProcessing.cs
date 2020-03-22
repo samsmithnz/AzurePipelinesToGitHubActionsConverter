@@ -4,9 +4,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace AzurePipelinesToGitHubActionsConverter.Core
+namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
 {
-    public class AzurePipelinesProcessing<T, T2>
+    public class PipelineProcessing<T, T2>
     {
         public List<string> VariableList;
         public string MatrixVariableName;
@@ -329,7 +329,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
         }
 
         //process the conditions
-        public string ProcessCondition(string condition)
+        private string ProcessCondition(string condition)
         {
             return ConditionsProcessing.TranslateConditions(condition);
         }
@@ -574,7 +574,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
         //process the steps
         private GitHubActions.Step[] ProcessSteps(AzurePipelines.Step[] steps, bool addCheckoutStep = true)
         {
-            AzurePipelinesStepsProcessing stepsProcessing = new AzurePipelinesStepsProcessing();
+            StepsProcessing stepsProcessing = new StepsProcessing();
 
             GitHubActions.Step[] newSteps = null;
             if (steps != null)

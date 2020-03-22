@@ -1,13 +1,13 @@
 ﻿using AzurePipelinesToGitHubActionsConverter.Core.AzurePipelines;
+using AzurePipelinesToGitHubActionsConverter.Core.Conversion.Serialization;
 using AzurePipelinesToGitHubActionsConverter.Core.GitHubActions;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 
-namespace AzurePipelinesToGitHubActionsConverter.Core
+namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
 {
     public class Conversion
     {
@@ -18,18 +18,18 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
         /// </summary>
         /// <param name="input">Yaml to convert</param>
         /// <returns>Converion object, with original yaml, processed yaml, and comments on the conversion</returns>
-        public ConversionResult ConvertAzurePipelineTaskToGitHubActionTask(string input)
+        public ConversionResponse ConvertAzurePipelineTaskToGitHubActionTask(string input)
         {
             string yaml = "";
             string processedInput = StepsPreProcessing(input);
             GitHubActions.Step gitHubActionStep = new GitHubActions.Step();
 
             //Process the YAML for the individual job
-            AzurePipelines.Job azurePipelinesJob = Global.DeserializeYaml<AzurePipelines.Job>(processedInput);
+            AzurePipelines.Job azurePipelinesJob = GenericObjectSerialization.DeserializeYaml<AzurePipelines.Job>(processedInput);
             if (azurePipelinesJob != null && azurePipelinesJob.steps != null && azurePipelinesJob.steps.Length > 0)
             {
                 //As we needed to create an entire (but minimal) pipelines job, we need to now extract the step for processing
-                AzurePipelinesStepsProcessing stepsProcessing = new AzurePipelinesStepsProcessing();
+                StepsProcessing stepsProcessing = new StepsProcessing();
                 gitHubActionStep = stepsProcessing.ProcessStep(azurePipelinesJob.steps[0]);
 
                 //Find all variables in this text block, we need this for a bit later
@@ -59,7 +59,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
             }
 
             //Return the final conversion result, with the original (pipeline) yaml, processed (actions) yaml, and any comments
-            return new ConversionResult
+            return new ConversionResponse
             {
                 pipelinesYaml = input,
                 actionsYaml = yaml,
@@ -73,7 +73,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
         /// </summary>
         /// <param name="input">Yaml to convert</param>
         /// <returns>Converion object, with original yaml, processed yaml, and comments on the conversion</returns>
-        public ConversionResult ConvertAzurePipelineToGitHubAction(string input)
+        public ConversionResponse ConvertAzurePipelineToGitHubAction(string input)
         {
             List<string> variableList = new List<string>();
             string yaml;
@@ -111,7 +111,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
             //Generate the github actions
             if (azurePipelineWithSimpleTriggerAndSimpleVariables != null)
             {
-                AzurePipelinesProcessing<string[], Dictionary<string, string>> processing = new AzurePipelinesProcessing<string[], Dictionary<string, string>>();
+                PipelineProcessing<string[], Dictionary<string, string>> processing = new PipelineProcessing<string[], Dictionary<string, string>>();
                 gitHubActions = processing.ProcessPipeline(azurePipelineWithSimpleTriggerAndSimpleVariables, azurePipelineWithSimpleTriggerAndSimpleVariables.trigger, null, azurePipelineWithSimpleTriggerAndSimpleVariables.variables, null);
                 if (processing.MatrixVariableName != null)
                 {
@@ -121,7 +121,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
             }
             else if (azurePipelineWithSimpleTriggerAndComplexVariables != null)
             {
-                AzurePipelinesProcessing<string[], AzurePipelines.Variables[]> processing = new AzurePipelinesProcessing<string[], AzurePipelines.Variables[]>();
+                PipelineProcessing<string[], AzurePipelines.Variables[]> processing = new PipelineProcessing<string[], AzurePipelines.Variables[]>();
                 gitHubActions = processing.ProcessPipeline(azurePipelineWithSimpleTriggerAndComplexVariables, azurePipelineWithSimpleTriggerAndComplexVariables.trigger, null, null, azurePipelineWithSimpleTriggerAndComplexVariables.variables);
                 if (processing.MatrixVariableName != null)
                 {
@@ -131,7 +131,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
             }
             else if (azurePipelineWithComplexTriggerAndSimpleVariables != null)
             {
-                AzurePipelinesProcessing<AzurePipelines.Trigger, Dictionary<string, string>> processing = new AzurePipelinesProcessing<AzurePipelines.Trigger, Dictionary<string, string>>();
+                PipelineProcessing<AzurePipelines.Trigger, Dictionary<string, string>> processing = new PipelineProcessing<AzurePipelines.Trigger, Dictionary<string, string>>();
                 gitHubActions = processing.ProcessPipeline(azurePipelineWithComplexTriggerAndSimpleVariables, null, azurePipelineWithComplexTriggerAndSimpleVariables.trigger, azurePipelineWithComplexTriggerAndSimpleVariables.variables, null);
                 if (processing.MatrixVariableName != null)
                 {
@@ -141,7 +141,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
             }
             else if (azurePipelineWithComplexTriggerAndComplexVariables != null)
             {
-                AzurePipelinesProcessing<AzurePipelines.Trigger, AzurePipelines.Variables[]> processing = new AzurePipelinesProcessing<AzurePipelines.Trigger, AzurePipelines.Variables[]>();
+                PipelineProcessing<AzurePipelines.Trigger, AzurePipelines.Variables[]> processing = new PipelineProcessing<AzurePipelines.Trigger, AzurePipelines.Variables[]>();
                 gitHubActions = processing.ProcessPipeline(azurePipelineWithComplexTriggerAndComplexVariables, null, azurePipelineWithComplexTriggerAndComplexVariables.trigger, null, azurePipelineWithComplexTriggerAndComplexVariables.variables);
                 if (processing.MatrixVariableName != null)
                 {
@@ -201,7 +201,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
             }
 
             //Return the final conversion result, with the original (pipeline) yaml, processed (actions) yaml, and any comments
-            return new ConversionResult
+            return new ConversionResponse
             {
                 pipelinesYaml = input,
                 actionsYaml = yaml,
@@ -239,7 +239,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                     {
                         int indentLevel = stepLines[i].IndexOf("-");
                         indentLevel += 2;
-                        string buffer = Global.GenerateSpaces(indentLevel);
+                        string buffer = Utility.GenerateSpaces(indentLevel);
                         StringBuilder newInput = new StringBuilder();
                         foreach (string line in stepLines)
                         {

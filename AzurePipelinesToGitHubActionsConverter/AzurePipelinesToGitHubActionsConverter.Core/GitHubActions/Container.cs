@@ -1,18 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Collections.Generic;
 
 namespace AzurePipelinesToGitHubActionsConverter.Core.GitHubActions
 {
-//    container:
-//      image: node:10.16-jessie
-//      env:
-//        NODE_ENV: development
-//      ports:
-//        - 80
-//      volumes:
-//        - my_docker_volume:/volume_mount
-//      options: --cpus 1
+    //    container:
+    //      image: node:10.16-jessie
+    //      env:
+    //        NODE_ENV: development
+    //      ports:
+    //        - 80
+    //      volumes:
+    //        - my_docker_volume:/volume_mount
+    //      options: --cpus 1
     public class Container
     {
         public string image { get; set; }

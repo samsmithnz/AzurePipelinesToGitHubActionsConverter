@@ -1,4 +1,5 @@
 using AzurePipelinesToGitHubActionsConverter.Core;
+using AzurePipelinesToGitHubActionsConverter.Core.Conversion;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace AzurePipelinesToGitHubActionsConverter.Tests
@@ -119,7 +120,7 @@ stages:
         PathtoPublish: '$(build.artifactstagingdirectory)'";
 
             //Act
-            ConversionResult gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(yaml);
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(yaml);
 
             //Assert
             Assert.IsTrue(gitHubOutput.actionsYaml.IndexOf("unknown") == -1);
@@ -316,7 +317,7 @@ stages:
 ";
 
             //Act
-            ConversionResult gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(yaml);
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(yaml);
 
             //Assert
             Assert.IsTrue(gitHubOutput.comments.Count == 0);
@@ -358,7 +359,7 @@ stages:
 ";
 
             //Act
-            ConversionResult gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(yaml);
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(yaml);
 
             //Assert
             string expected = @"
@@ -442,7 +443,7 @@ steps:
 ";
 
             //Act
-            ConversionResult gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(yaml);
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(yaml);
 
             //Assert
             Assert.IsTrue(gitHubOutput.comments.Count == 0);
@@ -479,7 +480,7 @@ stages:
 ";
 
             //Act
-            ConversionResult gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(yaml);
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(yaml);
 
             //Assert
             Assert.AreEqual(0, gitHubOutput.comments.Count);
@@ -507,7 +508,7 @@ resources:
 ";
 
             //Act
-            ConversionResult gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(yaml);
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(yaml);
 
             //Assert
             Assert.AreEqual(1, gitHubOutput.comments.Count);
@@ -557,7 +558,7 @@ steps:
 ";
 
             //Act
-            ConversionResult gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(yaml);
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(yaml);
 
             //Assert
             Assert.AreEqual(1, gitHubOutput.comments.Count);
@@ -609,7 +610,7 @@ steps:
 ";
 
             //Act
-            ConversionResult gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(yaml);
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(yaml);
 
             //Assert
             Assert.AreEqual(1, gitHubOutput.comments.Count);
@@ -655,7 +656,7 @@ stages:
 ";
 
             //Act
-            ConversionResult gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(yaml);
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(yaml);
 
             //Assert
             Assert.AreEqual(0, gitHubOutput.comments.Count);
@@ -748,7 +749,7 @@ stages:
 ";
 
             //Act
-            ConversionResult gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(yaml);
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(yaml);
 
             //Assert
             Assert.AreEqual(2, gitHubOutput.comments.Count);
@@ -785,7 +786,7 @@ steps:
 ";
 
             //Act
-            ConversionResult gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(yaml);
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(yaml);
 
             //Assert
             Assert.AreEqual(1, gitHubOutput.comments.Count);
@@ -824,7 +825,7 @@ steps:
 ";
 
             //Act
-            ConversionResult gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(yaml);
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(yaml);
 
             //Assert
             Assert.AreEqual(1, gitHubOutput.comments.Count);
@@ -880,7 +881,7 @@ steps:
 ";
 
             //Act
-            ConversionResult gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(yaml);
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(yaml);
 
             //Assert
             Assert.AreEqual(0, gitHubOutput.comments.Count);
@@ -955,7 +956,7 @@ steps:
 ";
 
             //Act
-            ConversionResult gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(yaml);
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(yaml);
 
             //Assert
             Assert.AreEqual(3, gitHubOutput.comments.Count);
@@ -1005,7 +1006,7 @@ steps:
         ";
 
             //Act
-            ConversionResult gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(yaml);
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(yaml);
 
             //Assert
             Assert.AreEqual(2, gitHubOutput.comments.Count);
@@ -1049,7 +1050,7 @@ steps:
         ";
 
             //Act
-            ConversionResult gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(yaml);
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(yaml);
 
             //Assert
             Assert.AreEqual(2, gitHubOutput.comments.Count);

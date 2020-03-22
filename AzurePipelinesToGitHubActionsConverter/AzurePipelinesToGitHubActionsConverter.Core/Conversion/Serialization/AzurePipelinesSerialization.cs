@@ -1,9 +1,7 @@
 ﻿using AzurePipelinesToGitHubActionsConverter.Core.AzurePipelines;
-using System;
 using System.Collections.Generic;
-using System.Text;
 
-namespace AzurePipelinesToGitHubActionsConverter.Core
+namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion.Serialization
 {
     public class AzurePipelinesSerialization<T, T2>
     {
@@ -15,7 +13,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
         public static AzurePipelinesRoot<string[], Dictionary<string, string>> DeserializeSimpleTriggerAndSimpleVariables(string yaml)
         {
             yaml = CleanYaml(yaml);
-            AzurePipelinesRoot<string[], Dictionary<string, string>> azurePipeline = Global.DeserializeYaml<AzurePipelinesRoot<string[], Dictionary<string, string>>>(yaml);
+            AzurePipelinesRoot<string[], Dictionary<string, string>> azurePipeline = GenericObjectSerialization.DeserializeYaml<AzurePipelinesRoot<string[], Dictionary<string, string>>>(yaml);
             return azurePipeline;
         }
 
@@ -27,7 +25,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
         public static AzurePipelinesRoot<string[], AzurePipelines.Variables[]> DeserializeSimpleTriggerAndComplexVariables(string yaml)
         {
             yaml = CleanYaml(yaml);
-            AzurePipelinesRoot<string[], AzurePipelines.Variables[]> azurePipeline = Global.DeserializeYaml<AzurePipelinesRoot<string[], AzurePipelines.Variables[]>>(yaml);
+            AzurePipelinesRoot<string[], AzurePipelines.Variables[]> azurePipeline = GenericObjectSerialization.DeserializeYaml<AzurePipelinesRoot<string[], AzurePipelines.Variables[]>>(yaml);
             return azurePipeline;
         }
 
@@ -39,7 +37,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
         public static AzurePipelinesRoot<AzurePipelines.Trigger, Dictionary<string, string>> DeserializeComplexTriggerAndSimpleVariables(string yaml)
         {
             yaml = CleanYaml(yaml);
-            AzurePipelinesRoot<AzurePipelines.Trigger, Dictionary<string, string>> azurePipeline = Global.DeserializeYaml<AzurePipelinesRoot<AzurePipelines.Trigger, Dictionary<string, string>>>(yaml);
+            AzurePipelinesRoot<AzurePipelines.Trigger, Dictionary<string, string>> azurePipeline = GenericObjectSerialization.DeserializeYaml<AzurePipelinesRoot<AzurePipelines.Trigger, Dictionary<string, string>>>(yaml);
             return azurePipeline;
         }
 
@@ -51,7 +49,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
         public static AzurePipelinesRoot<AzurePipelines.Trigger, AzurePipelines.Variables[]> DeserializeComplexTriggerAndComplexVariables(string yaml)
         {
             yaml = CleanYaml(yaml);
-            AzurePipelinesRoot<AzurePipelines.Trigger, AzurePipelines.Variables[]> azurePipeline = Global.DeserializeYaml<AzurePipelinesRoot<AzurePipelines.Trigger, AzurePipelines.Variables[]>>(yaml);
+            AzurePipelinesRoot<AzurePipelines.Trigger, AzurePipelines.Variables[]> azurePipeline = GenericObjectSerialization.DeserializeYaml<AzurePipelinesRoot<AzurePipelines.Trigger, AzurePipelines.Variables[]>>(yaml);
             return azurePipeline;
         }
 

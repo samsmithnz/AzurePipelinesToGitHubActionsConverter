@@ -1,4 +1,5 @@
 using AzurePipelinesToGitHubActionsConverter.Core;
+using AzurePipelinesToGitHubActionsConverter.Core.Conversion;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 
@@ -7,31 +8,6 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
     [TestClass]
     public class UtilityTests
     {
-        [TestMethod]
-        public void GetGlobalHeaderTest()
-        {
-            //Arrange
-            string expected = "# converted to GitHub Actions by https://github.com/samsmithnz/AzurePipelinesToGitHubActionsConverter on " + DateTime.Now.ToString("dd-MMM-yyyy hh:mm:sstt");
-
-            //Act
-            string result = Global.GetHeaderComment();
-
-            //Assert
-            Assert.AreEqual(expected, result);
-        }
-
-        [TestMethod]
-        public void GetLineCommentTest()
-        {
-            //Arrange
-
-            //Act
-            string result = Global.GetLineComment();
-
-            //Assert
-            Assert.IsTrue(string.IsNullOrEmpty(result) == false);
-        }
-
         [TestMethod]
         public void GenerateSpacesTest()
         {
@@ -42,10 +18,10 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             int number9 = 9;
 
             //Act
-            string results0 = Global.GenerateSpaces(number0);
-            string results1 = Global.GenerateSpaces(number1);
-            string results4 = Global.GenerateSpaces(number4);
-            string results9 = Global.GenerateSpaces(number9);
+            string results0 = Utility.GenerateSpaces(number0);
+            string results1 = Utility.GenerateSpaces(number1);
+            string results4 = Utility.GenerateSpaces(number4);
+            string results9 = Utility.GenerateSpaces(number9);
 
             //Assert
             Assert.AreEqual( "", results0);

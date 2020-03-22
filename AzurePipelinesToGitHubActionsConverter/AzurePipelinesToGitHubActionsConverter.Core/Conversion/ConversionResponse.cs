@@ -1,10 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Collections.Generic;
 
-namespace AzurePipelinesToGitHubActionsConverter.Core
+namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
 {
-    public class ConversionResult
+    public class ConversionResponse
     {
         public string pipelinesYaml { get; set; }
         public string actionsYaml { get; set; }

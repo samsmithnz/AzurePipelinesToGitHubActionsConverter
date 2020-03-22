@@ -1,4 +1,6 @@
 using AzurePipelinesToGitHubActionsConverter.Core;
+using AzurePipelinesToGitHubActionsConverter.Core.Conversion;
+using AzurePipelinesToGitHubActionsConverter.Core.Conversion.Serialization;
 using AzurePipelinesToGitHubActionsConverter.Core.GitHubActions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
@@ -16,7 +18,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             Conversion conversion = new Conversion();
 
             //Act
-            ConversionResult gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(input);
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(input);
 
             //Assert
             string expected = "name: test ci pipelines";
@@ -31,7 +33,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             Conversion conversion = new Conversion();
 
             //Act
-            ConversionResult gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(input);
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(input);
 
             //Assert
             string expected = "";
@@ -46,7 +48,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             Conversion conversion = new Conversion();
 
             //Act
-            ConversionResult gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(input);
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(input);
 
             //Assert
             string expected = "";
@@ -62,7 +64,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             Conversion conversion = new Conversion();
 
             //Act
-            ConversionResult gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(input);
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(input);
 
             //Assert
             string expected = "jobs:" + Environment.NewLine +
@@ -80,7 +82,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             Conversion conversion = new Conversion();
 
             //Act
-            ConversionResult gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(input);
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(input);
 
             //Assert
             string expected = "jobs:" + Environment.NewLine +
@@ -159,7 +161,7 @@ jobs:
     displayName: dotnet build part 3";
 
             //Act
-            ConversionResult gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(yaml);
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(yaml);
 
             //Assert
             string expected = @"
@@ -212,7 +214,7 @@ on:
 ";
 
             //Act
-            object yamlObject = GenericObjectSerialization.Deserialize(yaml);
+            object yamlObject = GenericObjectSerialization.DeserializeYaml<object>(yaml);
 
             //Assert
             Assert.IsTrue(yamlObject != null);

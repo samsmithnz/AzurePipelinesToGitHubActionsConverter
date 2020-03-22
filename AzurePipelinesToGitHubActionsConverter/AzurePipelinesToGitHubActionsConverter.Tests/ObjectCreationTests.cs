@@ -1,5 +1,7 @@
 using AzurePipelinesToGitHubActionsConverter.Core;
 using AzurePipelinesToGitHubActionsConverter.Core.AzurePipelines;
+using AzurePipelinesToGitHubActionsConverter.Core.Conversion;
+using AzurePipelinesToGitHubActionsConverter.Core.Conversion.Serialization;
 using AzurePipelinesToGitHubActionsConverter.Core.GitHubActions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Collections.Generic;
@@ -90,7 +92,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             };
 
             //Act
-            string yaml = Global.SerializeYaml<GitHubActionsRoot>(githubActionsYAML);
+            string yaml = GenericObjectSerialization.SerializeYaml<GitHubActionsRoot>(githubActionsYAML);
 
 
             //Assert
@@ -141,7 +143,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             };
 
             //Act
-            string yaml = Global.SerializeYaml<AzurePipelinesRoot<string[], Dictionary<string, string>>>(azurePipelinesYAML);
+            string yaml = GenericObjectSerialization.SerializeYaml<AzurePipelinesRoot<string[], Dictionary<string, string>>>(azurePipelinesYAML);
 
             //Assert
             Assert.IsTrue(yaml != null);
