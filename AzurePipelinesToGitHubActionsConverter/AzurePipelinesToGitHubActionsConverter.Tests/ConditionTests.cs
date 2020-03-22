@@ -1,9 +1,6 @@
-using AzurePipelinesToGitHubActionsConverter.Core;
+using AzurePipelinesToGitHubActionsConverter.Core.Conversion;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text.RegularExpressions;
 
 namespace AzurePipelinesToGitHubActionsConverter.Tests
 {
@@ -94,8 +91,6 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             Assert.AreEqual(expected, result);
         }
 
-
-
         [TestMethod]
         public void BranchNameVariableTest()
         {
@@ -139,8 +134,6 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             Assert.IsTrue(results[0] == "'ABCDE', 'BCD'");
             Assert.IsTrue(results[1]== "contains('ABCDE', 'BCD')");
         }
-
-
 
     }
 }

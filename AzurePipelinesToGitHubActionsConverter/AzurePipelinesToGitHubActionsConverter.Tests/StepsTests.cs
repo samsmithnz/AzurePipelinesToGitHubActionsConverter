@@ -1,4 +1,4 @@
-﻿using AzurePipelinesToGitHubActionsConverter.Core;
+﻿using AzurePipelinesToGitHubActionsConverter.Core.Conversion;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace AzurePipelinesToGitHubActionsConverter.Tests
@@ -52,7 +52,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
 ";
 
             //Act
-            ConversionResult gitHubOutput = conversion.ConvertAzurePipelineTaskToGitHubActionTask(yaml);
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineTaskToGitHubActionTask(yaml);
 
             //Assert
             string expected = @"
@@ -74,7 +74,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
 ";
 
             //Act
-            ConversionResult gitHubOutput = conversion.ConvertAzurePipelineTaskToGitHubActionTask(yaml);
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineTaskToGitHubActionTask(yaml);
 
             //Assert
             string expected = @"
@@ -97,7 +97,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
 ";
 
             //Act
-            ConversionResult gitHubOutput = conversion.ConvertAzurePipelineTaskToGitHubActionTask(yaml);
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineTaskToGitHubActionTask(yaml);
 
             //Assert
             string expected = @"
@@ -120,7 +120,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
 ";
 
             //Act
-            ConversionResult gitHubOutput = conversion.ConvertAzurePipelineTaskToGitHubActionTask(yaml);
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineTaskToGitHubActionTask(yaml);
 
             //Assert
             string expected = @"
@@ -146,7 +146,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
     version: 2.2.203";
 
             //Act
-            ConversionResult gitHubOutput = conversion.ConvertAzurePipelineTaskToGitHubActionTask(yaml);
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineTaskToGitHubActionTask(yaml);
 
             //Assert
             string expected = @"
@@ -187,7 +187,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
   displayName: dotnet build $(buildConfiguration) part 1";
 
             //Act
-            ConversionResult gitHubOutput = conversion.ConvertAzurePipelineTaskToGitHubActionTask(yaml);
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineTaskToGitHubActionTask(yaml);
 
             //Assert
             string expected = @"
@@ -212,7 +212,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
     script: Write-Host 'Hello World'";
 
             //Act
-            ConversionResult gitHubOutput = conversion.ConvertAzurePipelineTaskToGitHubActionTask(yaml);
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineTaskToGitHubActionTask(yaml);
 
             //Assert
             Assert.IsTrue(string.IsNullOrEmpty(gitHubOutput.actionsYaml) == false);
@@ -233,7 +233,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
       Write-Host 'Hello World2'";
 
             //Act
-            ConversionResult gitHubOutput = conversion.ConvertAzurePipelineTaskToGitHubActionTask(yaml);
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineTaskToGitHubActionTask(yaml);
 
             //Assert
             Assert.IsTrue(string.IsNullOrEmpty(gitHubOutput.actionsYaml) == false);
@@ -254,7 +254,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
 ";
 
             //Act
-            ConversionResult gitHubOutput = conversion.ConvertAzurePipelineTaskToGitHubActionTask(yaml);
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineTaskToGitHubActionTask(yaml);
 
             //Assert
             Assert.IsTrue(string.IsNullOrEmpty(gitHubOutput.actionsYaml) == false);
@@ -274,7 +274,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
 ";
 
             //Act
-            ConversionResult gitHubOutput = conversion.ConvertAzurePipelineTaskToGitHubActionTask(yaml);
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineTaskToGitHubActionTask(yaml);
 
             //Assert
             string expected = @"
@@ -309,7 +309,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
 ";
 
             //Act
-            ConversionResult gitHubOutput = conversion.ConvertAzurePipelineTaskToGitHubActionTask(yaml);
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineTaskToGitHubActionTask(yaml);
 
             //Assert
             string expected = @"
@@ -341,7 +341,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
 ";
 
             //Act
-            ConversionResult gitHubOutput = conversion.ConvertAzurePipelineTaskToGitHubActionTask(yaml);
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineTaskToGitHubActionTask(yaml);
 
             //Assert
             string expected = @"
@@ -375,7 +375,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
 ";
 
             //Act
-            ConversionResult gitHubOutput = conversion.ConvertAzurePipelineTaskToGitHubActionTask(yaml);
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineTaskToGitHubActionTask(yaml);
 
             //Assert
             //            string expected = @"
@@ -418,7 +418,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
 ";
 
             //Act
-            ConversionResult gitHubOutput = conversion.ConvertAzurePipelineTaskToGitHubActionTask(yaml);
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineTaskToGitHubActionTask(yaml);
 
             //Assert
             string expected = @"

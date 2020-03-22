@@ -1,11 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
-using YamlDotNet.Serialization;
 
-namespace AzurePipelinesToGitHubActionsConverter.Core
+namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
 {
     public static class ConditionsProcessing
     {

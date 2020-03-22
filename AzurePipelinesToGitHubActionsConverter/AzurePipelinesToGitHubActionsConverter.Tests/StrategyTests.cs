@@ -1,4 +1,4 @@
-using AzurePipelinesToGitHubActionsConverter.Core;
+using AzurePipelinesToGitHubActionsConverter.Core.Conversion;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace AzurePipelinesToGitHubActionsConverter.Tests
@@ -47,7 +47,7 @@ jobs:
 ";
 
             //Act
-            ConversionResult gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(yaml);
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(yaml);
 
             //Assert
             //Note that we are using the longer form, as sequence flow (showing an array like: [ubuntu-16.04, macos-10.13, vs2017-win2016]), doesn't exist in this YAML Serializer yet.
@@ -103,7 +103,7 @@ jobs:
             Conversion conversion = new Conversion();
 
             //Act
-            ConversionResult gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(input);
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(input);
 
             //Assert
             string expected = @"

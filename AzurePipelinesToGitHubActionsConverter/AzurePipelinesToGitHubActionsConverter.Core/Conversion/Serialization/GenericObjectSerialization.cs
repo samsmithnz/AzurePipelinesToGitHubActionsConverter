@@ -1,26 +1,9 @@
-﻿using System;
-using YamlDotNet.Serialization;
+﻿using YamlDotNet.Serialization;
 
-namespace AzurePipelinesToGitHubActionsConverter.Core
+namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion.Serialization
 {
-    public static class Global
+    public static class GenericObjectSerialization
     {
-
-        public static string GetHeaderComment()
-        {
-            return "# converted to GitHub Actions by https://github.com/samsmithnz/AzurePipelinesToGitHubActionsConverter on " + DateTime.Now.ToString("dd-MMM-yyyy hh:mm:sstt");
-        }
-
-        public static string GetLineComment()
-        {
-            return "# WARNING: This line is unknown and may not have been migrated correctly";
-        }
-
-        public static string GenerateSpaces(int number)
-        {
-            return new String(' ', number);
-        }
-
         //Read in a YAML file and convert it to a T object
         public static T DeserializeYaml<T>(string yaml)
         {
@@ -41,6 +24,5 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
 
             return yaml;
         }
-
     }
 }

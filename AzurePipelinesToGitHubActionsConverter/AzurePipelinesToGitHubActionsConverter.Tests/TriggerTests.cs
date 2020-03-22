@@ -1,4 +1,4 @@
-using AzurePipelinesToGitHubActionsConverter.Core;
+using AzurePipelinesToGitHubActionsConverter.Core.Conversion;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 
@@ -16,7 +16,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             Conversion conversion = new Conversion();
 
             //Act
-            ConversionResult gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(input);
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(input);
 
             //Assert
             string expected = "on:" + Environment.NewLine +
@@ -36,7 +36,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             Conversion conversion = new Conversion();
 
             //Act
-            ConversionResult gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(input);
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(input);
 
             //Assert
             string expected = "on:" + Environment.NewLine +
@@ -69,7 +69,7 @@ trigger:
             Conversion conversion = new Conversion();
 
             //Act
-            ConversionResult gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(input);
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(input);
 
             //Assert
             string expected = "on:" + Environment.NewLine +
@@ -105,7 +105,7 @@ pr:
             Conversion conversion = new Conversion();
 
             //Act
-            ConversionResult gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(input);
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(input);
 
             //Assert
             string expected = "on:" + Environment.NewLine +
@@ -140,7 +140,7 @@ trigger:
             Conversion conversion = new Conversion();
 
             //Act
-            ConversionResult gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(input);
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(input);
 
             //Assert
             string expected = "on:" + Environment.NewLine +
@@ -175,7 +175,7 @@ pr:
             Conversion conversion = new Conversion();
 
             //Act
-            ConversionResult gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(input);
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(input);
 
             //Assert
             string expected = "on:" + Environment.NewLine +
@@ -218,7 +218,7 @@ pr:
             Conversion conversion = new Conversion();
 
             //Act
-            ConversionResult gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(input);
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(input);
 
             //Assert
             string expected = "on:" + Environment.NewLine +
@@ -249,7 +249,7 @@ schedules:
             Conversion conversion = new Conversion();
 
             //Act
-            ConversionResult gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(input);
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(input);
 
             //Assert
             string expected = @"
@@ -272,7 +272,7 @@ schedules:
             Conversion conversion = new Conversion();
 
             //Act
-            ConversionResult gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(input);
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(input);
 
             //Assert
             string expected = @"
@@ -296,7 +296,7 @@ schedules:
             Conversion conversion = new Conversion();
 
             //Act
-            ConversionResult gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(input);
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(input);
 
             //Assert
             string expected = @"
@@ -325,7 +325,7 @@ schedules:
             Conversion conversion = new Conversion();
 
             //Act
-            ConversionResult gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(input);
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(input);
 
             //Assert
             string expected = @"

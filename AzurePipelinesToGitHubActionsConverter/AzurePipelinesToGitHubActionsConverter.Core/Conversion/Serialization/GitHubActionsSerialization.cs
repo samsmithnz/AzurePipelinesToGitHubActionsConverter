@@ -1,11 +1,10 @@
 ﻿using AzurePipelinesToGitHubActionsConverter.Core.GitHubActions;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Text;
 
-namespace AzurePipelinesToGitHubActionsConverter.Core
+namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion.Serialization
 {
     public static class GitHubActionsSerialization
     {
@@ -16,7 +15,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
 
         public static string Serialize(GitHubActionsRoot gitHubActions, List<string> variableList = null, string matrixVariableName = null)
         {
-            string yaml = Global.SerializeYaml<GitHubActionsRoot>(gitHubActions);
+            string yaml = GenericObjectSerialization.SerializeYaml<GitHubActionsRoot>(gitHubActions);
 
             yaml = ProcessGitHubActionYAML(yaml, variableList, matrixVariableName);
 
@@ -25,7 +24,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
 
         public static string SerializeJob(GitHubActions.Job gitHubActionJob, List<string> variableList = null)
         {
-            string yaml = Global.SerializeYaml<GitHubActions.Job>(gitHubActionJob);
+            string yaml = GenericObjectSerialization.SerializeYaml<GitHubActions.Job>(gitHubActionJob);
 
             yaml = ProcessGitHubActionYAML(yaml, variableList);
             yaml = StepsPostProcessing(yaml);
@@ -86,7 +85,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
             yaml = yaml.Replace("max-parallel", "max_parallel");
             yaml = yaml.Replace("ref", "_ref");
 
-            return Global.DeserializeYaml<GitHubActionsRoot>(yaml);
+            return GenericObjectSerialization.DeserializeYaml<GitHubActionsRoot>(yaml);
         }
 
         private static string PrepareYamlPropertiesForGitHubSerialization(string yaml)
@@ -174,7 +173,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                         {
                             indentLevel -= 2;
                         }
-                        string buffer = Global.GenerateSpaces(indentLevel);
+                        string buffer = Utility.GenerateSpaces(indentLevel);
                         StringBuilder newInput = new StringBuilder();
                         foreach (string line in stepLines)
                         {
@@ -192,7 +191,6 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
             }
 
             return input;
-
         }
 
     }

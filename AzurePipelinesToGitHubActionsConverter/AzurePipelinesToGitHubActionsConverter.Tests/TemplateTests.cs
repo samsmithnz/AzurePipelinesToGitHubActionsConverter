@@ -1,6 +1,5 @@
-using AzurePipelinesToGitHubActionsConverter.Core;
+using AzurePipelinesToGitHubActionsConverter.Core.Conversion;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
 
 namespace AzurePipelinesToGitHubActionsConverter.Tests
 {
@@ -21,7 +20,7 @@ jobs:
             Conversion conversion = new Conversion();
 
             //Act
-            ConversionResult gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(input);
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(input);
 
             //Assert
             string expected = @"
@@ -59,7 +58,7 @@ jobs:
             Conversion conversion = new Conversion();
 
             //Act
-            ConversionResult gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(input);
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(input);
 
             //Assert
             string expected = @"
