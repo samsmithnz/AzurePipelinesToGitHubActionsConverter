@@ -1,4 +1,3 @@
-using AzurePipelinesToGitHubActionsConverter.Core;
 using AzurePipelinesToGitHubActionsConverter.Core.Conversion;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -120,47 +119,6 @@ steps:
             Assert.AreEqual(1, gitHubOutput.comments.Count);
             Assert.IsTrue(gitHubOutput.actionsYaml.IndexOf("This step does not have a conversion path yet") == -1);
         }
-
-//        [TestMethod]
-//        public void PipelinesTest()
-//        {
-//            //Arrange
-//            Conversion conversion = new Conversion();
-//            string yaml = @"
-//pool:
-//  vmImage: 'ubuntu-16.04'
-
-//resources: 
-//  pipelines:
-//  - pipeline: ""pipeline123""  # identifier for the pipeline resource
-//    project:  ""project123"" # project for the build pipeline; optional input for current project
-//    source: ""source123""  # source pipeline definition name
-//    //branch: string  # branch to pick the artifact, optional; defaults to all branches
-//    //version: string # pipeline run number to pick artifact; optional; defaults to last successfully completed run
-//    //trigger:     # optional; Triggers are not enabled by default.
-//    //  branches:  
-//    //    include: [string] # branches to consider the trigger events, optional; defaults to all branches.
-//    //    exclude: [string] # branches to discard the trigger events, optional; defaults to none.
-
-//        variables:
-//  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
-
-//steps:
-//- task: DotNetCoreCLI@2
-//  displayName: Build
-//  inputs:
-//    command: build
-//    projects: '**/*.csproj'
-//    arguments: '--configuration release'
-//";
-
-//            //Act
-//            ConversionResult gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(yaml);
-
-//            //Assert
-//            Assert.AreEqual(1, gitHubOutput.comments.Count);
-//            Assert.IsTrue(gitHubOutput.actionsYaml.IndexOf("This step does not have a conversion path yet") == -1);
-//        }
 
     }
 }

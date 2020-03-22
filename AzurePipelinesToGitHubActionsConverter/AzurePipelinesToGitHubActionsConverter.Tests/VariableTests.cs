@@ -215,8 +215,7 @@ variables:
             ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(input);
 
             //Assert
-            string expected = 
-                        @"
+            string expected = @"
 on:
   push:
     branches:
@@ -232,7 +231,6 @@ env:
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
         }
-
 
     }
 }

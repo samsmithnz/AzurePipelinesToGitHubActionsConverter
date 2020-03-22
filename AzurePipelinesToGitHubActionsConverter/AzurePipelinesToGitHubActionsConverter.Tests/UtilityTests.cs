@@ -1,7 +1,5 @@
-using AzurePipelinesToGitHubActionsConverter.Core;
 using AzurePipelinesToGitHubActionsConverter.Core.Conversion;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
 
 namespace AzurePipelinesToGitHubActionsConverter.Tests
 {
@@ -41,22 +39,3 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
 
     }
 }
-
-
-//# ASP.NET Core
-//# Build and test ASP.NET Core projects targeting .NET Core.
-//# Add steps that run tests, create a NuGet package, deploy, and more:
-//# https://docs.microsoft.com/azure/devops/pipelines/languages/dotnet-core
-
-//trigger:
-//- master
-
-//pool:
-//  vmImage: 'ubuntu-latest'
-
-//variables:
-//  buildConfiguration: 'Release'
-
-//steps:
-//- script: dotnet build --configuration $(buildConfiguration)
-//  displayName: 'dotnet build $(buildConfiguration)'

@@ -1,5 +1,4 @@
-﻿using AzurePipelinesToGitHubActionsConverter.Core;
-using AzurePipelinesToGitHubActionsConverter.Core.Conversion;
+﻿using AzurePipelinesToGitHubActionsConverter.Core.Conversion;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace AzurePipelinesToGitHubActionsConverter.Tests

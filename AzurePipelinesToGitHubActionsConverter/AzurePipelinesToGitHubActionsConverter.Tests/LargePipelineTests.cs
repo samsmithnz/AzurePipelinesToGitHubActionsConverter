@@ -1057,23 +1057,85 @@ steps:
             Assert.IsTrue(gitHubOutput.actionsYaml.IndexOf("This step does not have a conversion path yet") >= 0);
         }
 
-        //        [TestMethod]
-        //        public void TemplatePipelineTest()
-        //        {
-        //            //Arrange
-        //            Conversion conversion = new Conversion();
-        //            //Source is: 
-        //            string yaml = @"
 
-        //";
+        [TestMethod]
+        public void TestJobsWithAzurePipelineYamlToObject()
+        {
+            //Arrange
+            Conversion conversion = new Conversion();
+            string yaml = @"
+trigger:
+- master
+variables:
+  buildConfiguration: Release
+  vmImage: ubuntu-latest
+jobs:
+- job: Build
+  displayName: Build job
+  pool: 
+    vmImage: ubuntu-latest
+  timeoutInMinutes: 23
+  variables:
+    buildConfiguration: Debug
+    myJobVariable: 'data'
+    myJobVariable2: 'data2'
+  steps: 
+  - script: dotnet build WebApplication1/WebApplication1.Service/WebApplication1.Service.csproj --configuration $(buildConfiguration) 
+    displayName: dotnet build part 1
+- job: Build2
+  displayName: Build job
+  dependsOn: Build
+  pool: 
+    vmImage: ubuntu-latest
+  variables:
+    myJobVariable: 'data'
+  steps:
+  - script: dotnet build WebApplication1/WebApplication1.Service/WebApplication1.Service.csproj --configuration $(buildConfiguration) 
+    displayName: dotnet build part 2
+  - script: dotnet build WebApplication1/WebApplication1.Service/WebApplication1.Service.csproj --configuration $(buildConfiguration) 
+    displayName: dotnet build part 3";
 
-        //            //Act
-        //            ConversionResult gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(yaml);
+            //Act
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(yaml);
 
-        //            //Assert
-        //            Assert.AreEqual(1, gitHubOutput.comments.Count);
-        //            Assert.IsTrue(gitHubOutput.actionsYaml.IndexOf("This step does not have a conversion path yet") >= 0);
-        //        }
+            //Assert
+            string expected = @"
+on:
+  push:
+    branches:
+    - master
+env:
+  buildConfiguration: Release
+  vmImage: ubuntu-latest
+jobs:
+  Build:
+    name: Build job
+    runs-on: ubuntu-latest
+    timeout-minutes: 23
+    env:
+      buildConfiguration: Debug
+      myJobVariable: data
+      myJobVariable2: data2
+    steps:
+    - uses: actions/checkout@v1
+    - name: dotnet build part 1
+      run: dotnet build WebApplication1/WebApplication1.Service/WebApplication1.Service.csproj --configuration ${{ env.buildConfiguration }}
+  Build2:
+    name: Build job
+    runs-on: ubuntu-latest
+    needs: Build
+    env:
+      myJobVariable: data
+    steps:
+    - uses: actions/checkout@v1
+    - name: dotnet build part 2
+      run: dotnet build WebApplication1/WebApplication1.Service/WebApplication1.Service.csproj --configuration ${{ env.buildConfiguration }}
+    - name: dotnet build part 3
+      run: dotnet build WebApplication1/WebApplication1.Service/WebApplication1.Service.csproj --configuration ${{ env.buildConfiguration }}
+";
 
+            expected = UtilityTests.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+        }
     }
 }
