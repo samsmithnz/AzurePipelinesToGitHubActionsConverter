@@ -230,6 +230,33 @@ env:
   myVariable2: myValue2";
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+        } 
+        
+        [TestMethod]
+        public void VariableInsertationTest()
+        {
+            //Arrange
+            string input = @"
+variables:
+  ${{ if ne(variables['Build.SourceBranchName'], 'master') }}:
+    prId: ""$(System.PullRequest.PullRequestId)""
+  ${{ if eq(variables['Build.SourceBranchName'], 'master') }}:
+    prId: '000'
+  prName: ""PR$(prId)""
+";
+            Conversion conversion = new Conversion();
+
+            //Act
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(input);
+
+            //Assert
+            string expected = @"
+env:
+  prId: 000
+  prName: PR${{ env.prId }}
+";
+            expected = UtilityTests.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
         }
 
     }

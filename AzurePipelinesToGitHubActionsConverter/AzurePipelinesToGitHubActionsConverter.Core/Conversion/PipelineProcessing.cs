@@ -297,18 +297,6 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
         private string[] ProcessSchedules(AzurePipelines.Schedule[] schedules)
         {
             string [] newSchedules = new string[schedules.Length];
-            // Dictionary<string, string> newSchedules = new Dictionary<string, string>();
-            //newSchedules.cron = schedules[0].cron;
-            //newSchedules.cron = new Dictionary<string, string>();
-            //newSchedules.cron = new string[schedules.Length];
-            //for (int i = 0; i < schedules.Length; i++)
-            //{
-            //    newSchedules.cron[i] = schedules[i].cron;
-            //}
-            //for (int i = 0; i < schedules.Length; i++)
-            //{
-            //newSchedules.cron.Add("cron", schedules[0].cron);
-            //}
             for (int i = 0; i < schedules.Length; i++)
             {
                 newSchedules[i] = "cron: '" + schedules[i].cron + "'";
