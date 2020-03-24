@@ -46,9 +46,9 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion.Serialization
             //If there is a cron in the conversion, we need to do a special processing to remove the quotes. 
             //This is hella custom and ugly, but otherwise the yaml comes out funky
             //Here we look at every line, removing the double quotes
-            StringBuilder processedYaml = new StringBuilder();
             if (yaml.IndexOf("cron") >= 0)
             {
+                StringBuilder processedYaml = new StringBuilder();
                 using (StringReader reader = new StringReader(yaml))
                 {
                     string line;
