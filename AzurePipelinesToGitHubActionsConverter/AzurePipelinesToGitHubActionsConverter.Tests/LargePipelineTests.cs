@@ -1137,5 +1137,53 @@ jobs:
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
         }
+
+        [TestMethod]
+        public void TestHTMLPipelineYamlToObject()
+        {
+            //Arrange
+            Conversion conversion = new Conversion();
+            string yaml = @"
+# HTML
+# Archive your static HTML project and save it with the build record.
+
+trigger:
+- master
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+steps:
+- task: ArchiveFiles@2
+  inputs:
+    rootFolderOrFile: '$(build.sourcesDirectory)'
+    includeRootFolder: false
+- task: PublishBuildArtifacts@1";
+
+            //Act
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(yaml);
+
+            //Assert
+            string expected = @"
+#Note: Needs to be installed from marketplace: https://github.com/marketplace/actions/create-zip-file
+on:
+  push:
+    branches:
+    - master
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+    - #: 'Note: Needs to be installed from marketplace: https://github.com/marketplace/actions/create-zip-file'
+      uses: montudor/action-zip@v0.1.0
+      with:
+        args: zip -qq -r  ${{ env.build.sourcesDirectory }}
+    - uses: actions/upload-artifact@master
+";
+
+            expected = UtilityTests.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+        }
     }
 }

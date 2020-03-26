@@ -625,33 +625,36 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
             run += "    $testRunSettings = \" / Settings:`\"" + GetStepInput(step, "runsettingsfile") + "`\" \"\n";
 
             string parametersInput = GetStepInput(step, "overridetestrunparameters");
-            //Split it two ways, there are 3 combinations, parameters are on each new line, parameters are all on one line, a combination of both multi and single lines.
-            //1. Multiline
-            string[] multiLineParameters = parametersInput.Split("\n-");
-            StringBuilder parameters = new StringBuilder();
-            foreach (string multiLineItem in multiLineParameters)
+            if (parametersInput != null)
             {
-                //2. Single line 
-                string[] singleLineParameters = multiLineItem.Split(" -");
-                foreach (string item in singleLineParameters)
+                //Split it two ways, there are 3 combinations, parameters are on each new line, parameters are all on one line, a combination of both multi and single lines.
+                //1. Multiline
+                string[] multiLineParameters = parametersInput.Split("\n-");
+                StringBuilder parameters = new StringBuilder();
+                foreach (string multiLineItem in multiLineParameters)
                 {
-                    string[] items = item.Split(" ");
-                    if (items.Length >= 2)
+                    //2. Single line 
+                    string[] singleLineParameters = multiLineItem.Split(" -");
+                    foreach (string item in singleLineParameters)
                     {
-                        //Sometimes the first item has an extra -, remove this.
-                        if (items[0].ToString().StartsWith("-") == true)
+                        string[] items = item.Split(" ");
+                        if (items.Length >= 2)
                         {
-                            items[0] = items[0].TrimStart('-');
+                            //Sometimes the first item has an extra -, remove this.
+                            if (items[0].ToString().StartsWith("-") == true)
+                            {
+                                items[0] = items[0].TrimStart('-');
+                            }
+                            //build the new format [var name]=[var value]
+                            parameters.Append(items[0]);
+                            parameters.Append("=");
+                            parameters.Append(items[1]);
+                            parameters.Append("  ");
                         }
-                        //build the new format [var name]=[var value]
-                        parameters.Append(items[0]);
-                        parameters.Append("=");
-                        parameters.Append(items[1]);
-                        parameters.Append("  ");
                     }
                 }
+                run += "    $parameters = \"-- " + parameters.ToString() + "\"";
             }
-            run += "    $parameters = \"-- " + parameters.ToString() + "\"";
 
             //run += "    $parameters = \"\""; //\"-- TestEnvironment = \"Beta123\"  ServiceUrl = \"https://myproject-service-staging.azurewebsites.net/\" WebsiteUrl=\"https://myproject-web-staging.azurewebsites.net/\" \"" + "\n";
             run += "    #Note that the `\" is an escape character sequence to quote strings, and `& is needed to start the command\n";
@@ -817,9 +820,28 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
             }
 
             //In publish task, I we need to delete any usage of build.artifactstagingdirectory variable as it's implied in github actions, and therefore not needed (Adding it adds the path twice)
-            if (gitHubStep.with.ContainsKey("path") == true)
+            if (gitHubStep.with.ContainsKey("path") == true && gitHubStep.with["path"] != null)
             {
                 gitHubStep.with["path"].Replace("$(build.artifactstagingdirectory)", "");
+            }
+            if (gitHubStep.with != null)
+            {
+                if (gitHubStep.with.Count >= 0)
+                {
+                    bool foundData = false;
+                    foreach (KeyValuePair<string, string> item in gitHubStep.with)
+                    {
+                        if (item.Value != null)
+                        {
+                            foundData = true;
+                            break;
+                        }
+                    }
+                    if (foundData == false)
+                    {
+                        gitHubStep.with = null;
+                    }
+                }
             }
             return gitHubStep;
         }
@@ -827,8 +849,14 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
         //Safely extract the step input, if it exists
         private string GetStepInput(AzurePipelines.Step step, string name)
         {
-            string input = "";
-            if (step.inputs.ContainsKey(name) == true)
+            string input = null;
+            //Make the name lowercase to help prevent conflicts later
+            if (name != null)
+            {
+                name = name.ToLower();
+            }
+            //Extract the input
+            if (step.inputs != null && step.inputs.ContainsKey(name) == true)
             {
                 input = step.inputs[name];
             }
