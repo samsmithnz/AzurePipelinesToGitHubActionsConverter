@@ -34,7 +34,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion.Serialization
 
         private static string ProcessGitHubActionYAML(string yaml, List<string> variableList = null, string matrixVariableName = null)
         {
-            //Fix some variables for serialization, the '-' character is not valid in property names, and some of the YAML standard uses reserved words (e.g. if)
+            //Fix some variables for serialization, the '-' character is not valid in C# property names, and some of the YAML standard uses reserved words (e.g. if)
             yaml = PrepareYamlPropertiesForGitHubSerialization(yaml);
 
             //update variables from the $(variableName) format to ${{variableName}} format, by piping them into a list for replacement later.

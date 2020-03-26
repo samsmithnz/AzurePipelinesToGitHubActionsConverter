@@ -354,8 +354,7 @@ stages:
     - task: PowerShell@2
       inputs:
         targetType: 'inline'
-        script: |
-         Write-Host ""Hello world 2!""
+        script: Write-Host ""Hello world 2!""
 ";
 
             //Act
@@ -369,7 +368,7 @@ jobs:
     runs-on: windows-latest
     steps:
     - uses: actions/checkout@v1
-    - run: 
+    - run: |
         Write-Host ""Hello world!""
       shell: powershell
   Build_Stage_Build2:
@@ -377,8 +376,7 @@ jobs:
     runs-on: windows-latest
     steps:
     - uses: actions/checkout@v1
-    - run: 
-        Write-Host ""Hello world 2!""
+    - run: Write-Host ""Hello world 2!""
       shell: powershell";
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
