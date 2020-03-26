@@ -240,7 +240,6 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
 - name: PowerShell test task
   run: |
     Write-Host 'Hello World'
-
     Write-Host 'Hello World2'
   shell: powershell
 ";
@@ -267,7 +266,6 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
 - name: Run a multi-line script
   run: |
     echo Add other tasks to build, test, and deploy your project.
-
     echo See https://aka.ms/yaml
 ";
             expected = UtilityTests.TrimNewLines(expected);
