@@ -34,7 +34,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion.Serialization
 
         private static string ProcessGitHubActionYAML(string yaml, List<string> variableList = null, string matrixVariableName = null)
         {
-            //Fix some variables for serialization, the '-' character is not valid in property names, and some of the YAML standard uses reserved words (e.g. if)
+            //Fix some variables for serialization, the '-' character is not valid in C# property names, and some of the YAML standard uses reserved words (e.g. if)
             yaml = PrepareYamlPropertiesForGitHubSerialization(yaml);
 
             //update variables from the $(variableName) format to ${{variableName}} format, by piping them into a list for replacement later.
@@ -60,10 +60,13 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion.Serialization
                         }
                         processedYaml.AppendLine(line);
                     }
-
                 }
                 yaml = processedYaml.ToString();
             }
+            //The serialization adds extra new line characters to Multi-line scripts
+            yaml = yaml.Replace("\r\n\r\n", "\r\n");
+            yaml = yaml.Replace("\n\n", "\n");
+
 
             //Trim off any leading of trailing new lines 
             yaml = yaml.TrimStart('\r', '\n');
@@ -113,7 +116,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion.Serialization
             yaml = yaml.Replace("run: 2-\r\n         |", "run: |");
             yaml = yaml.Replace("run: 2-\r\n         |", "run: |");
             yaml = yaml.Replace("run: >+", "run: ");
-            yaml = yaml.Replace("run: >", "run: ");
+            yaml = yaml.Replace("run: >", "run: |");
 
             return yaml;
         }

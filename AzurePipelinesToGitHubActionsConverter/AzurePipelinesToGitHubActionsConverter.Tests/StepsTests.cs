@@ -7,38 +7,26 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
     public class StepsTests
     {
         //TODO: Resolve difference between Ubuntu and Windows
-        //[TestMethod]
-        //public void InvalidStepIndividualStepTest()
-        //{
-        //    //Arrange
-        //    Conversion conversion = new Conversion();
-        //    string yaml = "- task: invalid fake task";
+        [TestMethod]
+        public void InvalidStepIndividualStepTest()
+        {
+            //Arrange
+            Conversion conversion = new Conversion();
+            string yaml = "- task: invalid fake task";
 
-        //    //Act
-        //    ConversionResult gitHubOutput = conversion.ConvertAzurePinelineTaskToGitHubActionTask(yaml);
+            //Act
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineTaskToGitHubActionTask(yaml);
 
-        //    //Assert
-        //    string expected = "- #: 'NOTE: This step does not have a conversion path yet: invalid fake task'\r\n  run: '#task: invalid fake task'\r\n  shell: powershell";
+            //Assert
+            string expected = @"
+- #: 'NOTE: This step does not have a conversion path yet: invalid fake task'
+  run: '#task: invalid fake task'
+  shell: powershell
+";
 
-        //    string actualBytes = "";
-        //    foreach (byte b in System.Text.Encoding.UTF8.GetBytes(gitHubOutput.actionsYaml.ToCharArray()))
-        //    {
-        //        actualBytes += b.ToString();
-        //    }
-        //    string expectedBytes = "";
-        //    foreach (byte b in System.Text.Encoding.UTF8.GetBytes(expected.ToCharArray()))
-        //    {
-        //        expectedBytes += b.ToString();
-        //    }
-        //    Assert.AreEqual(expectedBytes, actualBytes);
-
-        //    byte[] byteArray = new byte[] { 0x31, 31 };
-
-        //    string result = System.Text.Encoding.UTF8.GetString(byteArray);
-
-        //    expected = UtilityTests.TrimNewLines(expected);
-        //    Assert.AreEqual(expected, gitHubOutput.actionsYaml);
-        //}
+            expected = UtilityTests.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+        }
 
         [TestMethod]
         public void CmdLineIndividualStepTest()
@@ -236,7 +224,40 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineTaskToGitHubActionTask(yaml);
 
             //Assert
-            Assert.IsTrue(string.IsNullOrEmpty(gitHubOutput.actionsYaml) == false);
+            string expected = @"
+- name: PowerShell test task
+  run: |
+    Write-Host 'Hello World'
+    Write-Host 'Hello World2'
+  shell: powershell
+";
+            expected = UtilityTests.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+        }
+
+        [TestMethod]
+        public void ScriptWithMultilineIndividualStepTest()
+        {
+            //Arrange
+            Conversion conversion = new Conversion();
+            string yaml = @"
+- script: |
+    echo Add other tasks to build, test, and deploy your project.
+    echo See https://aka.ms/yaml
+  displayName: 'Run a multi-line script'";
+
+            //Act
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineTaskToGitHubActionTask(yaml);
+
+            //Assert
+            string expected = @"
+- name: Run a multi-line script
+  run: |
+    echo Add other tasks to build, test, and deploy your project.
+    echo See https://aka.ms/yaml
+";
+            expected = UtilityTests.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
         }
 
         [TestMethod]

@@ -37,5 +37,12 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             return input;
         }
 
+        public static string DebugNewLineCharacters(string input)
+        {
+            input = input.Replace("\r", "xxx");
+            input = input.Replace("\n", "000");
+            return input;
+        }
+
     }
 }

@@ -354,8 +354,7 @@ stages:
     - task: PowerShell@2
       inputs:
         targetType: 'inline'
-        script: |
-         Write-Host ""Hello world 2!""
+        script: Write-Host ""Hello world 2!""
 ";
 
             //Act
@@ -369,7 +368,7 @@ jobs:
     runs-on: windows-latest
     steps:
     - uses: actions/checkout@v1
-    - run: 
+    - run: |
         Write-Host ""Hello world!""
       shell: powershell
   Build_Stage_Build2:
@@ -377,8 +376,7 @@ jobs:
     runs-on: windows-latest
     steps:
     - uses: actions/checkout@v1
-    - run: 
-        Write-Host ""Hello world 2!""
+    - run: Write-Host ""Hello world 2!""
       shell: powershell";
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
@@ -1132,6 +1130,54 @@ jobs:
       run: dotnet build WebApplication1/WebApplication1.Service/WebApplication1.Service.csproj --configuration ${{ env.buildConfiguration }}
     - name: dotnet build part 3
       run: dotnet build WebApplication1/WebApplication1.Service/WebApplication1.Service.csproj --configuration ${{ env.buildConfiguration }}
+";
+
+            expected = UtilityTests.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+        }
+
+        [TestMethod]
+        public void TestHTMLPipelineYamlToObject()
+        {
+            //Arrange
+            Conversion conversion = new Conversion();
+            string yaml = @"
+# HTML
+# Archive your static HTML project and save it with the build record.
+
+trigger:
+- master
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+steps:
+- task: ArchiveFiles@2
+  inputs:
+    rootFolderOrFile: '$(build.sourcesDirectory)'
+    includeRootFolder: false
+- task: PublishBuildArtifacts@1";
+
+            //Act
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(yaml);
+
+            //Assert
+            string expected = @"
+#Note: Needs to be installed from marketplace: https://github.com/marketplace/actions/create-zip-file
+on:
+  push:
+    branches:
+    - master
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+    - #: 'Note: Needs to be installed from marketplace: https://github.com/marketplace/actions/create-zip-file'
+      uses: montudor/action-zip@v0.1.0
+      with:
+        args: zip -qq -r  ${{ env.build.sourcesDirectory }}
+    - uses: actions/upload-artifact@master
 ";
 
             expected = UtilityTests.TrimNewLines(expected);
