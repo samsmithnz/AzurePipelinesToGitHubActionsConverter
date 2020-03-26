@@ -119,7 +119,6 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                 gitHubStep = CreatePublishBuildArtifactsStep(step);
             }
 
-            
             if (gitHubStep != null)
             {
                 //Add in generic name and conditions
@@ -136,15 +135,18 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                 {
                     if (gitHubStep.with.Count >= 0)
                     {
+                        //Look to see if there is non-null data in the collection
                         bool foundData = false;
                         foreach (KeyValuePair<string, string> item in gitHubStep.with)
                         {
+                            //If data was found, break out of the loop, we don't need to look anymore
                             if (item.Value != null)
                             {
                                 foundData = true;
                                 break;
                             }
                         }
+                        //If no data was found, null out the with property
                         if (foundData == false)
                         {
                             gitHubStep.with = null;
@@ -281,8 +283,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
             GitHubActions.Step gitHubStep = new GitHubActions.Step
             {
                 run = step.script,
-                shell = shellType//,
-                //with = step.inputs
+                shell = shellType
             };
 
             if (gitHubStep.run == null)

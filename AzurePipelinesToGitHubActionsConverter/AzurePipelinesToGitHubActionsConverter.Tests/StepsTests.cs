@@ -236,7 +236,42 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineTaskToGitHubActionTask(yaml);
 
             //Assert
-            Assert.IsTrue(string.IsNullOrEmpty(gitHubOutput.actionsYaml) == false);
+            string expected = @"
+- name: PowerShell test task
+  run: |
+    Write-Host 'Hello World'
+
+    Write-Host 'Hello World2'
+  shell: powershell
+";
+            expected = UtilityTests.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+        }
+
+        [TestMethod]
+        public void ScriptWithMultilineIndividualStepTest()
+        {
+            //Arrange
+            Conversion conversion = new Conversion();
+            string yaml = @"
+- script: |
+    echo Add other tasks to build, test, and deploy your project.
+    echo See https://aka.ms/yaml
+  displayName: 'Run a multi-line script'";
+
+            //Act
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineTaskToGitHubActionTask(yaml);
+
+            //Assert
+            string expected = @"
+- name: Run a multi-line script
+  run: |
+    echo Add other tasks to build, test, and deploy your project.
+
+    echo See https://aka.ms/yaml
+";
+            expected = UtilityTests.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
         }
 
         [TestMethod]

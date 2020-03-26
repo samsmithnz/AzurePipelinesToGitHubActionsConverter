@@ -113,7 +113,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion.Serialization
             yaml = yaml.Replace("run: 2-\r\n         |", "run: |");
             yaml = yaml.Replace("run: 2-\r\n         |", "run: |");
             yaml = yaml.Replace("run: >+", "run: ");
-            yaml = yaml.Replace("run: >", "run: ");
+            yaml = yaml.Replace("run: >", "run: |");
 
             return yaml;
         }
