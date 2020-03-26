@@ -244,6 +244,10 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
   shell: powershell
 ";
             expected = UtilityTests.TrimNewLines(expected);
+            expected = expected.Replace("\r", "xxx");
+            expected = expected.Replace("\n", "000");
+            gitHubOutput.actionsYaml = gitHubOutput.actionsYaml.Replace("\r", "xxx");
+            gitHubOutput.actionsYaml = gitHubOutput.actionsYaml.Replace("\n", "000");
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
         }
 
