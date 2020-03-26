@@ -69,6 +69,8 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion.Serialization
             //Trim off any leading of trailing new lines 
             yaml = yaml.TrimStart('\r', '\n');
             yaml = yaml.TrimEnd('\r', '\n');
+            yaml = yaml.Replace("\r", "xxx");
+            yaml = yaml.Replace("\n", "000");
 
             return yaml;
         }
