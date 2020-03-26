@@ -65,6 +65,8 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion.Serialization
             }
             //The serialization adds extra new line characters to Multi-line scripts
             yaml = yaml.Replace("\r\n\r\n", "\r\n");
+            yaml = yaml.Replace("\n\n", "\n");
+
 
             //Trim off any leading of trailing new lines 
             yaml = yaml.TrimStart('\r', '\n');
