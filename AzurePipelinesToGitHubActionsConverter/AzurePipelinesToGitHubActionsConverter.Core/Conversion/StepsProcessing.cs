@@ -119,8 +119,10 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                 gitHubStep = CreatePublishBuildArtifactsStep(step);
             }
 
+            
             if (gitHubStep != null)
             {
+                //Add in generic name and conditions
                 if (step.displayName != null)
                 {
                     gitHubStep.name = step.displayName;
@@ -128,6 +130,26 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                 if (step.condition != null)
                 {
                     gitHubStep._if = ConditionsProcessing.TranslateConditions(step.condition);
+                }
+                //Double check the with. Sometimes we start to add a property, but for various reasons, we don't use it, and have to null out the with so it doesn't display an empty node in the final yaml
+                if (gitHubStep.with != null)
+                {
+                    if (gitHubStep.with.Count >= 0)
+                    {
+                        bool foundData = false;
+                        foreach (KeyValuePair<string, string> item in gitHubStep.with)
+                        {
+                            if (item.Value != null)
+                            {
+                                foundData = true;
+                                break;
+                            }
+                        }
+                        if (foundData == false)
+                        {
+                            gitHubStep.with = null;
+                        }
+                    }
                 }
             }
             return gitHubStep;
@@ -823,25 +845,6 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
             if (gitHubStep.with.ContainsKey("path") == true && gitHubStep.with["path"] != null)
             {
                 gitHubStep.with["path"].Replace("$(build.artifactstagingdirectory)", "");
-            }
-            if (gitHubStep.with != null)
-            {
-                if (gitHubStep.with.Count >= 0)
-                {
-                    bool foundData = false;
-                    foreach (KeyValuePair<string, string> item in gitHubStep.with)
-                    {
-                        if (item.Value != null)
-                        {
-                            foundData = true;
-                            break;
-                        }
-                    }
-                    if (foundData == false)
-                    {
-                        gitHubStep.with = null;
-                    }
-                }
             }
             return gitHubStep;
         }
