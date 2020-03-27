@@ -296,7 +296,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
         //process the schedule
         private string[] ProcessSchedules(AzurePipelines.Schedule[] schedules)
         {
-            string [] newSchedules = new string[schedules.Length];
+            string[] newSchedules = new string[schedules.Length];
             for (int i = 0; i < schedules.Length; i++)
             {
                 newSchedules[i] = "cron: '" + schedules[i].cron + "'";
@@ -567,26 +567,72 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
             GitHubActions.Step[] newSteps = null;
             if (steps != null)
             {
-                int adjustment = 0;
-                if (addCheckoutStep == true)
-                {
-                    adjustment = 1; // we are inserting a step and need to start moving steps 1 place into the array
-                }
-                newSteps = new GitHubActions.Step[steps.Length + adjustment]; //Add 1 for the check out step
+                //Start by scanning all of the steps, to see if we need to insert additional tasks
+                int stepAdjustment = 0;
+                bool addJavaSetupStep = false;
+                bool addAzureLoginStep = false;
+                AzurePipelines.Step javaStep = null;
 
-                //Add the check out step to get the code
+                //If the code needs a Checkout step, add it first
                 if (addCheckoutStep == true)
                 {
-                    newSteps[0] = new GitHubActions.Step
+                    stepAdjustment++; // we are inserting a step and need to start moving steps 1 place into the array
+                }
+
+                //Loop through the steps to see if we need other tasks inserted in for specific circumstances
+                foreach (AzurePipelines.Step step in steps)
+                {
+                    if (step.task != null)
                     {
-                        uses = "actions/checkout@v1"
-                    };
+                        switch (step.task)
+                        {
+                            //If we have an Ant step, we will need to add a Java setup step
+                            case "Ant@1":
+                                addJavaSetupStep = true;
+                                javaStep = step;
+                                stepAdjustment++;
+                                break;
+
+                            //If we have an Azure step, we will need to add a Azure login step
+                            case "AzureAppServiceManage@0":
+                            case "AzureResourceGroupDeployment@2":
+                            case "AzureRmWebAppDeployment@3":
+                                addAzureLoginStep = true;
+                                stepAdjustment++;
+                                break;
+                        }
+                    }
+                }
+
+                //Re-size the newSteps array with adjustments as needed
+                newSteps = new GitHubActions.Step[steps.Length + stepAdjustment];
+
+                int adjustmentsUsed = 0;
+
+                //Add the steps array
+                if (addCheckoutStep == true)
+                {
+                    //Add the check out step to get the code
+                    newSteps[adjustmentsUsed] = stepsProcessing.CreateCheckoutStep();
+                    adjustmentsUsed++;
+                }
+                if (addJavaSetupStep == true)
+                {
+                    //Add the JavaSetup step to the code
+                    newSteps[adjustmentsUsed] = stepsProcessing.CreateSetupJavaStep(javaStep);
+                    adjustmentsUsed++;
+                }
+                if (addAzureLoginStep == true)
+                {
+                    //Add the Azure login step to the code
+                    newSteps[adjustmentsUsed] = stepsProcessing.CreateAzureLoginStep();
+                    //adjustmentsUsed++;
                 }
 
                 //Translate the other steps
-                for (int i = adjustment; i < steps.Length + adjustment; i++)
+                for (int i = stepAdjustment; i < steps.Length + stepAdjustment; i++)
                 {
-                    newSteps[i] = stepsProcessing.ProcessStep(steps[i - adjustment]);
+                    newSteps[i] = stepsProcessing.ProcessStep(steps[i - stepAdjustment]);
                 }
             }
 

@@ -320,7 +320,7 @@ stages:
             ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(yaml);
 
             //Assert
-            Assert.IsTrue(gitHubOutput.comments.Count == 0);
+            Assert.IsTrue(gitHubOutput.comments.Count == 1);
             Assert.IsTrue(gitHubOutput.actionsYaml.IndexOf("This step does not have a conversion path yet") == -1);
         }
 
@@ -791,45 +791,6 @@ steps:
             Assert.IsTrue(gitHubOutput.actionsYaml.IndexOf("This step does not have a conversion path yet") >= 0);
         }
 
-
-        [TestMethod]
-        public void AntPipelineTest()
-        {
-            //Arrange
-            Conversion conversion = new Conversion();
-            //Source is: https://raw.githubusercontent.com/microsoft/azure-pipelines-yaml/master/templates/ant.yml
-            string yaml = @"
-# Ant
-# Build your Java projects and run tests with Apache Ant.
-# Add steps that save build artifacts and more:
-# https://docs.microsoft.com/azure/devops/pipelines/languages/java
-
-trigger:
-- master
-
-pool:
-  vmImage: 'ubuntu-latest'
-
-steps:
-- task: Ant@1
-  inputs:
-    workingDirectory: ''
-    buildFile: 'build.xml'
-    javaHomeOption: 'JDKVersion'
-    jdkVersionOption: '1.8'
-    jdkArchitectureOption: 'x64'
-    publishJUnitResults: true
-    testResultsFiles: '**/TEST-*.xml'
-";
-
-            //Act
-            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(yaml);
-
-            //Assert
-            Assert.AreEqual(1, gitHubOutput.comments.Count);
-            Assert.IsTrue(gitHubOutput.actionsYaml.IndexOf("This step does not have a conversion path yet") >= 0);
-        }
-
         [TestMethod]
         public void GoPipelineTest()
         {
@@ -1137,7 +1098,7 @@ jobs:
         }
 
         [TestMethod]
-        public void TestHTMLPipelineYamlToObject()
+        public void TestHTMLPipeline()
         {
             //Arrange
             Conversion conversion = new Conversion();
@@ -1178,6 +1139,55 @@ jobs:
       with:
         args: zip -qq -r  ${{ env.build.sourcesDirectory }}
     - uses: actions/upload-artifact@master
+";
+
+            expected = UtilityTests.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+        }
+
+        [TestMethod]
+        public void AntPipelineTest()
+        {
+            //Arrange
+            Conversion conversion = new Conversion();
+            string yaml = @"
+trigger:
+- master
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+steps:
+- task: Ant@1
+  inputs:
+    workingDirectory: ''
+    buildFile: 'build.xml'
+    javaHomeOption: 'JDKVersion'
+    jdkVersionOption: '1.8'
+    jdkArchitectureOption: 'x64'
+    publishJUnitResults: true
+    testResultsFiles: '**/TEST-*.xml'
+";
+
+            //Act
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(yaml);
+
+            //Assert
+            string expected = @"
+on:
+  push:
+    branches:
+    - master
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+    - name: Setup JDK 1.8
+      uses: actions/setup-java@v1
+      with:
+        java-version: 1.8
+    - run: ant -noinput -buildfile build.xml
 ";
 
             expected = UtilityTests.TrimNewLines(expected);
