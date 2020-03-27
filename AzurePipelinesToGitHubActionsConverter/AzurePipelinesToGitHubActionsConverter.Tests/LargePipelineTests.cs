@@ -320,7 +320,7 @@ stages:
             ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(yaml);
 
             //Assert
-            Assert.IsTrue(gitHubOutput.comments.Count == 0);
+            Assert.IsTrue(gitHubOutput.comments.Count == 1);
             Assert.IsTrue(gitHubOutput.actionsYaml.IndexOf("This step does not have a conversion path yet") == -1);
         }
 
@@ -791,45 +791,6 @@ steps:
             Assert.IsTrue(gitHubOutput.actionsYaml.IndexOf("This step does not have a conversion path yet") >= 0);
         }
 
-
-        [TestMethod]
-        public void AntPipelineTest()
-        {
-            //Arrange
-            Conversion conversion = new Conversion();
-            //Source is: https://raw.githubusercontent.com/microsoft/azure-pipelines-yaml/master/templates/ant.yml
-            string yaml = @"
-# Ant
-# Build your Java projects and run tests with Apache Ant.
-# Add steps that save build artifacts and more:
-# https://docs.microsoft.com/azure/devops/pipelines/languages/java
-
-trigger:
-- master
-
-pool:
-  vmImage: 'ubuntu-latest'
-
-steps:
-- task: Ant@1
-  inputs:
-    workingDirectory: ''
-    buildFile: 'build.xml'
-    javaHomeOption: 'JDKVersion'
-    jdkVersionOption: '1.8'
-    jdkArchitectureOption: 'x64'
-    publishJUnitResults: true
-    testResultsFiles: '**/TEST-*.xml'
-";
-
-            //Act
-            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(yaml);
-
-            //Assert
-            Assert.AreEqual(1, gitHubOutput.comments.Count);
-            Assert.IsTrue(gitHubOutput.actionsYaml.IndexOf("This step does not have a conversion path yet") >= 0);
-        }
-
         [TestMethod]
         public void GoPipelineTest()
         {
@@ -893,11 +854,6 @@ steps:
             Conversion conversion = new Conversion();
             //Source is: https://raw.githubusercontent.com/microsoft/azure-pipelines-yaml/master/templates/python-django.yml
             string yaml = @"
-# Python Django
-# Test a Django project on multiple versions of Python.
-# Add steps that analyze code, save build artifacts, deploy, and more:
-# https://docs.microsoft.com/azure/devops/pipelines/languages/python
-
 trigger:
 - master
 
@@ -917,48 +873,44 @@ steps:
 - task: UsePythonVersion@0
   inputs:
     versionSpec: '$(PYTHON_VERSION)'
+    addToPath: true
     architecture: 'x64'
-
 - task: PythonScript@0
-  displayName: 'Export project path'
   inputs:
-    scriptSource: 'inline'
-    script: |
-      """"Search all subdirectories for `manage.py`.""""
-      from glob import iglob
-      from os import path
-      # Python >= 3.5
-      manage_py = next(iglob(path.join('**', 'manage.py'), recursive=True), None)
-      if not manage_py:
-          raise SystemExit('Could not find a Django project')
-      project_location = path.dirname(path.abspath(manage_py))
-      print('Found Django project in', project_location)
-      print('##vso[task.setvariable variable=projectRoot]{}'.format(project_location))
-
-- script: |
-    python -m pip install --upgrade pip setuptools wheel
-    pip install -r requirements.txt
-    pip install unittest-xml-reporting
-  displayName: 'Install prerequisites'
-
-- script: |
-    pushd '$(projectRoot)'
-    python manage.py test --testrunner xmlrunner.extra.djangotestrunner.XMLTestRunner --no-input
-  displayName: 'Run tests'
-
-- task: PublishTestResults@2
-  inputs:
-    testResultsFiles: ""**/TEST-*.xml""
-    testRunTitle: 'Python $(PYTHON_VERSION)'
-  condition: succeededOrFailed()
+    scriptSource: 'filePath'
+    scriptPath: 'Python/Hello.py'
 ";
 
             //Act
             ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(yaml);
 
             //Assert
-            Assert.AreEqual(3, gitHubOutput.comments.Count);
-            Assert.IsTrue(gitHubOutput.actionsYaml.IndexOf("This step does not have a conversion path yet") >= 0);
+            string expected = @"
+on:
+  push:
+    branches:
+    - master
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        PYTHON_VERSION:
+        - 3.5
+        - 3.6
+        - 3.7
+      max-parallel: 3
+    steps:
+    - uses: actions/checkout@v1
+    - name: Setup Python ${{ matrix.PYTHON_VERSION }}
+      uses: actions/setup-python@v1
+      with:
+        python-version: ${{ matrix.PYTHON_VERSION }}
+    - run: python Python/Hello.py
+";
+
+            expected = UtilityTests.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
         }
 
 
@@ -1137,7 +1089,7 @@ jobs:
         }
 
         [TestMethod]
-        public void TestHTMLPipelineYamlToObject()
+        public void TestHTMLPipeline()
         {
             //Arrange
             Conversion conversion = new Conversion();
@@ -1178,6 +1130,55 @@ jobs:
       with:
         args: zip -qq -r  ${{ env.build.sourcesDirectory }}
     - uses: actions/upload-artifact@master
+";
+
+            expected = UtilityTests.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+        }
+
+        [TestMethod]
+        public void AntPipelineTest()
+        {
+            //Arrange
+            Conversion conversion = new Conversion();
+            string yaml = @"
+trigger:
+- master
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+steps:
+- task: Ant@1
+  inputs:
+    workingDirectory: ''
+    buildFile: 'build.xml'
+    javaHomeOption: 'JDKVersion'
+    jdkVersionOption: '1.8'
+    jdkArchitectureOption: 'x64'
+    publishJUnitResults: true
+    testResultsFiles: '**/TEST-*.xml'
+";
+
+            //Act
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(yaml);
+
+            //Assert
+            string expected = @"
+on:
+  push:
+    branches:
+    - master
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+    - name: Setup JDK 1.8
+      uses: actions/setup-java@v1
+      with:
+        java-version: 1.8
+    - run: ant -noinput -buildfile build.xml
 ";
 
             expected = UtilityTests.TrimNewLines(expected);

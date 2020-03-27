@@ -1,6 +1,7 @@
 ﻿using AzurePipelinesToGitHubActionsConverter.Core.Conversion.Serialization;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
@@ -16,6 +17,9 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                 step = CleanStepInputs(step);
                 switch (step.task)
                 {
+                    case "Ant@1":
+                        gitHubStep = CreateAntStep(step);
+                        break;
                     case "ArchiveFiles@2":
                         gitHubStep = CreateArchiveFilesStep(step);
                         break;
@@ -43,6 +47,12 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                     case "DownloadBuildArtifacts@0":
                         gitHubStep = CreateDownloadBuildArtifacts(step);
                         break;
+                    case "NuGetCommand@2":
+                        gitHubStep = CreateNuGetCommandStep(step);
+                        break;
+                    case "NuGetToolInstaller@1":
+                        gitHubStep = CreateNuGetToolInstallerStep(step);
+                        break;
                     case "PowerShell@2":
                         gitHubStep = CreateScriptStep("powershell", step);
                         break;
@@ -50,11 +60,8 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                     case "PublishBuildArtifacts@1":
                         gitHubStep = CreatePublishBuildArtifactsStep(step);
                         break;
-                    case "NuGetCommand@2":
-                        gitHubStep = CreateNuGetCommandStep(step);
-                        break;
-                    case "NuGetToolInstaller@1":
-                        gitHubStep = CreateNuGetToolInstallerStep(step);
+                    case "PythonScript@0":
+                        gitHubStep = CreatePythonStep(step);
                         break;
                     case "SqlAzureDacpacDeployment@1":
                         gitHubStep = CreateSQLAzureDacPacDeployStep(step);
@@ -62,8 +69,11 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                     case "UseDotNet@2":
                         gitHubStep = CreateUseDotNetStep(step);
                         break;
+                    case "UsePythonVersion@0":
+                        gitHubStep = CreateUsePythonStep(step);
+                        break;
                     case "VSBuild@1":
-                        gitHubStep = CreateVSBuildStep(step);
+                        gitHubStep = CreateMSBuildStep(step);
                         break;
                     case "VSTest@2":
                         gitHubStep = CreateSeleniumTestingStep(step);
@@ -87,8 +97,8 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                                 //}
                             }
                         }
-                        gitHubStep.run = yamlBuilder.ToString();
                         gitHubStep.step_message = "NOTE: This step does not have a conversion path yet: " + step.task;
+                        gitHubStep.run = "Write-Host " + gitHubStep.step_message + " " + yamlBuilder.ToString();
                         break;
                 }
             }
@@ -309,6 +319,10 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                     }
                 }
             }
+            if (gitHubStep.shell == "")
+            {
+                gitHubStep.shell = null;
+            }
             if (step.condition != null)
             {
                 gitHubStep._if = ConditionsProcessing.TranslateConditions(step.condition);
@@ -317,7 +331,16 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
             return gitHubStep;
         }
 
-        private GitHubActions.Step CreateAzureLoginStep()
+        public GitHubActions.Step CreateCheckoutStep()
+        {
+            //Add the check out step to get the code
+            return new GitHubActions.Step
+            {
+                uses = "actions/checkout@v1"
+            };
+        }
+
+        public GitHubActions.Step CreateAzureLoginStep()
         {
             //Goal:
             //- name: Log into Azure
@@ -576,21 +599,23 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
             return gitHubStep;
         }
 
-        private GitHubActions.Step CreateVSBuildStep(AzurePipelines.Step step)
+        private GitHubActions.Step CreateMSBuildStep(AzurePipelines.Step step)
         {
             string solution = GetStepInput(step, "solution");
             //string package = GetStepInput(step, "package");
             //string slotName = GetStepInput(step, "slotname");
 
+            //Currently set to VS2019
             string msBuildLocation = @"C:\Program Files(x86)\Microsoft Visual Studio\2019\Enterprise\MSBuild\Current\Bin\";
 
-            string run = " |\n";
-            run += "    $msBuildExe = \"" + msBuildLocation + "msbuild.exe\"\n";
-            run += "    $targetSolution = \"" + solution + "\"\n";
+            string run = " " + Environment.NewLine;
+            run += "    #TODO: Fix this uglyness." + Environment.NewLine;
+            run += "    $msBuildExe = \"" + msBuildLocation + "msbuild.exe\"" + Environment.NewLine;
+            run += "    $targetSolution = \"" + solution + "\"" + Environment.NewLine;
 
-            run += "    #Note that the `\" is an escape character sequence to quote strings, and `& is needed to start the command\n";
-            run += "    $command = \"`& `\"$msBuildExe`\" `\"$targetSolution`\" \n";
-            run += "    Write - Host \"$command\"\n";
+            run += "    #Note that the `\" is an escape character sequence to quote strings, and `& is needed to start the command" + Environment.NewLine;
+            run += "    $command = \"`& `\"$msBuildExe`\" `\"$targetSolution`\" " + Environment.NewLine;
+            run += "    Write - Host \"$command\"" + Environment.NewLine;
             run += "    Invoke - Expression $command";
 
             //To PowerShell script
@@ -643,6 +668,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
             string vsTestConsoleLocation = @"C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\Common7\IDE\Extensions\TestPlatform\";
 
             string run = " |\n";
+            run += "    #TODO: Fix this uglyness.\n";
             run += "    $vsTestConsoleExe = \"" + vsTestConsoleLocation + "vstest.console.exe\"\n";
             run += "    $targetTestDll = \"" + GetStepInput(step, "testassemblyver2") + "\"\n";
             run += "    $testRunSettings = \" / Settings:`\"" + GetStepInput(step, "runsettingsfile") + "`\" \"\n";
@@ -698,6 +724,125 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
             //    Write - Host ""$command""
             //    Invoke - Expression $command
             //    ";
+
+            return gitHubStep;
+        }
+
+        public GitHubActions.Step CreateSetupJavaStep(AzurePipelines.Step step)
+        {
+            //coming from:
+            //- task: Ant@1
+            //  inputs:
+            //    workingDirectory: ''
+            //    buildFile: 'build.xml'
+            //    javaHomeOption: 'JDKVersion'
+            //    jdkVersionOption: '1.8'
+            //    jdkArchitectureOption: 'x64'
+            //    publishJUnitResults: true
+            //    testResultsFiles: '**/TEST-*.xml'  
+
+            //Going to: //https://github.com/marketplace/actions/create-zip-file
+            //- name: Set up JDK 1.8
+            //  uses: actions/setup-java@v1
+            //  with:
+            //    java-version: 1.8 
+
+            //Get the Java version and use it to build the task
+            string jdkVersionOption = GetStepInput(step, "jdkVersionOption");
+
+            GitHubActions.Step gitHubStep = new GitHubActions.Step
+            {
+                name = "Setup JDK " + jdkVersionOption,
+                uses = "actions/setup-java@v1",
+                with = new Dictionary<string, string>
+                {
+                    { "java-version", jdkVersionOption}
+                }
+            };
+
+            return gitHubStep;
+        }
+
+
+        private GitHubActions.Step CreateAntStep(AzurePipelines.Step step)
+        {
+            //coming from:
+            //- task: Ant@1
+            //  inputs:
+            //    workingDirectory: ''
+            //    buildFile: 'build.xml'
+            //    javaHomeOption: 'JDKVersion'
+            //    jdkVersionOption: '1.8'
+            //    jdkArchitectureOption: 'x64'
+            //    publishJUnitResults: true
+            //    testResultsFiles: '**/TEST-*.xml'  
+
+            //Going to:
+            //- name: Set up JDK 1.8
+            //  uses: actions/setup-java@v1
+            //  with:
+            //    java-version: 1.8 
+            //- name: Build with Ant
+            //  run: ant -noinput -buildfile build.xml
+
+            string buildFile = GetStepInput(step, "buildFile");
+
+            string antCommand = "ant -noinput -buildfile " + buildFile;
+            step.script = antCommand;
+
+            GitHubActions.Step gitHubStep = CreateScriptStep("", step);
+
+            return gitHubStep;
+        }
+
+        private GitHubActions.Step CreateUsePythonStep(AzurePipelines.Step step)
+        {
+            //coming from:
+            //- task: UsePythonVersion@0
+            //  inputs:
+            //    versionSpec: '3.7'
+            //    addToPath: true
+            //    architecture: 'x64'
+
+            //Going to:
+            //- name: Setup Python 3.7
+            //  uses: actions/setup-python@v1
+            //  with:
+            //    python-version: '3.7'
+
+            string version = GetStepInput(step, "versionSpec");
+
+            GitHubActions.Step gitHubStep = new GitHubActions.Step
+            {
+                name = "Setup Python " + version,
+                uses = "actions/setup-python@v1",
+                with = new Dictionary<string, string>
+                {
+                    { "python-version", version}
+                }
+            };
+
+
+            return gitHubStep;
+        }
+
+        private GitHubActions.Step CreatePythonStep(AzurePipelines.Step step)
+        {
+            //coming from:
+            //- task: PythonScript@0
+            //  inputs:
+            //    scriptSource: 'filePath'
+            //    scriptPath: 'Python/Hello.py'
+
+            //Going to:
+            //- run: python Python/Hello.py
+
+            string scriptPath = GetStepInput(step, "scriptPath");
+
+            string pythonCommand = "python " + scriptPath;
+            step.script = pythonCommand;
+
+            GitHubActions.Step gitHubStep = CreateScriptStep("", step);
 
             return gitHubStep;
         }
@@ -855,14 +1000,18 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
         {
             string input = null;
             //Make the name lowercase to help prevent conflicts later
-            if (name != null)
+            if (step.inputs != null && name != null)
             {
                 name = name.ToLower();
-            }
-            //Extract the input
-            if (step.inputs != null && step.inputs.ContainsKey(name) == true)
-            {
-                input = step.inputs[name];
+                //Extract the input
+                foreach (KeyValuePair<string, string> item in step.inputs)
+                {
+                    if (item.Key.ToLower() == name)
+                    {
+                        input = item.Value;
+                        break;
+                    }
+                }
             }
             return input;
         }
