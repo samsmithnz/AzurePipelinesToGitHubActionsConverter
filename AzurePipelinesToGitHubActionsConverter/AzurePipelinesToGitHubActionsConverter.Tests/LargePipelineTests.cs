@@ -854,11 +854,6 @@ steps:
             Conversion conversion = new Conversion();
             //Source is: https://raw.githubusercontent.com/microsoft/azure-pipelines-yaml/master/templates/python-django.yml
             string yaml = @"
-# Python Django
-# Test a Django project on multiple versions of Python.
-# Add steps that analyze code, save build artifacts, deploy, and more:
-# https://docs.microsoft.com/azure/devops/pipelines/languages/python
-
 trigger:
 - master
 
@@ -878,48 +873,44 @@ steps:
 - task: UsePythonVersion@0
   inputs:
     versionSpec: '$(PYTHON_VERSION)'
+    addToPath: true
     architecture: 'x64'
-
 - task: PythonScript@0
-  displayName: 'Export project path'
   inputs:
-    scriptSource: 'inline'
-    script: |
-      """"Search all subdirectories for `manage.py`.""""
-      from glob import iglob
-      from os import path
-      # Python >= 3.5
-      manage_py = next(iglob(path.join('**', 'manage.py'), recursive=True), None)
-      if not manage_py:
-          raise SystemExit('Could not find a Django project')
-      project_location = path.dirname(path.abspath(manage_py))
-      print('Found Django project in', project_location)
-      print('##vso[task.setvariable variable=projectRoot]{}'.format(project_location))
-
-- script: |
-    python -m pip install --upgrade pip setuptools wheel
-    pip install -r requirements.txt
-    pip install unittest-xml-reporting
-  displayName: 'Install prerequisites'
-
-- script: |
-    pushd '$(projectRoot)'
-    python manage.py test --testrunner xmlrunner.extra.djangotestrunner.XMLTestRunner --no-input
-  displayName: 'Run tests'
-
-- task: PublishTestResults@2
-  inputs:
-    testResultsFiles: ""**/TEST-*.xml""
-    testRunTitle: 'Python $(PYTHON_VERSION)'
-  condition: succeededOrFailed()
+    scriptSource: 'filePath'
+    scriptPath: 'Python/Hello.py'
 ";
 
             //Act
             ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(yaml);
 
             //Assert
-            Assert.AreEqual(3, gitHubOutput.comments.Count);
-            Assert.IsTrue(gitHubOutput.actionsYaml.IndexOf("This step does not have a conversion path yet") >= 0);
+            string expected = @"
+on:
+  push:
+    branches:
+    - master
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        PYTHON_VERSION:
+        - 3.5
+        - 3.6
+        - 3.7
+      max-parallel: 3
+    steps:
+    - uses: actions/checkout@v1
+    - name: Setup Python ${{ matrix.PYTHON_VERSION }}
+      uses: actions/setup-python@v1
+      with:
+        python-version: ${{ matrix.PYTHON_VERSION }}
+    - run: python Python/Hello.py
+";
+
+            expected = UtilityTests.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
         }
 
 

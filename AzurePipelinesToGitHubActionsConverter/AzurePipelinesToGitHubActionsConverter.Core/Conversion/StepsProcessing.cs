@@ -47,6 +47,12 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                     case "DownloadBuildArtifacts@0":
                         gitHubStep = CreateDownloadBuildArtifacts(step);
                         break;
+                    case "NuGetCommand@2":
+                        gitHubStep = CreateNuGetCommandStep(step);
+                        break;
+                    case "NuGetToolInstaller@1":
+                        gitHubStep = CreateNuGetToolInstallerStep(step);
+                        break;
                     case "PowerShell@2":
                         gitHubStep = CreateScriptStep("powershell", step);
                         break;
@@ -54,17 +60,17 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                     case "PublishBuildArtifacts@1":
                         gitHubStep = CreatePublishBuildArtifactsStep(step);
                         break;
-                    case "NuGetCommand@2":
-                        gitHubStep = CreateNuGetCommandStep(step);
-                        break;
-                    case "NuGetToolInstaller@1":
-                        gitHubStep = CreateNuGetToolInstallerStep(step);
+                    case "PythonScript@0":
+                        gitHubStep = CreatePythonStep(step);
                         break;
                     case "SqlAzureDacpacDeployment@1":
                         gitHubStep = CreateSQLAzureDacPacDeployStep(step);
                         break;
                     case "UseDotNet@2":
                         gitHubStep = CreateUseDotNetStep(step);
+                        break;
+                    case "UsePythonVersion@0":
+                        gitHubStep = CreateUsePythonStep(step);
                         break;
                     case "VSBuild@1":
                         gitHubStep = CreateMSBuildStep(step);
@@ -783,6 +789,58 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
 
             string antCommand = "ant -noinput -buildfile " + buildFile;
             step.script = antCommand;
+
+            GitHubActions.Step gitHubStep = CreateScriptStep("", step);
+
+            return gitHubStep;
+        }
+
+        private GitHubActions.Step CreateUsePythonStep(AzurePipelines.Step step)
+        {
+            //coming from:
+            //- task: UsePythonVersion@0
+            //  inputs:
+            //    versionSpec: '3.7'
+            //    addToPath: true
+            //    architecture: 'x64'
+
+            //Going to:
+            //- name: Setup Python 3.7
+            //  uses: actions/setup-python@v1
+            //  with:
+            //    python-version: '3.7'
+
+            string version = GetStepInput(step, "versionSpec");
+
+            GitHubActions.Step gitHubStep = new GitHubActions.Step
+            {
+                name = "Setup Python " + version,
+                uses = "actions/setup-python@v1",
+                with = new Dictionary<string, string>
+                {
+                    { "python-version", version}
+                }
+            };
+
+
+            return gitHubStep;
+        }
+
+        private GitHubActions.Step CreatePythonStep(AzurePipelines.Step step)
+        {
+            //coming from:
+            //- task: PythonScript@0
+            //  inputs:
+            //    scriptSource: 'filePath'
+            //    scriptPath: 'Python/Hello.py'
+
+            //Going to:
+            //- run: python Python/Hello.py
+
+            string scriptPath = GetStepInput(step, "scriptPath");
+
+            string pythonCommand = "python " + scriptPath;
+            step.script = pythonCommand;
 
             GitHubActions.Step gitHubStep = CreateScriptStep("", step);
 
