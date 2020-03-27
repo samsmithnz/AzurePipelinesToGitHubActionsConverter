@@ -4,8 +4,6 @@ A project to create a conversion tool to make migrations between Azure Pipelines
 ![Current build](https://github.com/samsmithnz/AzurePipelinesToGitHubActionsConverter/workflows/CI/badge.svg)
 [![NuGet version (BlackBeltCoder.Silk)](https://img.shields.io/nuget/v/BlackBeltCoder.Silk.svg?style=flat-square)](https://www.nuget.org/packages/AzurePipelinesToGitHubActionsConverter.Core/)
 
-As GitHub Actions becomes more popular, it's clear that a migration tool will be useful to move workloads to GitHub. 
-
 # How to use
 There is a website that consumes this module at: https://pipelinestoactions.azurewebsites.net/.  
 You can also use the (currently prerelease) [NuGet package](https://www.nuget.org/packages/AzurePipelinesToGitHubActionsConverter.Core/)
