@@ -484,31 +484,31 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
         }
 
 
-        [TestMethod]
-        public void MSBuildStepTest()
-        {
-            //Arrange
-            Conversion conversion = new Conversion();
-            string yaml = @"
-- task: VSBuild@1
-  inputs:
-    solution: '$(solution)'
-    msbuildArgs: '/p:DeployOnBuild=true /p:WebPublishMethod=Package /p:PackageAsSingleFile=true /p:SkipInvalidConfigurations=true /p:DesktopBuildPackageLocation=""$(build.artifactStagingDirectory)\WebApp.zip"" /p:DeployIisAppPath=""Default Web Site""'
-    platform: '$(buildPlatform)'
-    configuration: '$(buildConfiguration)'
-";
+//        [TestMethod]
+//        public void MSBuildStepTest()
+//        {
+//            //Arrange
+//            Conversion conversion = new Conversion();
+//            string yaml = @"
+//- task: VSBuild@1
+//  inputs:
+//    solution: '$(solution)'
+//    msbuildArgs: '/p:DeployOnBuild=true /p:WebPublishMethod=Package /p:PackageAsSingleFile=true /p:SkipInvalidConfigurations=true /p:DesktopBuildPackageLocation=""$(build.artifactStagingDirectory)\WebApp.zip"" /p:DeployIisAppPath=""Default Web Site""'
+//    platform: '$(buildPlatform)'
+//    configuration: '$(buildConfiguration)'
+//";
 
-            //Act
-            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineTaskToGitHubActionTask(yaml);
+//            //Act
+//            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineTaskToGitHubActionTask(yaml);
 
-            //Assert
-            string expected = "- run: \" \\r\\n    #TODO: Fix this uglyness.\\r\\n    $msBuildExe = \\\"C:\\\\Program Files(x86)\\\\Microsoft Visual Studio\\\\2019\\\\Enterprise\\\\MSBuild\\\\Current\\\\Bin\\\\msbuild.exe\\\"\\r\\n    $targetSolution = \\\"${{ env.solution }}\\\"\\r\\n    #Note that the `\\\" is an escape character sequence to quote strings, and `& is needed to start the command\\r\\n    $command = \\\"`& `\\\"$msBuildExe`\\\" `\\\"$targetSolution`\\\" \\r\\n    Write - Host \\\"$command\\\"\\r\\n    Invoke - Expression $command\"\r\n  shell: powershell";
-            expected = UtilityTests.TrimNewLines(expected);
-            //gitHubOutput.actionsYaml = gitHubOutput.actionsYaml.Replace("\"", @"""");
-            //gitHubOutput.actionsYaml = gitHubOutput.actionsYaml.Replace("\\", @"\");
+//            //Assert
+//            string expected = "- run: \" \\r\\n    #TODO: Fix this uglyness.\\r\\n    $msBuildExe = \\\"C:\\\\Program Files(x86)\\\\Microsoft Visual Studio\\\\2019\\\\Enterprise\\\\MSBuild\\\\Current\\\\Bin\\\\msbuild.exe\\\"\\r\\n    $targetSolution = \\\"${{ env.solution }}\\\"\\r\\n    #Note that the `\\\" is an escape character sequence to quote strings, and `& is needed to start the command\\r\\n    $command = \\\"`& `\\\"$msBuildExe`\\\" `\\\"$targetSolution`\\\" \\r\\n    Write - Host \\\"$command\\\"\\r\\n    Invoke - Expression $command\"\r\n  shell: powershell";
+//            expected = UtilityTests.TrimNewLines(expected);
+//            //gitHubOutput.actionsYaml = gitHubOutput.actionsYaml.Replace("\"", @"""");
+//            //gitHubOutput.actionsYaml = gitHubOutput.actionsYaml.Replace("\\", @"\");
 
-            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
-        }
+//            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+//        }
 
     }
 }
