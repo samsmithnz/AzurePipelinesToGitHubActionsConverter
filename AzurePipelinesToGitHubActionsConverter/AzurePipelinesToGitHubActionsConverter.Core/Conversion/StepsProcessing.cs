@@ -50,6 +50,9 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                     case "Maven@3":
                         gitHubStep = CreateMavenStep(step);
                         break;
+                    case "NodeTool@0":
+                        gitHubStep = CreateNodeToolStep(step);
+                        break;
                     case "NuGetCommand@2":
                         gitHubStep = CreateNuGetCommandStep(step);
                         break;
@@ -820,6 +823,35 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
             step.script = pomCommand;
 
             GitHubActions.Step gitHubStep = CreateScriptStep("", step);
+
+            return gitHubStep;
+        }
+
+        private GitHubActions.Step CreateNodeToolStep(AzurePipelines.Step step)
+        {
+            //coming from:
+            //- task: NodeTool@0
+            //  inputs:
+            //    versionSpec: '10.x'
+            //  displayName: 'Install Node.js'
+
+            //Going to:
+            //- name: Use Node.js 10.x
+            //  uses: actions/setup-node@v1
+            //  with:
+            //    node-version: 10.x
+
+            string version = GetStepInput(step, "versionSpec");
+
+            GitHubActions.Step gitHubStep = new GitHubActions.Step
+            {
+                name = "Use Node.js " + version,
+                uses = "actions/setup-node@v1",
+                with = new Dictionary<string, string>
+                {
+                    { "node-version", version}
+                }
+            };
 
             return gitHubStep;
         }
