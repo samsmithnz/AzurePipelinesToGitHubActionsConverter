@@ -47,6 +47,9 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                     case "DownloadBuildArtifacts@0":
                         gitHubStep = CreateDownloadBuildArtifacts(step);
                         break;
+                    case "Maven@3":
+                        gitHubStep = CreateMavenStep(step);
+                        break;
                     case "NuGetCommand@2":
                         gitHubStep = CreateNuGetCommandStep(step);
                         break;
@@ -778,10 +781,6 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
             //    testResultsFiles: '**/TEST-*.xml'  
 
             //Going to:
-            //- name: Set up JDK 1.8
-            //  uses: actions/setup-java@v1
-            //  with:
-            //    java-version: 1.8 
             //- name: Build with Ant
             //  run: ant -noinput -buildfile build.xml
 
@@ -789,6 +788,36 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
 
             string antCommand = "ant -noinput -buildfile " + buildFile;
             step.script = antCommand;
+
+            GitHubActions.Step gitHubStep = CreateScriptStep("", step);
+
+            return gitHubStep;
+        }
+
+        private GitHubActions.Step CreateMavenStep(AzurePipelines.Step step)
+        {
+            //coming from:
+            //- task: Maven@3
+            //  inputs:
+            //    mavenPomFile: 'Maven/pom.xml'
+            //    mavenOptions: '-Xmx3072m'
+            //    javaHomeOption: 'JDKVersion'
+            //    jdkVersionOption: '1.8'
+            //    jdkArchitectureOption: 'x64'
+            //    publishJUnitResults: true
+            //    testResultsFiles: '**/surefire-reports/TEST-*.xml'
+            //    goals: 'package' 
+
+            //Going to:
+            //- name: Build with Ant
+            //  run: ant -noinput -buildfile build.xml
+            //- name: Build with Maven
+            //  run: mvn -B package --file pom.xml
+
+            string pomFile = GetStepInput(step, "mavenPomFile");
+
+            string pomCommand = "mvn -B package --file " + pomFile;
+            step.script = pomCommand;
 
             GitHubActions.Step gitHubStep = CreateScriptStep("", step);
 
