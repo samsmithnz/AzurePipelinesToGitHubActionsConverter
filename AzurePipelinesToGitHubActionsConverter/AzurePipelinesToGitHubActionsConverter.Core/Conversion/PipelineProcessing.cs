@@ -586,8 +586,9 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                     {
                         switch (step.task)
                         {
-                            //If we have an Ant step, we will need to add a Java setup step
+                            //If we have an Java based step, we will need to add a Java setup step
                             case "Ant@1":
+                            case "Maven@3":
                                 addJavaSetupStep = true;
                                 javaStep = step;
                                 stepAdjustment++;
