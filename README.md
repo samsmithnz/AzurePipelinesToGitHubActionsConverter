@@ -4,8 +4,6 @@ A project to create a conversion tool to make migrations between Azure Pipelines
 ![Current build](https://github.com/samsmithnz/AzurePipelinesToGitHubActionsConverter/workflows/CI/badge.svg)
 [![NuGet version (BlackBeltCoder.Silk)](https://img.shields.io/nuget/v/BlackBeltCoder.Silk.svg?style=flat-square)](https://www.nuget.org/packages/AzurePipelinesToGitHubActionsConverter.Core/)
 
-As GitHub Actions becomes more popular, it's clear that a migration tool will be useful to move workloads to GitHub. 
-
 # How to use
 There is a website that consumes this module at: https://pipelinestoactions.azurewebsites.net/.  
 You can also use the (currently prerelease) [NuGet package](https://www.nuget.org/packages/AzurePipelinesToGitHubActionsConverter.Core/)
@@ -14,9 +12,9 @@ You can also use the (currently prerelease) [NuGet package](https://www.nuget.or
 The table below shows current, functioning YML files that run on a regular schedule to regression test the YAML produced
 | Language | Azure Pipelines | GitHub Actions |
 | -- | -- | -- |
-| .NET Core WEBAPI | [![.Net core webapi](https://dev.azure.com/samsmithnz/AzurePipelinesDemos/_apis/build/status/DotNetCoreWebAPI?branchName=master)](https://dev.azure.com/samsmithnz/AzurePipelinesDemos/_build/latest?definitionId=77&branchName=master) | ![.Net core webapi](https://github.com/samsmithnz/GitHubActionsDemos/workflows/dotnet%20core%20webapi/badge.svg) |
-| Ant | [![Ant](https://dev.azure.com/samsmithnz/AzurePipelinesDemos/_apis/build/status/Ant?branchName=master)](https://dev.azure.com/samsmithnz/AzurePipelinesDemos/_build/latest?definitionId=76&branchName=master) | ![Ant](https://github.com/samsmithnz/GitHubActionsDemos/workflows/Ant/badge.svg) |
-| Python | [![Python](https://dev.azure.com/samsmithnz/AzurePipelinesDemos/_apis/build/status/Python?branchName=master)](https://dev.azure.com/samsmithnz/AzurePipelinesDemos/_build/latest?definitionId=78&branchName=master) | ![Python](https://github.com/samsmithnz/GitHubActionsDemos/workflows/Python/badge.svg) |
+| .NET Core WEBAPI | [![.Net core webapi](https://dev.azure.com/samsmithnz/AzurePipelinesDemos/_apis/build/status/DotNetCoreWebAPI?branchName=master)](https://dev.azure.com/samsmithnz/AzurePipelinesDemos/_build/latest?definitionId=77&branchName=master) | [![GitHub Actions](https://github.com/samsmithnz/GitHubActionsDemos/workflows/dotnet%20core%20webapi/badge.svg)](https://github.com/samsmithnz/GitHubActionsDemos/actions?query=workflow%3A%22dotnet+core+webapi%22) |
+| Ant | [![Ant](https://dev.azure.com/samsmithnz/AzurePipelinesDemos/_apis/build/status/Ant?branchName=master)](https://dev.azure.com/samsmithnz/AzurePipelinesDemos/_build/latest?definitionId=76&branchName=master) | [![GitHub Actions](https://github.com/samsmithnz/GitHubActionsDemos/workflows/Ant/badge.svg)](https://github.com/samsmithnz/GitHubActionsDemos/actions?query=workflow%3AAnt) |
+| Python | [![Python](https://dev.azure.com/samsmithnz/AzurePipelinesDemos/_apis/build/status/Python?branchName=master)](https://dev.azure.com/samsmithnz/AzurePipelinesDemos/_build/latest?definitionId=78&branchName=master) | [![GitHub Actions](https://github.com/samsmithnz/GitHubActionsDemos/workflows/Python/badge.svg)](https://github.com/samsmithnz/GitHubActionsDemos/actions?query=workflow%3APython) |
 | Maven | [![Maven](https://dev.azure.com/samsmithnz/AzurePipelinesDemos/_apis/build/status/Maven?branchName=master)](https://dev.azure.com/samsmithnz/AzurePipelinesDemos/_build/latest?definitionId=79&branchName=master) | [![Maven](https://github.com/samsmithnz/GitHubActionsDemos/workflows/Maven/badge.svg)](https://github.com/samsmithnz/GitHubActionsDemos/actions?query=workflow%3AMaven) |
 
 # How this works
