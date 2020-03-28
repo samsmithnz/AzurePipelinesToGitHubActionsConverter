@@ -29,7 +29,9 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                     case "AzureResourceGroupDeployment@2":
                         gitHubStep = CreateAzureManageResourcesStep(step);
                         break;
+                    case "AzureFunctionAppContainer@1":
                     case "AzureRmWebAppDeployment@3":
+                    case "AzureWebAppContainer@1":
                         gitHubStep = CreateAzureWebAppDeploymentStep(step);
                         break;
                     case "CmdLine@2":
@@ -256,42 +258,31 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
 
         private GitHubActions.Step CreateDockerStep(AzurePipelines.Step step)
         {
-            //Use PowerShell to copy files
-            step.script = "Copy " + GetStepInput(step, "sourcefolder") + "/" + GetStepInput(step, "contents") + " " + GetStepInput(step, "targetfolder");
-
-            GitHubActions.Step gitHubStep = CreateScriptStep("powershell", step);
-            return gitHubStep;
-
-
             //From: https://docs.microsoft.com/en-us/azure/devops/pipelines/tasks/build/docker?view=azure-devops
-            //- task: Docker@2
-            //  displayName: Login to ACR
-            //  inputs:
-            //    command: login
-            //    containerRegistry: dockerRegistryServiceConnection1
             //- task: Docker@2
             //  displayName: Build
             //  inputs:
             //    command: build
             //    repository: contosoRepository
+            //    dockerfile: MyDockerFile
+            //    containerRegistry: dockerRegistryServiceConnection
             //    tags: tag1
             //    arguments: --secret id=mysecret,src=mysecret.txt
-            //- task: Docker@2
-            //  displayName: Build and Push
-            //  inputs:
-            //    command: buildAndPush
-            //    repository: someUser/contoso
-            //    tags: |
-            //      tag1
-            //      tag2
-            //- task: Docker@2
-            //  displayName: Logout of ACR
-            //  inputs:
-            //    command: logout
-            //    containerRegistry: dockerRegistryServiceConnection1
 
             //To: https://github.com/marketplace/actions/docker-build-push
+            //- name: Build the Docker image
+            //  run: docker build . --file MyDockerFile --tag my-image-name:$(date +%s)
 
+
+            string tags = GetStepInput(step, "tags");
+            string dockerFile = GetStepInput(step, "dockerfile");
+            string arguments = GetStepInput(step, "arguments");
+
+            //Very very simple. Needs more branches and logic
+            step.script = "docker build . --file " + dockerFile + " --tag " + tags + " " + arguments;
+
+            GitHubActions.Step gitHubStep = CreateScriptStep("", step);
+            return gitHubStep;
         }
 
         private GitHubActions.Step CreateScriptStep(string shellType, AzurePipelines.Step step)
@@ -440,19 +431,37 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
         private GitHubActions.Step CreateAzureWebAppDeploymentStep(AzurePipelines.Step step)
         {
             string webappName = GetStepInput(step, "webappname");
+            string appName = GetStepInput(step, "appName");
             string package = GetStepInput(step, "package");
             string slotName = GetStepInput(step, "slotname");
+            string imageName = GetStepInput(step, "imageName");
 
             GitHubActions.Step gitHubStep = new GitHubActions.Step
             {
-                uses = "Azure/webapps-deploy@v1",
-                with = new Dictionary<string, string>
-                {
-                    { "app-name", webappName},
-                    { "package", package},
-                    { "slot-name", slotName},
-                }
+                uses = "Azure/webapps-deploy@v2",
+                with = new Dictionary<string, string>()
             };
+
+            if (webappName != null)
+            {
+                gitHubStep.with.Add("app-name", webappName);
+            }
+            else if (appName != null)
+            {
+                gitHubStep.with.Add("app-name", appName);
+            }
+            if (package != null)
+            {
+                gitHubStep.with.Add("package", package);
+            }
+            if (slotName != null)
+            {
+                gitHubStep.with.Add("slot-name", slotName);
+            }
+            if (imageName != null)
+            {
+                gitHubStep.with.Add("images", imageName);
+            }
 
             //coming from:
             //- task: AzureRmWebAppDeployment@3

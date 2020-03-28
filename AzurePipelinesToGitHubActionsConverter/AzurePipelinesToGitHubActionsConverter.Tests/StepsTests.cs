@@ -326,7 +326,6 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
         Package: '$(build.artifactstagingdirectory)/drop/MyProject.Web.zip'
         TakeAppOfflineFlag: true
         JSONFiles: '**/appsettings.json'  
-      condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
 ";
 
             //Act
@@ -335,12 +334,69 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             //Assert
             string expected = @"
 - name: 'Azure App Service Deploy: web site'
-  uses: Azure/webapps-deploy@v1
+  uses: Azure/webapps-deploy@v2
   with:
     app-name: ${{ env.WebsiteName }}
     package: ${GITHUB_WORKSPACE}/drop/MyProject.Web.zip
     slot-name: staging
-  if: and(success(),eq(github.ref, 'refs/heads/master'))
+";
+            expected = UtilityTests.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+        }
+
+        [TestMethod]
+        public void DeployAzureWebAppContainerIndividualStepTest()
+        {
+            //Arrange
+            Conversion conversion = new Conversion();
+            string yaml = @"
+  - task: AzureWebAppContainer@1
+    displayName: 'Azure Web App on Container Deploy'
+    inputs:
+      azureSubscription: '$(AzureServiceConnectionId)'
+      appName: $(AppName)
+      imageName: '$(ACRFullName)/$(ACRImageName)'
+";
+
+            //Act
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineTaskToGitHubActionTask(yaml);
+
+            //Assert
+            string expected = @"
+- name: Azure Web App on Container Deploy
+  uses: Azure/webapps-deploy@v2
+  with:
+    app-name: ${{ env.AppName }}
+    images: ${{ env.ACRFullName }}/${{ env.ACRImageName }}
+";
+            expected = UtilityTests.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+        }
+
+        [TestMethod]
+        public void DeployFunctionAppContainerIndividualStepTest()
+        {
+            //Arrange
+            Conversion conversion = new Conversion();
+            string yaml = @"
+  - task: AzureFunctionAppContainer@1
+    displayName: 'Azure Function App on Container Deploy'
+    inputs:
+      azureSubscription: '$(AzureServiceConnectionId)'
+      appName: $(AppName)
+      imageName: '$(ACRFullName)/$(ACRImageName)'
+";
+
+            //Act
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineTaskToGitHubActionTask(yaml);
+
+            //Assert
+            string expected = @"
+- name: Azure Function App on Container Deploy
+  uses: Azure/webapps-deploy@v2
+  with:
+    app-name: ${{ env.AppName }}
+    images: ${{ env.ACRFullName }}/${{ env.ACRImageName }}
 ";
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
