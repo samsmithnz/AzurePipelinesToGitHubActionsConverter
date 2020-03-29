@@ -5,7 +5,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace AzurePipelinesToGitHubActionsConverter.Tests
 {
     [TestClass]
-    public class LargePipelineTests
+    public class CompletePipelineTests
     {
 
         [TestMethod]
