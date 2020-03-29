@@ -67,10 +67,14 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion.Serialization
             yaml = yaml.Replace("\r\n\r\n", "\r\n");
             yaml = yaml.Replace("\n\n", "\n");
 
+            //If we have a string with new lines and strings, it double encodes them, so we undo this
+            yaml = yaml.Replace("\\r", "\r");
+            yaml = yaml.Replace("\\n", "\n");
 
             //Trim off any leading of trailing new lines 
             yaml = yaml.TrimStart('\r', '\n');
             yaml = yaml.TrimEnd('\r', '\n');
+            yaml = yaml.Trim();
 
             return yaml;
         }
@@ -109,14 +113,19 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion.Serialization
             yaml = yaml.Replace("step_message", "#");
             yaml = yaml.Replace("job_message", "#");
 
-            //HACK: Sometimes when generating  yaml, a weird ">+" string appears. Not sure why yet, replacing it out of there for short term
-            yaml = yaml.Replace("run: >-", "run: |"); //Replace a weird artifact in scripts when converting pipes
+            //HACK: Sometimes when generating  yaml, a weird ">+" string appears, which we replace out. This is a known bug, but there is no known fix yet. https://github.com/aaubry/YamlDotNet/issues/449
+            //This replaces a weird artifact in scripts when converting pipes, the order matters, and this is not a long term solution...
+            yaml = yaml.Replace("run: >-", "run: |"); 
             yaml = yaml.Replace("run: >2-\r\n     |", "run: |");
             yaml = yaml.Replace("run: >2-\r\n         |", "run: |");
             yaml = yaml.Replace("run: 2-\r\n         |", "run: |");
             yaml = yaml.Replace("run: 2-\r\n         |", "run: |");
+            yaml = yaml.Replace("run: >\r\n", "run: |\r\n");
             yaml = yaml.Replace("run: >+", "run: ");
             yaml = yaml.Replace("run: >", "run: |");
+            yaml = yaml.Replace(": >+\r\n      ", ": ");
+            yaml = yaml.Replace(": >", ": ");
+            yaml = yaml.Replace("#: \n      ", ": ");
 
             return yaml;
         }

@@ -75,7 +75,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
             //Resources
             if (azurePipeline.resources != null)
             {
-                //NOTE: Containers is in the jobs - this note should be removed once pipeliens and repositories is moved too
+                //Note: Containers is in the jobs - this note should be removed once pipeliens and repositories is moved too
 
                 //TODO: Add code for pipelines
                 if (azurePipeline.resources.pipelines != null)
@@ -536,7 +536,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                 //Process the steps, adding the default checkout step
                 newJob.steps = ProcessSteps(job.steps, true);
                 //TODO: Find a way to allow GitHub jobs to reference another job as a template
-                newJob.job_message += "NOTE: Azure DevOps template does not have an equivalent in GitHub Actions yet";
+                newJob.job_message += "Note: Azure DevOps template does not have an equivalent in GitHub Actions yet";
             }
             else if (newJob.steps == null && job.strategy?.runOnce?.deploy?.steps != null)
             {
@@ -545,7 +545,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                 //Process the steps, adding the default checkout step
                 newJob.steps = ProcessSteps(job.strategy?.runOnce?.deploy?.steps, false);
                 //TODO: Find a way to allow GitHub jobs to reference another job as a template
-                newJob.job_message += "NOTE: Azure DevOps strategy>runOnce>deploy does not have an equivalent in GitHub Actions yet";
+                newJob.job_message += "Note: Azure DevOps strategy>runOnce>deploy does not have an equivalent in GitHub Actions yet";
             }
 
             if (newJob._if != null)
@@ -570,8 +570,10 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                 //Start by scanning all of the steps, to see if we need to insert additional tasks
                 int stepAdjustment = 0;
                 bool addJavaSetupStep = false;
+                bool addGradleSetupStep = false;
                 bool addAzureLoginStep = false;
-                AzurePipelines.Step javaStep = null;
+                bool addMSSetupStep = false;
+                string javaVersion = null;
 
                 //If the code needs a Checkout step, add it first
                 if (addCheckoutStep == true)
@@ -590,8 +592,17 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                             case "Ant@1":
                             case "Maven@3":
                                 addJavaSetupStep = true;
-                                javaStep = step;
+                                javaVersion = stepsProcessing.GetStepInput(step, "jdkVersionOption");
                                 stepAdjustment++;
+                                break;
+
+                            case "Gradle@2":
+                                //Needs a the Java step and an additional Gradle step
+                                addJavaSetupStep = true;
+                                addGradleSetupStep = true;
+                                //Create the java step, as it doesn't exist
+                                javaVersion = "1.8";
+                                stepAdjustment += 2;
                                 break;
 
                             //If we have an Azure step, we will need to add a Azure login step
@@ -599,6 +610,11 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                             case "AzureResourceGroupDeployment@2":
                             case "AzureRmWebAppDeployment@3":
                                 addAzureLoginStep = true;
+                                stepAdjustment++;
+                                break;
+
+                            case "VSBuild@1":
+                                addMSSetupStep = true;
                                 stepAdjustment++;
                                 break;
                         }
@@ -620,13 +636,25 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                 if (addJavaSetupStep == true)
                 {
                     //Add the JavaSetup step to the code
-                    newSteps[adjustmentsUsed] = stepsProcessing.CreateSetupJavaStep(javaStep);
+                    newSteps[adjustmentsUsed] = stepsProcessing.CreateSetupJavaStep(javaVersion);
+                    adjustmentsUsed++;
+                }
+                if (addGradleSetupStep == true)
+                {
+                    //Add the Gradle setup step to the code
+                    newSteps[adjustmentsUsed] = stepsProcessing.CreateSetupGradleStep();
                     adjustmentsUsed++;
                 }
                 if (addAzureLoginStep == true)
                 {
                     //Add the Azure login step to the code
                     newSteps[adjustmentsUsed] = stepsProcessing.CreateAzureLoginStep();
+                    adjustmentsUsed++;
+                }
+                if (addMSSetupStep == true)
+                {
+                    //Add the Azure login step to the code
+                    newSteps[adjustmentsUsed] = stepsProcessing.CreateMSBuildSetupStep();
                     //adjustmentsUsed++;
                 }
 
