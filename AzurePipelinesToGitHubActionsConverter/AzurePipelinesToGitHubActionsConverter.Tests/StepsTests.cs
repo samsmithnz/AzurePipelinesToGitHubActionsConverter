@@ -1,12 +1,13 @@
 ﻿using AzurePipelinesToGitHubActionsConverter.Core.Conversion;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System;
 
 namespace AzurePipelinesToGitHubActionsConverter.Tests
 {
     [TestClass]
     public class StepsTests
     {
-        //TODO: Resolve difference between Ubuntu and Windows
+
         [TestMethod]
         public void InvalidStepIndividualStepTest()
         {
@@ -147,24 +148,6 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
         }
 
-//        [TestMethod]
-//        public void AzureLoginIndividualStepTest()
-//        {
-//            //Arrange
-//            Conversion conversion = new Conversion();
-//            string yaml = @"
-//";
-
-//            //Act
-//            ConversionResult gitHubOutput = conversion.ConvertAzurePinelineTaskToGitHubActionTask(yaml);
-
-//            //Assert
-
-//";
-//            expected = UtilityTests.TrimNewLines(expected);
-//            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
-//        }
-
         [TestMethod]
         public void BuildDotNetIndividualStepTest()
         {
@@ -203,7 +186,13 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineTaskToGitHubActionTask(yaml);
 
             //Assert
-            Assert.IsTrue(string.IsNullOrEmpty(gitHubOutput.actionsYaml) == false);
+            string expected = @"
+- name: PowerShell test task
+  run: Write-Host 'Hello World'
+  shell: powershell
+";
+            expected = UtilityTests.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
         }
 
         [TestMethod]
@@ -278,7 +267,13 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineTaskToGitHubActionTask(yaml);
 
             //Assert
-            Assert.IsTrue(string.IsNullOrEmpty(gitHubOutput.actionsYaml) == false);
+            string expected = @"
+- uses: Azure/webapps-deploy@v2
+  with:
+    app-name: ${{ env.functionappName }}
+";
+            expected = UtilityTests.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
         }
 
         [TestMethod]
@@ -441,8 +436,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
   displayName: 'Run Selenium smoke tests on website'
   inputs:
     searchFolder: '$(build.artifactstagingdirectory)'
-    testAssemblyVer2: |
-      **\MyProject.FunctionalTests\MyProject.FunctionalTests.dll
+    testAssemblyVer2: '**\MyProject.FunctionalTests\MyProject.FunctionalTests.dll'
     uiTests: true
     runSettingsFile: '$(build.artifactstagingdirectory)/drop/FunctionalTests/MyProject.FunctionalTests/test.runsettings'    
     overrideTestrunParameters: |
@@ -455,22 +449,21 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineTaskToGitHubActionTask(yaml);
 
             //Assert
-            //            string expected = @"
-            //- name: Run Selenium smoke tests on website
-            //  run: |
-            //        $vsTestConsoleExe = ""C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\Common7\IDE\Extensions\TestPlatform\vstest.console.exe""
-            //        $targetTestDll = ""**\MyProject.FunctionalTests\MyProject.FunctionalTests.dll""
-            //        $testRunSettings = ""/Settings:`""${GITHUB_WORKSPACE}/drop/FunctionalTests/MyProject.FunctionalTests/test.runsettings`""
-            //        $parameters = """"
-            //        #Note that the `"" is an escape character to quote strings, and the `& is needed to start the command
-            //        $command = ""`& `""$vsTestConsoleExe`"" `""$targetTestDll`"" $testRunSettings $parameters ""                             
-            //        Write-Host ""$command""
-            //        Invoke-Expression $command
-            //   shell: powershell
-            //";
-            //expected = UtilityTests.TrimNewLines(expected);
-            //Assert.AreEqual(expected, gitHubOutput.actionsYaml);
-            Assert.IsTrue(string.IsNullOrEmpty(gitHubOutput.actionsYaml) == false);
+            string expected = @"
+- name: Run Selenium smoke tests on website
+  run: |
+    $vsTestConsoleExe = ""C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\Common7\IDE\Extensions\TestPlatform\vstest.console.exe""
+    $targetTestDll = ""**\MyProject.FunctionalTests\MyProject.FunctionalTests.dll""
+    $testRunSettings = "" /Settings:`""${GITHUB_WORKSPACE}/drop/FunctionalTests/MyProject.FunctionalTests/test.runsettings`"" ""
+        $parameters = "" -- ServiceUrl=""https://${{ env.WebServiceName }}-staging.azurewebsites.net/""  WebsiteUrl=""https://${{ env.WebsiteName }}-staging.azurewebsites.net/""  TestEnvironment=""${{ env.AppSettings.Environment }}""  TestEnvironment2=""${{ env.AppSettings.Environment }}""
+      "" #Note that the `"" is an escape character sequence to quote strings, and `& is needed to start the command
+    $command = ""`& `""$vsTestConsoleExe`"" `""$targetTestDll`"" $testRunSettings $parameters ""
+    Write-Host ""$command""
+    Invoke-Expression $command
+  shell: powershell
+";
+            expected = UtilityTests.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
         }
 
 
@@ -540,31 +533,31 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
         }
 
 
-//        [TestMethod]
-//        public void MSBuildStepTest()
-//        {
-//            //Arrange
-//            Conversion conversion = new Conversion();
-//            string yaml = @"
-//- task: VSBuild@1
-//  inputs:
-//    solution: '$(solution)'
-//    msbuildArgs: '/p:DeployOnBuild=true /p:WebPublishMethod=Package /p:PackageAsSingleFile=true /p:SkipInvalidConfigurations=true /p:DesktopBuildPackageLocation=""$(build.artifactStagingDirectory)\WebApp.zip"" /p:DeployIisAppPath=""Default Web Site""'
-//    platform: '$(buildPlatform)'
-//    configuration: '$(buildConfiguration)'
-//";
+        //        [TestMethod]
+        //        public void MSBuildStepTest()
+        //        {
+        //            //Arrange
+        //            Conversion conversion = new Conversion();
+        //            string yaml = @"
+        //- task: VSBuild@1
+        //  inputs:
+        //    solution: '$(solution)'
+        //    msbuildArgs: '/p:DeployOnBuild=true /p:WebPublishMethod=Package /p:PackageAsSingleFile=true /p:SkipInvalidConfigurations=true /p:DesktopBuildPackageLocation=""$(build.artifactStagingDirectory)\WebApp.zip"" /p:DeployIisAppPath=""Default Web Site""'
+        //    platform: '$(buildPlatform)'
+        //    configuration: '$(buildConfiguration)'
+        //";
 
-//            //Act
-//            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineTaskToGitHubActionTask(yaml);
+        //            //Act
+        //            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineTaskToGitHubActionTask(yaml);
 
-//            //Assert
-//            string expected = "- run: \" \\r\\n    #TODO: Fix this uglyness.\\r\\n    $msBuildExe = \\\"C:\\\\Program Files(x86)\\\\Microsoft Visual Studio\\\\2019\\\\Enterprise\\\\MSBuild\\\\Current\\\\Bin\\\\msbuild.exe\\\"\\r\\n    $targetSolution = \\\"${{ env.solution }}\\\"\\r\\n    #Note that the `\\\" is an escape character sequence to quote strings, and `& is needed to start the command\\r\\n    $command = \\\"`& `\\\"$msBuildExe`\\\" `\\\"$targetSolution`\\\" \\r\\n    Write - Host \\\"$command\\\"\\r\\n    Invoke - Expression $command\"\r\n  shell: powershell";
-//            expected = UtilityTests.TrimNewLines(expected);
-//            //gitHubOutput.actionsYaml = gitHubOutput.actionsYaml.Replace("\"", @"""");
-//            //gitHubOutput.actionsYaml = gitHubOutput.actionsYaml.Replace("\\", @"\");
+        //            //Assert
+        //            string expected = "- run: \" \\r\\n    #TODO: Fix this uglyness.\\r\\n    $msBuildExe = \\\"C:\\\\Program Files(x86)\\\\Microsoft Visual Studio\\\\2019\\\\Enterprise\\\\MSBuild\\\\Current\\\\Bin\\\\msbuild.exe\\\"\\r\\n    $targetSolution = \\\"${{ env.solution }}\\\"\\r\\n    #Note that the `\\\" is an escape character sequence to quote strings, and `& is needed to start the command\\r\\n    $command = \\\"`& `\\\"$msBuildExe`\\\" `\\\"$targetSolution`\\\" \\r\\n    Write - Host \\\"$command\\\"\\r\\n    Invoke - Expression $command\"\r\n  shell: powershell";
+        //            expected = UtilityTests.TrimNewLines(expected);
+        //            //gitHubOutput.actionsYaml = gitHubOutput.actionsYaml.Replace("\"", @"""");
+        //            //gitHubOutput.actionsYaml = gitHubOutput.actionsYaml.Replace("\\", @"\");
 
-//            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
-//        }
+        //            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+        //        }
 
     }
 }

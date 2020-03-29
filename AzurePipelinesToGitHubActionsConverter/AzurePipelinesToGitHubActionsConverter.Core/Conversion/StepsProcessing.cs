@@ -33,6 +33,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                     case "AzureFunctionAppContainer@1":
                     case "AzureRmWebAppDeployment@3":
                     case "AzureWebAppContainer@1":
+                    case "AzureRmWebAppDeployment@4":
                         gitHubStep = CreateAzureWebAppDeploymentStep(step);
                         break;
                     case "CmdLine@2":
@@ -89,6 +90,12 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                         break;
                     case "VSTest@2":
                         gitHubStep = CreateSeleniumTestingStep(step);
+                        break;
+                    case "XamarinAndroid@1":
+                        gitHubStep = CreateXamarinAndroidStep(step);
+                        break;
+                    case "XamariniOS@2":
+                        gitHubStep = CreateXamariniOSStep(step);
                         break;
 
                     default:
@@ -503,9 +510,6 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
             GitHubActions.Step gitHubStep = CreateScriptStep("powershell", step);
             gitHubStep.run = "nuget " + command + " " + restoresolution;
 
-            //          - name: Nuget Push
-            //run: nuget push *.nupkg
-
             //coming from:
             //# NuGet
             //# Restore, pack, or push NuGet packages, or run a NuGet command. Supports NuGet.org and authenticated feeds like Azure Artifacts and MyGet. Uses NuGet.exe and works with .NET Framework apps. For .NET Core and .NET Standard apps, use the .NET Core task.
@@ -547,7 +551,8 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
             //    #arguments: # Required when command == Custom
 
             //Going to:
-
+            //- name: Nuget Push
+            //  run: nuget push *.nupkg
 
             return gitHubStep;
         }
@@ -558,7 +563,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
             GitHubActions.Step gitHubStep = new GitHubActions.Step
             {
                 uses = "warrenbuckley/Setup-Nuget@v1",
-                step_message = "Note: Needs to be installed from marketplace: https://github.com/warrenbuckley/Setup-Nuget"
+                step_message = "Note: Is a 3rd party action: https://github.com/warrenbuckley/Setup-Nuget"
             };
 
             //coming from:
@@ -620,49 +625,64 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
 
         private GitHubActions.Step CreateMSBuildStep(AzurePipelines.Step step)
         {
-            string solution = GetStepInput(step, "solution");
-            //string package = GetStepInput(step, "package");
-            //string slotName = GetStepInput(step, "slotname");
-
-            //Currently set to VS2019
-            string msBuildLocation = @"C:\Program Files(x86)\Microsoft Visual Studio\2019\Enterprise\MSBuild\Current\Bin\";
-
-            string run = " " + Environment.NewLine;
-            run += "    #TODO: Fix this uglyness." + Environment.NewLine;
-            run += "    $msBuildExe = \"" + msBuildLocation + "msbuild.exe\"" + Environment.NewLine;
-            run += "    $targetSolution = \"" + solution + "\"" + Environment.NewLine;
-
-            run += "    #Note that the `\" is an escape character sequence to quote strings, and `& is needed to start the command" + Environment.NewLine;
-            run += "    $command = \"`& `\"$msBuildExe`\" `\"$targetSolution`\" " + Environment.NewLine;
-            run += "    Write - Host \"$command\"" + Environment.NewLine;
-            run += "    Invoke - Expression $command";
-
-            //To PowerShell script
-            GitHubActions.Step gitHubStep = CreateScriptStep("powershell", step);
-            gitHubStep.run = run;
-
             //coming from:
             //# Visual Studio build
             //# Build with MSBuild and set the Visual Studio version property
             //- task: VSBuild@1
             //  inputs:
-            //    #solution: '**\*.sln' 
-            //    #vsVersion: 'latest' # Optional. Options: latest, 16.0, 15.0, 14.0, 12.0, 11.0
-            //    #msbuildArgs: # Optional
-            //    #platform: # Optional
-            //    #configuration: # Optional
-            //    #clean: false # Optional
-            //    #maximumCpuCount: false # Optional
-            //    #restoreNugetPackages: false # Optional
-            //    #msbuildArchitecture: 'x86' # Optional. Options: x86, x64
-            //    #logProjectEvents: true # Optional
-            //    #createLogFile: false # Optional
-            //    #logFileVerbosity: 'normal' # Optional. Options: quiet, minimal, normal, detailed, diagnostic
+            //    solution: 'MySolution.sln' 
+            //    vsVersion: 'latest' # Optional. Options: latest, 16.0, 15.0, 14.0, 12.0, 11.0
+            //    msbuildArgs: # Optional
+            //    platform: # Optional
+            //    configuration: # Optional
+            //    clean: false # Optional
+            //    maximumCpuCount: false # Optional
+            //    restoreNugetPackages: false # Optional
+            //    msbuildArchitecture: 'x86' # Optional. Options: x86, x64
+            //    logProjectEvents: true # Optional
+            //    createLogFile: false # Optional
+            //    logFileVerbosity: 'normal' # Optional. Options: quiet, minimal, normal, detailed, diagnostic
 
             //Going to:
-            //- name: Build DotNET35
-            //  run: |
-            //     "C:\Program Files(x86)\Microsoft Visual Studio\2019\Enterprise\MSBuild\Current\Bin\MSBuild.exe \pathtoyoursolutionorproject
+            //- run: msbuild MySolution.sln /p:configuration=release
+
+            string solution = GetStepInput(step, "solution");
+            string platform = GetStepInput(step, "platform");
+            string configuration = GetStepInput(step, "configuration");
+            string msbuildArgs = GetStepInput(step, "msbuildArgs");
+            string run = "msbuild '" + solution + "'";
+            if (configuration != null)
+            {
+                run += " /p:configuration='" + configuration + "'";
+            }
+            if (platform != null)
+            {
+                run += " /p:platform='" + platform + "'";
+            }
+            if (msbuildArgs != null)
+            {
+                run += " " + msbuildArgs;
+            }
+            step.script = run;
+
+            //To script
+            GitHubActions.Step gitHubStep = CreateScriptStep("", step);
+            gitHubStep.run = run;
+
+            return gitHubStep;
+        }
+
+        public GitHubActions.Step CreateMSBuildSetupStep()
+        {
+            //To:
+            //- name: Setup MSBuild.exe
+            //  uses: warrenbuckley/Setup-MSBuild@v1
+
+            GitHubActions.Step gitHubStep = new GitHubActions.Step
+            {
+                uses = "warrenbuckley/Setup-MSBuild@v1",
+                step_message = "Note: Is a 3rd party action: https://github.com/microsoft/setup-msbuild"
+            };
 
             return gitHubStep;
         }
@@ -671,26 +691,36 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
         {
             //From:
             //- task: VSTest@2
-            //displayName: 'Run functional smoke tests on website and web service'
-            //inputs:
-            //  searchFolder: '$(build.artifactstagingdirectory)'
-            //  testAssemblyVer2: |
-            //    **\MyProject.FunctionalTests\MyProject.FunctionalTests.dll
-            //  uiTests: true
-            //  runSettingsFile: '$(build.artifactstagingdirectory)/drop/FunctionalTests/MyProject.FunctionalTests/test.runsettings'
-            //  overrideTestrunParameters: |
-            //   -ServiceUrl "https://$(WebServiceName)-staging.azurewebsites.net/" 
-            //   -WebsiteUrl "https://$(WebsiteName)-staging.azurewebsites.net/" 
-            //   -TestEnvironment "$(AppSettings.Environment)" 
+            //  displayName: 'Run functional smoke tests on website and web service'
+            //  inputs:
+            //    searchFolder: '$(build.artifactstagingdirectory)'
+            //    testAssemblyVer2: **\MyProject.FunctionalTests\MyProject.FunctionalTests.dll
+            //    uiTests: true
+            //    runSettingsFile: '$(build.artifactstagingdirectory)/drop/FunctionalTests/MyProject.FunctionalTests/test.runsettings'
+            //    overrideTestrunParameters: |
+            //     -ServiceUrl "https://$(WebServiceName)-staging.azurewebsites.net/" 
+            //     -WebsiteUrl "https://$(WebsiteName)-staging.azurewebsites.net/" 
+            //     -TestEnvironment "$(AppSettings.Environment)" 
+
+            //TO:
+            //- name: Functional Tests
+            //  run: |
+            //    $vsTestConsoleExe = "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Enterprise\\Common7\\IDE\\Extensions\\TestPlatform\\vstest.console.exe"
+            //    $targetTestDll = "functionaltests\FeatureFlags.FunctionalTests.dll"
+            //    $testRunSettings = "/Settings:`"functionaltests\test.runsettings`" "
+            //    $parameters = " -- TestEnvironment=""Beta123""  ServiceUrl=""https://featureflags-data-eu-service-staging.azurewebsites.net/"" WebsiteUrl=""https://featureflags-data-eu-web-staging.azurewebsites.net/"" "
+            //    #Note that the `" is an escape character to quote strings, and the `& is needed to start the command
+            //    $command = "`& `"$vsTestConsoleExe`" `"$targetTestDll`" $testRunSettings $parameters " 
+            //    Write-Host "$command"
+            //    Invoke-Expression $command
 
             //Defined in the github windows runner
             string vsTestConsoleLocation = @"C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\Common7\IDE\Extensions\TestPlatform\";
 
-            string run = " |\n";
-            run += "    #TODO: Fix this uglyness.\n";
-            run += "    $vsTestConsoleExe = \"" + vsTestConsoleLocation + "vstest.console.exe\"\n";
-            run += "    $targetTestDll = \"" + GetStepInput(step, "testassemblyver2") + "\"\n";
-            run += "    $testRunSettings = \" / Settings:`\"" + GetStepInput(step, "runsettingsfile") + "`\" \"\n";
+            string run = "";
+            run += "$vsTestConsoleExe = \"" + vsTestConsoleLocation + "vstest.console.exe\"\n";
+            run += "$targetTestDll = \"" + GetStepInput(step, "testassemblyver2") + "\"\n";
+            run += "$testRunSettings = \" /Settings:`\"" + GetStepInput(step, "runsettingsfile") + "`\" \"\n";
 
             string parametersInput = GetStepInput(step, "overridetestrunparameters");
             if (parametersInput != null)
@@ -721,14 +751,13 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                         }
                     }
                 }
-                run += "    $parameters = \"-- " + parameters.ToString() + "\"";
+                run += "    $parameters = \" -- " + parameters.ToString() + "\" ";
             }
 
-            //run += "    $parameters = \"\""; //\"-- TestEnvironment = \"Beta123\"  ServiceUrl = \"https://myproject-service-staging.azurewebsites.net/\" WebsiteUrl=\"https://myproject-web-staging.azurewebsites.net/\" \"" + "\n";
-            run += "    #Note that the `\" is an escape character sequence to quote strings, and `& is needed to start the command\n";
-            run += "    $command = \"`& `\"$vsTestConsoleExe`\" `\"$targetTestDll`\" $testRunSettings $parameters \"\n";
-            run += "    Write - Host \"$command\"\n";
-            run += "    Invoke - Expression $command";
+            run += "#Note that the `\" is an escape character sequence to quote strings, and `& is needed to start the command\n";
+            run += "$command = \"`& `\"$vsTestConsoleExe`\" `\"$targetTestDll`\" $testRunSettings $parameters \"\n";
+            run += "Write-Host \"$command\"\n";
+            run += "Invoke-Expression $command";
 
             //To PowerShell script
             GitHubActions.Step gitHubStep = CreateScriptStep("powershell", step);
@@ -971,7 +1000,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                 {
                     { "args", zipCommand}
                 },
-                step_message = "Note: Needs to be installed from marketplace: https://github.com/marketplace/actions/create-zip-file"
+                step_message = "Note: Is a 3rd party action: https://github.com/marketplace/actions/create-zip-file"
             };
 
             return gitHubStep;
@@ -1019,6 +1048,70 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                     { "inlineScript", script}
                 }
             };
+
+            return gitHubStep;
+        }
+
+        private GitHubActions.Step CreateXamarinAndroidStep(AzurePipelines.Step step)
+        {
+            //coming from:
+            //- task: XamarinAndroid@1
+            //  inputs:
+            //    projectFile: '**/*droid*.csproj'
+            //    outputDirectory: '$(outputDirectory)'
+            //    configuration: '$(buildConfiguration)'
+
+            //Going to: https://levelup.gitconnected.com/using-github-actions-with-ios-and-android-xamarin-apps-693a93b48a61
+            //- name: Android
+            //  run: |
+            //    cd Blank
+            //    nuget restore
+            //    cd Blank.Android
+            //    msbuild '**/*droid*.csproj' /verbosity:normal /t:Rebuild /p:Configuration='$(buildConfiguration)'
+
+            string projectFile = GetStepInput(step, "projectFile");
+            string configuration = GetStepInput(step, "configuration");
+
+            string script = "" +
+            "  cd Blank \n" +
+            "  nuget restore \n" +
+            "  cd Blank.Android \n" +
+            "  msbuild " + projectFile + " /verbosity:normal /t:Rebuild /p:Configuration = " + configuration;
+            step.script = script;
+
+            GitHubActions.Step gitHubStep = CreateScriptStep("", step);
+
+            return gitHubStep;
+        }
+
+        private GitHubActions.Step CreateXamariniOSStep(AzurePipelines.Step step)
+        {
+            //coming from:
+            //- task: XamariniOS@2
+            //  inputs:
+            //    solutionFile: '**/*.sln'
+            //    configuration: 'Release'
+            //    buildForSimulator: true
+            //    packageApp: false
+
+            //Going to: https://levelup.gitconnected.com/using-github-actions-with-ios-and-android-xamarin-apps-693a93b48a61
+            //- name: iOS
+            //  run: |
+            //    cd Blank
+            //    nuget restore
+            //    msbuild Blank.iOS/Blank.iOS.csproj /verbosity:normal /t:Rebuild /p:Platform=iPhoneSimulator /p:Configuration=Debug
+
+            string projectFile = GetStepInput(step, "projectFile");
+            string configuration = GetStepInput(step, "configuration");
+
+            string script = "" +
+            "  cd Blank \n" +
+            "  nuget restore \n" +
+            "  cd Blank.Android \n" +
+            "  msbuild " + projectFile + " /verbosity:normal /t:Rebuild /p:Platform=iPhoneSimulator /p:Configuration = " + configuration;
+            step.script = script;
+
+            GitHubActions.Step gitHubStep = CreateScriptStep("", step);
 
             return gitHubStep;
         }
@@ -1094,14 +1187,13 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
         public string GetStepInput(AzurePipelines.Step step, string name)
         {
             string input = null;
-            //Make the name lowercase to help prevent conflicts later
             if (step.inputs != null && name != null)
             {
-                name = name.ToLower();
                 //Extract the input
                 foreach (KeyValuePair<string, string> item in step.inputs)
                 {
-                    if (item.Key.ToLower() == name)
+                    //Make the name lowercase to help prevent conflicts later
+                    if (item.Key.ToLower() == name.ToLower())
                     {
                         input = item.Value;
                         break;

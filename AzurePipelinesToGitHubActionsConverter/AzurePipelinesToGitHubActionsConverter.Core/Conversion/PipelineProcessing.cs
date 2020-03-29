@@ -572,6 +572,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                 bool addJavaSetupStep = false;
                 bool addGradleSetupStep = false;
                 bool addAzureLoginStep = false;
+                bool addMSSetupStep = false;
                 string javaVersion = null;
 
                 //If the code needs a Checkout step, add it first
@@ -611,6 +612,11 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                                 addAzureLoginStep = true;
                                 stepAdjustment++;
                                 break;
+
+                            case "VSBuild@1":
+                                addMSSetupStep = true;
+                                stepAdjustment++;
+                                break;
                         }
                     }
                 }
@@ -643,6 +649,12 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                 {
                     //Add the Azure login step to the code
                     newSteps[adjustmentsUsed] = stepsProcessing.CreateAzureLoginStep();
+                    adjustmentsUsed++;
+                }
+                if (addMSSetupStep == true)
+                {
+                    //Add the Azure login step to the code
+                    newSteps[adjustmentsUsed] = stepsProcessing.CreateMSBuildSetupStep();
                     //adjustmentsUsed++;
                 }
 
