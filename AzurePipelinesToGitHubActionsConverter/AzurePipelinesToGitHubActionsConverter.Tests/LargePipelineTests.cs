@@ -240,7 +240,7 @@ stages:
     - task: AzureResourceGroupDeployment@2
       displayName: 'Deploy ARM Template to resource group'
       inputs:
-        azureSubscription: 'SamLearnsAzure connection to Azure Portal'
+        azureSubscription: 'Connection to Azure Portal'
         resourceGroupName: $(ResourceGroupName)
         location: '[resourceGroup().location]'
         csmFile: '$(build.artifactstagingdirectory)/drop/ARMTemplates/azuredeploy.json'
@@ -249,7 +249,7 @@ stages:
     - task: AzureRmWebAppDeployment@3
       displayName: 'Azure App Service Deploy: web service'
       inputs:
-        azureSubscription: 'SamLearnsAzure connection to Azure Portal'
+        azureSubscription: 'Connection to Azure Portal'
         WebAppName: $(WebServiceName)
         DeployToSlotFlag: true
         ResourceGroupName: $(ResourceGroupName)
@@ -260,7 +260,7 @@ stages:
     - task: AzureRmWebAppDeployment@3
       displayName: 'Azure App Service Deploy: web site'
       inputs:
-        azureSubscription: 'SamLearnsAzure connection to Azure Portal'
+        azureSubscription: 'Connection to Azure Portal'
         WebAppName: $(WebsiteName)
         DeployToSlotFlag: true
         ResourceGroupName: $(ResourceGroupName)
@@ -283,14 +283,14 @@ stages:
     - task: AzureAppServiceManage@0
       displayName: 'Swap Slots: web service'
       inputs:
-        azureSubscription: 'SamLearnsAzure connection to Azure Portal'
+        azureSubscription: 'Connection to Azure Portal'
         WebAppName: $(WebServiceName)
         ResourceGroupName: $(ResourceGroupName)
         SourceSlot: 'staging'
     - task: AzureAppServiceManage@0
       displayName: 'Swap Slots: website'
       inputs:
-        azureSubscription: 'SamLearnsAzure connection to Azure Portal'
+        azureSubscription: 'Connection to Azure Portal'
         WebAppName: $(WebsiteName)
         ResourceGroupName: $(ResourceGroupName)
         SourceSlot: 'staging'
@@ -533,8 +533,7 @@ steps:
 
             //Assert
             string expected = @"
-#Note: Is a 3rd party action: https://github.com/warrenbuckley/Setup-Nuget
-#Note: Is a 3rd party action: https://github.com/microsoft/setup-msbuild
+#Note: This is a third party action: https://github.com/warrenbuckley/Setup-Nuget
 on:
   push:
     branches:
@@ -548,9 +547,8 @@ jobs:
     runs-on: windows-latest
     steps:
     - uses: actions/checkout@v1
-    - #: 'Note: Is a 3rd party action: https://github.com/microsoft/setup-msbuild'
-      uses: warrenbuckley/Setup-MSBuild@v1
-    - #: 'Note: Is a 3rd party action: https://github.com/warrenbuckley/Setup-Nuget'
+    - uses: microsoft/setup-msbuild@v1.0.0
+    - #: 'Note: This is a third party action: https://github.com/warrenbuckley/Setup-Nuget'
       uses: warrenbuckley/Setup-Nuget@v1
     - run: nuget  ${{ env.solution }}
       shell: powershell
@@ -610,8 +608,7 @@ steps:
 
             //Assert
             string expected = @"
-#Note: Is a 3rd party action: https://github.com/warrenbuckley/Setup-Nuget
-#Note: Is a 3rd party action: https://github.com/microsoft/setup-msbuild
+#Note: This is a third party action: https://github.com/warrenbuckley/Setup-Nuget
 on:
   push:
     branches:
@@ -625,9 +622,8 @@ jobs:
     runs-on: windows-latest
     steps:
     - uses: actions/checkout@v1
-    - #: 'Note: Is a 3rd party action: https://github.com/microsoft/setup-msbuild'
-      uses: warrenbuckley/Setup-MSBuild@v1
-    - #: 'Note: Is a 3rd party action: https://github.com/warrenbuckley/Setup-Nuget'
+    - uses: microsoft/setup-msbuild@v1.0.0
+    - #: 'Note: This is a third party action: https://github.com/warrenbuckley/Setup-Nuget'
       uses: warrenbuckley/Setup-Nuget@v1
     - run: nuget  ${{ env.solution }}
       shell: powershell
@@ -1272,7 +1268,7 @@ steps:
 
             //Assert
             string expected = @"
-#Note: Is a 3rd party action: https://github.com/marketplace/actions/create-zip-file
+#Note: This is a third party action: https://github.com/marketplace/actions/create-zip-file
 on:
   push:
     branches:
@@ -1282,7 +1278,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v1
-    - #: 'Note: Is a 3rd party action: https://github.com/marketplace/actions/create-zip-file'
+    - #: 'Note: This is a third party action: https://github.com/marketplace/actions/create-zip-file'
       uses: montudor/action-zip@v0.1.0
       with:
         args: zip -qq -r  ${{ env.build.sourcesDirectory }}
@@ -1336,6 +1332,78 @@ jobs:
       with:
         java-version: 1.8
     - run: ant -noinput -buildfile build.xml
+";
+
+            expected = UtilityTests.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+        }
+        
+        
+        [TestMethod]
+        public void AzureARMTemplatePipelineTest()
+        {
+            //Arrange
+            Conversion conversion = new Conversion();
+            string yaml = @"
+jobs:
+- job: Deploy
+  displayName: Deploy job
+  pool:
+    vmImage: ubuntu-latest
+  variables:
+    AppSettings.Environment: 'data'
+    ArmTemplateResourceGroupLocation: 'eu'
+    ResourceGroupName: 'MyProjectRG'
+  steps:
+  - task: DownloadBuildArtifacts@0
+    displayName: 'Download the build artifacts'
+    inputs:
+      buildType: 'current'
+      downloadType: 'single'
+      artifactName: 'drop'
+      downloadPath: '$(build.artifactstagingdirectory)'
+  - task: AzureResourceGroupDeployment@2
+    displayName: 'Deploy ARM Template to resource group'
+    inputs:
+      azureSubscription: 'connection to Azure Portal'
+      resourceGroupName: $(ResourceGroupName)
+      location: '[resourceGroup().location]'
+      csmFile: '$(build.artifactstagingdirectory)/drop/ARMTemplates/azuredeploy.json'
+      csmParametersFile: '$(build.artifactstagingdirectory)/drop/ARMTemplates/azuredeploy.parameters.json'
+      overrideParameters: '-environment $(AppSettings.Environment) -locationShort $(ArmTemplateResourceGroupLocation)'
+";
+
+            //Act
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(yaml);
+
+            //Assert
+            string expected = @"
+#Note that ""AZURE_SP"" secret is required to be setup and added into GitHub Secrets: https://help.github.com/en/actions/automating-your-workflow-with-github-actions/creating-and-using-encrypted-secrets
+jobs:
+  Deploy:
+    name: Deploy job
+    runs-on: ubuntu-latest
+    env:
+      AppSettings.Environment: data
+      ArmTemplateResourceGroupLocation: eu
+      ResourceGroupName: MyProjectRG
+    steps:
+    - uses: actions/checkout@v1
+    - #: 'Note that ""AZURE_SP"" secret is required to be setup and added into GitHub Secrets: https://help.github.com/en/actions/automating-your-workflow-with-github-actions/creating-and-using-encrypted-secrets'
+      name: Azure Login
+      uses: azure/login@v1
+      with:
+        creds: ${{ secrets.AZURE_SP }}
+    - name: Download the build artifacts
+      uses: actions/download-artifact@v1.0.0
+      with:
+        name: drop
+    - name: Deploy ARM Template to resource group
+      uses: Azure/github-actions/arm@master
+      env:
+        AZURE_RESOURCE_GROUP: ${{ env.ResourceGroupName }}
+        AZURE_TEMPLATE_LOCATION: ${GITHUB_WORKSPACE}/drop/ARMTemplates/azuredeploy.json
+        AZURE_TEMPLATE_PARAM_FILE: ${GITHUB_WORKSPACE}/drop/ARMTemplates/azuredeploy.parameters.json
 ";
 
             expected = UtilityTests.TrimNewLines(expected);

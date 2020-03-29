@@ -89,7 +89,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                         gitHubStep = CreateMSBuildStep(step);
                         break;
                     case "VSTest@2":
-                        gitHubStep = CreateSeleniumTestingStep(step);
+                        gitHubStep = CreateFunctionalTestingStep(step);
                         break;
                     case "XamarinAndroid@1":
                         gitHubStep = CreateXamarinAndroidStep(step);
@@ -563,7 +563,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
             GitHubActions.Step gitHubStep = new GitHubActions.Step
             {
                 uses = "warrenbuckley/Setup-Nuget@v1",
-                step_message = "Note: Is a 3rd party action: https://github.com/warrenbuckley/Setup-Nuget"
+                step_message = "Note: This is a third party action: https://github.com/warrenbuckley/Setup-Nuget"
             };
 
             //coming from:
@@ -676,18 +676,17 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
         {
             //To:
             //- name: Setup MSBuild.exe
-            //  uses: warrenbuckley/Setup-MSBuild@v1
+            //  uses: microsoft/setup-msbuild@v1.0.0
 
             GitHubActions.Step gitHubStep = new GitHubActions.Step
             {
-                uses = "warrenbuckley/Setup-MSBuild@v1",
-                step_message = "Note: Is a 3rd party action: https://github.com/microsoft/setup-msbuild"
+                uses = "microsoft/setup-msbuild@v1.0.0"
             };
 
             return gitHubStep;
         }
 
-        private GitHubActions.Step CreateSeleniumTestingStep(AzurePipelines.Step step)
+        private GitHubActions.Step CreateFunctionalTestingStep(AzurePipelines.Step step)
         {
             //From:
             //- task: VSTest@2
@@ -714,7 +713,18 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
             //    Write-Host "$command"
             //    Invoke-Expression $command
 
-            //Defined in the github windows runner
+            //$vsTestConsoleExe = "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Enterprise\\Common7\\IDE\\Extensions\\TestPlatform\\vstest.console.exe"
+            //$targetTestDll = "functionaltests\FeatureFlags.FunctionalTests.dll"
+            //$testRunSettings = "/Settings:`"functionaltests\test.runsettings`" "
+            //$parameters = " -- TestEnvironment=""Beta123""  ServiceUrl=""https://featureflags-data-eu-service-staging.azurewebsites.net/"" WebsiteUrl=""https://featureflags-data-eu-web-staging.azurewebsites.net/"" "
+            //#Note that the `" is an escape character to quote strings, and the `& is needed to start the command
+            //$command = "`& `"$vsTestConsoleExe`" `"$targetTestDll`" $testRunSettings $parameters " 
+            //Write-Host "$command"
+            //Invoke-Expression $command
+
+
+            //Defined in the github windows runner.
+            //TODO: fix this hardcoding
             string vsTestConsoleLocation = @"C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\Common7\IDE\Extensions\TestPlatform\";
 
             string run = "";
@@ -1000,7 +1010,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                 {
                     { "args", zipCommand}
                 },
-                step_message = "Note: Is a 3rd party action: https://github.com/marketplace/actions/create-zip-file"
+                step_message = "Note: This is a third party action: https://github.com/marketplace/actions/create-zip-file"
             };
 
             return gitHubStep;
