@@ -313,7 +313,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
     - task: AzureRmWebAppDeployment@3
       displayName: 'Azure App Service Deploy: web site'
       inputs:
-        azureSubscription: 'SamLearnsAzure connection to Azure Portal'
+        azureSubscription: 'MyProject connection to Azure Portal'
         WebAppName: $(WebsiteName)
         DeployToSlotFlag: true
         ResourceGroupName: $(ResourceGroupName)
@@ -406,7 +406,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
     - task: AzureAppServiceManage@0
       displayName: 'Swap Slots: website'
       inputs:
-        azureSubscription: 'SamLearnsAzure connection to Azure Portal'
+        azureSubscription: 'MyProject connection to Azure Portal'
         WebAppName: $(WebsiteName)
         ResourceGroupName: $(ResourceGroupName)
         SourceSlot: 'staging'      

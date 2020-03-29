@@ -163,8 +163,8 @@ stages:
       displayName: 'Generate build version number'
       inputs:
         targetType: FilePath
-        filePath: SamLearnsAzure/BuildVersion.ps1
-        arguments: -ProjectFile ""SamLearnsAzure/SamLearnsAzure.Web/SamLearnsAzure.Web.csproj""
+        filePath: MyProject/BuildVersion.ps1
+        arguments: -ProjectFile ""MyProject/MyProject.Web/MyProject.Web.csproj""
 
     - task: CopyFiles@2
       displayName: 'Copy environment ARM template files to: $(build.artifactstagingdirectory)'
@@ -226,7 +226,7 @@ stages:
     variables:
       AppSettings.Environment: 'data'
       ArmTemplateResourceGroupLocation: 'eu'
-      ResourceGroupName: 'SamLearnsAzureFeatureFlags'
+      ResourceGroupName: 'MyProjectFeatureFlags'
       WebsiteName: 'featureflags-data-eu-web'
       WebServiceName: 'featureflags-data-eu-service'
     steps:
@@ -389,12 +389,12 @@ steps:
   displayName: Restore
   inputs:
     command: restore
-    projects: SamLearnsAzure/SamLearnsAzure.Models/SamLearnsAzure.Models.csproj
+    projects: MyProject/MyProject.Models/MyProject.Models.csproj
 
 - task: DotNetCoreCLI@2
   displayName: Build
   inputs:
-    projects: SamLearnsAzure/SamLearnsAzure.Models/SamLearnsAzure.Models.csproj
+    projects: MyProject/MyProject.Models/MyProject.Models.csproj
     arguments: '--configuration $(BuildConfiguration)'
 
 - task: DotNetCoreCLI@2
@@ -402,7 +402,7 @@ steps:
   inputs:
     command: publish
     publishWebProjects: false
-    projects: SamLearnsAzure/SamLearnsAzure.Models/SamLearnsAzure.Models.csproj
+    projects: MyProject/MyProject.Models/MyProject.Models.csproj
     arguments: '--configuration $(BuildConfiguration) --output $(build.artifactstagingdirectory)'
     zipAfterPublish: false
 
@@ -410,7 +410,7 @@ steps:
   displayName: 'dotnet pack'
   inputs:
     command: pack
-    packagesToPack: SamLearnsAzure/SamLearnsAzure.Models/SamLearnsAzure.Models.csproj
+    packagesToPack: MyProject/MyProject.Models/MyProject.Models.csproj
     versioningScheme: byEnvVar
     versionEnvVar: BuildVersion
 
