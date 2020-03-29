@@ -872,7 +872,7 @@ jobs:
 ";
 
             expected = UtilityTests.TrimNewLines(expected);
-            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+            Assert.AreEqual(UtilityTests.DebugNewLineCharacters(expected), UtilityTests.DebugNewLineCharacters(gitHubOutput.actionsYaml));
         }
 
         [TestMethod]
