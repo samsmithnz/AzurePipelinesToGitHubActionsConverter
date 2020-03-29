@@ -570,8 +570,9 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                 //Start by scanning all of the steps, to see if we need to insert additional tasks
                 int stepAdjustment = 0;
                 bool addJavaSetupStep = false;
+                bool addGradleSetupStep = false;
                 bool addAzureLoginStep = false;
-                AzurePipelines.Step javaStep = null;
+                string javaVersion = null;
 
                 //If the code needs a Checkout step, add it first
                 if (addCheckoutStep == true)
@@ -590,8 +591,17 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                             case "Ant@1":
                             case "Maven@3":
                                 addJavaSetupStep = true;
-                                javaStep = step;
+                                javaVersion = stepsProcessing.GetStepInput(step, "jdkVersionOption");
                                 stepAdjustment++;
+                                break;
+
+                            case "Gradle@2":
+                                //Needs a the Java step and an additional Gradle step
+                                addJavaSetupStep = true;
+                                addGradleSetupStep = true;
+                                //Create the java step, as it doesn't exist
+                                javaVersion = "1.8";
+                                stepAdjustment += 2;
                                 break;
 
                             //If we have an Azure step, we will need to add a Azure login step
@@ -620,7 +630,13 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                 if (addJavaSetupStep == true)
                 {
                     //Add the JavaSetup step to the code
-                    newSteps[adjustmentsUsed] = stepsProcessing.CreateSetupJavaStep(javaStep);
+                    newSteps[adjustmentsUsed] = stepsProcessing.CreateSetupJavaStep(javaVersion);
+                    adjustmentsUsed++;
+                }
+                if (addGradleSetupStep == true)
+                {
+                    //Add the Gradle setup step to the code
+                    newSteps[adjustmentsUsed] = stepsProcessing.CreateSetupGradleStep();
                     adjustmentsUsed++;
                 }
                 if (addAzureLoginStep == true)

@@ -1,4 +1,5 @@
-﻿using AzurePipelinesToGitHubActionsConverter.Core.Conversion.Serialization;
+﻿using AzurePipelinesToGitHubActionsConverter.Core.AzurePipelines;
+using AzurePipelinesToGitHubActionsConverter.Core.Conversion.Serialization;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -49,6 +50,9 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                     case "DownloadBuildArtifacts@0":
                         gitHubStep = CreateDownloadBuildArtifacts(step);
                         break;
+                    case "Gradle@2":
+                        gitHubStep = CreateGradleStep(step);
+                        break;
                     case "Maven@3":
                         gitHubStep = CreateMavenStep(step);
                         break;
@@ -59,7 +63,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                         gitHubStep = CreateNuGetCommandStep(step);
                         break;
                     case "NuGetToolInstaller@1":
-                        gitHubStep = CreateNuGetToolInstallerStep(step);
+                        gitHubStep = CreateNuGetToolInstallerStep();
                         break;
                     case "PowerShell@2":
                         gitHubStep = CreateScriptStep("powershell", step);
@@ -549,7 +553,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
         }
 
         //https://github.com/warrenbuckley/Setup-Nuget
-        private GitHubActions.Step CreateNuGetToolInstallerStep(AzurePipelines.Step step)
+        private GitHubActions.Step CreateNuGetToolInstallerStep()
         {
             GitHubActions.Step gitHubStep = new GitHubActions.Step
             {
@@ -743,37 +747,60 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
             return gitHubStep;
         }
 
-        public GitHubActions.Step CreateSetupJavaStep(AzurePipelines.Step step)
+        public GitHubActions.Step CreateSetupJavaStep(string javaVersion)
         {
-            //coming from:
-            //- task: Ant@1
-            //  inputs:
-            //    workingDirectory: ''
-            //    buildFile: 'build.xml'
-            //    javaHomeOption: 'JDKVersion'
-            //    jdkVersionOption: '1.8'
-            //    jdkArchitectureOption: 'x64'
-            //    publishJUnitResults: true
-            //    testResultsFiles: '**/TEST-*.xml'  
-
-            //Going to: //https://github.com/marketplace/actions/create-zip-file
-            //- name: Set up JDK 1.8
-            //  uses: actions/setup-java@v1
-            //  with:
-            //    java-version: 1.8 
-
-            //Get the Java version and use it to build the task
-            string jdkVersionOption = GetStepInput(step, "jdkVersionOption");
-
+            if (javaVersion == null)
+            {
+                return null;
+            }
             GitHubActions.Step gitHubStep = new GitHubActions.Step
             {
-                name = "Setup JDK " + jdkVersionOption,
+                name = "Setup JDK " + javaVersion,
                 uses = "actions/setup-java@v1",
                 with = new Dictionary<string, string>
                 {
-                    { "java-version", jdkVersionOption}
+                    { "java-version", javaVersion}
                 }
             };
+
+            return gitHubStep;
+        }
+
+        public GitHubActions.Step CreateSetupGradleStep()
+        {
+            //Going to: 
+            //- name: Grant execute permission for gradlew
+            //  run: chmod +x gradlew
+
+            AzurePipelines.Step step = new Step
+            {
+                name = "Grant execute permission for gradlew",
+                script = "chmod +x gradlew"
+            };
+            GitHubActions.Step gitHubStep = CreateScriptStep("", step);
+
+            return gitHubStep;
+        }
+
+
+        public GitHubActions.Step CreateGradleStep(AzurePipelines.Step step)
+        {
+            //coming from:
+            //- task: Gradle@2
+            // inputs:
+            //   workingDirectory: ''
+            //   gradleWrapperFile: 'gradlew'
+            //   gradleOptions: '-Xmx3072m'
+            //   publishJUnitResults: false
+            //   testResultsFiles: '**/TEST-*.xml'
+            //   tasks: 'assembleDebug'
+
+            //Going to:
+            //- name: Build with Gradle
+            //  run: ./gradlew build
+
+            step.script = "./gradlew build";
+            GitHubActions.Step gitHubStep = CreateScriptStep("", step);
 
             return gitHubStep;
         }
@@ -821,8 +848,6 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
             //    goals: 'package' 
 
             //Going to:
-            //- name: Build with Ant
-            //  run: ant -noinput -buildfile build.xml
             //- name: Build with Maven
             //  run: mvn -B package --file pom.xml
 
@@ -1066,7 +1091,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
         }
 
         //Safely extract the step input, if it exists
-        private string GetStepInput(AzurePipelines.Step step, string name)
+        public string GetStepInput(AzurePipelines.Step step, string name)
         {
             string input = null;
             //Make the name lowercase to help prevent conflicts later
