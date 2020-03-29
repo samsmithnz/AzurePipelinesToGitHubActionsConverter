@@ -27,7 +27,7 @@ jobs:
 #Note: Azure DevOps template does not have an equivalent in GitHub Actions yet
 jobs:
   job_1_template:
-    #: 'NOTE: Azure DevOps template does not have an equivalent in GitHub Actions yet'
+    #: 'Note: Azure DevOps template does not have an equivalent in GitHub Actions yet'
     steps:
     - uses: actions/checkout@v1";
             expected = UtilityTests.TrimNewLines(expected);

@@ -75,7 +75,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
             //Resources
             if (azurePipeline.resources != null)
             {
-                //NOTE: Containers is in the jobs - this note should be removed once pipeliens and repositories is moved too
+                //Note: Containers is in the jobs - this note should be removed once pipeliens and repositories is moved too
 
                 //TODO: Add code for pipelines
                 if (azurePipeline.resources.pipelines != null)
@@ -536,7 +536,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                 //Process the steps, adding the default checkout step
                 newJob.steps = ProcessSteps(job.steps, true);
                 //TODO: Find a way to allow GitHub jobs to reference another job as a template
-                newJob.job_message += "NOTE: Azure DevOps template does not have an equivalent in GitHub Actions yet";
+                newJob.job_message += "Note: Azure DevOps template does not have an equivalent in GitHub Actions yet";
             }
             else if (newJob.steps == null && job.strategy?.runOnce?.deploy?.steps != null)
             {
@@ -545,7 +545,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                 //Process the steps, adding the default checkout step
                 newJob.steps = ProcessSteps(job.strategy?.runOnce?.deploy?.steps, false);
                 //TODO: Find a way to allow GitHub jobs to reference another job as a template
-                newJob.job_message += "NOTE: Azure DevOps strategy>runOnce>deploy does not have an equivalent in GitHub Actions yet";
+                newJob.job_message += "Note: Azure DevOps strategy>runOnce>deploy does not have an equivalent in GitHub Actions yet";
             }
 
             if (newJob._if != null)

@@ -116,7 +116,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                                 //}
                             }
                         }
-                        gitHubStep.step_message = "NOTE: This step does not have a conversion path yet: " + step.task;
+                        gitHubStep.step_message = "Note: This step does not have a conversion path yet: " + step.task;
                         gitHubStep.run = "Write-Host " + gitHubStep.step_message + " " + yamlBuilder.ToString();
                         break;
                 }
