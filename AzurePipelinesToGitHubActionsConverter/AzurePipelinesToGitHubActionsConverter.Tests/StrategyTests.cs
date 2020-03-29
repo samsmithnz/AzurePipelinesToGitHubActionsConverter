@@ -107,7 +107,7 @@ jobs:
 
             //Assert
             string expected = @"
-#NOTE: Azure DevOps strategy>runOnce>deploy does not have an equivalent in GitHub Actions yet
+#Note: Azure DevOps strategy>runOnce>deploy does not have an equivalent in GitHub Actions yet
 jobs:
   DeployInfrastructure:
     #: 'NOTE: Azure DevOps strategy>runOnce>deploy does not have an equivalent in GitHub Actions yet'

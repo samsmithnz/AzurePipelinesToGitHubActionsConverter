@@ -830,7 +830,7 @@ stages:
 
             //Assert
             string expected = @"
-#NOTE: Azure DevOps strategy>runOnce>deploy does not have an equivalent in GitHub Actions yet
+#Note: Azure DevOps strategy>runOnce>deploy does not have an equivalent in GitHub Actions yet
 
 #Note: This is a third party action: https://github.com/marketplace/actions/create-zip-file
 on:

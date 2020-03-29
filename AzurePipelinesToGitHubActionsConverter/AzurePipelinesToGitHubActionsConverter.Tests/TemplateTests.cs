@@ -24,7 +24,7 @@ jobs:
 
             //Assert
             string expected = @"
-#NOTE: Azure DevOps template does not have an equivalent in GitHub Actions yet
+#Note: Azure DevOps template does not have an equivalent in GitHub Actions yet
 jobs:
   job_1_template:
     #: 'NOTE: Azure DevOps template does not have an equivalent in GitHub Actions yet'
