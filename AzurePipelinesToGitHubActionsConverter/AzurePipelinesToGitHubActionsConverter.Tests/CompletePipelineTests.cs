@@ -873,6 +873,7 @@ jobs:
 
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(UtilityTests.DebugNewLineCharacters(expected), UtilityTests.DebugNewLineCharacters(gitHubOutput.actionsYaml));
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
         }
 
         [TestMethod]
@@ -1475,8 +1476,8 @@ jobs:
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
         }
-        
-        
+
+
         [TestMethod]
         public void AzureARMTemplatePipelineTest()
         {
