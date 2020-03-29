@@ -424,8 +424,37 @@ steps:
             ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(yaml);
 
             //Assert
-            Assert.IsTrue(gitHubOutput.comments.Count == 0);
-            Assert.IsTrue(gitHubOutput.actionsYaml.IndexOf("This step does not have a conversion path yet") == -1);
+            string expected = @"
+on:
+  push:
+    branches:
+    - master
+env:
+  BuildConfiguration: Release
+  BuildPlatform: Any CPU
+  BuildVersion: 1.1.${{ env.Build.BuildId }}
+jobs:
+  build:
+    runs-on: windows-latest
+    container: {}
+    steps:
+    - uses: actions/checkout@v1
+    - name: Restore
+      run: 'dotnet restore MyProject/MyProject.Models/MyProject.Models.csproj '
+    - name: Build
+      run: 'dotnet MyProject/MyProject.Models/MyProject.Models.csproj --configuration ${{ env.BuildConfiguration }} '
+    - name: Publish
+      run: 'dotnet publish MyProject/MyProject.Models/MyProject.Models.csproj --configuration ${{ env.BuildConfiguration }} --output ${GITHUB_WORKSPACE} '
+    - name: dotnet pack
+      run: 'dotnet pack '
+    - name: Publish Artifact
+      uses: actions/upload-artifact@master
+      with:
+        path: ${GITHUB_WORKSPACE}
+";
+
+            expected = UtilityTests.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
         }
 
 
@@ -461,8 +490,26 @@ stages:
             ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(yaml);
 
             //Assert
-            Assert.AreEqual(0, gitHubOutput.comments.Count);
-            Assert.IsTrue(gitHubOutput.actionsYaml.IndexOf("This step does not have a conversion path yet") == -1);
+            string expected = @"
+on:
+  push:
+    branches:
+    - master
+jobs:
+  Deploy_Stage_Deploy:
+    name: Deploy job
+    runs-on: ubuntu-latest
+    if: and(success(),eq(github.ref, 'refs/heads/master'))
+    steps:
+    - uses: actions/checkout@v1
+    - name: Download the build artifacts
+      uses: actions/download-artifact@v1.0.0
+      with:
+        name: drop
+";
+
+            expected = UtilityTests.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
         }
 
         [TestMethod]
@@ -489,8 +536,21 @@ resources:
             ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(yaml);
 
             //Assert
-            Assert.AreEqual(1, gitHubOutput.comments.Count);
-            Assert.IsTrue(gitHubOutput.actionsYaml.IndexOf("This step does not have a conversion path yet") == -1);
+            string expected = @"
+#TODO: Container conversion not yet done: https://github.com/samsmithnz/AzurePipelinesToGitHubActionsConverter/issues/39
+on:
+  push:
+    branches:
+    - master
+jobs:
+  build:
+    runs-on: ubuntu-16.04
+    container:
+      image: redis
+";
+
+            expected = UtilityTests.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
         }
 
         [TestMethod]
@@ -769,8 +829,51 @@ stages:
             ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(yaml);
 
             //Assert
-            Assert.AreEqual(2, gitHubOutput.comments.Count);
-            Assert.IsTrue(gitHubOutput.actionsYaml.IndexOf("This step does not have a conversion path yet") == -1);
+            string expected = @"
+#NOTE: Azure DevOps strategy>runOnce>deploy does not have an equivalent in GitHub Actions yet
+
+#Note: This is a third party action: https://github.com/marketplace/actions/create-zip-file
+on:
+  push:
+    branches:
+    - master
+env:
+  azureSubscription: '{{ azureRmConnection.Id }}'
+  functionAppName: '{{ functionAppName }}'
+  vmImageName: vs2017-win2016
+  workingDirectory: '{{ workingDirectory }}'
+jobs:
+  Build_Stage_Build:
+    name: Build
+    runs-on: ${{ env.vmImageName }}
+    steps:
+    - uses: actions/checkout@v1
+    - name: Build
+      run: 'dotnet build ${{ env.workingDirectory }}/*.csproj --output ${{ env.System.DefaultWorkingDirectory }}/publish_output --configuration Release '
+    - #: 'Note: This is a third party action: https://github.com/marketplace/actions/create-zip-file'
+      name: Archive files
+      uses: montudor/action-zip@v0.1.0
+      with:
+        args: zip -qq -r ${{ env.Build.ArtifactStagingDirectory }}/${{ env.Build.BuildId }}.zip ${{ env.System.DefaultWorkingDirectory }}/publish_output
+    - uses: actions/upload-artifact@master
+      with:
+        path: ${{ env.Build.ArtifactStagingDirectory }}/${{ env.Build.BuildId }}.zip
+        name: drop
+  Deploy_Stage_:
+    #: >+
+      NOTE: Azure DevOps strategy>runOnce>deploy does not have an equivalent in GitHub Actions yet
+    name: Deploy
+    runs-on: ${{ env.vmImageName }}
+    if: success()
+    steps:
+    - name: Test
+      run: |
+        Write-Host ""Hello world""
+      shell: powershell
+";
+
+            expected = UtilityTests.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
         }
 
         [TestMethod]
@@ -880,8 +983,44 @@ steps:
             ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(yaml);
 
             //Assert
-            Assert.AreEqual(0, gitHubOutput.comments.Count);
-            Assert.IsTrue(gitHubOutput.actionsYaml.IndexOf("This step does not have a conversion path yet") == -1);
+            string expected = @"
+on:
+  push:
+    branches:
+    - master
+env:
+  GOBIN: ${{ env.GOPATH }}/bin
+  GOROOT: /usr/local/go1.11
+  GOPATH: ${{ env.system.defaultWorkingDirectory }}/gopath
+  modulePath: ${{ env.GOPATH }}/src/github.com/${{ env.build.repository.name }}
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+    - name: Set up the Go workspace
+      run: |
+        mkdir -p '${{ env.GOBIN }}'
+        mkdir -p '${{ env.GOPATH }}/pkg'
+        mkdir -p '${{ env.modulePath }}'
+        shopt -s extglob
+        shopt -s dotglob
+        mv !(gopath) '${{ env.modulePath }}'
+        echo '##vso[task.prependpath]${{ env.GOBIN }}'
+        echo '##vso[task.prependpath]${{ env.GOROOT }}/bin'
+    - name: Get dependencies, then build
+      run: |
+        go version
+        go get -v -t -d ./...
+        if [ -f Gopkg.toml ]; then
+            curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
+            dep ensure
+        fi
+        go build -v .
+";
+
+            expected = UtilityTests.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
         }
 
         [TestMethod]
