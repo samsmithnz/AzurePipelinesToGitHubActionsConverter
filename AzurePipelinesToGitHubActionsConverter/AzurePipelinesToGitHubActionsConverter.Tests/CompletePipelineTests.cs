@@ -860,7 +860,7 @@ jobs:
         path: ${{ env.Build.ArtifactStagingDirectory }}/${{ env.Build.BuildId }}.zip
         name: drop
   Deploy_Stage_:
-    #:       Note: Azure DevOps strategy>runOnce>deploy does not have an equivalent in GitHub Actions yet
+    #: Note: Azure DevOps strategy>runOnce>deploy does not have an equivalent in GitHub Actions yet
     name: Deploy
     runs-on: ${{ env.vmImageName }}
     if: success()
