@@ -591,31 +591,48 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                             //If we have an Java based step, we will need to add a Java setup step
                             case "Ant@1":
                             case "Maven@3":
-                                addJavaSetupStep = true;
-                                javaVersion = stepsProcessing.GetStepInput(step, "jdkVersionOption");
-                                stepAdjustment++;
+                                if (addJavaSetupStep == false)
+                                {
+                                    addJavaSetupStep = true;
+                                    stepAdjustment++;
+                                    javaVersion = stepsProcessing.GetStepInput(step, "jdkVersionOption");
+                                }
                                 break;
 
+                            //Needs a the Java step and an additional Gradle step
                             case "Gradle@2":
-                                //Needs a the Java step and an additional Gradle step
-                                addJavaSetupStep = true;
-                                addGradleSetupStep = true;
-                                //Create the java step, as it doesn't exist
-                                javaVersion = "1.8";
-                                stepAdjustment += 2;
+
+                                if (addJavaSetupStep == false)
+                                {
+                                    addJavaSetupStep = true;
+                                    stepAdjustment++;
+                                    //Create the java step, as it doesn't exist
+                                    javaVersion = "1.8";
+                                }
+                                if (addGradleSetupStep == false)
+                                {
+                                    addGradleSetupStep = true;
+                                    stepAdjustment++;
+                                }
                                 break;
 
                             //If we have an Azure step, we will need to add a Azure login step
                             case "AzureAppServiceManage@0":
                             case "AzureResourceGroupDeployment@2":
                             case "AzureRmWebAppDeployment@3":
-                                addAzureLoginStep = true;
-                                stepAdjustment++;
+                                if (addAzureLoginStep == false)
+                                {
+                                    addAzureLoginStep = true;
+                                    stepAdjustment++;
+                                }
                                 break;
 
                             case "VSBuild@1":
-                                addMSSetupStep = true;
-                                stepAdjustment++;
+                                if (addMSSetupStep == false)
+                                {
+                                    addMSSetupStep = true;
+                                    stepAdjustment++;
+                                }
                                 break;
                         }
                     }
