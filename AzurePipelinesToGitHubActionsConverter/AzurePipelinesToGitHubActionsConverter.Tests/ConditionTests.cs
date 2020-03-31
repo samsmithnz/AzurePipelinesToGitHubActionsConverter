@@ -47,8 +47,8 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             //Assert
             string expected = "not(contains('ABCDE', 'BCD'))";
             Assert.AreEqual(expected, result);
-        }   
-        
+        }
+
         [TestMethod]
         public void EqualsTest()
         {
@@ -115,10 +115,10 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             List<string> results = ConditionsProcessing.FindBracketedContentsInString(text);
 
             //Assert
-            Assert.IsTrue(results != null);
-            Assert.IsTrue(results.Count == 4);
-        }   
-        
+            Assert.AreNotEqual(null, results);
+            Assert.AreEqual(4, results.Count);
+        }
+
         [TestMethod]
         public void NestedString2Test()
         {
@@ -129,10 +129,10 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             List<string> results = ConditionsProcessing.FindBracketedContentsInString(text);
 
             //Assert
-            Assert.IsTrue(results != null);
-            Assert.IsTrue(results.Count == 2);
-            Assert.IsTrue(results[0] == "'ABCDE', 'BCD'");
-            Assert.IsTrue(results[1]== "contains('ABCDE', 'BCD')");
+            Assert.AreNotEqual(null, results);
+            Assert.AreEqual(2, results.Count);
+            Assert.AreEqual("'ABCDE', 'BCD'", results[0]);
+            Assert.AreEqual("contains('ABCDE', 'BCD')", results[1]);
         }
 
     }

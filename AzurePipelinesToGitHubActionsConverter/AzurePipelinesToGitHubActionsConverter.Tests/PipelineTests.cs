@@ -69,7 +69,7 @@ on:
             object yamlObject = GenericObjectSerialization.DeserializeYaml<object>(yaml);
 
             //Assert
-            Assert.IsTrue(yamlObject != null);
+            Assert.AreNotEqual(null, yamlObject);
         }
 
     }

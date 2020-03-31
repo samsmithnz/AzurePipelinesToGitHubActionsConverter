@@ -10,10 +10,74 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.AzurePipelines
 
         //steps: [script | bash | pwsh | powershell | checkout | task | templateReference]
 
-        public string script { get; set; }
-        public string bash { get; set; }
-        public string pwsh { get; set; }
-        public string powershell { get; set; }
+        private string _script = null;
+        public string script
+        {
+            get
+            {
+                return _script;
+            }
+            set
+            {
+                //Spaces on the beginning or end seem to be a problem for the YAML serialization
+                if (string.IsNullOrEmpty(value) == false)
+                {
+                    value = value.Trim();
+                }
+                _script = value;
+            }
+        }
+        private string _bash = null;
+        public string bash
+        {
+            get
+            {
+                return _bash;
+            }
+            set
+            {
+                //Spaces on the beginning or end seem to be a problem for the YAML serialization
+                if (string.IsNullOrEmpty(value) == false)
+                {
+                    value = value.Trim();
+                }
+                _bash = value;
+            }
+        }
+        private string _pwsh = null;
+        public string pwsh
+        {
+            get
+            {
+                return _pwsh;
+            }
+            set
+            {
+                //Spaces on the beginning or end seem to be a problem for the YAML serialization
+                if (string.IsNullOrEmpty(value) == false)
+                {
+                    value = value.Trim();
+                }
+                _pwsh = value;
+            }
+        }
+        private string _powershell = null;
+        public string powershell
+        {
+            get
+            {
+                return _powershell;
+            }
+            set
+            {
+                //Spaces on the beginning or end seem to be a problem for the YAML serialization
+                if (string.IsNullOrEmpty(value) == false)
+                {
+                    value = value.Trim();
+                }
+                _powershell = value;
+            }
+        }
         //public string checkout { get; set; }
         public string task { get; set; }
         //public string templateReference { get; set; }

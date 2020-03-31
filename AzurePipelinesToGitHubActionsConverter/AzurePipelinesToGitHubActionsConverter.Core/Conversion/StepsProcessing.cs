@@ -42,6 +42,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                     case "CopyFiles@2":
                         gitHubStep = CreateCopyFilesStep(step);
                         break;
+                    case "Docker@1":
                     case "Docker@2":
                         gitHubStep = CreateDockerStep(step);
                         break;
@@ -110,10 +111,6 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                             {
                                 yamlBuilder.Append("#");
                                 yamlBuilder.Append(line);
-                                //if (i < newYamlSplit.Length - 1)
-                                //{
-                                //    yamlBuilder.Append(Environment.NewLine);
-                                //}
                             }
                         }
                         gitHubStep.step_message = "Note: This step does not have a conversion path yet: " + step.task;
@@ -204,26 +201,25 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
 
         private GitHubActions.Step CreateDotNetCommandStep(AzurePipelines.Step step)
         {
-
-            GitHubActions.Step gitHubStep = new GitHubActions.Step
-            {
-                run = "dotnet "
-            };
+            string runScript = "dotnet ";
             if (step.inputs.ContainsKey("command") == true)
             {
-                gitHubStep.run += GetStepInput(step, "command") + " ";
+                runScript += GetStepInput(step, "command") + " ";
             }
             if (step.inputs.ContainsKey("projects") == true)
             {
-                gitHubStep.run += GetStepInput(step, "projects") + " ";
+                runScript += GetStepInput(step, "projects") + " ";
             }
             if (step.inputs.ContainsKey("arguments") == true)
             {
-                gitHubStep.run += GetStepInput(step, "arguments") + " ";
+                runScript += GetStepInput(step, "arguments") + " ";
             }
-
             //Remove the new line characters
-            gitHubStep.run = gitHubStep.run.Replace("\n", "");
+            runScript = runScript.Replace("\n", "");
+            GitHubActions.Step gitHubStep = new GitHubActions.Step
+            {
+                run = runScript
+            };
 
             return gitHubStep;
         }
@@ -261,7 +257,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
         private GitHubActions.Step CreateCopyFilesStep(AzurePipelines.Step step)
         {
             //Use PowerShell to copy files
-            step.script = "Copy " + GetStepInput(step, "sourcefolder") + "/" + GetStepInput(step, "contents") + " " + GetStepInput(step, "targetfolder");
+            step.script = "Copy '" + GetStepInput(step, "sourcefolder") + "/" + GetStepInput(step, "contents") + "' '" + GetStepInput(step, "targetfolder") + "'";
 
             GitHubActions.Step gitHubStep = CreateScriptStep("powershell", step);
             return gitHubStep;
@@ -290,8 +286,8 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
             string arguments = GetStepInput(step, "arguments");
 
             //Very very simple. Needs more branches and logic
-            step.script = "docker build . --file " + dockerFile + " --tag " + tags + " " + arguments;
-
+            string dockerScript = "docker build . --file " + dockerFile + " --tag " + tags + " " + arguments;
+            step.script = dockerScript;
             GitHubActions.Step gitHubStep = CreateScriptStep("", step);
             return gitHubStep;
         }
@@ -365,8 +361,8 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                 }
             };
 
-            //Add note that "AZURE_SP" secret is required
-            gitHubStep.step_message = @"Note that ""AZURE_SP"" secret is required to be setup and added into GitHub Secrets: https://help.github.com/en/actions/automating-your-workflow-with-github-actions/creating-and-using-encrypted-secrets";
+            //Add note that 'AZURE_SP' secret is required
+            gitHubStep.step_message = @"Note that 'AZURE_SP' secret is required to be setup and added into GitHub Secrets: https://help.github.com/en/actions/automating-your-workflow-with-github-actions/creating-and-using-encrypted-secrets";
 
             return gitHubStep;
         }
@@ -701,36 +697,26 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
             //     -WebsiteUrl "https://$(WebsiteName)-staging.azurewebsites.net/" 
             //     -TestEnvironment "$(AppSettings.Environment)" 
 
-            //TO:
+            //To:
             //- name: Functional Tests
             //  run: |
             //    $vsTestConsoleExe = "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Enterprise\\Common7\\IDE\\Extensions\\TestPlatform\\vstest.console.exe"
             //    $targetTestDll = "functionaltests\FeatureFlags.FunctionalTests.dll"
             //    $testRunSettings = "/Settings:`"functionaltests\test.runsettings`" "
-            //    $parameters = " -- TestEnvironment=""Beta123""  ServiceUrl=""https://featureflags-data-eu-service-staging.azurewebsites.net/"" WebsiteUrl=""https://featureflags-data-eu-web-staging.azurewebsites.net/"" "
+            //    $parameters = " -- TestEnvironment=""Beta123"" ServiceUrl=""https://featureflags-data-eu-service-staging.azurewebsites.net/"" WebsiteUrl=""https://featureflags-data-eu-web-staging.azurewebsites.net/"" "
             //    #Note that the `" is an escape character to quote strings, and the `& is needed to start the command
             //    $command = "`& `"$vsTestConsoleExe`" `"$targetTestDll`" $testRunSettings $parameters " 
             //    Write-Host "$command"
             //    Invoke-Expression $command
 
-            //$vsTestConsoleExe = "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Enterprise\\Common7\\IDE\\Extensions\\TestPlatform\\vstest.console.exe"
-            //$targetTestDll = "functionaltests\FeatureFlags.FunctionalTests.dll"
-            //$testRunSettings = "/Settings:`"functionaltests\test.runsettings`" "
-            //$parameters = " -- TestEnvironment=""Beta123""  ServiceUrl=""https://featureflags-data-eu-service-staging.azurewebsites.net/"" WebsiteUrl=""https://featureflags-data-eu-web-staging.azurewebsites.net/"" "
-            //#Note that the `" is an escape character to quote strings, and the `& is needed to start the command
-            //$command = "`& `"$vsTestConsoleExe`" `"$targetTestDll`" $testRunSettings $parameters " 
-            //Write-Host "$command"
-            //Invoke-Expression $command
-
-
             //Defined in the github windows runner.
-            //TODO: fix this hardcoding
+            //TODO: fix this hardcoded VS path
             string vsTestConsoleLocation = @"C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\Common7\IDE\Extensions\TestPlatform\";
 
             string run = "";
             run += "$vsTestConsoleExe = \"" + vsTestConsoleLocation + "vstest.console.exe\"\n";
             run += "$targetTestDll = \"" + GetStepInput(step, "testassemblyver2") + "\"\n";
-            run += "$testRunSettings = \" /Settings:`\"" + GetStepInput(step, "runsettingsfile") + "`\" \"\n";
+            run += "$testRunSettings = \"/Settings:`\"" + GetStepInput(step, "runsettingsfile") + "`\" \"\n";
 
             string parametersInput = GetStepInput(step, "overridetestrunparameters");
             if (parametersInput != null)
@@ -745,43 +731,53 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                     string[] singleLineParameters = multiLineItem.Split(" -");
                     foreach (string item in singleLineParameters)
                     {
-                        string[] items = item.Split(" ");
-                        if (items.Length >= 2)
+                        string[] items = item.Replace("\n", "").Split(" ");
+                        if (items.Length == 2)
                         {
-                            //Sometimes the first item has an extra -, remove this.
-                            if (items[0].ToString().StartsWith("-") == true)
-                            {
-                                items[0] = items[0].TrimStart('-');
-                            }
                             //build the new format [var name]=[var value]
                             parameters.Append(items[0]);
                             parameters.Append("=");
                             parameters.Append(items[1]);
-                            parameters.Append("  ");
+                            parameters.Append(" ");
+                        }
+                        else
+                        {
+                            for (int i = 0; i < items.Length - 1; i++)
+                            {
+                                //if it's an even number (and hence the var name):
+                                if (i % 2 == 0)
+                                {
+                                    //Sometimes the first item has an extra -, remove this.
+                                    if (items[i].ToString().StartsWith("-") == true)
+                                    {
+                                        items[i] = items[i].TrimStart('-');
+                                    }
+                                    //build the new format [var name]=[var value]
+                                    parameters.Append(items[i]);
+                                    parameters.Append("=");
+                                }
+                                else //It's an odd number (and hence the var value)
+                                {
+                                    //build the new format [var name]=[var value]
+                                    parameters.Append(items[i]);
+                                    parameters.Append(" ");
+                                }
+                            }
                         }
                     }
                 }
-                run += "    $parameters = \" -- " + parameters.ToString() + "\" ";
+                run += "$parameters = \" -- " + parameters.ToString() + "\"\n";
+                //run += "$parameters = \"poop\"\n";
             }
 
-            run += "#Note that the `\" is an escape character sequence to quote strings, and `& is needed to start the command\n";
+            run += "#Note that the `\" is an escape character to quote strings, and the `& is needed to start the command\n";
             run += "$command = \"`& `\"$vsTestConsoleExe`\" `\"$targetTestDll`\" $testRunSettings $parameters \"\n";
             run += "Write-Host \"$command\"\n";
             run += "Invoke-Expression $command";
 
             //To PowerShell script
+            step.script = run;
             GitHubActions.Step gitHubStep = CreateScriptStep("powershell", step);
-            gitHubStep.run = run;
-            //gitHubStep.run = @" |
-            //    $vsTestConsoleExe = ""C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Enterprise\\Common7\\IDE\\Extensions\\TestPlatform\\vstest.console.exe""
-            //    $targetTestDll = """ + GetStepInput(step, "testassemblyver2") + @"""
-            //    $testRunSettings = "" / Settings:`""" + GetStepInput(step, "runsettingsfile") + @"`"" ""
-            //    $parameters = ""-- TestEnvironment = ""Beta123""  ServiceUrl = ""https://myproject-service-staging.azurewebsites.net/"" WebsiteUrl=""https://myproject-web-staging.azurewebsites.net/"" ""
-            //    #Note that the `"" is an escape character to quote strings, and the `& is needed to start the command
-            //    $command = ""`& `""$vsTestConsoleExe`"" `""$targetTestDll`"" $testRunSettings $parameters ""
-            //    Write - Host ""$command""
-            //    Invoke - Expression $command
-            //    ";
 
             return gitHubStep;
         }
@@ -1083,10 +1079,10 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
             string configuration = GetStepInput(step, "configuration");
 
             string script = "" +
-            "  cd Blank \n" +
-            "  nuget restore \n" +
-            "  cd Blank.Android \n" +
-            "  msbuild " + projectFile + " /verbosity:normal /t:Rebuild /p:Configuration = " + configuration;
+            "cd Blank\n" +
+            "nuget restore\n" +
+            "cd Blank.Android\n" +
+            "msbuild " + projectFile + " /verbosity:normal /t:Rebuild /p:Configuration=" + configuration;
             step.script = script;
 
             GitHubActions.Step gitHubStep = CreateScriptStep("", step);
@@ -1115,10 +1111,10 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
             string configuration = GetStepInput(step, "configuration");
 
             string script = "" +
-            "  cd Blank \n" +
-            "  nuget restore \n" +
-            "  cd Blank.Android \n" +
-            "  msbuild " + projectFile + " /verbosity:normal /t:Rebuild /p:Platform=iPhoneSimulator /p:Configuration = " + configuration;
+            "cd Blank\n" +
+            "nuget restore\n" +
+            "cd Blank.Android\n" +
+            "msbuild " + projectFile + " /verbosity:normal /t:Rebuild /p:Platform=iPhoneSimulator /p:Configuration=" + configuration;
             step.script = script;
 
             GitHubActions.Step gitHubStep = CreateScriptStep("", step);
