@@ -53,7 +53,7 @@ stages:
          $xml = [Xml] (Get-Content FeatureFlags/FeatureFlags.Web/FeatureFlags.Web.csproj)
          $initialVersion = [Version] $xml.Project.PropertyGroup.Version
          Write-Host ""Initial Version: "" $version
-         $spliteVersion = $initialVersion -Split ""\.""
+         $splitVersion = $initialVersion -Split ""\.""
          #Get the build number (number of days since January 1, 2000)
          $baseDate = [datetime]""01/01/2000""
          $currentDate = $(Get-Date)
@@ -64,7 +64,7 @@ stages:
          $EndDate=(GET-DATE)
          $revisionNumber = [math]::Round((New-TimeSpan -Start $StartDate -End $EndDate).TotalSeconds / 2,0)
          #Final version number
-         $finalBuildVersion = ""$($spliteVersion[0]).$($spliteVersion[1]).$($buildNumber).$($revisionNumber)""
+         $finalBuildVersion = ""$($splitVersion[0]).$($splitVersion[1]).$($buildNumber).$($revisionNumber)""
          Write-Host ""Major.Minor,Build,Revision""
          Write-Host ""Final build number: "" $finalBuildVersion
          #Writing final version number back to Azure DevOps variable
@@ -123,7 +123,72 @@ stages:
             ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(yaml);
 
             //Assert
-            Assert.IsTrue(gitHubOutput.actionsYaml.IndexOf("unknown") == -1);
+            string expected = @"
+on:
+  push:
+    branches:
+    - master
+  pull-request:
+    branches:
+    - '*'
+env:
+  vmImage: windows-latest
+  buildConfiguration: Release
+  buildPlatform: Any CPU
+  buildNumber: 1.1.0.0
+jobs:
+  Build_Stage_Build:
+    name: Build job
+    runs-on: ${{ env.vmImage }}
+    steps:
+    - uses: actions/checkout@v1
+    - name: Use .NET Core sdk
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 2.2.203
+    - name: Generate build version number
+      run: |
+        Write-Host ""Generating Build Number""
+        #Get the version from the csproj file
+        $xml = [Xml] (Get-Content FeatureFlags/FeatureFlags.Web/FeatureFlags.Web.csproj)
+        $initialVersion = [Version] $xml.Project.PropertyGroup.Version
+        Write-Host ""Initial Version: "" $version
+        $splitVersion = $initialVersion -Split ""\.""
+        #Get the build number (number of days since January 1, 2000)
+        $baseDate = [datetime]""01/01/2000""
+        $currentDate = ${{ env.Get-Date }}
+        $interval = (NEW-TIMESPAN -Start $baseDate -End $currentDate)
+        ${{ env.buildNumber }} = $interval.Days
+        #Get the revision number (number seconds (divided by two) into the day on which the compilation was performed)
+        $StartDate=[datetime]::Today
+        $EndDate=(GET-DATE)
+        $revisionNumber = [math]::Round((New-TimeSpan -Start $StartDate -End $EndDate).TotalSeconds / 2,0)
+        #Final version number
+        $finalBuildVersion = ""${{ env.$splitVersion[0] }}.${{ env.$splitVersion[1] }}.$(${{ env.buildNumber }}).${{ env.$revisionNumber }}""
+        Write-Host ""Major.Minor,Build,Revision""
+        Write-Host ""Final build number: "" $finalBuildVersion
+        #Writing final version number back to Azure DevOps variable
+        Write-Host ""##vso[task.setvariable variable=buildNumber]$finalBuildVersion""
+      shell: powershell
+    - name: 'Copy environment ARM template files to: ${GITHUB_WORKSPACE}'
+      run: Copy '${{ env.system.defaultworkingdirectory }}\FeatureFlags\FeatureFlags.ARMTemplates/**\*' '${GITHUB_WORKSPACE}\ARMTemplates'
+      shell: powershell
+    - name: Test dotnet code projects
+      run: dotnet test FeatureFlags/FeatureFlags.Tests/FeatureFlags.Tests.csproj --configuration ${{ env.buildConfiguration }} --logger trx --collect ""Code coverage"" --settings:${{ env.Build.SourcesDirectory }}\FeatureFlags\FeatureFlags.Tests\CodeCoverage.runsettings
+    - name: Publish dotnet core projects
+      run: dotnet publish FeatureFlags/FeatureFlags.Service/FeatureFlags.Service.csprojFeatureFlags/FeatureFlags.Web/FeatureFlags.Web.csproj --configuration ${{ env.buildConfiguration }} --output ${GITHUB_WORKSPACE} -p:Version=${{ env.buildNumber }}
+    - name: Publish dotnet core functional tests project
+      run: dotnet publish FeatureFlags/FeatureFlags.FunctionalTests/FeatureFlags.FunctionalTests.csproj --configuration ${{ env.buildConfiguration }} --output ${GITHUB_WORKSPACE}/FunctionalTests
+    - name: 'Copy Selenium Files to: ${GITHUB_WORKSPACE}/FunctionalTests/FeatureFlags.FunctionalTests'
+      run: Copy 'FeatureFlags/FeatureFlags.FunctionalTests/bin/${{ env.buildConfiguration }}/netcoreapp3.0/*chromedriver.exe*' '${GITHUB_WORKSPACE}/FunctionalTests/FeatureFlags.FunctionalTests'
+      shell: powershell
+    - name: Publish Artifact
+      uses: actions/upload-artifact@master
+      with:
+        path: ${GITHUB_WORKSPACE}
+";
+            expected = UtilityTests.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
         }
 
         [TestMethod]
@@ -272,8 +337,7 @@ stages:
       displayName: 'Run functional smoke tests on website and web service'
       inputs:
         searchFolder: '$(build.artifactstagingdirectory)'
-        testAssemblyVer2: |
-          **\FeatureFlags.FunctionalTests\FeatureFlags.FunctionalTests.dll
+        testAssemblyVer2: '**\FeatureFlags.FunctionalTests\FeatureFlags.FunctionalTests.dll'
         uiTests: true
         runSettingsFile: '$(build.artifactstagingdirectory)/drop/FunctionalTests/FeatureFlags.FunctionalTests/test.runsettings'
         overrideTestrunParameters: |
@@ -300,8 +364,105 @@ stages:
             ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(yaml);
 
             //Assert
-            Assert.IsTrue(gitHubOutput.comments.Count == 1);
-            Assert.IsTrue(gitHubOutput.actionsYaml.IndexOf("This step does not have a conversion path yet") == -1);
+            string expected = @"
+#Note that ""AZURE_SP"" secret is required to be setup and added into GitHub Secrets: https://help.github.com/en/actions/automating-your-workflow-with-github-actions/creating-and-using-encrypted-secrets
+on:
+  push:
+    branches:
+    - master
+  pull-request:
+    branches:
+    - '*'
+env:
+  vmImage: windows-latest
+  buildConfiguration: Release
+  buildPlatform: Any CPU
+  buildNumber: 1.1.0.0
+jobs:
+  Build_Stage_Build:
+    name: Build job
+    runs-on: ${{ env.vmImage }}
+    steps:
+    - uses: actions/checkout@v1
+    - name: Generate build version number
+      shell: powershell
+    - name: 'Copy environment ARM template files to: ${GITHUB_WORKSPACE}'
+      run: Copy '${{ env.system.defaultworkingdirectory }}\FeatureFlags\FeatureFlags.ARMTemplates/**\*' '${GITHUB_WORKSPACE}\ARMTemplates'
+      shell: powershell
+    - name: Test dotnet code projects
+      run: dotnet test FeatureFlags/FeatureFlags.Tests/FeatureFlags.Tests.csproj --configuration ${{ env.buildConfiguration }} --logger trx --collect ""Code coverage"" --settings:${{ env.Build.SourcesDirectory }}\FeatureFlags\FeatureFlags.Tests\CodeCoverage.runsettings
+    - name: Publish dotnet core projects
+      run: dotnet publish FeatureFlags/FeatureFlags.Service/FeatureFlags.Service.csprojFeatureFlags/FeatureFlags.Web/FeatureFlags.Web.csproj --configuration ${{ env.buildConfiguration }} --output ${GITHUB_WORKSPACE} -p:Version=${{ env.buildNumber }}
+    - name: Publish dotnet core functional tests project
+      run: dotnet publish FeatureFlags/FeatureFlags.FunctionalTests/FeatureFlags.FunctionalTests.csproj --configuration ${{ env.buildConfiguration }} --output ${GITHUB_WORKSPACE}/FunctionalTests
+    - name: 'Copy Selenium Files to: ${GITHUB_WORKSPACE}/FunctionalTests/FeatureFlags.FunctionalTests'
+      run: Copy 'FeatureFlags/FeatureFlags.FunctionalTests/bin/${{ env.buildConfiguration }}/netcoreapp3.0/*chromedriver.exe*' '${GITHUB_WORKSPACE}/FunctionalTests/FeatureFlags.FunctionalTests'
+      shell: powershell
+    - name: Publish Artifact
+      uses: actions/upload-artifact@master
+      with:
+        path: ${GITHUB_WORKSPACE}
+  Deploy_Stage_Deploy:
+    name: Deploy job
+    runs-on: ${{ env.vmImage }}
+    env:
+      AppSettings.Environment: data
+      ArmTemplateResourceGroupLocation: eu
+      ResourceGroupName: MyProjectFeatureFlags
+      WebsiteName: featureflags-data-eu-web
+      WebServiceName: featureflags-data-eu-service
+    if: and(success(),eq(github.ref, 'refs/heads/master'))
+    steps:
+    - uses: actions/checkout@v1
+    - #: 'Note that ""AZURE_SP"" secret is required to be setup and added into GitHub Secrets: https://help.github.com/en/actions/automating-your-workflow-with-github-actions/creating-and-using-encrypted-secrets'
+      name: Azure Login
+      uses: azure/login@v1
+      with:
+        creds: ${{ secrets.AZURE_SP }}
+    - name: Download the build artifacts
+      uses: actions/download-artifact@v1.0.0
+      with:
+        name: drop
+    - name: Deploy ARM Template to resource group
+      uses: Azure/github-actions/arm@master
+      env:
+        AZURE_RESOURCE_GROUP: ${{ env.ResourceGroupName }}
+        AZURE_TEMPLATE_LOCATION: ${GITHUB_WORKSPACE}/drop/ARMTemplates/azuredeploy.json
+        AZURE_TEMPLATE_PARAM_FILE: ${GITHUB_WORKSPACE}/drop/ARMTemplates/azuredeploy.parameters.json
+    - name: 'Azure App Service Deploy: web service'
+      uses: Azure/webapps-deploy@v2
+      with:
+        app-name: ${{ env.WebServiceName }}
+        package: ${GITHUB_WORKSPACE}/drop/FeatureFlags.Service.zip
+        slot-name: staging
+    - name: 'Azure App Service Deploy: web site'
+      uses: Azure/webapps-deploy@v2
+      with:
+        app-name: ${{ env.WebsiteName }}
+        package: ${GITHUB_WORKSPACE}/drop/FeatureFlags.Web.zip
+        slot-name: staging
+    - name: Run functional smoke tests on website and web service
+      run: |
+        $vsTestConsoleExe = ""C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\Common7\IDE\Extensions\TestPlatform\vstest.console.exe""
+        $targetTestDll = ""**\FeatureFlags.FunctionalTests\FeatureFlags.FunctionalTests.dll""
+        $testRunSettings = ""/Settings:`""${GITHUB_WORKSPACE}/drop/FunctionalTests/FeatureFlags.FunctionalTests/test.runsettings`"" ""
+        $parameters = "" -- ServiceUrl=""https://${{ env.WebServiceName }}-staging.azurewebsites.net/"" WebsiteUrl=""https://${{ env.WebsiteName }}-staging.azurewebsites.net/"" TestEnvironment=""${{ env.AppSettings.Environment }}"" ""
+        #Note that the `"" is an escape character to quote strings, and the `& is needed to start the command
+        $command = ""`& `""$vsTestConsoleExe`"" `""$targetTestDll`"" $testRunSettings $parameters ""
+        Write-Host ""$command""
+        Invoke-Expression $command
+      shell: powershell
+    - name: 'Swap Slots: web service'
+      uses: Azure/cli@v1.0.0
+      with:
+        inlineScript: az webapp deployment slot swap --resource-group ${{ env.ResourceGroupName }} --name ${{ env.WebServiceName }} --slot staging --target-slot production
+    - name: 'Swap Slots: website'
+      uses: Azure/cli@v1.0.0
+      with:
+        inlineScript: az webapp deployment slot swap --resource-group ${{ env.ResourceGroupName }} --name ${{ env.WebsiteName }} --slot staging --target-slot production
+";
+            expected = UtilityTests.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
         }
 
 
@@ -348,8 +509,7 @@ jobs:
     runs-on: windows-latest
     steps:
     - uses: actions/checkout@v1
-    - run: |
-        Write-Host ""Hello world!""
+    - run: Write-Host ""Hello world!""
       shell: powershell
   Build_Stage_Build2:
     name: Build job 2
@@ -357,7 +517,9 @@ jobs:
     steps:
     - uses: actions/checkout@v1
     - run: Write-Host ""Hello world 2!""
-      shell: powershell";
+      shell: powershell
+";
+
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
         }
@@ -440,13 +602,13 @@ jobs:
     steps:
     - uses: actions/checkout@v1
     - name: Restore
-      run: 'dotnet restore MyProject/MyProject.Models/MyProject.Models.csproj '
+      run: dotnet restore MyProject/MyProject.Models/MyProject.Models.csproj
     - name: Build
-      run: 'dotnet MyProject/MyProject.Models/MyProject.Models.csproj --configuration ${{ env.BuildConfiguration }} '
+      run: dotnet MyProject/MyProject.Models/MyProject.Models.csproj --configuration ${{ env.BuildConfiguration }}
     - name: Publish
-      run: 'dotnet publish MyProject/MyProject.Models/MyProject.Models.csproj --configuration ${{ env.BuildConfiguration }} --output ${GITHUB_WORKSPACE} '
+      run: dotnet publish MyProject/MyProject.Models/MyProject.Models.csproj --configuration ${{ env.BuildConfiguration }} --output ${GITHUB_WORKSPACE}
     - name: dotnet pack
-      run: 'dotnet pack '
+      run: dotnet pack
     - name: Publish Artifact
       uses: actions/upload-artifact@master
       with:
@@ -820,6 +982,7 @@ resources:
 
 variables:
   tag: '$(Build.BuildId)'
+  dockerfilePath: '[MyDockerPath]'
 
 stages:
 - stage: Build
@@ -834,17 +997,34 @@ stages:
       displayName: Build an image
       inputs:
         command: build
-        dockerfile: '{{ dockerfilePath }}'
-        tags: |
-          $(tag)
+        dockerfile: '$(dockerfilePath)'
+        tags: $(tag)
 ";
 
             //Act
             ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(yaml);
 
             //Assert
-            Assert.AreEqual(0, gitHubOutput.comments.Count);
-            Assert.IsTrue(gitHubOutput.actionsYaml.IndexOf("This step does not have a conversion path yet") == -1);
+            string expected = @"
+on:
+  push:
+    branches:
+    - master
+env:
+  tag: ${{ env.Build.BuildId }}
+  dockerfilePath: '[MyDockerPath]'
+jobs:
+  Build_Stage_Build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+    - name: Build an image
+      run: docker build . --file ${{ env.dockerfilePath }} --tag ${{ env.tag }}
+";
+
+            expected = UtilityTests.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
         }
 
 
@@ -1212,13 +1392,32 @@ steps:
             ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(yaml);
 
             //Assert
-            //            string expected = @"
-            //";
+            string expected = @"
+#Note: This is a third party action: https://github.com/warrenbuckley/Setup-Nuget
+on:
+  push:
+    branches:
+    - master
+jobs:
+  build:
+    runs-on: macos-latest
+    steps:
+    - uses: actions/checkout@v1
+    - name: Select the Xamarin SDK version
+      run: sudo $AGENT_HOMEDIRECTORY/scripts/select-xamarin-sdk.sh 5_12_0
+    - #: 'Note: This is a third party action: https://github.com/warrenbuckley/Setup-Nuget'
+      uses: warrenbuckley/Setup-Nuget@v1
+    - run: nuget  **/*.sln
+      shell: powershell
+    - run: |
+        cd Blank
+        nuget restore
+        cd Blank.Android
+        msbuild  /verbosity:normal /t:Rebuild /p:Platform=iPhoneSimulator /p:Configuration=Release
+";
 
-            //            expected = UtilityTests.TrimNewLines(expected);
-            //            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
-            //TODO: Fix strings
-            Assert.IsTrue(true);
+            expected = UtilityTests.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
         }
 
         [TestMethod]
@@ -1261,14 +1460,33 @@ steps:
             ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(yaml);
 
             //Assert
-            //            string expected = @"
-            //";
+            string expected = @"
+#Note: This is a third party action: https://github.com/warrenbuckley/Setup-Nuget
+on:
+  push:
+    branches:
+    - master
+env:
+  buildConfiguration: Release
+  outputDirectory: ${{ env.build.binariesDirectory }}/${{ env.buildConfiguration }}
+jobs:
+  build:
+    runs-on: macos-latest
+    steps:
+    - uses: actions/checkout@v1
+    - #: 'Note: This is a third party action: https://github.com/warrenbuckley/Setup-Nuget'
+      uses: warrenbuckley/Setup-Nuget@v1
+    - run: nuget  **/*.sln
+      shell: powershell
+    - run: |
+        cd Blank
+        nuget restore
+        cd Blank.Android
+        msbuild **/*droid*.csproj /verbosity:normal /t:Rebuild /p:Configuration=${{ env.buildConfiguration }}
+";
 
-            //            expected = UtilityTests.TrimNewLines(expected);
-            //            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
-
-            //TODO: Fix strings
-            Assert.IsTrue(true);
+            expected = UtilityTests.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
         }
 
 

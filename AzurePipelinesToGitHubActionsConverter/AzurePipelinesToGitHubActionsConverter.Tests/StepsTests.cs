@@ -121,6 +121,33 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
         }
 
+        [TestMethod]
+        public void CopyIndividualStepTest()
+        {
+            //Arrange
+            Conversion conversion = new Conversion();
+            string yaml = @"
+    - task: CopyFiles@2
+      displayName: 'Copy environment ARM template files to: $(build.artifactstagingdirectory)'
+      inputs:
+        SourceFolder: '$(system.defaultworkingdirectory)\FeatureFlags\FeatureFlags.ARMTemplates'
+        Contents: '**\*' 
+        TargetFolder: '$(build.artifactstagingdirectory)\ARMTemplates'
+";
+
+            //Act
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineTaskToGitHubActionTask(yaml);
+
+            //Assert
+            string expected = @"
+- name: 'Copy environment ARM template files to: ${GITHUB_WORKSPACE}'
+  run: Copy '${{ env.system.defaultworkingdirectory }}\FeatureFlags\FeatureFlags.ARMTemplates/**\*' '${GITHUB_WORKSPACE}\ARMTemplates'
+  shell: powershell
+";
+            expected = UtilityTests.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+        }
+
 
         [TestMethod]
         public void UseDotNetIndividualStepTest()
@@ -454,9 +481,9 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
   run: |
     $vsTestConsoleExe = ""C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\Common7\IDE\Extensions\TestPlatform\vstest.console.exe""
     $targetTestDll = ""**\MyProject.FunctionalTests\MyProject.FunctionalTests.dll""
-    $testRunSettings = "" /Settings:`""${GITHUB_WORKSPACE}/drop/FunctionalTests/MyProject.FunctionalTests/test.runsettings`"" ""
-        $parameters = "" -- ServiceUrl=""https://${{ env.WebServiceName }}-staging.azurewebsites.net/""  WebsiteUrl=""https://${{ env.WebsiteName }}-staging.azurewebsites.net/""  TestEnvironment=""${{ env.AppSettings.Environment }}""  TestEnvironment2=""${{ env.AppSettings.Environment }}""
-      "" #Note that the `"" is an escape character sequence to quote strings, and `& is needed to start the command
+    $testRunSettings = ""/Settings:`""${GITHUB_WORKSPACE}/drop/FunctionalTests/MyProject.FunctionalTests/test.runsettings`"" ""
+    $parameters = "" -- ServiceUrl=""https://${{ env.WebServiceName }}-staging.azurewebsites.net/"" WebsiteUrl=""https://${{ env.WebsiteName }}-staging.azurewebsites.net/"" TestEnvironment=""${{ env.AppSettings.Environment }}"" TestEnvironment2=""${{ env.AppSettings.Environment }}"" ""
+    #Note that the `"" is an escape character to quote strings, and the `& is needed to start the command
     $command = ""`& `""$vsTestConsoleExe`"" `""$targetTestDll`"" $testRunSettings $parameters ""
     Write-Host ""$command""
     Invoke-Expression $command
@@ -465,9 +492,6 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
         }
-
-
-
 
         [TestMethod]
         public void SQLAzureDacPacDeployStepTest()
