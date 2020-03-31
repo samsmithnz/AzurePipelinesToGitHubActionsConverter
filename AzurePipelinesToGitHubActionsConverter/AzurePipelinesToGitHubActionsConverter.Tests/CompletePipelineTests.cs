@@ -365,7 +365,7 @@ stages:
 
             //Assert
             string expected = @"
-#Note that ""AZURE_SP"" secret is required to be setup and added into GitHub Secrets: https://help.github.com/en/actions/automating-your-workflow-with-github-actions/creating-and-using-encrypted-secrets
+#Note that 'AZURE_SP' secret is required to be setup and added into GitHub Secrets: https://help.github.com/en/actions/automating-your-workflow-with-github-actions/creating-and-using-encrypted-secrets
 on:
   push:
     branches:
@@ -414,7 +414,7 @@ jobs:
     if: and(success(),eq(github.ref, 'refs/heads/master'))
     steps:
     - uses: actions/checkout@v1
-    - #: 'Note that ""AZURE_SP"" secret is required to be setup and added into GitHub Secrets: https://help.github.com/en/actions/automating-your-workflow-with-github-actions/creating-and-using-encrypted-secrets'
+    - #: ""Note that 'AZURE_SP' secret is required to be setup and added into GitHub Secrets: https://help.github.com/en/actions/automating-your-workflow-with-github-actions/creating-and-using-encrypted-secrets""
       name: Azure Login
       uses: azure/login@v1
       with:
@@ -918,7 +918,7 @@ stages:
 
             //Assert
             string expected = @"
-#Note that ""AZURE_SP"" secret is required to be setup and added into GitHub Secrets: https://help.github.com/en/actions/automating-your-workflow-with-github-actions/creating-and-using-encrypted-secrets
+#Note that 'AZURE_SP' secret is required to be setup and added into GitHub Secrets: https://help.github.com/en/actions/automating-your-workflow-with-github-actions/creating-and-using-encrypted-secrets
 on:
   push:
     branches:
@@ -938,7 +938,7 @@ jobs:
     if: and(success(),eq(github.ref, 'refs/heads/master'))
     steps:
     - uses: actions/checkout@v1
-    - #: 'Note that ""AZURE_SP"" secret is required to be setup and added into GitHub Secrets: https://help.github.com/en/actions/automating-your-workflow-with-github-actions/creating-and-using-encrypted-secrets'
+    - #: ""Note that 'AZURE_SP' secret is required to be setup and added into GitHub Secrets: https://help.github.com/en/actions/automating-your-workflow-with-github-actions/creating-and-using-encrypted-secrets""
       name: Azure Login
       uses: azure/login@v1
       with:
@@ -1420,6 +1420,193 @@ jobs:
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
         }
 
+
+        [TestMethod]
+        public void AzureFunctionAppContainerPipelineTest()
+        {
+            //Arrange
+            Conversion conversion = new Conversion();
+            //Source is: https://raw.githubusercontent.com/microsoft/azure-pipelines-yaml/master/templates/xamarin.ios.yml
+            string yaml = @"
+# Docker image, Azure Container Registry, and Azure Functions app
+# Build a Docker image, push it to an Azure Container Registry, and deploy it to an Azure Functions app.
+# https://docs.microsoft.com/azure/devops/pipelines/languages/docker
+
+trigger:
+- master
+
+resources:
+- repo: self
+
+variables:
+  # ========================================================================
+  #                          Mandatory variables 
+  # ========================================================================
+
+ # Update Azure.ResourceGroupName value with Azure resource group name.
+  Azure.ResourceGroupName: '{{#toAlphaNumericString repositoryName 50}}{{/toAlphaNumericString}}'
+
+  # Update Azure.ServiceConnectionId value with AzureRm service endpoint.
+  Azure.ServiceConnectionId: '{{ azureServiceConnectionId }}'
+
+  # Update Azure.Location value with Azure Location.
+  Azure.Location: 'eastus'
+
+  # Update ACR.Name value with ACR name. Please note ACR names should be all lower-case and alphanumeric only.
+  ACR.Name: '{{#toAlphaNumericString repositoryName 46}}{{/toAlphaNumericString}}{{#shortGuid}}{{/shortGuid}}'
+  
+  # Update FunctionApp.Name value with a name that identifies your new function app. Valid characters are a-z, 0-9, and -.
+  FunctionApp.Name: '{{#toAlphaNumericString repositoryName 46}}{{/toAlphaNumericString}}{{#shortGuid}}{{/shortGuid}}'
+  
+  # Update StorageAccount.Name value with Storage account name. Storage account names must be between 3 and 24 characters in length and use numbers and lower-case letters only.
+  StorageAccount.Name: '{{#toAlphaNumericString repositoryName 20}}{{/toAlphaNumericString}}{{#shortGuid}}{{/shortGuid}}'
+  
+  # Update ServicePlan.Name value with a name of the app service plan.
+  ServicePlan.Name: '{{#toAlphaNumericString repositoryName 45}}{{/toAlphaNumericString}}-plan'
+
+  # ========================================================================
+  #                           Optional variables 
+  # ========================================================================
+
+  ACR.ImageName: '$(ACR.Name):$(Build.BuildId)'
+  ACR.FullName: '$(ACR.Name).azurecr.io'
+  ACR.Sku: 'Standard'
+  Azure.CreateResources: 'true' # Update Azure.CreateResources to false if you have already created resources like resource group and azure container registry.
+  System.Debug: 'false'
+
+jobs:
+
+- job: CreateResources
+  displayName: Create resources
+  condition: and(succeeded(), eq(variables['Azure.CreateResources'], 'true'))
+
+  pool:
+    vmImage: 'ubuntu-latest'
+
+  steps:
+  - task: AzureResourceGroupDeployment@2
+    displayName: 'Azure Deployment:Create Azure Container Registry, Azure WebApp Service'
+    inputs:
+      azureSubscription: '$(Azure.ServiceConnectionId)'
+      resourceGroupName: '$(Azure.ResourceGroupName)'
+      location: '$(Azure.Location)'
+      templateLocation: 'URL of the file'
+      csmFileLink: 'https://raw.githubusercontent.com/Microsoft/azure-pipelines-yaml/master/templates/resources/arm/functionapp.json'
+      overrideParameters: '-registryName ""$(ACR.Name)"" -registryLocation ""$(Azure.Location)"" -functionAppName ""$(FunctionApp.Name)"" -hostingPlanName ""$(ServicePlan.Name)"" -storageAccountName ""$(StorageAccount.Name)""'
+
+- job: BuildImage
+  displayName: Build
+  dependsOn: CreateResources
+  condition: or(succeeded(), ne(variables['Azure.CreateResources'], 'true'))
+
+  pool:
+    vmImage: 'ubuntu-latest'
+
+  steps:
+  - task: Docker@1
+    displayName: 'Build an image'
+    inputs:
+      azureSubscriptionEndpoint: '$(Azure.ServiceConnectionId)'
+      azureContainerRegistry: '$(ACR.FullName)'
+      imageName: '$(ACR.ImageName)'
+      command: build
+      dockerFile: '**/Dockerfile'
+
+  - task: Docker@1
+    displayName: 'Push an image'
+    inputs:
+      azureSubscriptionEndpoint: '$(Azure.ServiceConnectionId)'
+      azureContainerRegistry: '$(ACR.FullName)'
+      imageName: '$(ACR.ImageName)'
+      command: push
+
+- job: DeployApp
+  displayName: Deploy
+  dependsOn: BuildImage
+  condition: succeeded()
+
+  pool:
+    vmImage: 'ubuntu-latest'
+
+  steps:
+  - task: AzureFunctionAppContainer@1
+    displayName: 'Azure Function App on Container Deploy: $(FunctionApp.Name)'
+    inputs:
+      azureSubscription: '$(Azure.ServiceConnectionId)'
+      appName: $(FunctionApp.Name)
+      imageName: '$(ACR.FullName)/$(ACR.ImageName)'
+";
+
+            //Act
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(yaml);
+
+            //Assert
+            string expected = @"
+#Note that 'AZURE_SP' secret is required to be setup and added into GitHub Secrets: https://help.github.com/en/actions/automating-your-workflow-with-github-actions/creating-and-using-encrypted-secrets
+on:
+  push:
+    branches:
+    - master
+env:
+  Azure.ResourceGroupName: '{{#toAlphaNumericString repositoryName 50}}{{/toAlphaNumericString}}'
+  Azure.ServiceConnectionId: '{{ azureServiceConnectionId }}'
+  Azure.Location: eastus
+  ACR.Name: '{{#toAlphaNumericString repositoryName 46}}{{/toAlphaNumericString}}{{#shortGuid}}{{/shortGuid}}'
+  FunctionApp.Name: '{{#toAlphaNumericString repositoryName 46}}{{/toAlphaNumericString}}{{#shortGuid}}{{/shortGuid}}'
+  StorageAccount.Name: '{{#toAlphaNumericString repositoryName 20}}{{/toAlphaNumericString}}{{#shortGuid}}{{/shortGuid}}'
+  ServicePlan.Name: '{{#toAlphaNumericString repositoryName 45}}{{/toAlphaNumericString}}-plan'
+  ACR.ImageName: ${{ env.ACR.Name }}:${{ env.Build.BuildId }}
+  ACR.FullName: ${{ env.ACR.Name }}.azurecr.io
+  ACR.Sku: Standard
+  Azure.CreateResources: true
+  System.Debug: false
+jobs:
+  CreateResources:
+    name: Create resources
+    runs-on: ubuntu-latest
+    if: and(success(),eq(variables['Azure.CreateResources'], 'true'))
+    steps:
+    - uses: actions/checkout@v1
+    - #: ""Note that 'AZURE_SP' secret is required to be setup and added into GitHub Secrets: https://help.github.com/en/actions/automating-your-workflow-with-github-actions/creating-and-using-encrypted-secrets""
+      name: Azure Login
+      uses: azure/login@v1
+      with:
+        creds: ${{ secrets.AZURE_SP }}
+    - name: Azure Deployment:Create Azure Container Registry, Azure WebApp Service
+      uses: Azure/github-actions/arm@master
+      env:
+        AZURE_RESOURCE_GROUP: ${{ env.Azure.ResourceGroupName }}
+        AZURE_TEMPLATE_LOCATION: 
+        AZURE_TEMPLATE_PARAM_FILE: 
+  BuildImage:
+    name: Build
+    runs-on: ubuntu-latest
+    needs: CreateResources
+    if: or(success(),ne(variables['Azure.CreateResources'], 'true'))
+    steps:
+    - uses: actions/checkout@v1
+    - name: Build an image
+      run: docker build . --file **/Dockerfile --tag
+    - name: Push an image
+      run: docker build . --file  --tag
+  DeployApp:
+    name: Deploy
+    runs-on: ubuntu-latest
+    needs: BuildImage
+    if: success()
+    steps:
+    - uses: actions/checkout@v1
+    - name: 'Azure Function App on Container Deploy: ${{ env.FunctionApp.Name }}'
+      uses: Azure/webapps-deploy@v2
+      with:
+        app-name: ${{ env.FunctionApp.Name }}
+        images: ${{ env.ACR.FullName }}/${{ env.ACR.ImageName }}
+";
+
+            expected = UtilityTests.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+        }
+
         [TestMethod]
         public void XamarinAndroidPipelineTest()
         {
@@ -1707,7 +1894,7 @@ jobs:
 
             //Assert
             string expected = @"
-#Note that ""AZURE_SP"" secret is required to be setup and added into GitHub Secrets: https://help.github.com/en/actions/automating-your-workflow-with-github-actions/creating-and-using-encrypted-secrets
+#Note that 'AZURE_SP' secret is required to be setup and added into GitHub Secrets: https://help.github.com/en/actions/automating-your-workflow-with-github-actions/creating-and-using-encrypted-secrets
 jobs:
   Deploy:
     name: Deploy job
@@ -1718,7 +1905,7 @@ jobs:
       ResourceGroupName: MyProjectRG
     steps:
     - uses: actions/checkout@v1
-    - #: 'Note that ""AZURE_SP"" secret is required to be setup and added into GitHub Secrets: https://help.github.com/en/actions/automating-your-workflow-with-github-actions/creating-and-using-encrypted-secrets'
+    - #: ""Note that 'AZURE_SP' secret is required to be setup and added into GitHub Secrets: https://help.github.com/en/actions/automating-your-workflow-with-github-actions/creating-and-using-encrypted-secrets""
       name: Azure Login
       uses: azure/login@v1
       with:

@@ -42,6 +42,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                     case "CopyFiles@2":
                         gitHubStep = CreateCopyFilesStep(step);
                         break;
+                    case "Docker@1":
                     case "Docker@2":
                         gitHubStep = CreateDockerStep(step);
                         break;
@@ -360,8 +361,8 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                 }
             };
 
-            //Add note that "AZURE_SP" secret is required
-            gitHubStep.step_message = @"Note that ""AZURE_SP"" secret is required to be setup and added into GitHub Secrets: https://help.github.com/en/actions/automating-your-workflow-with-github-actions/creating-and-using-encrypted-secrets";
+            //Add note that 'AZURE_SP' secret is required
+            gitHubStep.step_message = @"Note that 'AZURE_SP' secret is required to be setup and added into GitHub Secrets: https://help.github.com/en/actions/automating-your-workflow-with-github-actions/creating-and-using-encrypted-secrets";
 
             return gitHubStep;
         }
