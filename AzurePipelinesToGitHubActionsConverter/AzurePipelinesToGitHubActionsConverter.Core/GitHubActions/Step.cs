@@ -30,6 +30,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.GitHubActions
         public string shell { get; set; }
         public Dictionary<string, string> with { get; set; } //A key value pair similar to env
         public Dictionary<string, string> env { get; set; } //Similar to the job env: https://help.github.com/en/articles/workflow-syntax-for-github-actions#jobsjob_idenv
+        //as "if" is a reserved word in C#, added an "_", and remove this "_" when serializing
         public string _if { get; set; } //https://help.github.com/en/articles/workflow-syntax-for-github-actions#jobsjob_idif
 
         //This is used for tracking errors, so we don't want it to convert to YAML

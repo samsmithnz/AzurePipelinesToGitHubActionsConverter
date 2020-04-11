@@ -15,7 +15,8 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.AzurePipelines
         public string repository { get; set; }
         public string type { get; set; }
         public string name { get; set; }
-        public string _ref { get; set; }
+        //as "ref" is a reserved word in C#, added an "_", and remove this "_" when serializing
+        public string _ref { get; set; } 
         public string endpoint { get; set; }
     }
 }
