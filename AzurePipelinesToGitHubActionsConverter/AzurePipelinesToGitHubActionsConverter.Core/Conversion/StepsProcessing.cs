@@ -16,6 +16,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
             if (step.task != null)
             {
                 step = CleanStepInputs(step);
+                //TODO: Should we be handling versions seperately? 
                 switch (step.task)
                 {
                     case "Ant@1":

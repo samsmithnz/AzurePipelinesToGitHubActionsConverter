@@ -46,7 +46,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
 
             //Join the pieces back together again
             processedCondition += ProcessCondition(conditionKeyWord, contents);
-            
+
             //Translate any system variables
             processedCondition = ProcessVariables(processedCondition);
 
@@ -172,7 +172,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
             MatchCollection results = Regex.Matches(text, @",(?![^\(\[]*[\]\)])");
             List<string> list = new List<string>();
             int startIndex = 0;
-            int endIndex = 0;
+            int endIndex;
             foreach (Match result in results)
             {
                 endIndex = result.Index;

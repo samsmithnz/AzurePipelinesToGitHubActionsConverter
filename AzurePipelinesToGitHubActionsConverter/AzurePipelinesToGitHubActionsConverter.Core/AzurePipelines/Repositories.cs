@@ -12,10 +12,12 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.AzurePipelines
   //  endpoint: string  # name of the service connection to use (for non-Azure Repos types)
     public class Repositories
     {
+        //TODO: Add code to process repositories
         public string repository { get; set; }
         public string type { get; set; }
         public string name { get; set; }
-        public string _ref { get; set; }
+        //as "ref" is a reserved word in C#, added an "_", and remove this "_" when serializing
+        public string _ref { get; set; } 
         public string endpoint { get; set; }
     }
 }
