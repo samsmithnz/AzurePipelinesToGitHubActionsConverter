@@ -14,61 +14,6 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
         private string _matrixVariableName;
 
         /// <summary>
-        /// Convert a single Azure DevOps Pipeline task to a GitHub Actions task
-        /// </summary>
-        /// <param name="input">Yaml to convert</param>
-        /// <returns>Converion object, with original yaml, processed yaml, and comments on the conversion</returns>
-        public ConversionResponse ConvertAzurePipelineTaskToGitHubActionTask(string input)
-        {
-            string yaml = "";
-            string processedInput = StepsPreProcessing(input);
-            GitHubActions.Step gitHubActionStep = new GitHubActions.Step();
-
-            //Process the YAML for the individual job
-            AzurePipelines.Job azurePipelinesJob = GenericObjectSerialization.DeserializeYaml<AzurePipelines.Job>(processedInput);
-            if (azurePipelinesJob != null && azurePipelinesJob.steps != null && azurePipelinesJob.steps.Length > 0)
-            {
-                //As we needed to create an entire (but minimal) pipelines job, we need to now extract the step for processing
-                StepsProcessing stepsProcessing = new StepsProcessing();
-                gitHubActionStep = stepsProcessing.ProcessStep(azurePipelinesJob.steps[0]);
-
-                //Find all variables in this text block, we need this for a bit later
-                List<string> variableList = SearchForVariables(processedInput);
-
-                //Create the YAML and apply some adjustments
-                if (gitHubActionStep != null)
-                {
-                    //add the step into a github job so it renders correctly
-                    GitHubActions.Job gitHubJob = new GitHubActions.Job
-                    {
-                        steps = new GitHubActions.Step[1] //create an array of size 1
-                    };
-                    //Load the step into the single item array
-                    gitHubJob.steps[0] = gitHubActionStep;
-
-                    //Finally, we can serialize the job back to yaml
-                    yaml = GitHubActionsSerialization.SerializeJob(gitHubJob, variableList);
-                }
-            }
-
-            //Load failed tasks and comments for processing
-            List<string> allComments = new List<string>();
-            if (gitHubActionStep != null)
-            {
-                allComments.Add(gitHubActionStep.step_message);
-            }
-
-            //Return the final conversion result, with the original (pipeline) yaml, processed (actions) yaml, and any comments
-            return new ConversionResponse
-            {
-                pipelinesYaml = input,
-                actionsYaml = yaml,
-                comments = allComments
-            };
-
-        }
-
-        /// <summary>
         /// Convert an entire Azure DevOps Pipeline to a GitHub Actions 
         /// </summary>
         /// <param name="input">Yaml to convert</param>
@@ -208,6 +153,60 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                 comments = stepComments
             };
         }
+
+        /// <summary>
+        /// Convert a single Azure DevOps Pipeline task to a GitHub Actions task
+        /// </summary>
+        /// <param name="input">Yaml to convert</param>
+        /// <returns>Converion object, with original yaml, processed yaml, and comments on the conversion</returns>
+        public ConversionResponse ConvertAzurePipelineTaskToGitHubActionTask(string input)
+        {
+            string yaml = "";
+            string processedInput = StepsPreProcessing(input);
+            GitHubActions.Step gitHubActionStep = new GitHubActions.Step();
+
+            //Process the YAML for the individual job
+            AzurePipelines.Job azurePipelinesJob = GenericObjectSerialization.DeserializeYaml<AzurePipelines.Job>(processedInput);
+            if (azurePipelinesJob != null && azurePipelinesJob.steps != null && azurePipelinesJob.steps.Length > 0)
+            {
+                //As we needed to create an entire (but minimal) pipelines job, we need to now extract the step for processing
+                StepsProcessing stepsProcessing = new StepsProcessing();
+                gitHubActionStep = stepsProcessing.ProcessStep(azurePipelinesJob.steps[0]);
+
+                //Find all variables in this text block, we need this for a bit later
+                List<string> variableList = SearchForVariables(processedInput);
+
+                //Create the YAML and apply some adjustments
+                if (gitHubActionStep != null)
+                {
+                    //add the step into a github job so it renders correctly
+                    GitHubActions.Job gitHubJob = new GitHubActions.Job
+                    {
+                        steps = new GitHubActions.Step[1] //create an array of size 1
+                    };
+                    //Load the step into the single item array
+                    gitHubJob.steps[0] = gitHubActionStep;
+
+                    //Finally, we can serialize the job back to yaml
+                    yaml = GitHubActionsSerialization.SerializeJob(gitHubJob, variableList);
+                }
+            }
+
+            //Load failed tasks and comments for processing
+            List<string> allComments = new List<string>();
+            if (gitHubActionStep != null)
+            {
+                allComments.Add(gitHubActionStep.step_message);
+            }
+
+            //Return the final conversion result, with the original (pipeline) yaml, processed (actions) yaml, and any comments
+            return new ConversionResponse
+            {
+                pipelinesYaml = input,
+                actionsYaml = yaml,
+                comments = allComments
+            };
+        }     
 
         private string ConvertMessageToYamlComment(string message)
         {
