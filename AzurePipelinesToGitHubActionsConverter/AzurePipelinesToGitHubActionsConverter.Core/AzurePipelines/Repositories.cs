@@ -12,6 +12,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.AzurePipelines
   //  endpoint: string  # name of the service connection to use (for non-Azure Repos types)
     public class Repositories
     {
+        //TODO: Add code to process repositories
         public string repository { get; set; }
         public string type { get; set; }
         public string name { get; set; }

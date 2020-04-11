@@ -14,6 +14,7 @@
         //    steps:
         public string stage { get; set; }
         public string displayName { get; set; }
+        //Add dependson processing for stages
         public string dependsOn { get; set; }
         public string condition { get; set; }
         public Job[] jobs { get; set; }
