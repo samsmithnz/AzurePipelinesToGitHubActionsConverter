@@ -341,7 +341,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
             //Add the check out step to get the code
             return new GitHubActions.Step
             {
-                uses = "actions/checkout@v1"
+                uses = "actions/checkout@v2"
             };
         }
 

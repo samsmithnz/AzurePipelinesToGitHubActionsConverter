@@ -29,7 +29,7 @@ jobs:
   job_1_template:
     #: 'Note: Azure DevOps template does not have an equivalent in GitHub Actions yet'
     steps:
-    - uses: actions/checkout@v1";
+    - uses: actions/checkout@v2";
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
         }
@@ -70,7 +70,7 @@ jobs:
     name: Build job
     runs-on: windows-latest
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v2
     - name: Test
       run: Write-Host ""Hello world ${{ env.buildConfiguration }} ${{ env.buildPlatform }}""
       shell: powershell";
