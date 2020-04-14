@@ -70,7 +70,7 @@ jobs:
     env:
       buildConfiguration: Debug
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v2
     - name: dotnet build part 1
       run: dotnet build WebApplication1/WebApplication1.Service/WebApplication1.Service.csproj --configuration ${{ env.buildConfiguration }}
 ";

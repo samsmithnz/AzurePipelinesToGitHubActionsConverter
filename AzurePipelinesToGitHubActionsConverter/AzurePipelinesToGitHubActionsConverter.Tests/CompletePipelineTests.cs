@@ -141,7 +141,7 @@ jobs:
     name: Build job
     runs-on: ${{ env.vmImage }}
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v2
     - name: Use .NET Core sdk
       uses: actions/setup-dotnet@v1
       with:
@@ -383,7 +383,7 @@ jobs:
     name: Build job
     runs-on: ${{ env.vmImage }}
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v2
     - name: Generate build version number
       shell: powershell
     - name: 'Copy environment ARM template files to: ${GITHUB_WORKSPACE}'
@@ -413,7 +413,7 @@ jobs:
       WebServiceName: featureflags-data-eu-service
     if: and(success(),eq(github.ref, 'refs/heads/master'))
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v2
     - #: ""Note that 'AZURE_SP' secret is required to be setup and added into GitHub Secrets: https://help.github.com/en/actions/automating-your-workflow-with-github-actions/creating-and-using-encrypted-secrets""
       name: Azure Login
       uses: azure/login@v1
@@ -508,14 +508,14 @@ jobs:
     name: Build job
     runs-on: windows-latest
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v2
     - run: Write-Host ""Hello world!""
       shell: powershell
   Build_Stage_Build2:
     name: Build job 2
     runs-on: windows-latest
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v2
     - run: Write-Host ""Hello world 2!""
       shell: powershell
 ";
@@ -600,7 +600,7 @@ jobs:
     runs-on: windows-latest
     container: {}
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v2
     - name: Restore
       run: dotnet restore MyProject/MyProject.Models/MyProject.Models.csproj
     - name: Build
@@ -663,7 +663,7 @@ jobs:
     runs-on: ubuntu-latest
     if: and(success(),eq(github.ref, 'refs/heads/master'))
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v2
     - name: Download the build artifacts
       uses: actions/download-artifact@v1.0.0
       with:
@@ -768,7 +768,7 @@ jobs:
   build:
     runs-on: windows-latest
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v2
     - uses: microsoft/setup-msbuild@v1.0.0
     - #: 'Note: This is a third party action: https://github.com/warrenbuckley/Setup-Nuget'
       uses: warrenbuckley/Setup-Nuget@v1
@@ -843,7 +843,7 @@ jobs:
   build:
     runs-on: windows-latest
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v2
     - uses: microsoft/setup-msbuild@v1.0.0
     - #: 'Note: This is a third party action: https://github.com/warrenbuckley/Setup-Nuget'
       uses: warrenbuckley/Setup-Nuget@v1
@@ -937,7 +937,7 @@ jobs:
       WebsiteName: myproject-web
     if: and(success(),eq(github.ref, 'refs/heads/master'))
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v2
     - #: ""Note that 'AZURE_SP' secret is required to be setup and added into GitHub Secrets: https://help.github.com/en/actions/automating-your-workflow-with-github-actions/creating-and-using-encrypted-secrets""
       name: Azure Login
       uses: azure/login@v1
@@ -1018,7 +1018,7 @@ jobs:
     name: Build
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v2
     - name: Build an image
       run: docker build . --file ${{ env.dockerfilePath }} --tag ${{ env.tag }}
 ";
@@ -1070,7 +1070,7 @@ jobs:
   build:
     runs-on: macos-latest
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v2
     - name: Setup JDK 1.8
       uses: actions/setup-java@v1
       with:
@@ -1149,7 +1149,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v2
     - name: Set up the Go workspace
       run: |
         mkdir -p '${{ env.GOBIN }}'
@@ -1229,7 +1229,7 @@ jobs:
         - 3.7
       max-parallel: 3
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v2
     - name: Setup Python ${{ matrix.PYTHON_VERSION }}
       uses: actions/setup-python@v1
       with:
@@ -1281,7 +1281,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v2
     - name: Setup JDK 1.8
       uses: actions/setup-java@v1
       with:
@@ -1331,7 +1331,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v2
     - name: Install Node.js
       uses: actions/setup-node@v1
       with:
@@ -1402,7 +1402,7 @@ jobs:
   build:
     runs-on: macos-latest
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v2
     - name: Select the Xamarin SDK version
       run: sudo $AGENT_HOMEDIRECTORY/scripts/select-xamarin-sdk.sh 5_12_0
     - #: 'Note: This is a third party action: https://github.com/warrenbuckley/Setup-Nuget'
@@ -1566,7 +1566,7 @@ jobs:
     runs-on: ubuntu-latest
     if: and(success(),eq(variables['Azure.CreateResources'], 'true'))
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v2
     - #: ""Note that 'AZURE_SP' secret is required to be setup and added into GitHub Secrets: https://help.github.com/en/actions/automating-your-workflow-with-github-actions/creating-and-using-encrypted-secrets""
       name: Azure Login
       uses: azure/login@v1
@@ -1584,7 +1584,7 @@ jobs:
     needs: CreateResources
     if: or(success(),ne(variables['Azure.CreateResources'], 'true'))
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v2
     - name: Build an image
       run: docker build . --file **/Dockerfile --tag
     - name: Push an image
@@ -1595,7 +1595,7 @@ jobs:
     needs: BuildImage
     if: success()
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v2
     - name: 'Azure Function App on Container Deploy: ${{ env.FunctionApp.Name }}'
       uses: Azure/webapps-deploy@v2
       with:
@@ -1660,7 +1660,7 @@ jobs:
   build:
     runs-on: macos-latest
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v2
     - #: 'Note: This is a third party action: https://github.com/warrenbuckley/Setup-Nuget'
       uses: warrenbuckley/Setup-Nuget@v1
     - run: nuget  **/*.sln
@@ -1736,7 +1736,7 @@ jobs:
       myJobVariable: data
       myJobVariable2: data2
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v2
     - name: dotnet build part 1
       run: dotnet build WebApplication1/WebApplication1.Service/WebApplication1.Service.csproj --configuration ${{ env.buildConfiguration }}
   Build2:
@@ -1746,7 +1746,7 @@ jobs:
     env:
       myJobVariable: data
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v2
     - name: dotnet build part 2
       run: dotnet build WebApplication1/WebApplication1.Service/WebApplication1.Service.csproj --configuration ${{ env.buildConfiguration }}
     - name: dotnet build part 3
@@ -1793,7 +1793,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v2
     - #: 'Note: This is a third party action: https://github.com/marketplace/actions/create-zip-file'
       uses: montudor/action-zip@v0.1.0
       with:
@@ -1842,12 +1842,56 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v2
     - name: Setup JDK 1.8
       uses: actions/setup-java@v1
       with:
         java-version: 1.8
     - run: ant -noinput -buildfile build.xml
+";
+
+            expected = UtilityTests.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+        }
+
+        [TestMethod]
+        public void RubyPipelineTest()
+        {
+            //Arrange
+            Conversion conversion = new Conversion();
+            string yaml = @"
+trigger:
+- master
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+steps:
+- task: UseRubyVersion@0
+  inputs:
+    versionSpec: '>= 2.5'
+- script: ruby HelloWorld.rb
+";
+
+            //Act
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(yaml);
+
+            //Assert
+            string expected = @"
+on:
+  push:
+    branches:
+    - master
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Setup Ruby >= 2.5
+      uses: actions/setup-ruby@v1
+      with:
+        ruby-version: '>= 2.5'
+    - run: ruby HelloWorld.rb
 ";
 
             expected = UtilityTests.TrimNewLines(expected);
@@ -1904,7 +1948,7 @@ jobs:
       ArmTemplateResourceGroupLocation: eu
       ResourceGroupName: MyProjectRG
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v2
     - #: ""Note that 'AZURE_SP' secret is required to be setup and added into GitHub Secrets: https://help.github.com/en/actions/automating-your-workflow-with-github-actions/creating-and-using-encrypted-secrets""
       name: Azure Login
       uses: azure/login@v1

@@ -48,7 +48,7 @@ jobs:
     env:
       myJobVariable: data
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v2
     - name: dotnet build ${{ env.myJobVariable }}
       run: dotnet build WebApplication1/WebApplication1.Service/WebApplication1.Service.csproj --configuration ${{ env.buildConfiguration }}";
             expected = UtilityTests.TrimNewLines(expected);
@@ -95,7 +95,7 @@ jobs:
     env:
       myJobVariable: data
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v2
     - name: dotnet build ${{ env.myJobVariable }}
       run: dotnet build WebApplication1/WebApplication1.Service/WebApplication1.Service.csproj --configuration ${{ env.buildConfiguration }}
 ";

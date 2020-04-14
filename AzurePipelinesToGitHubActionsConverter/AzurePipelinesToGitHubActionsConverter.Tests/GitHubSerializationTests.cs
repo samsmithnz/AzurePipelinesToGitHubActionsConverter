@@ -26,7 +26,7 @@ jobs:
     name: Build 1
     runs-on: windows-latest
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v2
     - run: Write-Host ""Hello world!""
       shell: powershell
 ";
