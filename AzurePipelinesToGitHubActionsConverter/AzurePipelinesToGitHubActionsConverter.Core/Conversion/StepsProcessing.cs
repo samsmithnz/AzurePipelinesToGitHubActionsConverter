@@ -87,6 +87,9 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                     case "UsePythonVersion@0":
                         gitHubStep = CreateUsePythonStep(step);
                         break;
+                    case "UseRubyVersion@0":
+                        gitHubStep = CreateUseRubyStep(step);
+                        break;
                     case "VSBuild@1":
                         gitHubStep = CreateMSBuildStep(step);
                         break;
@@ -950,6 +953,37 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                 with = new Dictionary<string, string>
                 {
                     { "python-version", version}
+                }
+            };
+
+
+            return gitHubStep;
+        }
+
+        private GitHubActions.Step CreateUseRubyStep(AzurePipelines.Step step)
+        {
+            //coming from:
+            //# Use Ruby version: Use the specified version of Ruby from the tool cache, optionally adding it to the PATH
+            //- task: UseRubyVersion@0
+            //  inputs:
+            //    #versionSpec: '>= 2.4' 
+            //    #addToPath: true # Optional
+
+            //Going to:
+            //- uses: actions/setup-ruby@v1
+            //  with:
+            //    ruby-version: 2.6.x
+
+
+            string version = GetStepInput(step, "versionSpec");
+
+            GitHubActions.Step gitHubStep = new GitHubActions.Step
+            {
+                name = "Setup Ruby " + version,
+                uses = "actions/setup-ruby@v1",
+                with = new Dictionary<string, string>
+                {
+                    { "ruby-version", version}
                 }
             };
 

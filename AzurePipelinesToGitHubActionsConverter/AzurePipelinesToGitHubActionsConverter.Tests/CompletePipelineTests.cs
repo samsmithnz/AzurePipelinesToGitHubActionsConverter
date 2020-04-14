@@ -1852,62 +1852,51 @@ jobs:
 
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
-        }  
-        
-//        [TestMethod]
-//        public void RubyPipelineTest()
-//        {
-//            //Arrange
-//            Conversion conversion = new Conversion();
-//            string yaml = @"
-//trigger:
-//- master
+        }
 
-//pool:
-//  vmImage: 'ubuntu-latest'
+        [TestMethod]
+        public void RubyPipelineTest()
+        {
+            //Arrange
+            Conversion conversion = new Conversion();
+            string yaml = @"
+trigger:
+- master
 
-//steps:
-//- task: UseRubyVersion@0
-//  inputs:
-//    versionSpec: '>= 2.5'
+pool:
+  vmImage: 'ubuntu-latest'
 
-//- script: |
-//    gem install bundler
-//    bundle install --retry=3 --jobs=4
-//  displayName: 'bundle install'
+steps:
+- task: UseRubyVersion@0
+  inputs:
+    versionSpec: '>= 2.5'
+- script: ruby HelloWorld.rb
+";
 
-//- script: bundle exec rake
-//  displayName: 'bundle exec rake'
-//";
+            //Act
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(yaml);
 
-//            //Act
-//            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(yaml);
+            //Assert
+            string expected = @"
+on:
+  push:
+    branches:
+    - master
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Setup Ruby >= 2.5
+      uses: actions/setup-ruby@v1
+      with:
+        ruby-version: '>= 2.5'
+    - run: ruby HelloWorld.rb
+";
 
-//            //Assert
-//            string expected = @"
-//on:
-//  push:
-//    branches:
-//    - master
-//jobs:
-//  build:
-//    runs-on: ubuntu-latest
-//    steps:
-//    - uses: actions/checkout@v2
-//    - name: Set up Ruby 2.6
-//      uses: actions/setup-ruby@v1
-//      with:
-//        ruby-version: 2.6.x
-//    - name: Build and test with Rake
-//      run: |
-//        gem install bundler
-//        bundle install --jobs 4 --retry 3
-//        bundle exec rake
-//";
-
-//            expected = UtilityTests.TrimNewLines(expected);
-//            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
-//        }
+            expected = UtilityTests.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+        }
 
 
         [TestMethod]
