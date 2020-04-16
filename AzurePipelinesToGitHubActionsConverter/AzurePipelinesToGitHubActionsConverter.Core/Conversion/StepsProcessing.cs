@@ -31,6 +31,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                     case "AzureResourceGroupDeployment@2":
                         gitHubStep = CreateAzureManageResourcesStep(step);
                         break;
+                    case "AzureFunctionApp@1":
                     case "AzureFunctionAppContainer@1":
                     case "AzureRmWebAppDeployment@3":
                     case "AzureWebAppContainer@1":
@@ -43,6 +44,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                     case "CopyFiles@2":
                         gitHubStep = CreateCopyFilesStep(step);
                         break;
+                    case "Docker@0":
                     case "Docker@1":
                     case "Docker@2":
                         gitHubStep = CreateDockerStep(step);
@@ -117,7 +119,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                                 yamlBuilder.Append(line);
                             }
                         }
-                        gitHubStep.step_message = "Note: This step does not have a conversion path yet: " + step.task;
+                        gitHubStep.step_message = "Note: Error! This step does not have a conversion path yet: " + step.task;
                         gitHubStep.run = "Write-Host " + gitHubStep.step_message + " " + yamlBuilder.ToString();
                         break;
                 }
@@ -366,7 +368,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
             };
 
             //Add note that 'AZURE_SP' secret is required
-            gitHubStep.step_message = @"Note that 'AZURE_SP' secret is required to be setup and added into GitHub Secrets: https://help.github.com/en/actions/automating-your-workflow-with-github-actions/creating-and-using-encrypted-secrets";
+            gitHubStep.step_message = @"Note: 'AZURE_SP' secret is required to be setup and added into GitHub Secrets: https://help.github.com/en/actions/automating-your-workflow-with-github-actions/creating-and-using-encrypted-secrets";
 
             return gitHubStep;
         }
