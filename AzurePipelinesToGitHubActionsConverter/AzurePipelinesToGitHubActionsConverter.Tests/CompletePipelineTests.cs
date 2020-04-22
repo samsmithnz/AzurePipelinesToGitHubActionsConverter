@@ -235,7 +235,6 @@ stages:
         targetType: FilePath
         filePath: MyProject/BuildVersion.ps1
         arguments: -ProjectFile ""MyProject/MyProject.Web/MyProject.Web.csproj""
-
     - task: CopyFiles@2
       displayName: 'Copy environment ARM template files to: $(build.artifactstagingdirectory)'
       inputs:
@@ -390,6 +389,7 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: Generate build version number
+      run: MyProject/BuildVersion.ps1 -ProjectFile ""MyProject/MyProject.Web/MyProject.Web.csproj""
       shell: powershell
     - name: 'Copy environment ARM template files to: ${GITHUB_WORKSPACE}'
       run: Copy '${{ env.system.defaultworkingdirectory }}\FeatureFlags\FeatureFlags.ARMTemplates/**\*' '${GITHUB_WORKSPACE}\ARMTemplates'
