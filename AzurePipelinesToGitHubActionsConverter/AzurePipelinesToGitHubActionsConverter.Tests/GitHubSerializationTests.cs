@@ -7,6 +7,7 @@ using System.Text;
 
 namespace AzurePipelinesToGitHubActionsConverter.Tests
 {
+    [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
     [TestClass]
     public class GitHubSerializationTests
     {

@@ -4,6 +4,7 @@ using System;
 
 namespace AzurePipelinesToGitHubActionsConverter.Tests
 {
+    [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
     [TestClass]
     public class StepsTests
     {
@@ -673,32 +674,32 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
         //        }
 
 
-//        [TestMethod]
-//        public void KubernetesStepTest()
-//        {
-//            //Arrange
-//            Conversion conversion = new Conversion();
-//            string yaml = @"
-//- task: Kubernetes@1
-//  displayName: kubectl apply
-//  inputs:
-//    connectionType: Azure Resource Manager
-//    azureSubscriptionEndpoint: Contoso
-//    azureResourceGroup: contoso.azurecr.io
-//    kubernetesCluster: Contoso
-//    useClusterAdmin: false
-//";
+        //        [TestMethod]
+        //        public void KubernetesStepTest()
+        //        {
+        //            //Arrange
+        //            Conversion conversion = new Conversion();
+        //            string yaml = @"
+        //- task: Kubernetes@1
+        //  displayName: kubectl apply
+        //  inputs:
+        //    connectionType: Azure Resource Manager
+        //    azureSubscriptionEndpoint: Contoso
+        //    azureResourceGroup: contoso.azurecr.io
+        //    kubernetesCluster: Contoso
+        //    useClusterAdmin: false
+        //";
 
-//            //Act
-//            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineTaskToGitHubActionTask(yaml);
+        //            //Act
+        //            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineTaskToGitHubActionTask(yaml);
 
-//            //Assert
-//            string expected = @"
+        //            //Assert
+        //            string expected = @"
 
-//";
-//            expected = UtilityTests.TrimNewLines(expected);
-//            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
-//        }    
+        //";
+        //            expected = UtilityTests.TrimNewLines(expected);
+        //            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+        //        }    
 
 
 

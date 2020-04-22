@@ -9,6 +9,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
     // I suspect most of them can be broken up into individual step tests, 
     // with a couple big pipelines to test the YAML structure or to test features that need multiple jobs 
     // (which probably shouldn't be testing steps at all to reduce noise
+    [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
     [TestClass]
     public class CompletePipelineTests
     {

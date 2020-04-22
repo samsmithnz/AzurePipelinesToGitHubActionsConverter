@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 
 namespace AzurePipelinesToGitHubActionsConverter.Tests
 {
+    [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
     [TestClass]
     public class FolderOfYAMLFilesTests
     {
