@@ -802,10 +802,6 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
 
         public GitHubActions.Step CreateSetupJavaStep(string javaVersion)
         {
-            if (javaVersion == null)
-            {
-                return null;
-            }
             GitHubActions.Step gitHubStep = new GitHubActions.Step
             {
                 name = "Setup JDK " + javaVersion,

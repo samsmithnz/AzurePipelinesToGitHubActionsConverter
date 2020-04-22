@@ -347,13 +347,13 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
 
             if (strategy != null)
             {
-                GitHubActions.Strategy newStrategy = null;
+                GitHubActions.Strategy processedStrategy = null;
 
                 if (strategy.matrix != null)
                 {
-                    if (newStrategy == null)
+                    if (processedStrategy == null)
                     {
-                        newStrategy = new GitHubActions.Strategy();
+                        processedStrategy = new GitHubActions.Strategy();
                     }
                     string[] matrix = new string[strategy.matrix.Count];
                     KeyValuePair<string, Dictionary<string, string>> matrixVariable = strategy.matrix.First();
@@ -365,7 +365,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                         matrix[i] = strategy.matrix[entry.Key][MatrixVariableName];
                         i++;
                     }
-                    newStrategy.matrix = new Dictionary<string, string[]>
+                    processedStrategy.matrix = new Dictionary<string, string[]>
                     {
                         { MatrixVariableName, matrix }
                     };
@@ -376,18 +376,18 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                 }
                 if (strategy.maxParallel != null)
                 {
-                    if (newStrategy == null)
+                    if (processedStrategy == null)
                     {
-                        newStrategy = new GitHubActions.Strategy();
+                        processedStrategy = new GitHubActions.Strategy();
                     }
-                    newStrategy.max_parallel = strategy.maxParallel;
+                    processedStrategy.max_parallel = strategy.maxParallel;
                 }
                 if (strategy.runOnce != null)
                 {
+                    //TODO: Process other strategies
                     Console.WriteLine("TODO: " + strategy.runOnce);
                 }
-                return newStrategy;
-
+                return processedStrategy;
             }
             else
             {
@@ -653,8 +653,11 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                 if (addJavaSetupStep == true)
                 {
                     //Add the JavaSetup step to the code
-                    newSteps[adjustmentsUsed] = stepsProcessing.CreateSetupJavaStep(javaVersion);
-                    adjustmentsUsed++;
+                    if (javaVersion != null)
+                    {
+                        newSteps[adjustmentsUsed] = stepsProcessing.CreateSetupJavaStep(javaVersion);
+                        adjustmentsUsed++;
+                    }
                 }
                 if (addGradleSetupStep == true)
                 {

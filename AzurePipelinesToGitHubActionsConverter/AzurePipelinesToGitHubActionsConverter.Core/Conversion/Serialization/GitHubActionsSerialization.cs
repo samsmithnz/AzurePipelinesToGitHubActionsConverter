@@ -181,10 +181,10 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion.Serialization
                     if (stepLines[i].StartsWith("-") == true)
                     {
                         int indentLevel = stepLines[i].IndexOf("-");
-                        if (indentLevel >= 2)
-                        {
-                            indentLevel -= 2;
-                        }
+                        //if (indentLevel >= 2)
+                        //{
+                        //    indentLevel -= 2;
+                        //}
                         string buffer = Utility.GenerateSpaces(indentLevel);
                         StringBuilder newInput = new StringBuilder();
                         foreach (string line in stepLines)
