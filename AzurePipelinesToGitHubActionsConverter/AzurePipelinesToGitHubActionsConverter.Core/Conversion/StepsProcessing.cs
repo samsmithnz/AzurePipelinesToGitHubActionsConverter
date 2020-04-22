@@ -16,7 +16,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
             if (step.task != null)
             {
                 step = CleanStepInputs(step);
-                //TODO: Should we be handling versions seperately? 
+                //TODO: Should we be handling versions seperately? Currently the version is bundled with the step name
                 switch (step.task)
                 {
                     case "Ant@1":
@@ -858,7 +858,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
             return gitHubStep;
         }
 
-        //TODO: Finish this
+        //TODO: Finish this Kubernetes Step
         //public GitHubActions.Step CreateKubernetesStep(AzurePipelines.Step step)
         //{
         //    //coming from: https://docs.microsoft.com/en-us/azure/devops/pipelines/tasks/deploy/kubernetes?view=azure-devops

@@ -12,356 +12,39 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
     [TestClass]
     public class CompletePipelineTests
     {
-
+        //Test that the ARM template result includes the AZURE login and download artifacts tasks
         [TestMethod]
-        public void LargePipelineIsFullyProcessedTest()
+        public void ARMTemplatePipelineTest()
         {
             //Arrange
             Conversion conversion = new Conversion();
             string yaml = @"
-# ASP.NET Core
-# Build and test ASP.NET Core projects targeting .NET Core.
-# Add steps that run tests, create a NuGet package, deploy, and more:
-# https://docs.microsoft.com/azure/devops/pipelines/languages/dotnet-core
-trigger:
-- master
-pr:
-  branches:
-    include:
-    - '*'  
-variables:
-  vmImage: 'windows-latest'
-  buildConfiguration: 'Release'
-  buildPlatform: 'Any CPU'
-  buildNumber: '1.1.0.0'
-stages:
-- stage: Build
-  displayName: 'Build/Test Stage'
-  jobs:
-  - job: Build
-    displayName: 'Build job'
-    pool:
-      vmImage: $(vmImage)
-    steps:
-    - task: UseDotNet@2
-      displayName: 'Use .NET Core sdk'
-      inputs:
-        packageType: sdk
-        version: 2.2.203
-    - task: PowerShell@2
-      displayName: 'Generate build version number'
-      inputs:
-        targetType: 'inline'
-        script: |
-         Write-Host ""Generating Build Number""
-         #Get the version from the csproj file
-         $xml = [Xml] (Get-Content FeatureFlags/FeatureFlags.Web/FeatureFlags.Web.csproj)
-         $initialVersion = [Version] $xml.Project.PropertyGroup.Version
-         Write-Host ""Initial Version: "" $version
-         $splitVersion = $initialVersion -Split ""\.""
-         #Get the build number (number of days since January 1, 2000)
-         $baseDate = [datetime]""01/01/2000""
-         $currentDate = $(Get-Date)
-         $interval = (NEW-TIMESPAN -Start $baseDate -End $currentDate)
-         $buildNumber = $interval.Days
-         #Get the revision number (number seconds (divided by two) into the day on which the compilation was performed)
-         $StartDate=[datetime]::Today
-         $EndDate=(GET-DATE)
-         $revisionNumber = [math]::Round((New-TimeSpan -Start $StartDate -End $EndDate).TotalSeconds / 2,0)
-         #Final version number
-         $finalBuildVersion = ""$($splitVersion[0]).$($splitVersion[1]).$($buildNumber).$($revisionNumber)""
-         Write-Host ""Major.Minor,Build,Revision""
-         Write-Host ""Final build number: "" $finalBuildVersion
-         #Writing final version number back to Azure DevOps variable
-         Write-Host ""##vso[task.setvariable variable=buildNumber]$finalBuildVersion""
-
-    - task: CopyFiles@2
-      displayName: 'Copy environment ARM template files to: $(build.artifactstagingdirectory)'
-      inputs:
-        SourceFolder: '$(system.defaultworkingdirectory)\FeatureFlags\FeatureFlags.ARMTemplates'
-        Contents: '**\*' # **\* = Copy all files and all files in sub directories
-        TargetFolder: '$(build.artifactstagingdirectory)\ARMTemplates'
-
-    - task: DotNetCoreCLI@2
-      displayName: 'Test dotnet code projects'
-      inputs:
-        command: test
-        projects: |
-         FeatureFlags/FeatureFlags.Tests/FeatureFlags.Tests.csproj
-        arguments: '--configuration $(buildConfiguration) --logger trx --collect ""Code coverage"" --settings:$(Build.SourcesDirectory)\FeatureFlags\FeatureFlags.Tests\CodeCoverage.runsettings'
-
-    - task: DotNetCoreCLI@2
-      displayName: 'Publish dotnet core projects'
-      inputs:
-        command: publish
-        publishWebProjects: false
-        projects: |
-         FeatureFlags/FeatureFlags.Service/FeatureFlags.Service.csproj
-         FeatureFlags/FeatureFlags.Web/FeatureFlags.Web.csproj
-        arguments: '--configuration $(buildConfiguration) --output $(build.artifactstagingdirectory) -p:Version=$(buildNumber)'
-        zipAfterPublish: true
-
-    - task: DotNetCoreCLI@2
-      displayName: 'Publish dotnet core functional tests project'
-      inputs:
-        command: publish
-        publishWebProjects: false
-        projects: |
-         FeatureFlags/FeatureFlags.FunctionalTests/FeatureFlags.FunctionalTests.csproj
-        arguments: '--configuration $(buildConfiguration) --output $(build.artifactstagingdirectory)/FunctionalTests'
-        zipAfterPublish: false
-
-    - task: CopyFiles@2
-      displayName: 'Copy Selenium Files to: $(build.artifactstagingdirectory)/FunctionalTests/FeatureFlags.FunctionalTests'
-      inputs:
-        SourceFolder: 'FeatureFlags/FeatureFlags.FunctionalTests/bin/$(buildConfiguration)/netcoreapp3.0'
-        Contents: '*chromedriver.exe*'
-        TargetFolder: '$(build.artifactstagingdirectory)/FunctionalTests/FeatureFlags.FunctionalTests'
-
-    # Publish the artifacts
-    - task: PublishBuildArtifacts@1
-      displayName: 'Publish Artifact'
-      inputs:
-        PathtoPublish: '$(build.artifactstagingdirectory)'";
-
-            //Act
-            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(yaml);
-
-            //Assert
-            string expected = @"
-on:
-  push:
-    branches:
-    - master
-  pull-request:
-    branches:
-    - '*'
-env:
-  vmImage: windows-latest
-  buildConfiguration: Release
-  buildPlatform: Any CPU
-  buildNumber: 1.1.0.0
 jobs:
-  Build_Stage_Build:
-    name: Build job
-    runs-on: ${{ env.vmImage }}
-    steps:
-    - uses: actions/checkout@v2
-    - name: Use .NET Core sdk
-      uses: actions/setup-dotnet@v1
-      with:
-        dotnet-version: 2.2.203
-    - name: Generate build version number
-      run: |
-        Write-Host ""Generating Build Number""
-        #Get the version from the csproj file
-        $xml = [Xml] (Get-Content FeatureFlags/FeatureFlags.Web/FeatureFlags.Web.csproj)
-        $initialVersion = [Version] $xml.Project.PropertyGroup.Version
-        Write-Host ""Initial Version: "" $version
-        $splitVersion = $initialVersion -Split ""\.""
-        #Get the build number (number of days since January 1, 2000)
-        $baseDate = [datetime]""01/01/2000""
-        $currentDate = ${{ env.Get-Date }}
-        $interval = (NEW-TIMESPAN -Start $baseDate -End $currentDate)
-        ${{ env.buildNumber }} = $interval.Days
-        #Get the revision number (number seconds (divided by two) into the day on which the compilation was performed)
-        $StartDate=[datetime]::Today
-        $EndDate=(GET-DATE)
-        $revisionNumber = [math]::Round((New-TimeSpan -Start $StartDate -End $EndDate).TotalSeconds / 2,0)
-        #Final version number
-        $finalBuildVersion = ""${{ env.$splitVersion[0] }}.${{ env.$splitVersion[1] }}.$(${{ env.buildNumber }}).${{ env.$revisionNumber }}""
-        Write-Host ""Major.Minor,Build,Revision""
-        Write-Host ""Final build number: "" $finalBuildVersion
-        #Writing final version number back to Azure DevOps variable
-        Write-Host ""##vso[task.setvariable variable=buildNumber]$finalBuildVersion""
-      shell: powershell
-    - name: 'Copy environment ARM template files to: ${GITHUB_WORKSPACE}'
-      run: Copy '${{ env.system.defaultworkingdirectory }}\FeatureFlags\FeatureFlags.ARMTemplates/**\*' '${GITHUB_WORKSPACE}\ARMTemplates'
-      shell: powershell
-    - name: Test dotnet code projects
-      run: dotnet test FeatureFlags/FeatureFlags.Tests/FeatureFlags.Tests.csproj --configuration ${{ env.buildConfiguration }} --logger trx --collect ""Code coverage"" --settings:${{ env.Build.SourcesDirectory }}\FeatureFlags\FeatureFlags.Tests\CodeCoverage.runsettings
-    - name: Publish dotnet core projects
-      run: dotnet publish FeatureFlags/FeatureFlags.Service/FeatureFlags.Service.csprojFeatureFlags/FeatureFlags.Web/FeatureFlags.Web.csproj --configuration ${{ env.buildConfiguration }} --output ${GITHUB_WORKSPACE} -p:Version=${{ env.buildNumber }}
-    - name: Publish dotnet core functional tests project
-      run: dotnet publish FeatureFlags/FeatureFlags.FunctionalTests/FeatureFlags.FunctionalTests.csproj --configuration ${{ env.buildConfiguration }} --output ${GITHUB_WORKSPACE}/FunctionalTests
-    - name: 'Copy Selenium Files to: ${GITHUB_WORKSPACE}/FunctionalTests/FeatureFlags.FunctionalTests'
-      run: Copy 'FeatureFlags/FeatureFlags.FunctionalTests/bin/${{ env.buildConfiguration }}/netcoreapp3.0/*chromedriver.exe*' '${GITHUB_WORKSPACE}/FunctionalTests/FeatureFlags.FunctionalTests'
-      shell: powershell
-    - name: Publish Artifact
-      uses: actions/upload-artifact@master
-      with:
-        path: ${GITHUB_WORKSPACE}
-";
-            expected = UtilityTests.TrimNewLines(expected);
-            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
-        }
-
-        [TestMethod]
-        public void LargeMultiStagePipelineTest()
-        {
-            //Arrange
-            Conversion conversion = new Conversion();
-            string yaml = @"
-# ASP.NET Core
-# Build and test ASP.NET Core projects targeting .NET Core.
-# Add steps that run tests, create a NuGet package, deploy, and more:
-# https://docs.microsoft.com/azure/devops/pipelines/languages/dotnet-core
-
-trigger:
-- master
-pr:
-  branches:
-    include:
-    - '*'
-
-variables:
-  vmImage: 'windows-latest'
-  buildConfiguration: 'Release'
-  buildPlatform: 'Any CPU'
-  buildNumber: '1.1.0.0'
-
-stages:
-- stage: Build
-  displayName: 'Build/Test Stage'
-  jobs:
-  - job: Build
-    displayName: 'Build job'
-    pool:
-      vmImage: $(vmImage)
-    steps:
-    - task: PowerShell@2
-      displayName: 'Generate build version number'
-      inputs:
-        targetType: FilePath
-        filePath: MyProject/BuildVersion.ps1
-        arguments: -ProjectFile ""MyProject/MyProject.Web/MyProject.Web.csproj""
-    - task: CopyFiles@2
-      displayName: 'Copy environment ARM template files to: $(build.artifactstagingdirectory)'
-      inputs:
-        SourceFolder: '$(system.defaultworkingdirectory)\FeatureFlags\FeatureFlags.ARMTemplates'
-        Contents: '**\*' # **\* = Copy all files and all files in sub directories
-        TargetFolder: '$(build.artifactstagingdirectory)\ARMTemplates'
-
-    - task: DotNetCoreCLI@2
-      displayName: 'Test dotnet code projects'
-      inputs:
-        command: test
-        projects: |
-         FeatureFlags/FeatureFlags.Tests/FeatureFlags.Tests.csproj
-        arguments: '--configuration $(buildConfiguration) --logger trx --collect ""Code coverage"" --settings:$(Build.SourcesDirectory)\FeatureFlags\FeatureFlags.Tests\CodeCoverage.runsettings'
-
-    - task: DotNetCoreCLI@2
-      displayName: 'Publish dotnet core projects'
-      inputs:
-        command: publish
-        publishWebProjects: false
-        projects: |
-         FeatureFlags/FeatureFlags.Service/FeatureFlags.Service.csproj
-         FeatureFlags/FeatureFlags.Web/FeatureFlags.Web.csproj
-        arguments: '--configuration $(buildConfiguration) --output $(build.artifactstagingdirectory) -p:Version=$(buildNumber)'
-        zipAfterPublish: true
-
-    - task: DotNetCoreCLI@2
-      displayName: 'Publish dotnet core functional tests project'
-      inputs:
-        command: publish
-        publishWebProjects: false
-        projects: |
-         FeatureFlags/FeatureFlags.FunctionalTests/FeatureFlags.FunctionalTests.csproj
-        arguments: '--configuration $(buildConfiguration) --output $(build.artifactstagingdirectory)/FunctionalTests'
-        zipAfterPublish: false
-
-    - task: CopyFiles@2
-      displayName: 'Copy Selenium Files to: $(build.artifactstagingdirectory)/FunctionalTests/FeatureFlags.FunctionalTests'
-      inputs:
-        SourceFolder: 'FeatureFlags/FeatureFlags.FunctionalTests/bin/$(buildConfiguration)/netcoreapp3.0'
-        Contents: '*chromedriver.exe*'
-        TargetFolder: '$(build.artifactstagingdirectory)/FunctionalTests/FeatureFlags.FunctionalTests'
-
-    # Publish the artifacts
-    - task: PublishBuildArtifacts@1
-      displayName: 'Publish Artifact'
-      inputs:
-        PathtoPublish: '$(build.artifactstagingdirectory)'
-
-- stage: Deploy
-  displayName: 'Deploy Prod'
-  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
-  jobs:
-  - job: Deploy
-    displayName: 'Deploy job'
-    pool:
-      vmImage: $(vmImage)   
-    variables:
-      AppSettings.Environment: 'data'
-      ArmTemplateResourceGroupLocation: 'eu'
-      ResourceGroupName: 'MyProjectFeatureFlags'
-      WebsiteName: 'featureflags-data-eu-web'
-      WebServiceName: 'featureflags-data-eu-service'
-    steps:
-    - task: DownloadBuildArtifacts@0
-      displayName: 'Download the build artifacts'
-      inputs:
-        buildType: 'current'
-        downloadType: 'single'
-        artifactName: 'drop'
-        downloadPath: '$(build.artifactstagingdirectory)'
-    - task: AzureResourceGroupDeployment@2
-      displayName: 'Deploy ARM Template to resource group'
-      inputs:
-        azureSubscription: 'Connection to Azure Portal'
-        resourceGroupName: $(ResourceGroupName)
-        location: '[resourceGroup().location]'
-        csmFile: '$(build.artifactstagingdirectory)/drop/ARMTemplates/azuredeploy.json'
-        csmParametersFile: '$(build.artifactstagingdirectory)/drop/ARMTemplates/azuredeploy.parameters.json'
-        overrideParameters: '-environment $(AppSettings.Environment) -locationShort $(ArmTemplateResourceGroupLocation)'
-    - task: AzureRmWebAppDeployment@3
-      displayName: 'Azure App Service Deploy: web service'
-      inputs:
-        azureSubscription: 'Connection to Azure Portal'
-        WebAppName: $(WebServiceName)
-        DeployToSlotFlag: true
-        ResourceGroupName: $(ResourceGroupName)
-        SlotName: 'staging'
-        Package: '$(build.artifactstagingdirectory)/drop/FeatureFlags.Service.zip'
-        TakeAppOfflineFlag: true
-        JSONFiles: '**/appsettings.json'
-    - task: AzureRmWebAppDeployment@3
-      displayName: 'Azure App Service Deploy: web site'
-      inputs:
-        azureSubscription: 'Connection to Azure Portal'
-        WebAppName: $(WebsiteName)
-        DeployToSlotFlag: true
-        ResourceGroupName: $(ResourceGroupName)
-        SlotName: 'staging'
-        Package: '$(build.artifactstagingdirectory)/drop/FeatureFlags.Web.zip'
-        TakeAppOfflineFlag: true
-        JSONFiles: '**/appsettings.json'        
-    - task: VSTest@2
-      displayName: 'Run functional smoke tests on website and web service'
-      inputs:
-        searchFolder: '$(build.artifactstagingdirectory)'
-        testAssemblyVer2: '**\FeatureFlags.FunctionalTests\FeatureFlags.FunctionalTests.dll'
-        uiTests: true
-        runSettingsFile: '$(build.artifactstagingdirectory)/drop/FunctionalTests/FeatureFlags.FunctionalTests/test.runsettings'
-        overrideTestrunParameters: |
-         -ServiceUrl ""https://$(WebServiceName)-staging.azurewebsites.net/"" 
-         -WebsiteUrl ""https://$(WebsiteName)-staging.azurewebsites.net/"" 
-         -TestEnvironment ""$(AppSettings.Environment)"" 
-    - task: AzureAppServiceManage@0
-      displayName: 'Swap Slots: web service'
-      inputs:
-        azureSubscription: 'Connection to Azure Portal'
-        WebAppName: $(WebServiceName)
-        ResourceGroupName: $(ResourceGroupName)
-        SourceSlot: 'staging'
-    - task: AzureAppServiceManage@0
-      displayName: 'Swap Slots: website'
-      inputs:
-        azureSubscription: 'Connection to Azure Portal'
-        WebAppName: $(WebsiteName)
-        ResourceGroupName: $(ResourceGroupName)
-        SourceSlot: 'staging'
+- job: Deploy
+  displayName: Deploy job
+  pool:
+    vmImage: ubuntu-latest
+  variables:
+    AppSettings.Environment: 'data'
+    ArmTemplateResourceGroupLocation: 'eu'
+    ResourceGroupName: 'MyProjectRG'
+  steps:
+  - task: DownloadBuildArtifacts@0
+    displayName: 'Download the build artifacts'
+    inputs:
+      buildType: 'current'
+      downloadType: 'single'
+      artifactName: 'drop'
+      downloadPath: '$(build.artifactstagingdirectory)'
+  - task: AzureResourceGroupDeployment@2
+    displayName: 'Deploy ARM Template to resource group'
+    inputs:
+      azureSubscription: 'connection to Azure Portal'
+      resourceGroupName: $(ResourceGroupName)
+      location: '[resourceGroup().location]'
+      csmFile: '$(build.artifactstagingdirectory)/drop/ARMTemplates/azuredeploy.json'
+      csmParametersFile: '$(build.artifactstagingdirectory)/drop/ARMTemplates/azuredeploy.parameters.json'
+      overrideParameters: '-environment $(AppSettings.Environment) -locationShort $(ArmTemplateResourceGroupLocation)'
 ";
 
             //Act
@@ -370,53 +53,14 @@ stages:
             //Assert
             string expected = @"
 #Note: 'AZURE_SP' secret is required to be setup and added into GitHub Secrets: https://help.github.com/en/actions/automating-your-workflow-with-github-actions/creating-and-using-encrypted-secrets
-on:
-  push:
-    branches:
-    - master
-  pull-request:
-    branches:
-    - '*'
-env:
-  vmImage: windows-latest
-  buildConfiguration: Release
-  buildPlatform: Any CPU
-  buildNumber: 1.1.0.0
 jobs:
-  Build_Stage_Build:
-    name: Build job
-    runs-on: ${{ env.vmImage }}
-    steps:
-    - uses: actions/checkout@v2
-    - name: Generate build version number
-      run: MyProject/BuildVersion.ps1 -ProjectFile ""MyProject/MyProject.Web/MyProject.Web.csproj""
-      shell: powershell
-    - name: 'Copy environment ARM template files to: ${GITHUB_WORKSPACE}'
-      run: Copy '${{ env.system.defaultworkingdirectory }}\FeatureFlags\FeatureFlags.ARMTemplates/**\*' '${GITHUB_WORKSPACE}\ARMTemplates'
-      shell: powershell
-    - name: Test dotnet code projects
-      run: dotnet test FeatureFlags/FeatureFlags.Tests/FeatureFlags.Tests.csproj --configuration ${{ env.buildConfiguration }} --logger trx --collect ""Code coverage"" --settings:${{ env.Build.SourcesDirectory }}\FeatureFlags\FeatureFlags.Tests\CodeCoverage.runsettings
-    - name: Publish dotnet core projects
-      run: dotnet publish FeatureFlags/FeatureFlags.Service/FeatureFlags.Service.csprojFeatureFlags/FeatureFlags.Web/FeatureFlags.Web.csproj --configuration ${{ env.buildConfiguration }} --output ${GITHUB_WORKSPACE} -p:Version=${{ env.buildNumber }}
-    - name: Publish dotnet core functional tests project
-      run: dotnet publish FeatureFlags/FeatureFlags.FunctionalTests/FeatureFlags.FunctionalTests.csproj --configuration ${{ env.buildConfiguration }} --output ${GITHUB_WORKSPACE}/FunctionalTests
-    - name: 'Copy Selenium Files to: ${GITHUB_WORKSPACE}/FunctionalTests/FeatureFlags.FunctionalTests'
-      run: Copy 'FeatureFlags/FeatureFlags.FunctionalTests/bin/${{ env.buildConfiguration }}/netcoreapp3.0/*chromedriver.exe*' '${GITHUB_WORKSPACE}/FunctionalTests/FeatureFlags.FunctionalTests'
-      shell: powershell
-    - name: Publish Artifact
-      uses: actions/upload-artifact@master
-      with:
-        path: ${GITHUB_WORKSPACE}
-  Deploy_Stage_Deploy:
+  Deploy:
     name: Deploy job
-    runs-on: ${{ env.vmImage }}
+    runs-on: ubuntu-latest
     env:
       AppSettings.Environment: data
       ArmTemplateResourceGroupLocation: eu
-      ResourceGroupName: MyProjectFeatureFlags
-      WebsiteName: featureflags-data-eu-web
-      WebServiceName: featureflags-data-eu-service
-    if: and(success(),eq(github.ref, 'refs/heads/master'))
+      ResourceGroupName: MyProjectRG
     steps:
     - uses: actions/checkout@v2
     - #: ""Note: 'AZURE_SP' secret is required to be setup and added into GitHub Secrets: https://help.github.com/en/actions/automating-your-workflow-with-github-actions/creating-and-using-encrypted-secrets""
@@ -434,101 +78,13 @@ jobs:
         AZURE_RESOURCE_GROUP: ${{ env.ResourceGroupName }}
         AZURE_TEMPLATE_LOCATION: ${GITHUB_WORKSPACE}/drop/ARMTemplates/azuredeploy.json
         AZURE_TEMPLATE_PARAM_FILE: ${GITHUB_WORKSPACE}/drop/ARMTemplates/azuredeploy.parameters.json
-    - name: 'Azure App Service Deploy: web service'
-      uses: Azure/webapps-deploy@v2
-      with:
-        app-name: ${{ env.WebServiceName }}
-        package: ${GITHUB_WORKSPACE}/drop/FeatureFlags.Service.zip
-        slot-name: staging
-    - name: 'Azure App Service Deploy: web site'
-      uses: Azure/webapps-deploy@v2
-      with:
-        app-name: ${{ env.WebsiteName }}
-        package: ${GITHUB_WORKSPACE}/drop/FeatureFlags.Web.zip
-        slot-name: staging
-    - name: Run functional smoke tests on website and web service
-      run: |
-        $vsTestConsoleExe = ""C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\Common7\IDE\Extensions\TestPlatform\vstest.console.exe""
-        $targetTestDll = ""**\FeatureFlags.FunctionalTests\FeatureFlags.FunctionalTests.dll""
-        $testRunSettings = ""/Settings:`""${GITHUB_WORKSPACE}/drop/FunctionalTests/FeatureFlags.FunctionalTests/test.runsettings`"" ""
-        $parameters = "" -- ServiceUrl=""https://${{ env.WebServiceName }}-staging.azurewebsites.net/"" WebsiteUrl=""https://${{ env.WebsiteName }}-staging.azurewebsites.net/"" TestEnvironment=""${{ env.AppSettings.Environment }}"" ""
-        #Note that the `"" is an escape character to quote strings, and the `& is needed to start the command
-        $command = ""`& `""$vsTestConsoleExe`"" `""$targetTestDll`"" $testRunSettings $parameters ""
-        Write-Host ""$command""
-        Invoke-Expression $command
-      shell: powershell
-    - name: 'Swap Slots: web service'
-      uses: Azure/cli@v1.0.0
-      with:
-        inlineScript: az webapp deployment slot swap --resource-group ${{ env.ResourceGroupName }} --name ${{ env.WebServiceName }} --slot staging --target-slot production
-    - name: 'Swap Slots: website'
-      uses: Azure/cli@v1.0.0
-      with:
-        inlineScript: az webapp deployment slot swap --resource-group ${{ env.ResourceGroupName }} --name ${{ env.WebsiteName }} --slot staging --target-slot production
-";
-            expected = UtilityTests.TrimNewLines(expected);
-            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
-        }
-
-
-        [TestMethod]
-        public void StagingPipelineTest()
-        {
-            //Arrange
-            Conversion conversion = new Conversion();
-            string yaml = @"
-stages:
-- stage: Build
-  displayName: 'Build Stage'
-  jobs:
-  - job: Build
-    displayName: 'Build job'
-    pool:
-      vmImage: windows-latest
-    steps:
-    - task: PowerShell@2
-      inputs:
-        targetType: 'inline'
-        script: |
-         Write-Host ""Hello world!""
-
-  - job: Build2
-    displayName: 'Build job 2'
-    pool:
-      vmImage: windows-latest
-    steps:
-    - task: PowerShell@2
-      inputs:
-        targetType: 'inline'
-        script: Write-Host ""Hello world 2!""
-";
-
-            //Act
-            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(yaml);
-
-            //Assert
-            string expected = @"
-jobs:
-  Build_Stage_Build:
-    name: Build job
-    runs-on: windows-latest
-    steps:
-    - uses: actions/checkout@v2
-    - run: Write-Host ""Hello world!""
-      shell: powershell
-  Build_Stage_Build2:
-    name: Build job 2
-    runs-on: windows-latest
-    steps:
-    - uses: actions/checkout@v2
-    - run: Write-Host ""Hello world 2!""
-      shell: powershell
 ";
 
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
         }
 
+        //TODO: Move to step, doesn't need to be here.
         [TestMethod]
         public void NuGetPackagePipelineTest()
         {
@@ -625,60 +181,7 @@ jobs:
         }
 
 
-        [TestMethod]
-        public void ConditionOnStagePipelineTest()
-        {
-            //Arrange
-            Conversion conversion = new Conversion();
-            string yaml = @"
-trigger:
-- master
-
-stages:
-- stage: Deploy
-  displayName: 'Deploy Prod'
-  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
-  jobs:
-  - job: Deploy
-    displayName: 'Deploy job'
-    pool:
-      vmImage: ubuntu-latest  
-    steps:
-    - task: DownloadBuildArtifacts@0
-      displayName: 'Download the build artifacts'
-      inputs:
-        buildType: 'current'
-        downloadType: 'single'
-        artifactName: 'drop'
-        downloadPath: '$(build.artifactstagingdirectory)'
-";
-
-            //Act
-            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(yaml);
-
-            //Assert
-            string expected = @"
-on:
-  push:
-    branches:
-    - master
-jobs:
-  Deploy_Stage_Deploy:
-    name: Deploy job
-    runs-on: ubuntu-latest
-    if: and(success(),eq(github.ref, 'refs/heads/master'))
-    steps:
-    - uses: actions/checkout@v2
-    - name: Download the build artifacts
-      uses: actions/download-artifact@v1.0.0
-      with:
-        name: drop
-";
-
-            expected = UtilityTests.TrimNewLines(expected);
-            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
-        }
-
+        //TODO: Move to step, doesn't need to be here.
         [TestMethod]
         public void ResourcesContainersPipelineTest()
         {
@@ -720,6 +223,7 @@ jobs:
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
         }
 
+        //TODO: Move to step, doesn't need to be here.
         [TestMethod]
         public void DotNetDesktopPipelineTest()
         {
@@ -787,6 +291,7 @@ jobs:
         }
 
 
+        //TODO: Move to step, doesn't need to be here.
         [TestMethod]
         public void AspDotNetFrameworkPipelineTest()
         {
@@ -861,178 +366,7 @@ jobs:
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
         }
 
-
-        [TestMethod]
-        public void DotNetCoreCDPipelineTest()
-        {
-            //Arrange
-            Conversion conversion = new Conversion();
-            //Source is: https://github.com/microsoft/azure-pipelines-yaml/blob/master/templates/asp.net-core-.net-framework.yml
-            string yaml = @"
-trigger:
-- master
-
-variables:
-  buildConfiguration: 'Release'
-  buildPlatform: 'Any CPU'
-
-stages:
-- stage: Deploy
-  displayName: 'Deploy Prod'
-  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
-  jobs:
-  - job: Deploy
-    displayName: 'Deploy job'
-    pool:
-      vmImage: ubuntu-latest  
-    variables:
-      AppSettings.Environment: 'data'
-      ArmTemplateResourceGroupLocation: 'eu'
-      ResourceGroupName: 'MyProjectRG'
-      WebsiteName: 'myproject-web'
-    steps:
-    - task: DownloadBuildArtifacts@0
-      displayName: 'Download the build artifacts'
-      inputs:
-        buildType: 'current'
-        downloadType: 'single'
-        artifactName: 'drop'
-        downloadPath: '$(build.artifactstagingdirectory)'
-    - task: AzureRmWebAppDeployment@3
-      displayName: 'Azure App Service Deploy: web site'
-      inputs:
-        azureSubscription: 'connection to Azure Portal'
-        WebAppName: $(WebsiteName)
-        DeployToSlotFlag: true
-        ResourceGroupName: $(ResourceGroupName)
-        SlotName: 'staging'
-        Package: '$(build.artifactstagingdirectory)/drop/MyProject.Web.zip'
-        TakeAppOfflineFlag: true
-        JSONFiles: '**/appsettings.json'        
-    - task: AzureAppServiceManage@0
-      displayName: 'Swap Slots: website'
-      inputs:
-        azureSubscription: 'connection to Azure Portal'
-        WebAppName: $(WebsiteName)
-        ResourceGroupName: $(ResourceGroupName)
-        SourceSlot: 'staging'
-";
-
-            //Act
-            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(yaml);
-
-            //Assert
-            string expected = @"
-#Note: 'AZURE_SP' secret is required to be setup and added into GitHub Secrets: https://help.github.com/en/actions/automating-your-workflow-with-github-actions/creating-and-using-encrypted-secrets
-on:
-  push:
-    branches:
-    - master
-env:
-  buildConfiguration: Release
-  buildPlatform: Any CPU
-jobs:
-  Deploy_Stage_Deploy:
-    name: Deploy job
-    runs-on: ubuntu-latest
-    env:
-      AppSettings.Environment: data
-      ArmTemplateResourceGroupLocation: eu
-      ResourceGroupName: MyProjectRG
-      WebsiteName: myproject-web
-    if: and(success(),eq(github.ref, 'refs/heads/master'))
-    steps:
-    - uses: actions/checkout@v2
-    - #: ""Note: 'AZURE_SP' secret is required to be setup and added into GitHub Secrets: https://help.github.com/en/actions/automating-your-workflow-with-github-actions/creating-and-using-encrypted-secrets""
-      name: Azure Login
-      uses: azure/login@v1
-      with:
-        creds: ${{ secrets.AZURE_SP }}
-    - name: Download the build artifacts
-      uses: actions/download-artifact@v1.0.0
-      with:
-        name: drop
-    - name: 'Azure App Service Deploy: web site'
-      uses: Azure/webapps-deploy@v2
-      with:
-        app-name: ${{ env.WebsiteName }}
-        package: ${GITHUB_WORKSPACE}/drop/MyProject.Web.zip
-        slot-name: staging
-    - name: 'Swap Slots: website'
-      uses: Azure/cli@v1.0.0
-      with:
-        inlineScript: az webapp deployment slot swap --resource-group ${{ env.ResourceGroupName }} --name ${{ env.WebsiteName }} --slot staging --target-slot production
-";
-
-            expected = UtilityTests.TrimNewLines(expected);
-            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
-        }
-
-        [TestMethod]
-        public void DockerBuildPipelineTest()
-        {
-            //Arrange
-            Conversion conversion = new Conversion();
-            //Source is: https://github.com/microsoft/azure-pipelines-yaml/blob/master/templates/docker-build.yml
-            string yaml = @"
-# Docker
-# Build a Docker image 
-# https://docs.microsoft.com/azure/devops/pipelines/languages/docker
-
-trigger:
-- master
-
-resources:
-- repo: self
-
-variables:
-  tag: '$(Build.BuildId)'
-  dockerfilePath: '[MyDockerPath]'
-
-stages:
-- stage: Build
-  displayName: Build image
-  jobs:  
-  - job: Build
-    displayName: Build
-    pool:
-      vmImage: 'ubuntu-latest'
-    steps:
-    - task: Docker@2
-      displayName: Build an image
-      inputs:
-        command: build
-        dockerfile: '$(dockerfilePath)'
-        tags: $(tag)
-";
-
-            //Act
-            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(yaml);
-
-            //Assert
-            string expected = @"
-on:
-  push:
-    branches:
-    - master
-env:
-  tag: ${{ env.Build.BuildId }}
-  dockerfilePath: '[MyDockerPath]'
-jobs:
-  Build_Stage_Build:
-    name: Build
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v2
-    - name: Build an image
-      run: docker build . --file ${{ env.dockerfilePath }} --tag ${{ env.tag }}
-";
-
-            expected = UtilityTests.TrimNewLines(expected);
-            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
-        }
-
-
+           //Check that the results include the Setup Java step
         [TestMethod]
         public void AndroidPipelineTest()
         {
@@ -1088,6 +422,7 @@ jobs:
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
         }
 
+        //TODO: Move to step, doesn't need to be here.
         [TestMethod]
         public void GoPipelineTest()
         {
@@ -1180,6 +515,7 @@ jobs:
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
         }
 
+        //Check that the results include the setup Python step
         [TestMethod]
         public void PythonPipelineTest()
         {
@@ -1247,6 +583,7 @@ jobs:
         }
 
 
+        //Check that the results include the setup java step
         [TestMethod]
         public void MavenPipelineTest()
         {
@@ -1298,6 +635,7 @@ jobs:
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
         }
 
+        //Check that the results include the setup Node step
         [TestMethod]
         public void NodeJSPipelineTest()
         {
@@ -1352,6 +690,7 @@ jobs:
         }
 
 
+        //TODO: Move to step, doesn't need to be here.
         [TestMethod]
         public void XamariniOSPipelineTest()
         {
@@ -1426,6 +765,7 @@ jobs:
         }
 
 
+        //TODO: Move to step, doesn't need to be here.
         [TestMethod]
         public void AzureFunctionAppContainerPipelineTest()
         {
@@ -1762,6 +1102,7 @@ jobs:
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
         }
 
+        //TODO: Move to step, doesn't need to be here.
         [TestMethod]
         public void TestHTMLPipeline()
         {
@@ -1810,6 +1151,7 @@ jobs:
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
         }
 
+        //Test that the result includes the setup Java step
         [TestMethod]
         public void AntPipelineTest()
         {
@@ -1859,6 +1201,7 @@ jobs:
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
         }
 
+        //Test that the result includes the setup Ruby step
         [TestMethod]
         public void RubyPipelineTest()
         {
@@ -1904,75 +1247,6 @@ jobs:
         }
 
 
-        [TestMethod]
-        public void AzureARMTemplatePipelineTest()
-        {
-            //Arrange
-            Conversion conversion = new Conversion();
-            string yaml = @"
-jobs:
-- job: Deploy
-  displayName: Deploy job
-  pool:
-    vmImage: ubuntu-latest
-  variables:
-    AppSettings.Environment: 'data'
-    ArmTemplateResourceGroupLocation: 'eu'
-    ResourceGroupName: 'MyProjectRG'
-  steps:
-  - task: DownloadBuildArtifacts@0
-    displayName: 'Download the build artifacts'
-    inputs:
-      buildType: 'current'
-      downloadType: 'single'
-      artifactName: 'drop'
-      downloadPath: '$(build.artifactstagingdirectory)'
-  - task: AzureResourceGroupDeployment@2
-    displayName: 'Deploy ARM Template to resource group'
-    inputs:
-      azureSubscription: 'connection to Azure Portal'
-      resourceGroupName: $(ResourceGroupName)
-      location: '[resourceGroup().location]'
-      csmFile: '$(build.artifactstagingdirectory)/drop/ARMTemplates/azuredeploy.json'
-      csmParametersFile: '$(build.artifactstagingdirectory)/drop/ARMTemplates/azuredeploy.parameters.json'
-      overrideParameters: '-environment $(AppSettings.Environment) -locationShort $(ArmTemplateResourceGroupLocation)'
-";
 
-            //Act
-            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(yaml);
-
-            //Assert
-            string expected = @"
-#Note: 'AZURE_SP' secret is required to be setup and added into GitHub Secrets: https://help.github.com/en/actions/automating-your-workflow-with-github-actions/creating-and-using-encrypted-secrets
-jobs:
-  Deploy:
-    name: Deploy job
-    runs-on: ubuntu-latest
-    env:
-      AppSettings.Environment: data
-      ArmTemplateResourceGroupLocation: eu
-      ResourceGroupName: MyProjectRG
-    steps:
-    - uses: actions/checkout@v2
-    - #: ""Note: 'AZURE_SP' secret is required to be setup and added into GitHub Secrets: https://help.github.com/en/actions/automating-your-workflow-with-github-actions/creating-and-using-encrypted-secrets""
-      name: Azure Login
-      uses: azure/login@v1
-      with:
-        creds: ${{ secrets.AZURE_SP }}
-    - name: Download the build artifacts
-      uses: actions/download-artifact@v1.0.0
-      with:
-        name: drop
-    - name: Deploy ARM Template to resource group
-      uses: Azure/github-actions/arm@master
-      env:
-        AZURE_RESOURCE_GROUP: ${{ env.ResourceGroupName }}
-        AZURE_TEMPLATE_LOCATION: ${GITHUB_WORKSPACE}/drop/ARMTemplates/azuredeploy.json
-        AZURE_TEMPLATE_PARAM_FILE: ${GITHUB_WORKSPACE}/drop/ARMTemplates/azuredeploy.parameters.json
-";
-
-            expected = UtilityTests.TrimNewLines(expected);
-            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
-        }
     }
 }

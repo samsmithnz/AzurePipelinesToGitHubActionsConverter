@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 namespace AzurePipelinesToGitHubActionsConverter.Tests
 {
     [TestClass]
-    public class CompleteFolderOfPipelineTests
+    public class FolderOfYAMLFilesTests
     {
 
         [TestMethod]

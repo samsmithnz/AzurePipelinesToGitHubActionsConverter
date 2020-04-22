@@ -585,6 +585,40 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
         }
 
 
+        [TestMethod]
+        public void ArmTemplateDeploymentStepTest()
+        {
+            //Arrange
+            Conversion conversion = new Conversion();
+            string yaml = @"
+  - task: AzureResourceGroupDeployment@2
+    displayName: 'Deploy ARM Template to resource group'
+    inputs:
+      azureSubscription: 'connection to Azure Portal'
+      resourceGroupName: $(ResourceGroupName)
+      location: '[resourceGroup().location]'
+      csmFile: '$(build.artifactstagingdirectory)/drop/ARMTemplates/azuredeploy.json'
+      csmParametersFile: '$(build.artifactstagingdirectory)/drop/ARMTemplates/azuredeploy.parameters.json'
+      overrideParameters: '-environment $(AppSettings.Environment) -locationShort $(ArmTemplateResourceGroupLocation)' 
+";
+
+            //Act
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineTaskToGitHubActionTask(yaml);
+
+            //Assert
+            string expected = @"
+- name: Deploy ARM Template to resource group
+  uses: Azure/github-actions/arm@master
+  env:
+    AZURE_RESOURCE_GROUP: ${{ env.ResourceGroupName }}
+    AZURE_TEMPLATE_LOCATION: ${GITHUB_WORKSPACE}/drop/ARMTemplates/azuredeploy.json
+    AZURE_TEMPLATE_PARAM_FILE: ${GITHUB_WORKSPACE}/drop/ARMTemplates/azuredeploy.parameters.json
+";
+            expected = UtilityTests.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+        }
+
+
         //        [TestMethod]
         //        public void MSBuildStepTest()
         //        {
