@@ -44,7 +44,6 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                     case "CopyFiles@2":
                         gitHubStep = CreateCopyFilesStep(step);
                         break;
-                    case "Docker@0":
                     case "Docker@1":
                     case "Docker@2":
                         gitHubStep = CreateDockerStep(step);
@@ -299,7 +298,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
             //  run: docker build . --file MyDockerFile --tag my-image-name:$(date +%s)
 
 
-            //Docker 1 inputs
+            //Docker 0 and Docker 1 inputs
             string azureSubscriptionEndpoint = GetStepInput(step, "azureSubscriptionEndpoint");
             string azureContainerRegistry = GetStepInput(step, "azureContainerRegistry");
 

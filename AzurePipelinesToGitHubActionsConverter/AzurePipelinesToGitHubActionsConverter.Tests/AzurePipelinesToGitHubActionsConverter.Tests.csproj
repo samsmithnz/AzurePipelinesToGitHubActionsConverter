@@ -51,7 +51,7 @@
     <None Update="yamlFiles\docker-container-functionapp.yml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="filesNotCurrentlyWorking\docker-container-to-acr.yml">
+    <None Update="yamlFiles\docker-container-to-acr.yml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="filesNotCurrentlyWorking\docker-container-to-aks.yml">
@@ -78,7 +78,7 @@
     <None Update="yamlFiles\html.yml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="yamlFiles\jekyll-container.yml">
+    <None Update="filesNotCurrentlyWorking\jekyll-container.yml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="filesNotCurrentlyWorking\maven-webapp-to-linux-on-azure.yml">
