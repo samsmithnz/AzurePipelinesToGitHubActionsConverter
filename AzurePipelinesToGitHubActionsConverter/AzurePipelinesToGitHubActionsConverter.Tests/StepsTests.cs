@@ -305,6 +305,33 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
         }
 
         [TestMethod]
+        public void PowershellWithConditionIndividualStepTest()
+        {
+            //Arrange
+            Conversion conversion = new Conversion();
+            string yaml = @"
+- task: PowerShell@2
+  displayName: 'PowerShell test task'
+  condition: and(eq('ABCDE', 'BCD'), ne(0, 1))
+  inputs:
+    targetType: inline
+    script: Write-Host 'Hello World'";
+
+            //Act
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineTaskToGitHubActionTask(yaml);
+
+            //Assert
+            string expected = @"
+- name: PowerShell test task
+  run: Write-Host 'Hello World'
+  shell: powershell
+  if: and(eq('ABCDE', 'BCD'),ne(0, 1))
+";
+            expected = UtilityTests.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+        }
+
+        [TestMethod]
         public void AzureWebAppDeploymentIndividualStepTest()
         {
             //Arrange
