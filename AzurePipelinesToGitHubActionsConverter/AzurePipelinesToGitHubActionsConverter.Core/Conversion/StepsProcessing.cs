@@ -285,19 +285,95 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
             //    tags: tag1
             //    arguments: --secret id=mysecret,src=mysecret.txt
 
+            //- task: Docker@1
+            //  displayName: Push
+            //  inputs:
+            //    azureSubscriptionEndpoint: '$(Azure.ServiceConnectionId)'
+            //    azureContainerRegistry: '$(ACR.FullName)'
+            //    imageName: '$(ACR.ImageName)'
+            //    command: push
+
+
             //To: https://github.com/marketplace/actions/docker-build-push
             //- name: Build the Docker image
             //  run: docker build . --file MyDockerFile --tag my-image-name:$(date +%s)
 
 
+            //Docker 1 inputs
+            string azureSubscriptionEndpoint = GetStepInput(step, "azureSubscriptionEndpoint");
+            string azureContainerRegistry = GetStepInput(step, "azureContainerRegistry");
+
+            //Docker 2 inputs
+            string command = GetStepInput(step, "command");
+            string containerRegistry = GetStepInput(step, "containerRegistry");
+            string repository = GetStepInput(step, "repository");
             string tags = GetStepInput(step, "tags");
             string dockerFile = GetStepInput(step, "dockerfile");
+            string buildContext = GetStepInput(step, "buildContext");
             string arguments = GetStepInput(step, "arguments");
 
             //Very very simple. Needs more branches and logic
-            string dockerScript = "docker build . --file " + dockerFile + " --tag " + tags + " " + arguments;
+            string dockerScript = "";
+            string stepMessage = "";
+            switch (command)
+            {
+                case "build":
+                    dockerScript += "docker build .";
+                    break;
+                case "push":
+                    dockerScript += "docker push .";
+                    break;
+                case "buildAndPush":
+                    dockerScript += "docker build-push .";
+                    break;
+                case "login":
+                    dockerScript += "docker login .";
+                    break;
+                case "logout":
+                    dockerScript += "docker logout .";
+                    break;
+                default:
+                    stepMessage = "Error: Docker command " + command + " does not have a conversion path";
+                    break;
+            }
+
+            if (dockerFile != null)
+            {
+                dockerScript += " --file " + dockerFile;
+            }
+            if (repository != null)
+            {
+                dockerScript += " " + repository;
+            }
+            if (tags != null)
+            {
+                string[] splitTags = tags.Split("\n");
+                string newTags = "";
+                foreach (string item in splitTags)
+                {
+                    if (item.Trim().Length > 0)
+                    {
+                        newTags += item.Trim() + ",";
+                    }
+                }
+                dockerScript += " --tags " + newTags;//tags.Replace("\n", ",").Trim();
+                if (dockerScript[dockerScript.Length - 1] == ',')
+                {
+                    dockerScript = dockerScript.Substring(0, dockerScript.Length - 1);
+                }
+            }
+            if (arguments != null)
+            {
+                dockerScript += " " + arguments;
+            }
+
+
             step.script = dockerScript;
             GitHubActions.Step gitHubStep = CreateScriptStep("", step);
+            if (stepMessage != "")
+            {
+                gitHubStep.step_message = stepMessage;
+            }
             return gitHubStep;
         }
 

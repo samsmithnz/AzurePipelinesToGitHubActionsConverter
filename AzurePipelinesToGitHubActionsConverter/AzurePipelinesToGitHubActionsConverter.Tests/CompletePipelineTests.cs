@@ -4,11 +4,6 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace AzurePipelinesToGitHubActionsConverter.Tests
 {
-    //TODO: Look carefully at these tests. 
-    // Do they need to be so big? 
-    // I suspect most of them can be broken up into individual step tests, 
-    // with a couple big pipelines to test the YAML structure or to test features that need multiple jobs 
-    // (which probably shouldn't be testing steps at all to reduce noise
     [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
     [TestClass]
     public class CompletePipelineTests
@@ -85,63 +80,34 @@ jobs:
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
         }
 
-        //TODO: Move to step, doesn't need to be here.
+        //Check that the results include the Setup Java step
         [TestMethod]
-        public void NuGetPackagePipelineTest()
+        public void AndroidPipelineTest()
         {
             //Arrange
             Conversion conversion = new Conversion();
+            //Source is: https://raw.githubusercontent.com/microsoft/azure-pipelines-yaml/master/templates/android.yml
             string yaml = @"
-resources:
-- repo: self
-  containers:
-  - container: test123
+# Android
+# Build your Android project with Gradle.
+# Add steps that test, sign, and distribute the APK, save build artifacts, and more:
+# https://docs.microsoft.com/azure/devops/pipelines/languages/android
 
 trigger:
 - master
 
 pool:
-  vmImage: 'windows-latest'
-
-variables:
-  BuildConfiguration: 'Release'
-  BuildPlatform : 'Any CPU'
-  BuildVersion: 1.1.$(Build.BuildId)
+  vmImage: 'macos-latest'
 
 steps:
-- task: DotNetCoreCLI@2
-  displayName: Restore
+- task: Gradle@2
   inputs:
-    command: restore
-    projects: MyProject/MyProject.Models/MyProject.Models.csproj
-
-- task: DotNetCoreCLI@2
-  displayName: Build
-  inputs:
-    projects: MyProject/MyProject.Models/MyProject.Models.csproj
-    arguments: '--configuration $(BuildConfiguration)'
-
-- task: DotNetCoreCLI@2
-  displayName: Publish
-  inputs:
-    command: publish
-    publishWebProjects: false
-    projects: MyProject/MyProject.Models/MyProject.Models.csproj
-    arguments: '--configuration $(BuildConfiguration) --output $(build.artifactstagingdirectory)'
-    zipAfterPublish: false
-
-- task: DotNetCoreCLI@2
-  displayName: 'dotnet pack'
-  inputs:
-    command: pack
-    packagesToPack: MyProject/MyProject.Models/MyProject.Models.csproj
-    versioningScheme: byEnvVar
-    versionEnvVar: BuildVersion
-
-- task: PublishBuildArtifacts@1
-  displayName: 'Publish Artifact'
-  inputs:
-    PathtoPublish: '$(build.artifactstagingdirectory)'
+    workingDirectory: ''
+    gradleWrapperFile: 'gradlew'
+    gradleOptions: '-Xmx3072m'
+    publishJUnitResults: false
+    testResultsFiles: '**/TEST-*.xml'
+    tasks: 'assembleDebug'
 ";
 
             //Act
@@ -153,38 +119,26 @@ on:
   push:
     branches:
     - master
-env:
-  BuildConfiguration: Release
-  BuildPlatform: Any CPU
-  BuildVersion: 1.1.${{ env.Build.BuildId }}
 jobs:
   build:
-    runs-on: windows-latest
-    container: {}
+    runs-on: macos-latest
     steps:
     - uses: actions/checkout@v2
-    - name: Restore
-      run: dotnet restore MyProject/MyProject.Models/MyProject.Models.csproj
-    - name: Build
-      run: dotnet MyProject/MyProject.Models/MyProject.Models.csproj --configuration ${{ env.BuildConfiguration }}
-    - name: Publish
-      run: dotnet publish MyProject/MyProject.Models/MyProject.Models.csproj --configuration ${{ env.BuildConfiguration }} --output ${GITHUB_WORKSPACE}
-    - name: dotnet pack
-      run: dotnet pack
-    - name: Publish Artifact
-      uses: actions/upload-artifact@master
+    - name: Setup JDK 1.8
+      uses: actions/setup-java@v1
       with:
-        path: ${GITHUB_WORKSPACE}
+        java-version: 1.8
+    - run: chmod +x gradlew
+    - run: ./gradlew build
 ";
 
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
         }
 
-
-        //TODO: Move to step, doesn't need to be here.
+        //Test that the result includes the setup Java step
         [TestMethod]
-        public void ResourcesContainersPipelineTest()
+        public void AntPipelineTest()
         {
             //Arrange
             Conversion conversion = new Conversion();
@@ -193,14 +147,18 @@ trigger:
 - master
 
 pool:
-  vmImage: 'ubuntu-16.04'
+  vmImage: 'ubuntu-latest'
 
-container: 'mcr.microsoft.com/dotnet/core/sdk:2.2'
-
-resources:
-  containers:
-  - container: redis
-    image: redis
+steps:
+- task: Ant@1
+  inputs:
+    workingDirectory: ''
+    buildFile: 'build.xml'
+    javaHomeOption: 'JDKVersion'
+    jdkVersionOption: '1.8'
+    jdkArchitectureOption: 'x64'
+    publishJUnitResults: true
+    testResultsFiles: '**/TEST -*.xml'
 ";
 
             //Act
@@ -208,16 +166,20 @@ resources:
 
             //Assert
             string expected = @"
-#TODO: Container conversion not yet done: https://github.com/samsmithnz/AzurePipelinesToGitHubActionsConverter/issues/39
 on:
   push:
     branches:
     - master
 jobs:
   build:
-    runs-on: ubuntu-16.04
-    container:
-      image: redis
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Setup JDK 1.8
+      uses: actions/setup-java@v1
+      with:
+        java-version: 1.8
+    - run: ant -noinput -buildfile build.xml
 ";
 
             expected = UtilityTests.TrimNewLines(expected);
@@ -285,138 +247,6 @@ jobs:
     - run: nuget  ${{ env.solution }}
       shell: powershell
     - run: msbuild '${{ env.solution }}' /p:configuration='${{ env.buildConfiguration }}' /p:platform='${{ env.buildPlatform }}'
-";
-
-            expected = UtilityTests.TrimNewLines(expected);
-            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
-        }
-
-
-        //TODO: Move to step, doesn't need to be here.
-        [TestMethod]
-        public void AspDotNetFrameworkPipelineTest()
-        {
-            //Arrange
-            Conversion conversion = new Conversion();
-            //Source is: https://github.com/microsoft/azure-pipelines-yaml/blob/master/templates/asp.net-core-.net-framework.yml
-            string yaml = @"
-# ASP.NET Core (.NET Framework)
-# Build and test ASP.NET Core projects targeting the full .NET Framework.
-# Add steps that publish symbols, save build artifacts, and more:
-# https://docs.microsoft.com/azure/devops/pipelines/languages/dotnet-core
-
-trigger:
-- master
-
-pool:
-  vmImage: 'windows-latest'
-
-variables:
-  solution: '**/*.sln'
-  buildPlatform: 'Any CPU'
-  buildConfiguration: 'Release'
-
-steps:
-- task: NuGetToolInstaller@1
-
-- task: NuGetCommand@2
-  inputs:
-    restoreSolution: '$(solution)'
-
-- task: VSBuild@1
-  inputs:
-    solution: '$(solution)'
-    msbuildArgs: '/p:DeployOnBuild=true /p:WebPublishMethod=Package /p:PackageAsSingleFile=true /p:SkipInvalidConfigurations=true /p:DesktopBuildPackageLocation=""$(build.artifactStagingDirectory)\WebApp.zip"" /p:DeployIisAppPath=""Default Web Site""'
-    platform: '$(buildPlatform)'
-    configuration: '$(buildConfiguration)'
-
-#- task: VSTest@2
-#  inputs:
-#    platform: '$(buildPlatform)'
-#    configuration: '$(buildConfiguration)'
-";
-
-            //Act
-            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(yaml);
-
-            //Assert
-            string expected = @"
-#Note: This is a third party action: https://github.com/warrenbuckley/Setup-Nuget
-on:
-  push:
-    branches:
-    - master
-env:
-  solution: '**/*.sln'
-  buildPlatform: Any CPU
-  buildConfiguration: Release
-jobs:
-  build:
-    runs-on: windows-latest
-    steps:
-    - uses: actions/checkout@v2
-    - uses: microsoft/setup-msbuild@v1.0.0
-    - #: 'Note: This is a third party action: https://github.com/warrenbuckley/Setup-Nuget'
-      uses: warrenbuckley/Setup-Nuget@v1
-    - run: nuget  ${{ env.solution }}
-      shell: powershell
-    - run: msbuild '${{ env.solution }}' /p:configuration='${{ env.buildConfiguration }}' /p:platform='${{ env.buildPlatform }}' /p:DeployOnBuild=true /p:WebPublishMethod=Package /p:PackageAsSingleFile=true /p:SkipInvalidConfigurations=true /p:DesktopBuildPackageLocation=""${{ env.build.artifactStagingDirectory }}\WebApp.zip"" /p:DeployIisAppPath=""Default Web Site""
-";
-
-            expected = UtilityTests.TrimNewLines(expected);
-            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
-        }
-
-           //Check that the results include the Setup Java step
-        [TestMethod]
-        public void AndroidPipelineTest()
-        {
-            //Arrange
-            Conversion conversion = new Conversion();
-            //Source is: https://raw.githubusercontent.com/microsoft/azure-pipelines-yaml/master/templates/android.yml
-            string yaml = @"
-# Android
-# Build your Android project with Gradle.
-# Add steps that test, sign, and distribute the APK, save build artifacts, and more:
-# https://docs.microsoft.com/azure/devops/pipelines/languages/android
-
-trigger:
-- master
-
-pool:
-  vmImage: 'macos-latest'
-
-steps:
-- task: Gradle@2
-  inputs:
-    workingDirectory: ''
-    gradleWrapperFile: 'gradlew'
-    gradleOptions: '-Xmx3072m'
-    publishJUnitResults: false
-    testResultsFiles: '**/TEST-*.xml'
-    tasks: 'assembleDebug'
-";
-
-            //Act
-            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(yaml);
-
-            //Assert
-            string expected = @"
-on:
-  push:
-    branches:
-    - master
-jobs:
-  build:
-    runs-on: macos-latest
-    steps:
-    - uses: actions/checkout@v2
-    - name: Setup JDK 1.8
-      uses: actions/setup-java@v1
-      with:
-        java-version: 1.8
-    - run: chmod +x gradlew
-    - run: ./gradlew build
 ";
 
             expected = UtilityTests.TrimNewLines(expected);
@@ -515,74 +345,6 @@ jobs:
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
         }
-
-        //Check that the results include the setup Python step
-        [TestMethod]
-        public void PythonPipelineTest()
-        {
-            //Arrange
-            Conversion conversion = new Conversion();
-            //Source is: https://raw.githubusercontent.com/microsoft/azure-pipelines-yaml/master/templates/python-django.yml
-            string yaml = @"
-trigger:
-- master
-
-pool:
-  vmImage: 'ubuntu-latest'
-strategy:
-  matrix:
-    Python35:
-      PYTHON_VERSION: '3.5'
-    Python36:
-      PYTHON_VERSION: '3.6'
-    Python37:
-      PYTHON_VERSION: '3.7'
-  maxParallel: 3
-
-steps:
-- task: UsePythonVersion@0
-  inputs:
-    versionSpec: '$(PYTHON_VERSION)'
-    addToPath: true
-    architecture: 'x64'
-- task: PythonScript@0
-  inputs:
-    scriptSource: 'filePath'
-    scriptPath: 'Python/Hello.py'
-";
-
-            //Act
-            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(yaml);
-
-            //Assert
-            string expected = @"
-on:
-  push:
-    branches:
-    - master
-jobs:
-  build:
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        PYTHON_VERSION:
-        - 3.5
-        - 3.6
-        - 3.7
-      max-parallel: 3
-    steps:
-    - uses: actions/checkout@v2
-    - name: Setup Python ${{ matrix.PYTHON_VERSION }}
-      uses: actions/setup-python@v1
-      with:
-        python-version: ${{ matrix.PYTHON_VERSION }}
-    - run: python Python/Hello.py
-";
-
-            expected = UtilityTests.TrimNewLines(expected);
-            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
-        }
-
 
         //Check that the results include the setup java step
         [TestMethod]
@@ -690,303 +452,63 @@ jobs:
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
         }
 
-
         //TODO: Move to step, doesn't need to be here.
         [TestMethod]
-        public void XamariniOSPipelineTest()
+        public void NuGetPackagePipelineTest()
         {
             //Arrange
             Conversion conversion = new Conversion();
-            //Source is: https://raw.githubusercontent.com/microsoft/azure-pipelines-yaml/master/templates/xamarin.ios.yml
             string yaml = @"
-# Xamarin.iOS
-# Build a Xamarin.iOS project.
-# Add steps that install certificates, test, sign, and distribute an app, save build artifacts, and more:
-# https://docs.microsoft.com/azure/devops/pipelines/languages/xamarin
-
-trigger:
-- master
-
-pool:
-  vmImage: 'macos-latest'
-
-steps:
-# To manually select a Xamarin SDK version on the Microsoft-hosted macOS agent,
-# configure this task with the *Mono* version that is associated with the
-# Xamarin SDK version that you need, and set the ""enabled"" property to true.
-# See https://go.microsoft.com/fwlink/?linkid=871629
-- script: sudo $AGENT_HOMEDIRECTORY/scripts/select-xamarin-sdk.sh 5_12_0
-  displayName: 'Select the Xamarin SDK version'
-  enabled: false
-
-- task: NuGetToolInstaller@1
-
-- task: NuGetCommand@2
-  inputs:
-    restoreSolution: '**/*.sln'
-
-- task: XamariniOS@2
-  inputs:
-    solutionFile: '**/*.sln'
-    configuration: 'Release'
-    buildForSimulator: true
-    packageApp: false
-";
-
-            //Act
-            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(yaml);
-
-            //Assert
-            string expected = @"
-#Note: This is a third party action: https://github.com/warrenbuckley/Setup-Nuget
-on:
-  push:
-    branches:
-    - master
-jobs:
-  build:
-    runs-on: macos-latest
-    steps:
-    - uses: actions/checkout@v2
-    - name: Select the Xamarin SDK version
-      run: sudo $AGENT_HOMEDIRECTORY/scripts/select-xamarin-sdk.sh 5_12_0
-    - #: 'Note: This is a third party action: https://github.com/warrenbuckley/Setup-Nuget'
-      uses: warrenbuckley/Setup-Nuget@v1
-    - run: nuget  **/*.sln
-      shell: powershell
-    - run: |
-        cd Blank
-        nuget restore
-        cd Blank.Android
-        msbuild  /verbosity:normal /t:Rebuild /p:Platform=iPhoneSimulator /p:Configuration=Release
-";
-
-            expected = UtilityTests.TrimNewLines(expected);
-            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
-        }
-
-
-        //TODO: Move to step, doesn't need to be here.
-        [TestMethod]
-        public void AzureFunctionAppContainerPipelineTest()
-        {
-            //Arrange
-            Conversion conversion = new Conversion();
-            //Source is: https://raw.githubusercontent.com/microsoft/azure-pipelines-yaml/master/templates/xamarin.ios.yml
-            string yaml = @"
-# Docker image, Azure Container Registry, and Azure Functions app
-# Build a Docker image, push it to an Azure Container Registry, and deploy it to an Azure Functions app.
-# https://docs.microsoft.com/azure/devops/pipelines/languages/docker
-
-trigger:
-- master
-
 resources:
 - repo: self
-
-variables:
-  # ========================================================================
-  #                          Mandatory variables 
-  # ========================================================================
-
- # Update Azure.ResourceGroupName value with Azure resource group name.
-  Azure.ResourceGroupName: '{{#toAlphaNumericString repositoryName 50}}{{/toAlphaNumericString}}'
-
-  # Update Azure.ServiceConnectionId value with AzureRm service endpoint.
-  Azure.ServiceConnectionId: '{{ azureServiceConnectionId }}'
-
-  # Update Azure.Location value with Azure Location.
-  Azure.Location: 'eastus'
-
-  # Update ACR.Name value with ACR name. Please note ACR names should be all lower-case and alphanumeric only.
-  ACR.Name: '{{#toAlphaNumericString repositoryName 46}}{{/toAlphaNumericString}}{{#shortGuid}}{{/shortGuid}}'
-  
-  # Update FunctionApp.Name value with a name that identifies your new function app. Valid characters are a-z, 0-9, and -.
-  FunctionApp.Name: '{{#toAlphaNumericString repositoryName 46}}{{/toAlphaNumericString}}{{#shortGuid}}{{/shortGuid}}'
-  
-  # Update StorageAccount.Name value with Storage account name. Storage account names must be between 3 and 24 characters in length and use numbers and lower-case letters only.
-  StorageAccount.Name: '{{#toAlphaNumericString repositoryName 20}}{{/toAlphaNumericString}}{{#shortGuid}}{{/shortGuid}}'
-  
-  # Update ServicePlan.Name value with a name of the app service plan.
-  ServicePlan.Name: '{{#toAlphaNumericString repositoryName 45}}{{/toAlphaNumericString}}-plan'
-
-  # ========================================================================
-  #                           Optional variables 
-  # ========================================================================
-
-  ACR.ImageName: '$(ACR.Name):$(Build.BuildId)'
-  ACR.FullName: '$(ACR.Name).azurecr.io'
-  ACR.Sku: 'Standard'
-  Azure.CreateResources: 'true' # Update Azure.CreateResources to false if you have already created resources like resource group and azure container registry.
-  System.Debug: 'false'
-
-jobs:
-
-- job: CreateResources
-  displayName: Create resources
-  condition: and(succeeded(), eq(variables['Azure.CreateResources'], 'true'))
-
-  pool:
-    vmImage: 'ubuntu-latest'
-
-  steps:
-  - task: AzureResourceGroupDeployment@2
-    displayName: 'Azure Deployment:Create Azure Container Registry, Azure WebApp Service'
-    inputs:
-      azureSubscription: '$(Azure.ServiceConnectionId)'
-      resourceGroupName: '$(Azure.ResourceGroupName)'
-      location: '$(Azure.Location)'
-      templateLocation: 'URL of the file'
-      csmFileLink: 'https://raw.githubusercontent.com/Microsoft/azure-pipelines-yaml/master/templates/resources/arm/functionapp.json'
-      overrideParameters: '-registryName ""$(ACR.Name)"" -registryLocation ""$(Azure.Location)"" -functionAppName ""$(FunctionApp.Name)"" -hostingPlanName ""$(ServicePlan.Name)"" -storageAccountName ""$(StorageAccount.Name)""'
-
-- job: BuildImage
-  displayName: Build
-  dependsOn: CreateResources
-  condition: or(succeeded(), ne(variables['Azure.CreateResources'], 'true'))
-
-  pool:
-    vmImage: 'ubuntu-latest'
-
-  steps:
-  - task: Docker@1
-    displayName: 'Build an image'
-    inputs:
-      azureSubscriptionEndpoint: '$(Azure.ServiceConnectionId)'
-      azureContainerRegistry: '$(ACR.FullName)'
-      imageName: '$(ACR.ImageName)'
-      command: build
-      dockerFile: '**/Dockerfile'
-
-  - task: Docker@1
-    displayName: 'Push an image'
-    inputs:
-      azureSubscriptionEndpoint: '$(Azure.ServiceConnectionId)'
-      azureContainerRegistry: '$(ACR.FullName)'
-      imageName: '$(ACR.ImageName)'
-      command: push
-
-- job: DeployApp
-  displayName: Deploy
-  dependsOn: BuildImage
-  condition: succeeded()
-
-  pool:
-    vmImage: 'ubuntu-latest'
-
-  steps:
-  - task: AzureFunctionAppContainer@1
-    displayName: 'Azure Function App on Container Deploy: $(FunctionApp.Name)'
-    inputs:
-      azureSubscription: '$(Azure.ServiceConnectionId)'
-      appName: $(FunctionApp.Name)
-      imageName: '$(ACR.FullName)/$(ACR.ImageName)'
-";
-
-            //Act
-            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(yaml);
-
-            //Assert
-            string expected = @"
-#Note: 'AZURE_SP' secret is required to be setup and added into GitHub Secrets: https://help.github.com/en/actions/automating-your-workflow-with-github-actions/creating-and-using-encrypted-secrets
-on:
-  push:
-    branches:
-    - master
-env:
-  Azure.ResourceGroupName: '{{#toAlphaNumericString repositoryName 50}}{{/toAlphaNumericString}}'
-  Azure.ServiceConnectionId: '{{ azureServiceConnectionId }}'
-  Azure.Location: eastus
-  ACR.Name: '{{#toAlphaNumericString repositoryName 46}}{{/toAlphaNumericString}}{{#shortGuid}}{{/shortGuid}}'
-  FunctionApp.Name: '{{#toAlphaNumericString repositoryName 46}}{{/toAlphaNumericString}}{{#shortGuid}}{{/shortGuid}}'
-  StorageAccount.Name: '{{#toAlphaNumericString repositoryName 20}}{{/toAlphaNumericString}}{{#shortGuid}}{{/shortGuid}}'
-  ServicePlan.Name: '{{#toAlphaNumericString repositoryName 45}}{{/toAlphaNumericString}}-plan'
-  ACR.ImageName: ${{ env.ACR.Name }}:${{ env.Build.BuildId }}
-  ACR.FullName: ${{ env.ACR.Name }}.azurecr.io
-  ACR.Sku: Standard
-  Azure.CreateResources: true
-  System.Debug: false
-jobs:
-  CreateResources:
-    name: Create resources
-    runs-on: ubuntu-latest
-    if: and(success(),eq(variables['Azure.CreateResources'], 'true'))
-    steps:
-    - uses: actions/checkout@v2
-    - #: ""Note: 'AZURE_SP' secret is required to be setup and added into GitHub Secrets: https://help.github.com/en/actions/automating-your-workflow-with-github-actions/creating-and-using-encrypted-secrets""
-      name: Azure Login
-      uses: azure/login@v1
-      with:
-        creds: ${{ secrets.AZURE_SP }}
-    - name: Azure Deployment:Create Azure Container Registry, Azure WebApp Service
-      uses: Azure/github-actions/arm@master
-      env:
-        AZURE_RESOURCE_GROUP: ${{ env.Azure.ResourceGroupName }}
-        AZURE_TEMPLATE_LOCATION: 
-        AZURE_TEMPLATE_PARAM_FILE: 
-  BuildImage:
-    name: Build
-    runs-on: ubuntu-latest
-    needs: CreateResources
-    if: or(success(),ne(variables['Azure.CreateResources'], 'true'))
-    steps:
-    - uses: actions/checkout@v2
-    - name: Build an image
-      run: docker build . --file **/Dockerfile --tag
-    - name: Push an image
-      run: docker build . --file  --tag
-  DeployApp:
-    name: Deploy
-    runs-on: ubuntu-latest
-    needs: BuildImage
-    if: success()
-    steps:
-    - uses: actions/checkout@v2
-    - name: 'Azure Function App on Container Deploy: ${{ env.FunctionApp.Name }}'
-      uses: Azure/webapps-deploy@v2
-      with:
-        app-name: ${{ env.FunctionApp.Name }}
-        images: ${{ env.ACR.FullName }}/${{ env.ACR.ImageName }}
-";
-
-            expected = UtilityTests.TrimNewLines(expected);
-            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
-        }
-
-        [TestMethod]
-        public void XamarinAndroidPipelineTest()
-        {
-            //Arrange
-            Conversion conversion = new Conversion();
-            //Source is: 
-            string yaml = @"
-# Xamarin.Android
-# Build a Xamarin.Android project.
-# Add steps that test, sign, and distribute an app, save build artifacts, and more:
-# https://docs.microsoft.com/azure/devops/pipelines/languages/xamarin
+  containers:
+  - container: test123
 
 trigger:
 - master
 
 pool:
-  vmImage: 'macos-latest'
+  vmImage: 'windows-latest'
 
 variables:
-  buildConfiguration: 'Release'
-  outputDirectory: '$(build.binariesDirectory)/$(buildConfiguration)'
+  BuildConfiguration: 'Release'
+  BuildPlatform : 'Any CPU'
+  BuildVersion: 1.1.$(Build.BuildId)
 
 steps:
-- task: NuGetToolInstaller@1
-
-- task: NuGetCommand@2
+- task: DotNetCoreCLI@2
+  displayName: Restore
   inputs:
-    restoreSolution: '**/*.sln'
+    command: restore
+    projects: MyProject/MyProject.Models/MyProject.Models.csproj
 
-- task: XamarinAndroid@1
+- task: DotNetCoreCLI@2
+  displayName: Build
   inputs:
-    projectFile: '**/*droid*.csproj'
-    outputDirectory: '$(outputDirectory)'
-    configuration: '$(buildConfiguration)'
+    projects: MyProject/MyProject.Models/MyProject.Models.csproj
+    arguments: '--configuration $(BuildConfiguration)'
+
+- task: DotNetCoreCLI@2
+  displayName: Publish
+  inputs:
+    command: publish
+    publishWebProjects: false
+    projects: MyProject/MyProject.Models/MyProject.Models.csproj
+    arguments: '--configuration $(BuildConfiguration) --output $(build.artifactstagingdirectory)'
+    zipAfterPublish: false
+
+- task: DotNetCoreCLI@2
+  displayName: 'dotnet pack'
+  inputs:
+    command: pack
+    packagesToPack: MyProject/MyProject.Models/MyProject.Models.csproj
+    versioningScheme: byEnvVar
+    versionEnvVar: BuildVersion
+
+- task: PublishBuildArtifacts@1
+  displayName: 'Publish Artifact'
+  inputs:
+    PathtoPublish: '$(build.artifactstagingdirectory)'
 ";
 
             //Act
@@ -994,34 +516,240 @@ steps:
 
             //Assert
             string expected = @"
-#Note: This is a third party action: https://github.com/warrenbuckley/Setup-Nuget
 on:
   push:
     branches:
     - master
 env:
-  buildConfiguration: Release
-  outputDirectory: ${{ env.build.binariesDirectory }}/${{ env.buildConfiguration }}
+  BuildConfiguration: Release
+  BuildPlatform: Any CPU
+  BuildVersion: 1.1.${{ env.Build.BuildId }}
 jobs:
   build:
-    runs-on: macos-latest
+    runs-on: windows-latest
+    container: {}
     steps:
     - uses: actions/checkout@v2
-    - #: 'Note: This is a third party action: https://github.com/warrenbuckley/Setup-Nuget'
-      uses: warrenbuckley/Setup-Nuget@v1
-    - run: nuget  **/*.sln
-      shell: powershell
-    - run: |
-        cd Blank
-        nuget restore
-        cd Blank.Android
-        msbuild **/*droid*.csproj /verbosity:normal /t:Rebuild /p:Configuration=${{ env.buildConfiguration }}
+    - name: Restore
+      run: dotnet restore MyProject/MyProject.Models/MyProject.Models.csproj
+    - name: Build
+      run: dotnet MyProject/MyProject.Models/MyProject.Models.csproj --configuration ${{ env.BuildConfiguration }}
+    - name: Publish
+      run: dotnet publish MyProject/MyProject.Models/MyProject.Models.csproj --configuration ${{ env.BuildConfiguration }} --output ${GITHUB_WORKSPACE}
+    - name: dotnet pack
+      run: dotnet pack
+    - name: Publish Artifact
+      uses: actions/upload-artifact@master
+      with:
+        path: ${GITHUB_WORKSPACE}
 ";
 
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
         }
 
+        //Check that the results include the setup Python step
+        [TestMethod]
+        public void PythonPipelineTest()
+        {
+            //Arrange
+            Conversion conversion = new Conversion();
+            //Source is: https://raw.githubusercontent.com/microsoft/azure-pipelines-yaml/master/templates/python-django.yml
+            string yaml = @"
+trigger:
+- master
+
+pool:
+  vmImage: 'ubuntu-latest'
+strategy:
+  matrix:
+    Python35:
+      PYTHON_VERSION: '3.5'
+    Python36:
+      PYTHON_VERSION: '3.6'
+    Python37:
+      PYTHON_VERSION: '3.7'
+  maxParallel: 3
+
+steps:
+- task: UsePythonVersion@0
+  inputs:
+    versionSpec: '$(PYTHON_VERSION)'
+    addToPath: true
+    architecture: 'x64'
+- task: PythonScript@0
+  inputs:
+    scriptSource: 'filePath'
+    scriptPath: 'Python/Hello.py'
+";
+
+            //Act
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(yaml);
+
+            //Assert
+            string expected = @"
+on:
+  push:
+    branches:
+    - master
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        PYTHON_VERSION:
+        - 3.5
+        - 3.6
+        - 3.7
+      max-parallel: 3
+    steps:
+    - uses: actions/checkout@v2
+    - name: Setup Python ${{ matrix.PYTHON_VERSION }}
+      uses: actions/setup-python@v1
+      with:
+        python-version: ${{ matrix.PYTHON_VERSION }}
+    - run: python Python/Hello.py
+";
+
+            expected = UtilityTests.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+        }
+
+        //TODO: Move to step, doesn't need to be here.
+        [TestMethod]
+        public void ResourcesContainersPipelineTest()
+        {
+            //Arrange
+            Conversion conversion = new Conversion();
+            string yaml = @"
+trigger:
+- master
+
+pool:
+  vmImage: 'ubuntu-16.04'
+
+container: 'mcr.microsoft.com/dotnet/core/sdk:2.2'
+
+resources:
+  containers:
+  - container: redis
+    image: redis
+";
+
+            //Act
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(yaml);
+
+            //Assert
+            string expected = @"
+#TODO: Container conversion not yet done: https://github.com/samsmithnz/AzurePipelinesToGitHubActionsConverter/issues/39
+on:
+  push:
+    branches:
+    - master
+jobs:
+  build:
+    runs-on: ubuntu-16.04
+    container:
+      image: redis
+";
+
+            expected = UtilityTests.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+        }
+
+        //Test that the result includes the setup Ruby step
+        [TestMethod]
+        public void RubyPipelineTest()
+        {
+            //Arrange
+            Conversion conversion = new Conversion();
+            string yaml = @"
+trigger:
+- master
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+steps:
+- task: UseRubyVersion@0
+  inputs:
+    versionSpec: '>= 2.5'
+- script: ruby HelloWorld.rb
+";
+
+            //Act
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(yaml);
+
+            //Assert
+            string expected = @"
+on:
+  push:
+    branches:
+    - master
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Setup Ruby >= 2.5
+      uses: actions/setup-ruby@v1
+      with:
+        ruby-version: '>= 2.5'
+    - run: ruby HelloWorld.rb
+";
+
+            expected = UtilityTests.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+        }
+
+        //TODO: Move to step, doesn't need to be here.
+        [TestMethod]
+        public void TestHTMLPipeline()
+        {
+            //Arrange
+            Conversion conversion = new Conversion();
+            string yaml = @"
+# HTML
+# Archive your static HTML project and save it with the build record.
+
+trigger:
+- master
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+steps:
+- task: ArchiveFiles@2
+  inputs:
+    rootFolderOrFile: '$(build.sourcesDirectory)'
+    includeRootFolder: false
+- task: PublishBuildArtifacts@1";
+
+            //Act
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(yaml);
+
+            //Assert
+            string expected = @"
+#Note: This is a third party action: https://github.com/marketplace/actions/create-zip-file
+on:
+  push:
+    branches:
+    - master
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - #: 'Note: This is a third party action: https://github.com/marketplace/actions/create-zip-file'
+      uses: montudor/action-zip@v0.1.0
+      with:
+        args: zip -qq -r  ${{ env.build.sourcesDirectory }}
+    - uses: actions/upload-artifact@master
+";
+
+            expected = UtilityTests.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+        }
 
         [TestMethod]
         public void TestJobsWithAzurePipelineYamlToObject()
@@ -1103,78 +831,115 @@ jobs:
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
         }
 
+        [TestMethod]
+        public void XamarinAndroidPipelineTest()
+        {
+            //Arrange
+            Conversion conversion = new Conversion();
+            //Source is: 
+            string yaml = @"
+# Xamarin.Android
+# Build a Xamarin.Android project.
+# Add steps that test, sign, and distribute an app, save build artifacts, and more:
+# https://docs.microsoft.com/azure/devops/pipelines/languages/xamarin
+
+trigger:
+- master
+
+pool:
+  vmImage: 'macos-latest'
+
+variables:
+  buildConfiguration: 'Release'
+  outputDirectory: '$(build.binariesDirectory)/$(buildConfiguration)'
+
+steps:
+- task: NuGetToolInstaller@1
+
+- task: NuGetCommand@2
+  inputs:
+    restoreSolution: '**/*.sln'
+
+- task: XamarinAndroid@1
+  inputs:
+    projectFile: '**/*droid*.csproj'
+    outputDirectory: '$(outputDirectory)'
+    configuration: '$(buildConfiguration)'
+";
+
+            //Act
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(yaml);
+
+            //Assert
+            string expected = @"
+#Note: This is a third party action: https://github.com/warrenbuckley/Setup-Nuget
+on:
+  push:
+    branches:
+    - master
+env:
+  buildConfiguration: Release
+  outputDirectory: ${{ env.build.binariesDirectory }}/${{ env.buildConfiguration }}
+jobs:
+  build:
+    runs-on: macos-latest
+    steps:
+    - uses: actions/checkout@v2
+    - #: 'Note: This is a third party action: https://github.com/warrenbuckley/Setup-Nuget'
+      uses: warrenbuckley/Setup-Nuget@v1
+    - run: nuget  **/*.sln
+      shell: powershell
+    - run: |
+        cd Blank
+        nuget restore
+        cd Blank.Android
+        msbuild **/*droid*.csproj /verbosity:normal /t:Rebuild /p:Configuration=${{ env.buildConfiguration }}
+";
+
+            expected = UtilityTests.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+        }
+
         //TODO: Move to step, doesn't need to be here.
         [TestMethod]
-        public void TestHTMLPipeline()
+        public void XamariniOSPipelineTest()
         {
             //Arrange
             Conversion conversion = new Conversion();
+            //Source is: https://raw.githubusercontent.com/microsoft/azure-pipelines-yaml/master/templates/xamarin.ios.yml
             string yaml = @"
-# HTML
-# Archive your static HTML project and save it with the build record.
+# Xamarin.iOS
+# Build a Xamarin.iOS project.
+# Add steps that install certificates, test, sign, and distribute an app, save build artifacts, and more:
+# https://docs.microsoft.com/azure/devops/pipelines/languages/xamarin
 
 trigger:
 - master
 
 pool:
-  vmImage: 'ubuntu-latest'
+  vmImage: 'macos-latest'
 
 steps:
-- task: ArchiveFiles@2
+# To manually select a Xamarin SDK version on the Microsoft-hosted macOS agent,
+# configure this task with the *Mono* version that is associated with the
+# Xamarin SDK version that you need, and set the ""enabled"" property to true.
+# See https://go.microsoft.com/fwlink/?linkid=871629
+- script: sudo $AGENT_HOMEDIRECTORY/scripts/select-xamarin-sdk.sh 5_12_0
+  displayName: 'Select the Xamarin SDK version'
+  enabled: false
+
+- task: NuGetToolInstaller@1
+
+- task: NuGetCommand@2
   inputs:
-    rootFolderOrFile: '$(build.sourcesDirectory)'
-    includeRootFolder: false
-- task: PublishBuildArtifacts@1";
+    restoreSolution: '**/*.sln'
 
-            //Act
-            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(yaml);
-
-            //Assert
-            string expected = @"
-#Note: This is a third party action: https://github.com/marketplace/actions/create-zip-file
-on:
-  push:
-    branches:
-    - master
-jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v2
-    - #: 'Note: This is a third party action: https://github.com/marketplace/actions/create-zip-file'
-      uses: montudor/action-zip@v0.1.0
-      with:
-        args: zip -qq -r  ${{ env.build.sourcesDirectory }}
-    - uses: actions/upload-artifact@master
-";
-
-            expected = UtilityTests.TrimNewLines(expected);
-            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
-        }
-
-        //Test that the result includes the setup Java step
-        [TestMethod]
-        public void AntPipelineTest()
-        {
-            //Arrange
-            Conversion conversion = new Conversion();
-            string yaml = @"
-trigger:
-- master
-
-pool:
-  vmImage: 'ubuntu-latest'
-
-steps:
-- task: Ant@1
+- task: XamariniOS@2
   inputs:
-    workingDirectory: ''
-    buildFile: 'build.xml'
-    javaHomeOption: 'JDKVersion'
-    jdkVersionOption: '1.8'
-    jdkArchitectureOption: 'x64'
-    publishJUnitResults: true
-    testResultsFiles: '**/TEST -*.xml'
+    solutionFile: '**/*.sln'
+    configuration: 'Release'
+    buildForSimulator: true
+    packageApp: false
 ";
 
             //Act
@@ -1182,72 +947,32 @@ steps:
 
             //Assert
             string expected = @"
+#Note: This is a third party action: https://github.com/warrenbuckley/Setup-Nuget
 on:
   push:
     branches:
     - master
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: macos-latest
     steps:
     - uses: actions/checkout@v2
-    - name: Setup JDK 1.8
-      uses: actions/setup-java@v1
-      with:
-        java-version: 1.8
-    - run: ant -noinput -buildfile build.xml
+    - name: Select the Xamarin SDK version
+      run: sudo $AGENT_HOMEDIRECTORY/scripts/select-xamarin-sdk.sh 5_12_0
+    - #: 'Note: This is a third party action: https://github.com/warrenbuckley/Setup-Nuget'
+      uses: warrenbuckley/Setup-Nuget@v1
+    - run: nuget  **/*.sln
+      shell: powershell
+    - run: |
+        cd Blank
+        nuget restore
+        cd Blank.Android
+        msbuild  /verbosity:normal /t:Rebuild /p:Platform=iPhoneSimulator /p:Configuration=Release
 ";
 
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
         }
-
-        //Test that the result includes the setup Ruby step
-        [TestMethod]
-        public void RubyPipelineTest()
-        {
-            //Arrange
-            Conversion conversion = new Conversion();
-            string yaml = @"
-trigger:
-- master
-
-pool:
-  vmImage: 'ubuntu-latest'
-
-steps:
-- task: UseRubyVersion@0
-  inputs:
-    versionSpec: '>= 2.5'
-- script: ruby HelloWorld.rb
-";
-
-            //Act
-            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(yaml);
-
-            //Assert
-            string expected = @"
-on:
-  push:
-    branches:
-    - master
-jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v2
-    - name: Setup Ruby >= 2.5
-      uses: actions/setup-ruby@v1
-      with:
-        ruby-version: '>= 2.5'
-    - run: ruby HelloWorld.rb
-";
-
-            expected = UtilityTests.TrimNewLines(expected);
-            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
-        }
-
-
 
     }
 }

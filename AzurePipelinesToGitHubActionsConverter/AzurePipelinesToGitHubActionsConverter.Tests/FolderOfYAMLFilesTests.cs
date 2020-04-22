@@ -50,7 +50,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             //Check if any errors were detected
             Assert.AreEqual(null, comments.FirstOrDefault(s => s.Contains("Error!")));
             //Check that the remaining comments equals what we expect
-            Assert.AreEqual(15, comments.Count);
+            Assert.AreEqual(16, comments.Count);
         }
 
     }
