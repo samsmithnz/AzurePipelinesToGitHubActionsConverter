@@ -23,16 +23,18 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             Conversion conversion = new Conversion();
             List<string> comments = new List<string>();
 
-            //Act
-            //convert every file in the folder
-            foreach (string file in files)
+            //Act            
+            foreach (string file in files) //convert every YML file in the folder
             {
                 try
                 {
+                    //Open the file
                     using (StreamReader sr = new StreamReader(file))
                     {
                         string yaml = await sr.ReadToEndAsync();
+                        //Process the yaml string
                         ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(yaml);
+                        //Add any comments to a string list list 
                         comments.AddRange(gitHubOutput.comments);
                     }
                 }
@@ -44,7 +46,9 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
 
             //Assert
             //TODO: Solve roadblocks with the "FilesToIgnore"
+            //Check if any errors were detected
             Assert.AreEqual(null, comments.FirstOrDefault(s => s.Contains("Error!")));
+            //Check that the remaining comments equals what we expect
             Assert.AreEqual(15, comments.Count);
         }
 

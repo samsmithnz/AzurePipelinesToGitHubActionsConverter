@@ -251,6 +251,34 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
         }
 
+
+        [TestMethod]
+        public void PowershellWithFileIndividualStepTest()
+        {
+            //Arrange
+            Conversion conversion = new Conversion();
+            string yaml = @"
+    - task: PowerShell@2
+      displayName: 'PowerShell test task'
+      inputs:
+        targetType: FilePath
+        filePath: MyProject/BuildVersion.ps1
+        arguments: -ProjectFile ""MyProject/MyProject.Web/MyProject.Web.csproj""
+";
+
+            //Act
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineTaskToGitHubActionTask(yaml);
+
+            //Assert
+            string expected = @"
+- name: PowerShell test task
+  run: MyProject/BuildVersion.ps1 -ProjectFile ""MyProject/MyProject.Web/MyProject.Web.csproj""
+  shell: powershell
+";
+            expected = UtilityTests.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+        }
+
         [TestMethod]
         public void ScriptWithMultilineIndividualStepTest()
         {
@@ -582,6 +610,36 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
 
         //            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
         //        }
+
+
+//        [TestMethod]
+//        public void KubernetesStepTest()
+//        {
+//            //Arrange
+//            Conversion conversion = new Conversion();
+//            string yaml = @"
+//- task: Kubernetes@1
+//  displayName: kubectl apply
+//  inputs:
+//    connectionType: Azure Resource Manager
+//    azureSubscriptionEndpoint: Contoso
+//    azureResourceGroup: contoso.azurecr.io
+//    kubernetesCluster: Contoso
+//    useClusterAdmin: false
+//";
+
+//            //Act
+//            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineTaskToGitHubActionTask(yaml);
+
+//            //Assert
+//            string expected = @"
+
+//";
+//            expected = UtilityTests.TrimNewLines(expected);
+//            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+//        }    
+
+
 
     }
 }

@@ -58,6 +58,9 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                     case "Gradle@2":
                         gitHubStep = CreateGradleStep(step);
                         break;
+                    //case "Kubernetes@1":
+                    //    gitHubStep = CreateKubernetesStep(step);
+                    //    break;
                     case "Maven@3":
                         gitHubStep = CreateMavenStep(step);
                         break;
@@ -300,6 +303,15 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
 
         private GitHubActions.Step CreateScriptStep(string shellType, AzurePipelines.Step step)
         {
+            string targetType = GetStepInput(step, "targetType");
+            string filePath = GetStepInput(step, "filePath");
+            string arguments = GetStepInput(step, "arguments");
+
+            if (targetType == "FilePath")
+            {
+                step.script = filePath + " " + arguments;
+            }
+
             GitHubActions.Step gitHubStep = new GitHubActions.Step
             {
                 run = step.script,
@@ -845,6 +857,119 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
 
             return gitHubStep;
         }
+
+        //TODO: Finish this
+        //public GitHubActions.Step CreateKubernetesStep(AzurePipelines.Step step)
+        //{
+        //    //coming from: https://docs.microsoft.com/en-us/azure/devops/pipelines/tasks/deploy/kubernetes?view=azure-devops
+
+        //    //Azure Resource Manager service connection
+        //    //- task: Kubernetes@1
+        //    //  displayName: kubectl apply
+        //    //  inputs:
+        //    //    connectionType: Azure Resource Manager
+        //    //    azureSubscriptionEndpoint: Contoso
+        //    //    azureResourceGroup: contoso.azurecr.io
+        //    //    kubernetesCluster: Contoso
+        //    //    useClusterAdmin: false
+
+        //    //Kubernetes Service Connection
+        //    //- task: Kubernetes@1
+        //    //  displayName: kubectl apply
+        //    //  inputs:
+        //    //    connectionType: Kubernetes Service Connection
+        //    //    kubernetesServiceEndpoint: Contoso
+
+        //    //This YAML example demonstrates the apply command:
+        //    //- task: Kubernetes@1
+        //    //  displayName: kubectl apply using arguments
+        //    //  inputs:
+        //    //    connectionType: Azure Resource Manager
+        //    //    azureSubscriptionEndpoint: $(azureSubscriptionEndpoint)
+        //    //    azureResourceGroup: $(azureResourceGroup)
+        //    //    kubernetesCluster: $(kubernetesCluster)
+        //    //    command: apply
+        //    //    arguments: -f mhc-aks.yaml
+
+        //    //This YAML example demonstrates the use of a configuration file with the apply command:
+        //    //- task: Kubernetes@1
+        //    //  displayName: kubectl apply using configFile
+        //    //  inputs:
+        //    //    connectionType: Azure Resource Manager
+        //    //    azureSubscriptionEndpoint: $(azureSubscriptionEndpoint)
+        //    //    azureResourceGroup: $(azureResourceGroup)
+        //    //    kubernetesCluster: $(kubernetesCluster)
+        //    //    command: apply
+        //    //    useConfigurationFile: true
+        //    //    configuration: mhc-aks.yaml
+
+        //    //This YAML example demonstrates the setting up of ImagePullSecrets:
+        //    //- task: Kubernetes@1
+        //    //  displayName: kubectl apply for secretType dockerRegistry
+        //    //  inputs:
+        //    //    azureSubscriptionEndpoint: $(azureSubscriptionEndpoint)
+        //    //    azureResourceGroup: $(azureResourceGroup)
+        //    //    kubernetesCluster: $(kubernetesCluster)
+        //    //    command: apply
+        //    //    arguments: -f mhc-aks.yaml
+        //    //    secretType: dockerRegistry
+        //    //    containerRegistryType: Azure Container Registry
+        //    //    azureSubscriptionEndpointForSecrets: $(azureSubscriptionEndpoint)
+        //    //    azureContainerRegistry: $(azureContainerRegistry)
+        //    //    secretName: mysecretkey2
+        //    //    forceUpdate: true
+
+        //    //This YAML example creates generic secrets from literal values specified for the secretArguments input:
+        //    //- task: Kubernetes@1
+        //    //  displayName: secretType generic with literal values
+        //    //  inputs:
+        //    //    azureSubscriptionEndpoint: $(azureSubscriptionEndpoint)
+        //    //    azureResourceGroup: $(azureResourceGroup)
+        //    //    kubernetesCluster: $(kubernetesCluster)
+        //    //    command: apply
+        //    //    arguments: -f mhc-aks.yaml
+        //    //    secretType: generic
+        //    //    secretArguments: --from-literal=contoso=5678
+        //    //    secretName: mysecretkey
+
+        //    //This YAML example creates a ConfigMap by pointing to a ConfigMap file:
+        //    //- task: Kubernetes@1
+        //    //  displayName: kubectl apply
+        //    //  inputs:
+        //    //    configMapName: myconfig
+        //    //    useConfigMapFile: true
+        //    //    configMapFile: src/configmap
+
+        //    //Going to:
+
+
+        //    string arguments = GetStepInput(step, "arguments");
+        //    string command = GetStepInput(step, "command");
+        //    string configMapFile = GetStepInput(step, "configMapFile");
+        //    string configMapName = GetStepInput(step, "configMapName");
+        //    string configuration = GetStepInput(step, "configuration");
+        //    string connectionType = GetStepInput(step, "connectionType");
+        //    string containerRegistryType = GetStepInput(step, "containerRegistryType");
+        //    string azureContainerRegistry = GetStepInput(step, "azureContainerRegistry");
+        //    string azureSubscriptionEndpoint = GetStepInput(step, "azureSubscriptionEndpoint");
+        //    string azureSubscriptionEndpointForSecrets = GetStepInput(step, "azureSubscriptionEndpointForSecrets");
+        //    string azureResourceGroup = GetStepInput(step, "azureResourceGroup");
+        //    string forceUpdate = GetStepInput(step, "forceUpdate");
+        //    string kubernetesCluster = GetStepInput(step, "kubernetesCluster");
+        //    string kubernetesServiceEndpoint = GetStepInput(step, "kubernetesServiceEndpoint");
+        //    string secretArguments = GetStepInput(step, "secretArguments");
+        //    string secretName = GetStepInput(step, "secretName");
+        //    string secretType = GetStepInput(step, "secretType");
+        //    string useClusterAdmin = GetStepInput(step, "useClusterAdmin");
+        //    string useConfigMapFile = GetStepInput(step, "useConfigMapFile");
+        //    string useConfigurationFile = GetStepInput(step, "useConfigurationFile");
+
+
+        //    step.script = "";
+        //    GitHubActions.Step gitHubStep = CreateScriptStep("", step);
+
+        //    return gitHubStep;
+        //}
 
 
         private GitHubActions.Step CreateAntStep(AzurePipelines.Step step)
