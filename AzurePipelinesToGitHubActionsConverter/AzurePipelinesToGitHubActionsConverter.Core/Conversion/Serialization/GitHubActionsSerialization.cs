@@ -81,7 +81,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion.Serialization
 
         private static GitHubActionsRoot DeserializeGitHubActionsYaml(string yaml)
         {
-            //Fix some variables that we can't use for property names because the - character is not allowed or it's a reserved word (e.g. if)
+            //Fix some variables that we can't use for property names because the "-" character is not allowed in c# properties, or it's a reserved word (e.g. if)
             yaml = yaml.Replace("runs-on", "runs_on");
             yaml = yaml.Replace("if", "_if");
             yaml = yaml.Replace("timeout-minutes", "timeout_minutes");
@@ -100,7 +100,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion.Serialization
             //Fix system variables
             yaml = yaml.Replace("$(build.artifactstagingdirectory)", "${GITHUB_WORKSPACE}");
 
-            //Fix some variables that we can't use for property names because the - character is not allowed or it's a reserved word (e.g. if)
+            //Fix some variables that we can't use for property names because the "-" character is not allowed in c# properties, or it's a reserved word (e.g. if)
             yaml = yaml.Replace("runs_on", "runs-on");
             yaml = yaml.Replace("_if", "if");
             yaml = yaml.Replace("timeout_minutes", "timeout-minutes");
