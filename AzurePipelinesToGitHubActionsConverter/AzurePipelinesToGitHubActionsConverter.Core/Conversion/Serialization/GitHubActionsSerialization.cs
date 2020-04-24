@@ -91,6 +91,8 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion.Serialization
             yaml = yaml.Replace("tags-ignore", "tags_ignore");
             yaml = yaml.Replace("max-parallel", "max_parallel");
             yaml = yaml.Replace("ref", "_ref");
+            yaml = yaml.Replace("continue-on-error", "continue_on_error");
+            yaml = yaml.Replace("timeout-minutes", "timeout_minutes");
 
             return GenericObjectSerialization.DeserializeYaml<GitHubActionsRoot>(yaml);
         }
@@ -110,12 +112,14 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion.Serialization
             yaml = yaml.Replace("tags_ignore", "tags-ignore");
             yaml = yaml.Replace("max_parallel", "max-parallel");
             yaml = yaml.Replace("_ref", "ref");
+            yaml = yaml.Replace("continue_on_error", "continue-on-error");
+            yaml = yaml.Replace("timeout_minutes", "timeout-minutes");
             yaml = yaml.Replace("step_message", "#");
             yaml = yaml.Replace("job_message", "#");
 
             //HACK: Sometimes when generating  yaml, a weird ">+" string appears, which we replace out. This is a known bug, but there is no known fix yet. https://github.com/aaubry/YamlDotNet/issues/449
             //This replaces a weird artifact in scripts when converting pipes, the order matters, and this is not a long term solution...
-            yaml = yaml.Replace("run: >-", "run: |"); 
+            yaml = yaml.Replace("run: >-", "run: |");
             yaml = yaml.Replace("run: >2-\r\n     |", "run: |");
             yaml = yaml.Replace("run: >2-\r\n         |", "run: |");
             yaml = yaml.Replace("run: 2-\r\n         |", "run: |");

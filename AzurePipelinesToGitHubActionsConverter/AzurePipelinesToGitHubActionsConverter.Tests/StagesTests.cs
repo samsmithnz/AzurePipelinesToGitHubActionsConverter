@@ -56,6 +56,7 @@ stages:
   jobs:
   - job: Deploy
     displayName: 'Deploy job'
+    continueOnError: true
     pool:
       vmImage: $(vmImage)   
     variables:
@@ -129,6 +130,7 @@ jobs:
       WebsiteName: featureflags-data-eu-web
       WebServiceName: featureflags-data-eu-service
     if: and(success(),eq(github.ref, 'refs/heads/master'))
+    continue-on-error: true
     steps:
     - uses: actions/checkout@v2
     - #: ""Note: 'AZURE_SP' secret is required to be setup and added into GitHub Secrets: https://help.github.com/en/actions/automating-your-workflow-with-github-actions/creating-and-using-encrypted-secrets""

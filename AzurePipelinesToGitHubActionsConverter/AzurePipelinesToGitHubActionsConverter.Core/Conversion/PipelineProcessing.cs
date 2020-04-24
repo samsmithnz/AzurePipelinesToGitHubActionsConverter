@@ -626,6 +626,10 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                     newJob.job_message += Environment.NewLine;
                 }
             }
+            if (string.IsNullOrEmpty(job.continueOnError) == false)
+            {
+                newJob.continue_on_error = job.continueOnError;
+            }
 
             return newJob;
         }

@@ -60,7 +60,7 @@
     <None Update="yamlFiles\docker-container-webapp.yml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="yamlFiles\docker-container.yml">
+    <None Update="filesNotCurrentlyWorking\docker-container.yml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="yamlFiles\empty.yml">

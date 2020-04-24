@@ -21,7 +21,6 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
     inputs:
       azureSubscriptionEndpoint: '$(Azure.ServiceConnectionId)'
       azureContainerRegistry: '$(ACR.FullName)'
-      imageName: '$(ACR.ImageName)'
       command: build
       dockerFile: '**/Dockerfile'
 ";
@@ -50,8 +49,8 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
   inputs:
     command: build
     repository: contosoRepository
-    tags: tag1
-    arguments: --secret id=mysecret,src=mysecret.txt
+    Dockerfile: app/Dockerfile
+
 ";
 
             //Act
@@ -60,7 +59,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             //Assert
             string expected = @"
 - name: Build
-  run: docker build . contosoRepository --tags tag1 --secret id=mysecret,src=mysecret.txt
+  run: docker build . --file app/Dockerfile contosoRepository
 ";
 
             expected = UtilityTests.TrimNewLines(expected);
@@ -88,7 +87,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             //Assert
             string expected = @"
 - name: Push an image
-  run: docker push .
+  run: docker push ${{ env.ACR.ImageName }}
 ";
 
             expected = UtilityTests.TrimNewLines(expected);
@@ -119,7 +118,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             //Assert
             string expected = @"
 - name: Push image
-  run: docker push . ${{ env.imageName }} --tags test1,test2
+  run: docker push ${{ env.dockerHub }} ${{ env.imageName }} --tags test1,test2
 ";
 
             expected = UtilityTests.TrimNewLines(expected);
@@ -127,7 +126,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
         }
 
         [TestMethod]
-        public void DockerBuildAndPushStepTest()
+        public void Docker2BuildAndPushStepTest()
         {
             //Arrange
             Conversion conversion = new Conversion();
@@ -148,8 +147,9 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
 
             //Assert
             string expected = @"
-- name: Build and Push
-  run: docker build-push . contosoRepository --tags tag1,tag2
+- #: Error! No conversion path for build-push (does it need two tasks in GitHub?)
+  name: Build and Push
+  run: docker build-push . dockerRegistryServiceConnection1 contosoRepository --tags tag1,tag2
 ";
 
             expected = UtilityTests.TrimNewLines(expected);
@@ -157,7 +157,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
         }
 
         [TestMethod]
-        public void DockerLoginStepTest()
+        public void Docker2LoginStepTest()
         {
             //Arrange
             Conversion conversion = new Conversion();
@@ -175,7 +175,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             //Assert
             string expected = @"
 - name: Login to ACR
-  run: docker login .
+  run: docker login dockerRegistryServiceConnection1
 ";
 
             expected = UtilityTests.TrimNewLines(expected);
@@ -183,7 +183,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
         }
 
         [TestMethod]
-        public void DockerLogoutStepTest()
+        public void Docker2LogoutStepTest()
         {
             //Arrange
             Conversion conversion = new Conversion();
@@ -201,7 +201,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             //Assert
             string expected = @"
 - name: Logout of ACR
-  run: docker logout .
+  run: docker logout dockerRegistryServiceConnection1
 ";
 
             expected = UtilityTests.TrimNewLines(expected);

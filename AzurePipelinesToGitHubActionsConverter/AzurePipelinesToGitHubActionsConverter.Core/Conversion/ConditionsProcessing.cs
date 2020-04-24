@@ -81,7 +81,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                     return "failure(" + contents + ")";
                 case "succeeded":
                     return "success(" + contents + ")";
-                case "succeededOrFailed": //Essentially the same as always, but not cancelled
+                case "succeededOrFailed": //Essentially the same as "always", but not cancelled
                     return "ne(${{ job.status }}, 'cancelled')";
 
                 //Functions: 

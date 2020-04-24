@@ -699,6 +699,33 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
         }
 
+        [TestMethod]
+        public void TimeoutAndContinueOnErrorStepTest()
+        {
+            //Arrange
+            Conversion conversion = new Conversion();
+            string yaml = @"
+- task: CmdLine@2
+  inputs:
+    script: echo your commands here 
+  continueOnError: true
+  timeoutInMinutes: 12
+";
+
+            //Act
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineTaskToGitHubActionTask(yaml);
+
+            //Assert
+            string expected = @"
+- run: echo your commands here
+  shell: cmd
+  continue-on-error: true
+  timeout-minutes: 12
+";
+            expected = UtilityTests.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+        }
+
         //        [TestMethod]
         //        public void KubernetesStepTest()
         //        {

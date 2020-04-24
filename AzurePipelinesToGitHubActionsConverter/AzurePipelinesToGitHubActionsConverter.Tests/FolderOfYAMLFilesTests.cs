@@ -26,7 +26,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
 
             //Act            
             foreach (string file in files) //convert every YML file in the folder
-            {
+            { 
                 try
                 {
                     //Open the file

@@ -31,6 +31,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.AzurePipelines
         public string displayName { get; set; }
         public string dependsOn { get; set; }
         public string condition { get; set; } //https://docs.microsoft.com/en-us/azure/devops/pipelines/process/conditions?tabs=yaml&view=azure-devops
+        public string continueOnError { get; set; }
         public string timeoutInMinutes { get; set; }
         public Strategy strategy { get; set; }
         public Pool pool { get; set; }

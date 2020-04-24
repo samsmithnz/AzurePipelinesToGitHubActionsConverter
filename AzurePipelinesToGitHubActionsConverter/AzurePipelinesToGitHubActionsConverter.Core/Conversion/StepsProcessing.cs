@@ -187,6 +187,14 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                         }
                     }
                 }
+                if (string.IsNullOrEmpty(step.continueOnError) == false)
+                {
+                    gitHubStep.continue_on_error = step.continueOnError;
+                }
+                if (string.IsNullOrEmpty(step.timeoutInMinutes) == false)
+                {
+                    gitHubStep.timeout_minutes = step.timeoutInMinutes;
+                }
             }
             return gitHubStep;
         }
@@ -298,7 +306,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
             //  run: docker build . --file MyDockerFile --tag my-image-name:$(date +%s)
 
 
-            //Docker 0 and Docker 1 inputs
+            //Docker 1 inputs
             string azureSubscriptionEndpoint = GetStepInput(step, "azureSubscriptionEndpoint");
             string azureContainerRegistry = GetStepInput(step, "azureContainerRegistry");
 
@@ -310,6 +318,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
             string dockerFile = GetStepInput(step, "dockerfile");
             string buildContext = GetStepInput(step, "buildContext");
             string arguments = GetStepInput(step, "arguments");
+            string imageName = GetStepInput(step, "imageName");
 
             //Very very simple. Needs more branches and logic
             string dockerScript = "";
@@ -318,32 +327,39 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
             {
                 case "build":
                     dockerScript += "docker build .";
-                    break;
+                    break; 
                 case "push":
-                    dockerScript += "docker push .";
+                    dockerScript += "docker push"; 
                     break;
                 case "buildAndPush":
                     dockerScript += "docker build-push .";
+                    stepMessage = "Error! No conversion path for build-push (does it need two tasks in GitHub?)";
                     break;
                 case "login":
-                    dockerScript += "docker login .";
-                    break;
-                case "logout":
-                    dockerScript += "docker logout .";
-                    break;
-                default:
-                    stepMessage = "Error: Docker command " + command + " does not have a conversion path";
-                    break;
-            }
+                    dockerScript += "docker login";
+                    break; 
+                case "logout": 
+                    dockerScript += "docker logout";
+                    break; 
+            } 
 
             if (dockerFile != null)
             {
                 dockerScript += " --file " + dockerFile;
             }
+            if (containerRegistry != null)
+            { 
+                dockerScript += " " + containerRegistry.Replace("\n", " ").Trim();
+            }
             if (repository != null)
             {
                 dockerScript += " " + repository;
             }
+            if (imageName != null)
+            {
+                dockerScript += " " + imageName;
+            }
+
             if (tags != null)
             {
                 string[] splitTags = tags.Split("\n");
