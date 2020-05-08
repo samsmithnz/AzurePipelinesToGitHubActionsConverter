@@ -539,7 +539,7 @@ jobs:
     - name: dotnet pack
       run: dotnet pack
     - name: Publish Artifact
-      uses: actions/upload-artifact@master
+      uses: actions/upload-artifact@v2
       with:
         path: ${GITHUB_WORKSPACE}
 ";
@@ -744,7 +744,7 @@ jobs:
       uses: montudor/action-zip@v0.1.0
       with:
         args: zip -qq -r  ${{ env.build.sourcesDirectory }}
-    - uses: actions/upload-artifact@master
+    - uses: actions/upload-artifact@v2
 ";
 
             expected = UtilityTests.TrimNewLines(expected);

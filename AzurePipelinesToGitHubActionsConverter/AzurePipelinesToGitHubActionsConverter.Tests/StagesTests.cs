@@ -117,7 +117,7 @@ jobs:
     - name: Publish dotnet core projects
       run: dotnet publish FeatureFlags/FeatureFlags.Service/FeatureFlags.Service.csprojFeatureFlags/FeatureFlags.Web/FeatureFlags.Web.csproj --configuration ${{ env.buildConfiguration }} --output ${GITHUB_WORKSPACE} -p:Version=${{ env.buildNumber }}
     - name: Publish Artifact
-      uses: actions/upload-artifact@master
+      uses: actions/upload-artifact@v2
       with:
         path: ${GITHUB_WORKSPACE}
   Deploy_Stage_Deploy:
