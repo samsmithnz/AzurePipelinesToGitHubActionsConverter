@@ -1392,7 +1392,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
             //  artifact: drop
 
             //- name: publish build artifacts back to GitHub
-            //  uses: actions/upload-artifact@master
+            //  uses: actions/upload-artifact@v2
             //  with:
             //    name: console exe
             //    path: /home/runner/work/AzurePipelinesToGitHubActionsConverter/AzurePipelinesToGitHubActionsConverter/AzurePipelinesToGitHubActionsConverter/AzurePipelinesToGitHubActionsConverter.ConsoleApp/bin/Release/netcoreapp3.0
@@ -1419,7 +1419,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
 
             GitHubActions.Step gitHubStep = new GitHubActions.Step
             {
-                uses = "actions/upload-artifact@master",
+                uses = "actions/upload-artifact@v2",
                 with = new Dictionary<string, string>
                 {
                     {"path", path}

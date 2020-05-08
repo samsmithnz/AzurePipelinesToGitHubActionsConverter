@@ -378,7 +378,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             //Assert
             string expected = @"
 - name: Store artifact
-  uses: actions/upload-artifact@master
+  uses: actions/upload-artifact@v2
   with:
     path: MyProject/bin/release/netcoreapp2.2/publish/
     name: drop
