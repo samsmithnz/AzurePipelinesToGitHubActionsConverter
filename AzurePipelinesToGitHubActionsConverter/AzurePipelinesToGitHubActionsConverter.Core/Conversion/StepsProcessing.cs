@@ -16,7 +16,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
             if (step.task != null)
             {
                 step = CleanStepInputs(step);
-                //TODO: Should we be handling versions seperately? 
+                //TODO: Should we be handling versions seperately? Currently the version is bundled with the step name
                 switch (step.task)
                 {
                     case "Ant@1":
@@ -31,6 +31,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                     case "AzureResourceGroupDeployment@2":
                         gitHubStep = CreateAzureManageResourcesStep(step);
                         break;
+                    case "AzureFunctionApp@1":
                     case "AzureFunctionAppContainer@1":
                     case "AzureRmWebAppDeployment@3":
                     case "AzureWebAppContainer@1":
@@ -56,6 +57,9 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                     case "Gradle@2":
                         gitHubStep = CreateGradleStep(step);
                         break;
+                    //case "Kubernetes@1":
+                    //    gitHubStep = CreateKubernetesStep(step);
+                    //    break;
                     case "Maven@3":
                         gitHubStep = CreateMavenStep(step);
                         break;
@@ -117,7 +121,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                                 yamlBuilder.Append(line);
                             }
                         }
-                        gitHubStep.step_message = "Note: This step does not have a conversion path yet: " + step.task;
+                        gitHubStep.step_message = "Note: Error! This step does not have a conversion path yet: " + step.task;
                         gitHubStep.run = "Write-Host " + gitHubStep.step_message + " " + yamlBuilder.ToString();
                         break;
                 }
@@ -182,6 +186,14 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                             gitHubStep.with = null;
                         }
                     }
+                }
+                if (string.IsNullOrEmpty(step.continueOnError) == false)
+                {
+                    gitHubStep.continue_on_error = step.continueOnError;
+                }
+                if (string.IsNullOrEmpty(step.timeoutInMinutes) == false)
+                {
+                    gitHubStep.timeout_minutes = step.timeoutInMinutes;
                 }
             }
             return gitHubStep;
@@ -280,24 +292,117 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
             //    tags: tag1
             //    arguments: --secret id=mysecret,src=mysecret.txt
 
+            //- task: Docker@1
+            //  displayName: Push
+            //  inputs:
+            //    azureSubscriptionEndpoint: '$(Azure.ServiceConnectionId)'
+            //    azureContainerRegistry: '$(ACR.FullName)'
+            //    imageName: '$(ACR.ImageName)'
+            //    command: push
+
+
             //To: https://github.com/marketplace/actions/docker-build-push
             //- name: Build the Docker image
             //  run: docker build . --file MyDockerFile --tag my-image-name:$(date +%s)
 
 
+            //Docker 1 inputs
+            string azureSubscriptionEndpoint = GetStepInput(step, "azureSubscriptionEndpoint");
+            string azureContainerRegistry = GetStepInput(step, "azureContainerRegistry");
+
+            //Docker 2 inputs
+            string command = GetStepInput(step, "command");
+            string containerRegistry = GetStepInput(step, "containerRegistry");
+            string repository = GetStepInput(step, "repository");
             string tags = GetStepInput(step, "tags");
             string dockerFile = GetStepInput(step, "dockerfile");
+            string buildContext = GetStepInput(step, "buildContext");
             string arguments = GetStepInput(step, "arguments");
+            string imageName = GetStepInput(step, "imageName");
 
             //Very very simple. Needs more branches and logic
-            string dockerScript = "docker build . --file " + dockerFile + " --tag " + tags + " " + arguments;
+            string dockerScript = "";
+            string stepMessage = "";
+            switch (command)
+            {
+                case "build":
+                    dockerScript += "docker build .";
+                    break; 
+                case "push":
+                    dockerScript += "docker push"; 
+                    break;
+                case "buildAndPush":
+                    dockerScript += "docker build-push .";
+                    stepMessage = "Error! No conversion path for build-push (does it need two tasks in GitHub?)";
+                    break;
+                case "login":
+                    dockerScript += "docker login";
+                    break; 
+                case "logout": 
+                    dockerScript += "docker logout";
+                    break; 
+            } 
+
+            if (dockerFile != null)
+            {
+                dockerScript += " --file " + dockerFile;
+            }
+            if (containerRegistry != null)
+            { 
+                dockerScript += " " + containerRegistry.Replace("\n", " ").Trim();
+            }
+            if (repository != null)
+            {
+                dockerScript += " " + repository;
+            }
+            if (imageName != null)
+            {
+                dockerScript += " " + imageName;
+            }
+
+            if (tags != null)
+            {
+                string[] splitTags = tags.Split("\n");
+                string newTags = "";
+                foreach (string item in splitTags)
+                {
+                    if (item.Trim().Length > 0)
+                    {
+                        newTags += item.Trim() + ",";
+                    }
+                }
+                dockerScript += " --tags " + newTags;//tags.Replace("\n", ",").Trim();
+                if (dockerScript[dockerScript.Length - 1] == ',')
+                {
+                    dockerScript = dockerScript.Substring(0, dockerScript.Length - 1);
+                }
+            }
+            if (arguments != null)
+            {
+                dockerScript += " " + arguments;
+            }
+
+
             step.script = dockerScript;
             GitHubActions.Step gitHubStep = CreateScriptStep("", step);
+            if (stepMessage != "")
+            {
+                gitHubStep.step_message = stepMessage;
+            }
             return gitHubStep;
         }
 
         private GitHubActions.Step CreateScriptStep(string shellType, AzurePipelines.Step step)
         {
+            string targetType = GetStepInput(step, "targetType");
+            string filePath = GetStepInput(step, "filePath");
+            string arguments = GetStepInput(step, "arguments");
+
+            if (targetType == "FilePath")
+            {
+                step.script = filePath + " " + arguments;
+            }
+
             GitHubActions.Step gitHubStep = new GitHubActions.Step
             {
                 run = step.script,
@@ -366,7 +471,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
             };
 
             //Add note that 'AZURE_SP' secret is required
-            gitHubStep.step_message = @"Note that 'AZURE_SP' secret is required to be setup and added into GitHub Secrets: https://help.github.com/en/actions/automating-your-workflow-with-github-actions/creating-and-using-encrypted-secrets";
+            gitHubStep.step_message = @"Note: 'AZURE_SP' secret is required to be setup and added into GitHub Secrets: https://help.github.com/en/actions/automating-your-workflow-with-github-actions/creating-and-using-encrypted-secrets";
 
             return gitHubStep;
         }
@@ -788,10 +893,6 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
 
         public GitHubActions.Step CreateSetupJavaStep(string javaVersion)
         {
-            if (javaVersion == null)
-            {
-                return null;
-            }
             GitHubActions.Step gitHubStep = new GitHubActions.Step
             {
                 name = "Setup JDK " + javaVersion,
@@ -843,6 +944,119 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
 
             return gitHubStep;
         }
+
+        //TODO: Finish this Kubernetes Step
+        //public GitHubActions.Step CreateKubernetesStep(AzurePipelines.Step step)
+        //{
+        //    //coming from: https://docs.microsoft.com/en-us/azure/devops/pipelines/tasks/deploy/kubernetes?view=azure-devops
+
+        //    //Azure Resource Manager service connection
+        //    //- task: Kubernetes@1
+        //    //  displayName: kubectl apply
+        //    //  inputs:
+        //    //    connectionType: Azure Resource Manager
+        //    //    azureSubscriptionEndpoint: Contoso
+        //    //    azureResourceGroup: contoso.azurecr.io
+        //    //    kubernetesCluster: Contoso
+        //    //    useClusterAdmin: false
+
+        //    //Kubernetes Service Connection
+        //    //- task: Kubernetes@1
+        //    //  displayName: kubectl apply
+        //    //  inputs:
+        //    //    connectionType: Kubernetes Service Connection
+        //    //    kubernetesServiceEndpoint: Contoso
+
+        //    //This YAML example demonstrates the apply command:
+        //    //- task: Kubernetes@1
+        //    //  displayName: kubectl apply using arguments
+        //    //  inputs:
+        //    //    connectionType: Azure Resource Manager
+        //    //    azureSubscriptionEndpoint: $(azureSubscriptionEndpoint)
+        //    //    azureResourceGroup: $(azureResourceGroup)
+        //    //    kubernetesCluster: $(kubernetesCluster)
+        //    //    command: apply
+        //    //    arguments: -f mhc-aks.yaml
+
+        //    //This YAML example demonstrates the use of a configuration file with the apply command:
+        //    //- task: Kubernetes@1
+        //    //  displayName: kubectl apply using configFile
+        //    //  inputs:
+        //    //    connectionType: Azure Resource Manager
+        //    //    azureSubscriptionEndpoint: $(azureSubscriptionEndpoint)
+        //    //    azureResourceGroup: $(azureResourceGroup)
+        //    //    kubernetesCluster: $(kubernetesCluster)
+        //    //    command: apply
+        //    //    useConfigurationFile: true
+        //    //    configuration: mhc-aks.yaml
+
+        //    //This YAML example demonstrates the setting up of ImagePullSecrets:
+        //    //- task: Kubernetes@1
+        //    //  displayName: kubectl apply for secretType dockerRegistry
+        //    //  inputs:
+        //    //    azureSubscriptionEndpoint: $(azureSubscriptionEndpoint)
+        //    //    azureResourceGroup: $(azureResourceGroup)
+        //    //    kubernetesCluster: $(kubernetesCluster)
+        //    //    command: apply
+        //    //    arguments: -f mhc-aks.yaml
+        //    //    secretType: dockerRegistry
+        //    //    containerRegistryType: Azure Container Registry
+        //    //    azureSubscriptionEndpointForSecrets: $(azureSubscriptionEndpoint)
+        //    //    azureContainerRegistry: $(azureContainerRegistry)
+        //    //    secretName: mysecretkey2
+        //    //    forceUpdate: true
+
+        //    //This YAML example creates generic secrets from literal values specified for the secretArguments input:
+        //    //- task: Kubernetes@1
+        //    //  displayName: secretType generic with literal values
+        //    //  inputs:
+        //    //    azureSubscriptionEndpoint: $(azureSubscriptionEndpoint)
+        //    //    azureResourceGroup: $(azureResourceGroup)
+        //    //    kubernetesCluster: $(kubernetesCluster)
+        //    //    command: apply
+        //    //    arguments: -f mhc-aks.yaml
+        //    //    secretType: generic
+        //    //    secretArguments: --from-literal=contoso=5678
+        //    //    secretName: mysecretkey
+
+        //    //This YAML example creates a ConfigMap by pointing to a ConfigMap file:
+        //    //- task: Kubernetes@1
+        //    //  displayName: kubectl apply
+        //    //  inputs:
+        //    //    configMapName: myconfig
+        //    //    useConfigMapFile: true
+        //    //    configMapFile: src/configmap
+
+        //    //Going to:
+
+
+        //    string arguments = GetStepInput(step, "arguments");
+        //    string command = GetStepInput(step, "command");
+        //    string configMapFile = GetStepInput(step, "configMapFile");
+        //    string configMapName = GetStepInput(step, "configMapName");
+        //    string configuration = GetStepInput(step, "configuration");
+        //    string connectionType = GetStepInput(step, "connectionType");
+        //    string containerRegistryType = GetStepInput(step, "containerRegistryType");
+        //    string azureContainerRegistry = GetStepInput(step, "azureContainerRegistry");
+        //    string azureSubscriptionEndpoint = GetStepInput(step, "azureSubscriptionEndpoint");
+        //    string azureSubscriptionEndpointForSecrets = GetStepInput(step, "azureSubscriptionEndpointForSecrets");
+        //    string azureResourceGroup = GetStepInput(step, "azureResourceGroup");
+        //    string forceUpdate = GetStepInput(step, "forceUpdate");
+        //    string kubernetesCluster = GetStepInput(step, "kubernetesCluster");
+        //    string kubernetesServiceEndpoint = GetStepInput(step, "kubernetesServiceEndpoint");
+        //    string secretArguments = GetStepInput(step, "secretArguments");
+        //    string secretName = GetStepInput(step, "secretName");
+        //    string secretType = GetStepInput(step, "secretType");
+        //    string useClusterAdmin = GetStepInput(step, "useClusterAdmin");
+        //    string useConfigMapFile = GetStepInput(step, "useConfigMapFile");
+        //    string useConfigurationFile = GetStepInput(step, "useConfigurationFile");
+
+
+        //    step.script = "";
+        //    GitHubActions.Step gitHubStep = CreateScriptStep("", step);
+
+        //    return gitHubStep;
+        //}
 
 
         private GitHubActions.Step CreateAntStep(AzurePipelines.Step step)

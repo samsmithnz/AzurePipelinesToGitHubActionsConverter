@@ -3,6 +3,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace AzurePipelinesToGitHubActionsConverter.Tests
 {
+    [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
     [TestClass]
     public class StrategyTests
     {
@@ -107,10 +108,10 @@ jobs:
 
             //Assert
             string expected = @"
-#Note: Azure DevOps strategy>runOnce>deploy does not have an equivalent in GitHub Actions yet
+#Note: Azure DevOps strategy>runOnce>deploy does not have an equivalent in GitHub Actions yetNote: Azure DevOps job environment does not have an equivalent in GitHub Actions yet
 jobs:
   DeployInfrastructure:
-    #: 'Note: Azure DevOps strategy>runOnce>deploy does not have an equivalent in GitHub Actions yet'
+    #: 'Note: Azure DevOps strategy>runOnce>deploy does not have an equivalent in GitHub Actions yetNote: Azure DevOps job environment does not have an equivalent in GitHub Actions yet'
     name: Deploy job
     runs-on: windows-latest
     steps:

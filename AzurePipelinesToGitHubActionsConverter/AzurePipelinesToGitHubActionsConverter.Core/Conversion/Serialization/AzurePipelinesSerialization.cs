@@ -69,6 +69,9 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion.Serialization
             //Not well documented, but repo:self is redundent, and hence we remove it if detected (https://stackoverflow.com/questions/53860194/azure-devops-resources-repo-self)
             yaml = yaml.Replace("- repo: self", "");
 
+            //Fix some variables that we can't use for property names because the "-" character is not allowed in c# properties, or it's a reserved word (e.g. if)
+            yaml = yaml.Replace("ref:", "_ref:");
+
             //Handle condition variable insertion syntax. This is a bit ugly. 
             if (yaml.IndexOf("variables") >= 0)
             {

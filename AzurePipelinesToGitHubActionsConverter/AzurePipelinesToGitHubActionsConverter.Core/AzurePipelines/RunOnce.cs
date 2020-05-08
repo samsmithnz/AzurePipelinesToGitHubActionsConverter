@@ -3,9 +3,7 @@
 namespace AzurePipelinesToGitHubActionsConverter.Core.AzurePipelines
 {
     public class RunOnce
-    {
-        
+    {      
         public Deploy deploy { get; set; }
-
     }
 }

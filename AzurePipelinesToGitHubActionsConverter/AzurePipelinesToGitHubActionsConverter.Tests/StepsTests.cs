@@ -4,6 +4,7 @@ using System;
 
 namespace AzurePipelinesToGitHubActionsConverter.Tests
 {
+    [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
     [TestClass]
     public class StepsTests
     {
@@ -20,8 +21,8 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
 
             //Assert
             string expected = @"
-- #: 'Note: This step does not have a conversion path yet: invalid fake task'
-  run: 'Write-Host Note: This step does not have a conversion path yet: invalid fake task #task: invalid fake task'
+- #: 'Note: Error! This step does not have a conversion path yet: invalid fake task'
+  run: 'Write-Host Note: Error! This step does not have a conversion path yet: invalid fake task #task: invalid fake task'
   shell: powershell
 ";
 
@@ -251,6 +252,34 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
         }
 
+
+        [TestMethod]
+        public void PowershellWithFileIndividualStepTest()
+        {
+            //Arrange
+            Conversion conversion = new Conversion();
+            string yaml = @"
+    - task: PowerShell@2
+      displayName: 'PowerShell test task'
+      inputs:
+        targetType: FilePath
+        filePath: MyProject/BuildVersion.ps1
+        arguments: -ProjectFile ""MyProject/MyProject.Web/MyProject.Web.csproj""
+";
+
+            //Act
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineTaskToGitHubActionTask(yaml);
+
+            //Assert
+            string expected = @"
+- name: PowerShell test task
+  run: MyProject/BuildVersion.ps1 -ProjectFile ""MyProject/MyProject.Web/MyProject.Web.csproj""
+  shell: powershell
+";
+            expected = UtilityTests.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+        }
+
         [TestMethod]
         public void ScriptWithMultilineIndividualStepTest()
         {
@@ -271,6 +300,33 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
   run: |
     echo Add other tasks to build, test, and deploy your project.
     echo See https://aka.ms/yaml
+";
+            expected = UtilityTests.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+        }
+
+        [TestMethod]
+        public void PowershellWithConditionIndividualStepTest()
+        {
+            //Arrange
+            Conversion conversion = new Conversion();
+            string yaml = @"
+- task: PowerShell@2
+  displayName: 'PowerShell test task'
+  condition: and(eq('ABCDE', 'BCD'), ne(0, 1))
+  inputs:
+    targetType: inline
+    script: Write-Host 'Hello World'";
+
+            //Act
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineTaskToGitHubActionTask(yaml);
+
+            //Assert
+            string expected = @"
+- name: PowerShell test task
+  run: Write-Host 'Hello World'
+  shell: powershell
+  if: and(eq('ABCDE', 'BCD'),ne(0, 1))
 ";
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
@@ -557,6 +613,40 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
         }
 
 
+        [TestMethod]
+        public void ArmTemplateDeploymentStepTest()
+        {
+            //Arrange
+            Conversion conversion = new Conversion();
+            string yaml = @"
+  - task: AzureResourceGroupDeployment@2
+    displayName: 'Deploy ARM Template to resource group'
+    inputs:
+      azureSubscription: 'connection to Azure Portal'
+      resourceGroupName: $(ResourceGroupName)
+      location: '[resourceGroup().location]'
+      csmFile: '$(build.artifactstagingdirectory)/drop/ARMTemplates/azuredeploy.json'
+      csmParametersFile: '$(build.artifactstagingdirectory)/drop/ARMTemplates/azuredeploy.parameters.json'
+      overrideParameters: '-environment $(AppSettings.Environment) -locationShort $(ArmTemplateResourceGroupLocation)' 
+";
+
+            //Act
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineTaskToGitHubActionTask(yaml);
+
+            //Assert
+            string expected = @"
+- name: Deploy ARM Template to resource group
+  uses: Azure/github-actions/arm@master
+  env:
+    AZURE_RESOURCE_GROUP: ${{ env.ResourceGroupName }}
+    AZURE_TEMPLATE_LOCATION: ${GITHUB_WORKSPACE}/drop/ARMTemplates/azuredeploy.json
+    AZURE_TEMPLATE_PARAM_FILE: ${GITHUB_WORKSPACE}/drop/ARMTemplates/azuredeploy.parameters.json
+";
+            expected = UtilityTests.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+        }
+
+
         //        [TestMethod]
         //        public void MSBuildStepTest()
         //        {
@@ -582,6 +672,88 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
 
         //            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
         //        }
+
+        [TestMethod]
+        public void MSBuildStepTest()
+        {
+            //Arrange
+            Conversion conversion = new Conversion();
+            string yaml = @"
+        - task: VSBuild@1
+          inputs:
+            solution: '$(solution)'
+            msbuildArgs: '/p:DeployOnBuild=true /p:WebPublishMethod=Package /p:PackageAsSingleFile=true /p:SkipInvalidConfigurations=true /p:DesktopBuildPackageLocation=""$(build.artifactStagingDirectory)\WebApp.zip"" /p:DeployIisAppPath=""Default Web Site""'
+            platform: '$(buildPlatform)'
+            configuration: '$(buildConfiguration)'
+        ";
+
+            //Act
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineTaskToGitHubActionTask(yaml);
+
+            //Assert
+            string expected = @"
+- run: msbuild '${{ env.solution }}' /p:configuration='${{ env.buildConfiguration }}' /p:platform='${{ env.buildPlatform }}' /p:DeployOnBuild=true /p:WebPublishMethod=Package /p:PackageAsSingleFile=true /p:SkipInvalidConfigurations=true /p:DesktopBuildPackageLocation=""${{ env.build.artifactStagingDirectory }}\WebApp.zip"" /p:DeployIisAppPath=""Default Web Site""
+";
+
+            expected = UtilityTests.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+        }
+
+        [TestMethod]
+        public void TimeoutAndContinueOnErrorStepTest()
+        {
+            //Arrange
+            Conversion conversion = new Conversion();
+            string yaml = @"
+- task: CmdLine@2
+  inputs:
+    script: echo your commands here 
+  continueOnError: true
+  timeoutInMinutes: 12
+";
+
+            //Act
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineTaskToGitHubActionTask(yaml);
+
+            //Assert
+            string expected = @"
+- run: echo your commands here
+  shell: cmd
+  continue-on-error: true
+  timeout-minutes: 12
+";
+            expected = UtilityTests.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+        }
+
+        //        [TestMethod]
+        //        public void KubernetesStepTest()
+        //        {
+        //            //Arrange
+        //            Conversion conversion = new Conversion();
+        //            string yaml = @"
+        //- task: Kubernetes@1
+        //  displayName: kubectl apply
+        //  inputs:
+        //    connectionType: Azure Resource Manager
+        //    azureSubscriptionEndpoint: Contoso
+        //    azureResourceGroup: contoso.azurecr.io
+        //    kubernetesCluster: Contoso
+        //    useClusterAdmin: false
+        //";
+
+        //            //Act
+        //            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineTaskToGitHubActionTask(yaml);
+
+        //            //Assert
+        //            string expected = @"
+
+        //";
+        //            expected = UtilityTests.TrimNewLines(expected);
+        //            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+        //        }    
+
+
 
     }
 }

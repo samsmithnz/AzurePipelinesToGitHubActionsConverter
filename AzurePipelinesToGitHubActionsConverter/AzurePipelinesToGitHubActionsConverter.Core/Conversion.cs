@@ -109,7 +109,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
 
             //Load failed task comments for processing
             List<string> stepComments = new List<string>();
-            if (gitHubActions != null && gitHubActions.jobs != null)
+            if (gitHubActions != null)
             {
                 //Add any header messages
                 if (gitHubActions.messages != null)
@@ -119,20 +119,23 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                         stepComments.Add(ConvertMessageToYamlComment(message));
                     }
                 }
-                //Add each individual step comments
-                foreach (KeyValuePair<string, GitHubActions.Job> job in gitHubActions.jobs)
+                if (gitHubActions.jobs != null)
                 {
-                    if (job.Value.steps != null)
+                    //Add each individual step comments
+                    foreach (KeyValuePair<string, GitHubActions.Job> job in gitHubActions.jobs)
                     {
-                        if (job.Value.job_message != null)
+                        if (job.Value.steps != null)
                         {
-                            stepComments.Add(ConvertMessageToYamlComment(job.Value.job_message));
-                        }
-                        foreach (GitHubActions.Step step in job.Value.steps)
-                        {
-                            if (step != null && string.IsNullOrEmpty(step.step_message) == false)
+                            if (job.Value.job_message != null)
                             {
-                                stepComments.Add(ConvertMessageToYamlComment(step.step_message));
+                                stepComments.Add(ConvertMessageToYamlComment(job.Value.job_message));
+                            }
+                            foreach (GitHubActions.Step step in job.Value.steps)
+                            {
+                                if (step != null && string.IsNullOrEmpty(step.step_message) == false)
+                                {
+                                    stepComments.Add(ConvertMessageToYamlComment(step.step_message));
+                                }
                             }
                         }
                     }
@@ -206,7 +209,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                 actionsYaml = yaml,
                 comments = allComments
             };
-        }     
+        }
 
         private string ConvertMessageToYamlComment(string message)
         {

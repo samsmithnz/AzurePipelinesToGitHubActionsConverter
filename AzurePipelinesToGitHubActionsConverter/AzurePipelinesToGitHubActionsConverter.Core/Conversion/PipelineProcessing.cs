@@ -81,12 +81,79 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                 if (azurePipeline.resources.pipelines != null)
                 {
                     gitHubActions.messages.Add("TODO: Resource pipelines conversion not yet done: https://github.com/samsmithnz/AzurePipelinesToGitHubActionsConverter/issues/8");
+                    if (azurePipeline.resources.pipelines.Length > 0)
+                    {
+                        if (azurePipeline.resources.pipelines[0].pipeline != null)
+                        {
+                            Console.WriteLine("pipeline: " + azurePipeline.resources.pipelines[0].pipeline);
+                        }
+                        if (azurePipeline.resources.pipelines[0].project != null)
+                        {
+                            Console.WriteLine("project: " + azurePipeline.resources.pipelines[0].project);
+                        }
+                        if (azurePipeline.resources.pipelines[0].source != null)
+                        {
+                            Console.WriteLine("source: " + azurePipeline.resources.pipelines[0].source);
+                        }
+                        if (azurePipeline.resources.pipelines[0].branch != null)
+                        {
+                            Console.WriteLine("branch: " + azurePipeline.resources.pipelines[0].branch);
+                        }
+                        if (azurePipeline.resources.pipelines[0].version != null)
+                        {
+                            Console.WriteLine("version: " + azurePipeline.resources.pipelines[0].version);
+                        }
+                        if (azurePipeline.resources.pipelines[0].trigger != null)
+                        {
+                            if (azurePipeline.resources.pipelines[0].trigger.autoCancel != null)
+                            {
+                                Console.WriteLine("autoCancel: " + azurePipeline.resources.pipelines[0].trigger.autoCancel);
+                            }
+                            if (azurePipeline.resources.pipelines[0].trigger.batch != null)
+                            {
+                                Console.WriteLine("batch: " + azurePipeline.resources.pipelines[0].trigger.batch);
+                            }
+                        }
+
+                    }
                 }
 
                 //TODO: Add code for repositories
                 if (azurePipeline.resources.repositories != null)
                 {
-                    gitHubActions.messages.Add("TODO: Resource services conversion not yet done: https://github.com/samsmithnz/AzurePipelinesToGitHubActionsConverter/issues/8");
+                    gitHubActions.messages.Add("TODO: Resource repositories conversion not yet done: https://github.com/samsmithnz/AzurePipelinesToGitHubActionsConverter/issues/8");
+
+                    if (azurePipeline.resources.repositories.Length > 0)
+                    {
+                        if (azurePipeline.resources.repositories[0].repository != null)
+                        {
+                            Console.WriteLine("repository: " + azurePipeline.resources.repositories[0].repository);
+                        }
+                        if (azurePipeline.resources.repositories[0].type != null)
+                        {
+                            Console.WriteLine("type: " + azurePipeline.resources.repositories[0].type);
+                        }
+                        if (azurePipeline.resources.repositories[0].name != null)
+                        {
+                            Console.WriteLine("name: " + azurePipeline.resources.repositories[0].name);
+                        }
+                        if (azurePipeline.resources.repositories[0]._ref != null)
+                        {
+                            Console.WriteLine("ref: " + azurePipeline.resources.repositories[0]._ref);
+                        }
+                        if (azurePipeline.resources.repositories[0].endpoint != null)
+                        {
+                            Console.WriteLine("endpoint: " + azurePipeline.resources.repositories[0].endpoint);
+                        }
+                        if (azurePipeline.resources.repositories[0].connection != null)
+                        {
+                            Console.WriteLine("connection: " + azurePipeline.resources.repositories[0].connection);
+                        }
+                        if (azurePipeline.resources.repositories[0].source != null)
+                        {
+                            Console.WriteLine("source: " + azurePipeline.resources.repositories[0].source);
+                        }
+                    }
                 }
             }
 
@@ -347,13 +414,13 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
 
             if (strategy != null)
             {
-                GitHubActions.Strategy newStrategy = null;
+                GitHubActions.Strategy processedStrategy = null;
 
                 if (strategy.matrix != null)
                 {
-                    if (newStrategy == null)
+                    if (processedStrategy == null)
                     {
-                        newStrategy = new GitHubActions.Strategy();
+                        processedStrategy = new GitHubActions.Strategy();
                     }
                     string[] matrix = new string[strategy.matrix.Count];
                     KeyValuePair<string, Dictionary<string, string>> matrixVariable = strategy.matrix.First();
@@ -365,7 +432,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                         matrix[i] = strategy.matrix[entry.Key][MatrixVariableName];
                         i++;
                     }
-                    newStrategy.matrix = new Dictionary<string, string[]>
+                    processedStrategy.matrix = new Dictionary<string, string[]>
                     {
                         { MatrixVariableName, matrix }
                     };
@@ -376,18 +443,18 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                 }
                 if (strategy.maxParallel != null)
                 {
-                    if (newStrategy == null)
+                    if (processedStrategy == null)
                     {
-                        newStrategy = new GitHubActions.Strategy();
+                        processedStrategy = new GitHubActions.Strategy();
                     }
-                    newStrategy.max_parallel = strategy.maxParallel;
+                    processedStrategy.max_parallel = strategy.maxParallel;
                 }
                 if (strategy.runOnce != null)
                 {
+                    //TODO: Process other strategies
                     Console.WriteLine("TODO: " + strategy.runOnce);
                 }
-                return newStrategy;
-
+                return processedStrategy;
             }
             else
             {
@@ -547,6 +614,10 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                 //TODO: Find a way to allow GitHub jobs to reference another job as a template
                 newJob.job_message += "Note: Azure DevOps strategy>runOnce>deploy does not have an equivalent in GitHub Actions yet";
             }
+            if (job.environment != null)
+            {
+                newJob.job_message += "Note: Azure DevOps job environment does not have an equivalent in GitHub Actions yet";
+            }
 
             if (newJob._if != null)
             {
@@ -554,6 +625,10 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                 {
                     newJob.job_message += Environment.NewLine;
                 }
+            }
+            if (string.IsNullOrEmpty(job.continueOnError) == false)
+            {
+                newJob.continue_on_error = job.continueOnError;
             }
 
             return newJob;
@@ -653,8 +728,11 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                 if (addJavaSetupStep == true)
                 {
                     //Add the JavaSetup step to the code
-                    newSteps[adjustmentsUsed] = stepsProcessing.CreateSetupJavaStep(javaVersion);
-                    adjustmentsUsed++;
+                    if (javaVersion != null)
+                    {
+                        newSteps[adjustmentsUsed] = stepsProcessing.CreateSetupJavaStep(javaVersion);
+                        adjustmentsUsed++;
+                    }
                 }
                 if (addGradleSetupStep == true)
                 {

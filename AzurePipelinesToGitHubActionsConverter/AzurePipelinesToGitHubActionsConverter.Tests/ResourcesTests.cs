@@ -3,12 +3,13 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace AzurePipelinesToGitHubActionsConverter.Tests
 {
+    [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
     [TestClass]
     public class ResourcesTests
     {
 
         [TestMethod]
-        public void ContainersTest()
+        public void ResourcesContainersTest()
         {
             //Arrange
             Conversion conversion = new Conversion();
@@ -79,7 +80,7 @@ steps:
         }    
         
         [TestMethod]
-        public void ContainersDetailTest()
+        public void ResourcesContainersDetailTest()
         {
             //Arrange
             Conversion conversion = new Conversion();
@@ -118,6 +119,57 @@ steps:
             //Assert
             Assert.AreEqual(1, gitHubOutput.comments.Count);
             Assert.IsTrue(gitHubOutput.actionsYaml.IndexOf("This step does not have a conversion path yet") == -1);
+        }  
+        
+        [TestMethod]
+        public void ResourcesRepositoriesTest()
+        {
+            //Arrange
+            Conversion conversion = new Conversion();
+            string yaml = @"
+resources:         
+  repositories:
+  - repository: secondaryRepo      
+    type: GitHub
+    connection: myGitHubConnection
+    source: Microsoft/alphaworz
+    name: repo
+    ref: repoRef
+    endpoint: github.com
+";
+
+            //Act
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(yaml);
+
+            //Assert
+            Assert.AreEqual(1, gitHubOutput.comments.Count);
+            Assert.IsTrue(gitHubOutput.actionsYaml.IndexOf("Resource repositories conversion not yet done") > -1);
+        }
+
+        [TestMethod]
+        public void ResourcesPipelinesTest()
+        {
+            //Arrange
+            Conversion conversion = new Conversion();
+            string yaml = @"
+resources:
+  pipelines:
+  - pipeline: SmartHotel
+    project: DevOpsProject
+    source: SmartHotel-CI
+    branch: releases/M142
+    version: 1.0
+    trigger: 
+      autoCancel: true
+      batch: true
+";
+
+            //Act
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(yaml);
+
+            //Assert
+            Assert.AreEqual(1, gitHubOutput.comments.Count);
+            Assert.IsTrue(gitHubOutput.actionsYaml.IndexOf("Resource pipelines conversion not yet done") > -1);
         }
 
     }

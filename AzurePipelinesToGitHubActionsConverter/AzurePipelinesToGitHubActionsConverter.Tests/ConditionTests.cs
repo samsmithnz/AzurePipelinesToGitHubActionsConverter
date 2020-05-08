@@ -4,6 +4,7 @@ using System.Collections.Generic;
 
 namespace AzurePipelinesToGitHubActionsConverter.Tests
 {
+    [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
     [TestClass]
     public class ConditionTests
     {
@@ -18,6 +19,47 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
 
             //Assert
             string expected = "success()";
+            Assert.AreEqual(expected, result);
+        }
+
+        [TestMethod]
+        public void SuccessOrFailureTest()
+        { 
+            string condition = "succeededOrFailed()";
+
+            //Act
+            string result = ConditionsProcessing.TranslateConditions(condition);
+
+            //Assert
+            string expected = "ne(${{ job.status }}, 'cancelled')";
+            Assert.AreEqual(expected, result);
+        }
+
+        [TestMethod]
+        public void FailureConditionTest()
+        {
+            //Arrange
+            string condition = "failed()";
+
+            //Act
+            string result = ConditionsProcessing.TranslateConditions(condition);
+
+            //Assert
+            string expected = "failure()";
+            Assert.AreEqual(expected, result);
+        }
+
+        [TestMethod]
+        public void AlwaysConditionTest()
+        {
+            //Arrange
+            string condition = "always()";
+
+            //Act
+            string result = ConditionsProcessing.TranslateConditions(condition);
+
+            //Assert
+            string expected = "always()";
             Assert.AreEqual(expected, result);
         }
 

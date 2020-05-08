@@ -7,6 +7,7 @@ using System.Text;
 
 namespace AzurePipelinesToGitHubActionsConverter.Tests
 {
+    [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
     [TestClass]
     public class GitHubSerializationTests
     {
@@ -36,19 +37,13 @@ jobs:
 
             //Assert
             Assert.AreNotEqual(null, gitHubAction);
-            Assert.AreEqual(null, gitHubAction.env);
-            Assert.AreNotEqual(null, gitHubAction.jobs);
-            Assert.AreEqual(1, gitHubAction.jobs.Count);
-            Assert.AreEqual(true, gitHubAction.jobs.ContainsKey("build"));
-            gitHubAction.jobs.TryGetValue("build", out Job gitHubJob);
-            Assert.AreEqual(null, gitHubJob._if);
-            Assert.AreEqual("Build 1", gitHubJob.name);
-            Assert.AreEqual("windows-latest", gitHubJob.runs_on);
-            Assert.AreEqual(2, gitHubJob.steps.Length);
+            Assert.AreEqual(null, gitHubAction.env); //environment variables are null
 
+            //Test for messages and name
             Assert.AreEqual(0, gitHubAction.messages.Count);
             Assert.AreEqual(null, gitHubAction.name);
 
+            //Test the trigger
             Assert.AreNotEqual(null, gitHubAction.on);
             Assert.AreEqual(null, gitHubAction.on.pull_request);
             Assert.AreNotEqual(null, gitHubAction.on.push);
@@ -60,6 +55,19 @@ jobs:
             Assert.AreEqual(null, gitHubAction.on.push.tags);
             Assert.AreEqual(null, gitHubAction.on.push.tags_ignore);
             Assert.AreEqual(null, gitHubAction.on.schedule);
+
+            //Test that jobs exist
+            Assert.AreNotEqual(null, gitHubAction.jobs);
+            Assert.AreEqual(1, gitHubAction.jobs.Count);
+            Assert.AreEqual(true, gitHubAction.jobs.ContainsKey("build"));
+            gitHubAction.jobs.TryGetValue("build", out Job gitHubJob);
+            Assert.AreEqual(null, gitHubJob._if);
+            Assert.AreEqual("Build 1", gitHubJob.name);
+            Assert.AreEqual("windows-latest", gitHubJob.runs_on);
+          
+            //Test that steps exist
+            Assert.AreNotEqual(null, gitHubJob.steps);
+            Assert.AreEqual(2, gitHubJob.steps.Length);
         }
     }
 }
