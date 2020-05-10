@@ -17,6 +17,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
             {
                 step = CleanStepInputs(step);
                 //TODO: Should we be handling versions seperately? Currently the version is bundled with the step name
+                //TODO: Need to find a solution when the casing of the command is unexpected. e.g. Npm is NPM or npm. 
                 switch (step.task)
                 {
                     case "Ant@1":
@@ -62,6 +63,9 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                     //    break;
                     case "Maven@3":
                         gitHubStep = CreateMavenStep(step);
+                        break;
+                    case "Npm@1":
+                        gitHubStep = CreateNPMStep(step);
                         break;
                     case "NodeTool@0":
                         gitHubStep = CreateNodeToolStep(step);
@@ -327,9 +331,9 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
             {
                 case "build":
                     dockerScript += "docker build .";
-                    break; 
+                    break;
                 case "push":
-                    dockerScript += "docker push"; 
+                    dockerScript += "docker push";
                     break;
                 case "buildAndPush":
                     dockerScript += "docker build-push .";
@@ -337,18 +341,18 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                     break;
                 case "login":
                     dockerScript += "docker login";
-                    break; 
-                case "logout": 
+                    break;
+                case "logout":
                     dockerScript += "docker logout";
-                    break; 
-            } 
+                    break;
+            }
 
             if (dockerFile != null)
             {
                 dockerScript += " --file " + dockerFile;
             }
             if (containerRegistry != null)
-            { 
+            {
                 dockerScript += " " + containerRegistry.Replace("\n", " ").Trim();
             }
             if (repository != null)
@@ -1108,6 +1112,70 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
 
             string pomCommand = "mvn -B package --file " + pomFile;
             step.script = pomCommand;
+
+            GitHubActions.Step gitHubStep = CreateScriptStep("", step);
+
+            return gitHubStep;
+        }
+
+        private GitHubActions.Step CreateNPMStep(AzurePipelines.Step step)
+        {
+            //https://docs.microsoft.com/en-us/azure/devops/pipelines/tasks/package/npm?view=azure-devops
+            //coming from:
+            //# npm
+            //# Install and publish npm packages, or run an npm command. Supports npmjs.com and authenticated registries like Azure Artifacts.
+            //- task: Npm@1
+            //  inputs:
+            //    #command: 'install' # Options: install, publish, custom
+            //    #workingDir: # Optional
+            //    #verbose: # Optional
+            //    #customCommand: # Required when command == Custom
+            //    #customRegistry: 'useNpmrc' # Optional. Options: useNpmrc, useFeed
+            //    #customFeed: # Required when customRegistry == UseFeed
+            //    #customEndpoint: # Optional
+            //    #publishRegistry: 'useExternalRegistry' # Optional. Options: useExternalRegistry, useFeed
+            //    #publishFeed: # Required when publishRegistry == UseFeed
+            //    #publishPackageMetadata: true # Optional
+            //    #publishEndpoint: # Required when publishRegistry == UseExternalRegistry
+
+            //Example:
+            //- task: Npm@1
+            //  displayName: 'npm install'
+            //  inputs:
+            //    command: install
+            //    workingDir: src/angular7
+
+            //- task: Npm@1
+            //  displayName: 'Build Angular'
+            //  inputs:
+            //    command: custom
+            //    customCommand: run build -- --prod
+            //    workingDir: src/angular7
+
+
+            //Going to:
+
+            //run: npm publish --access public
+
+            //
+
+
+            string command = GetStepInput(step, "command");
+            string workingDir = GetStepInput(step, "workingDir");
+            string customCommand = GetStepInput(step, "customCommand");
+
+            if (command == "custom")
+            {
+                step.script = "npm " + customCommand;
+            }
+            else
+            { 
+            step.script = "npm " + command;
+            }
+            if (string.IsNullOrEmpty(workingDir) == false)
+            {
+                step.script += " " + workingDir;
+            }
 
             GitHubActions.Step gitHubStep = CreateScriptStep("", step);
 

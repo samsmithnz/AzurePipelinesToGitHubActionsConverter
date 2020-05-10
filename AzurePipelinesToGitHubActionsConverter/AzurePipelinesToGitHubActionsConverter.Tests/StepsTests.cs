@@ -674,6 +674,59 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
         //        }
 
         [TestMethod]
+        public void NPMInstallStepTest()
+        {
+            //Arrange
+            Conversion conversion = new Conversion();
+            string yaml = @"
+- task: Npm@1
+  displayName: 'npm install'
+  inputs:
+    command: install
+    workingDir: src/angular7
+";
+
+            //Act
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineTaskToGitHubActionTask(yaml);
+
+            //Assert
+            string expected = @"
+- name: npm install
+  run: npm install src/angular7
+";
+
+            expected = UtilityTests.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+        }
+
+        [TestMethod]
+        public void NPMToBuildAngularStepTest()
+        {
+            //Arrange
+            Conversion conversion = new Conversion();
+            string yaml = @"
+- task: Npm@1
+  displayName: 'Build Angular'
+  inputs:
+    command: custom
+    customCommand: run build -- --prod
+    workingDir: src/angular7
+";
+
+            //Act
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineTaskToGitHubActionTask(yaml);
+
+            //Assert
+            string expected = @"
+- name: Build Angular
+  run: npm run build -- --prod src/angular7
+";
+
+            expected = UtilityTests.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+        }
+
+        [TestMethod]
         public void MSBuildStepTest()
         {
             //Arrange
