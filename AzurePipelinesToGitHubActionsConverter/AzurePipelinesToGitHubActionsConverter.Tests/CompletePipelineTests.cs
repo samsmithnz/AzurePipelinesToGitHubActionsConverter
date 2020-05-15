@@ -69,11 +69,9 @@ jobs:
       with:
         name: drop
     - name: Deploy ARM Template to resource group
-      uses: Azure/github-actions/arm@master
-      env:
-        AZURE_RESOURCE_GROUP: ${{ env.ResourceGroupName }}
-        AZURE_TEMPLATE_LOCATION: ${GITHUB_WORKSPACE}/drop/ARMTemplates/azuredeploy.json
-        AZURE_TEMPLATE_PARAM_FILE: ${GITHUB_WORKSPACE}/drop/ARMTemplates/azuredeploy.parameters.json
+      uses: Azure/cli@v1.0.0
+      with:
+        inlineScript: az deployment group create --resource-group ${{ env.ResourceGroupName }} --template-file ${GITHUB_WORKSPACE}/drop/ARMTemplates/azuredeploy.json --parameters  ${GITHUB_WORKSPACE}/drop/ARMTemplates/azuredeploy.parameters.json -environment ${{ env.AppSettings.Environment }} -locationShort ${{ env.ArmTemplateResourceGroupLocation }}
 ";
 
             expected = UtilityTests.TrimNewLines(expected);
