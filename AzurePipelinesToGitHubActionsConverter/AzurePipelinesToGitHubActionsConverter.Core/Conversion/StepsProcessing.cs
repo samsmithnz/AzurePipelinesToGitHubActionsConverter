@@ -1482,11 +1482,11 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                 name = GetStepInput(step, "artifactname");
             }
             string path = "";
-            if (step.task.ToUpper() == "PUBLISHBUILDARTIFACTS@1")
+            if (step.task?.ToUpper() == "PUBLISHBUILDARTIFACTS@1")
             {
                 path = GetStepInput(step, "pathtopublish");
             }
-            else if (step.task.ToUpper() == "PUBLISHPIPELINEARTIFACT@0")
+            else if (step.task?.ToUpper() == "PUBLISHPIPELINEARTIFACT@0")
             {
                 path = GetStepInput(step, "targetpath");
             }
