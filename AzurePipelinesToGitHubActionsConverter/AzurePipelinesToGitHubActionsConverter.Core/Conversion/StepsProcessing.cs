@@ -17,97 +17,96 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
             {
                 step = CleanStepInputs(step);
                 //TODO: Should we be handling versions seperately? Currently the version is bundled with the step name
-                //TODO: Need to find a solution when the casing of the command is unexpected. e.g. Npm is NPM or npm. 
-                switch (step.task)
+                switch (step.task.ToUpper()) //Set to upper case to handle case sensitivity comparisons e.g. NPM hangles Npm, NPM, or npm. 
                 {
-                    case "Ant@1":
+                    case "ANT@1":
                         gitHubStep = CreateAntStep(step);
                         break;
-                    case "ArchiveFiles@2":
+                    case "ARCHIVEFILES@2":
                         gitHubStep = CreateArchiveFilesStep(step);
                         break;
-                    case "AzureAppServiceManage@0":
+                    case "AZUREAPPSERVICEMANAGE@0":
                         gitHubStep = CreateAzureAppServiceManageStep(step);
                         break;
-                    case "AzureResourceGroupDeployment@2":
+                    case "AZURERESOURCEGROUPDEPLOYMENT@2":
                         gitHubStep = CreateAzureManageResourcesStep(step);
                         break;
-                    case "AzureFunctionApp@1":
-                    case "AzureFunctionAppContainer@1":
-                    case "AzureRmWebAppDeployment@3":
-                    case "AzureWebAppContainer@1":
-                    case "AzureRmWebAppDeployment@4":
+                    case "AZUREFUNCTIONAPP@1":
+                    case "AZUREFUNCTIONAPPCONTAINER@1":
+                    case "AZURERMWEBAPPDEPLOYMENT@3":
+                    case "AZUREWEBAPPCONTAINER@1":
+                    case "AZURERMWEBAPPDEPLOYMENT@4":
                         gitHubStep = CreateAzureWebAppDeploymentStep(step);
                         break;
-                    case "CmdLine@2":
+                    case "CMDLINE@2":
                         gitHubStep = CreateScriptStep("cmd", step);
                         break;
-                    case "CopyFiles@2":
+                    case "COPYFILES@2":
                         gitHubStep = CreateCopyFilesStep(step);
                         break;
-                    case "Docker@1":
-                    case "Docker@2":
+                    case "DOCKER@1":
+                    case "DOCKER@2":
                         gitHubStep = CreateDockerStep(step);
                         break;
-                    case "DotNetCoreCLI@2":
+                    case "DOTNETCORECLI@2":
                         gitHubStep = CreateDotNetCommandStep(step);
                         break;
-                    case "DownloadBuildArtifacts@0":
+                    case "DOWNLOADBUILDARTIFACTS@0":
                         gitHubStep = CreateDownloadBuildArtifacts(step);
                         break;
-                    case "Gradle@2":
+                    case "GRADLE@2":
                         gitHubStep = CreateGradleStep(step);
                         break;
-                    //case "Kubernetes@1":
+                    //case "KUBERNETES@1":
                     //    gitHubStep = CreateKubernetesStep(step);
                     //    break;
-                    case "Maven@3":
+                    case "MAVEN@3":
                         gitHubStep = CreateMavenStep(step);
                         break;
-                    case "Npm@1":
+                    case "NPM@1":
                         gitHubStep = CreateNPMStep(step);
                         break;
-                    case "NodeTool@0":
+                    case "NODETOOL@0":
                         gitHubStep = CreateNodeToolStep(step);
                         break;
-                    case "NuGetCommand@2":
+                    case "NUGETCOMMAND@2":
                         gitHubStep = CreateNuGetCommandStep(step);
                         break;
-                    case "NuGetToolInstaller@1":
+                    case "NUGETTOOLINSTALLER@1":
                         gitHubStep = CreateNuGetToolInstallerStep();
                         break;
-                    case "PowerShell@2":
+                    case "POWERSHELL@2":
                         gitHubStep = CreateScriptStep("powershell", step);
                         break;
-                    case "PublishPipelineArtifact@0":
-                    case "PublishBuildArtifacts@1":
+                    case "PUBLISHPIPELINEARTIFACT@0":
+                    case "PUBLISHBUILDARTIFACTS@1":
                         gitHubStep = CreatePublishBuildArtifactsStep(step);
                         break;
-                    case "PythonScript@0":
+                    case "PYTHONSCRIPT@0":
                         gitHubStep = CreatePythonStep(step);
                         break;
-                    case "SqlAzureDacpacDeployment@1":
+                    case "SQLAZUREDACPACDEPLOYMENT@1":
                         gitHubStep = CreateSQLAzureDacPacDeployStep(step);
                         break;
-                    case "UseDotNet@2":
+                    case "USEDOTNET@2":
                         gitHubStep = CreateUseDotNetStep(step);
                         break;
-                    case "UsePythonVersion@0":
+                    case "USEPYTHONVERSION@0":
                         gitHubStep = CreateUsePythonStep(step);
                         break;
-                    case "UseRubyVersion@0":
+                    case "USERUBYVERSION@0":
                         gitHubStep = CreateUseRubyStep(step);
                         break;
-                    case "VSBuild@1":
+                    case "VSBUILD@1":
                         gitHubStep = CreateMSBuildStep(step);
                         break;
-                    case "VSTest@2":
+                    case "VSTEST@2":
                         gitHubStep = CreateFunctionalTestingStep(step);
                         break;
-                    case "XamarinAndroid@1":
+                    case "XAMARINANDROID@1":
                         gitHubStep = CreateXamarinAndroidStep(step);
                         break;
-                    case "XamariniOS@2":
+                    case "XAMARINIOS@2":
                         gitHubStep = CreateXamariniOSStep(step);
                         break;
 
@@ -507,20 +506,6 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
 
         private GitHubActions.Step CreateAzureManageResourcesStep(AzurePipelines.Step step)
         {
-            string resourceGroup = GetStepInput(step, "resourcegroupname");
-            string armTemplateFile = GetStepInput(step, "csmfile");
-            string armTemplateParametersFile = GetStepInput(step, "csmparametersfile");
-
-            GitHubActions.Step gitHubStep = new GitHubActions.Step
-            {
-                uses = "Azure/github-actions/arm@master",
-                env = new Dictionary<string, string>
-                {
-                    { "AZURE_RESOURCE_GROUP", resourceGroup},
-                    { "AZURE_TEMPLATE_LOCATION", armTemplateFile},
-                    { "AZURE_TEMPLATE_PARAM_FILE", armTemplateParametersFile},
-                }
-            };
 
             //coming from:
             //- task: AzureResourceGroupDeployment@2
@@ -533,17 +518,43 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
             //    csmParametersFile: '$(build.artifactstagingdirectory)/drop/ARMTemplates/azuredeploy.parameters.json'
             //    overrideParameters: '-environment $(AppSettings.Environment) -locationShort $(ArmTemplateResourceGroupLocation)'
 
-            //Going to:
-            //https://github.com/Azure/github-actions/tree/master/arm
-            //action "Manage Azure Resources" {
-            //  uses = "Azure/github-actions/arm@master"
-            //  env = {
-            //    AZURE_RESOURCE_GROUP = "<Resource Group Name"
-            //    AZURE_TEMPLATE_LOCATION = "<URL or Relative path in your repository>"
-            //    AZURE_TEMPLATE_PARAM_FILE = "<URL or Relative path in your repository>"
-            //  }
-            //  needs = ["Azure Login"]
-            //}}
+            // https://docs.microsoft.com/en-us/azure/azure-resource-manager/templates/deploy-cli
+            //- name: Swap web service staging slot to production
+            //  uses: Azure/cli@v1.0.0
+            //  with:
+            //    inlineScript: az deployment group create --resource-group <resource-group-name> --template-file <path-to-template>
+
+            string resourceGroup = GetStepInput(step, "resourcegroupname");
+            string armTemplateFile = GetStepInput(step, "csmfile");
+            string armTemplateParametersFile = GetStepInput(step, "csmparametersfile");
+            string overrideParameters = GetStepInput(step, "overrideParameters");
+
+            string script = "az deployment group create --resource-group " + resourceGroup +
+                " --template-file " + armTemplateFile;
+
+            //Add parameters
+            if (string.IsNullOrEmpty(armTemplateParametersFile) == false || string.IsNullOrEmpty(overrideParameters) == false)
+            {
+                string parameters = " --parameters ";
+                if (string.IsNullOrEmpty(armTemplateParametersFile) == false)
+                {
+                    parameters += " " + armTemplateParametersFile;
+                }
+                if (string.IsNullOrEmpty(overrideParameters) == false)
+                {
+                    parameters += " " + overrideParameters;
+                }
+                script += parameters;
+            }
+
+            GitHubActions.Step gitHubStep = new GitHubActions.Step
+            {
+                uses = "Azure/cli@v1.0.0",
+                with = new Dictionary<string, string>
+                {
+                    { "inlineScript", script}
+                }
+            };
 
             return gitHubStep;
         }
@@ -1169,8 +1180,8 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                 step.script = "npm " + customCommand;
             }
             else
-            { 
-            step.script = "npm " + command;
+            {
+                step.script = "npm " + command;
             }
             if (string.IsNullOrEmpty(workingDir) == false)
             {
@@ -1471,11 +1482,11 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                 name = GetStepInput(step, "artifactname");
             }
             string path = "";
-            if (step.task == "PublishBuildArtifacts@1")
+            if (step.task.ToUpper() == "PUBLISHBUILDARTIFACTS@1")
             {
                 path = GetStepInput(step, "pathtopublish");
             }
-            else if (step.task == "PublishPipelineArtifact@0")
+            else if (step.task.ToUpper() == "PUBLISHPIPELINEARTIFACT@0")
             {
                 path = GetStepInput(step, "targetpath");
             }
