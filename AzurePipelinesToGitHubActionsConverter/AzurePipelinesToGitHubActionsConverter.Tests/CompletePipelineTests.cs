@@ -972,5 +972,82 @@ jobs:
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
         }
 
+        [TestMethod]
+        public void FullPipelineTest()
+        {
+            //Arrange
+            Conversion conversion = new Conversion();
+            //Source is: https://raw.githubusercontent.com/microsoft/azure-pipelines-yaml/master/templates/xamarin.ios.yml
+            string yaml = @"
+name: $(Version).$(rev:r)
+
+variables:
+- group: Common Netlify
+
+trigger:
+  branches:
+    include:
+    - dev
+    - feature/*
+    - hotfix/*
+  paths:
+    include:
+    - 'Netlify/*'
+    exclude:
+    - 'pipelines/*'
+    - 'scripts/*'
+    - '.editorconfig'
+    - '.gitignore'
+    - 'README.md'
+
+stages:
+# Build Pipeline
+- stage: Build
+  jobs:
+  - job: HostedVs2017
+    displayName: Hosted VS2017
+    pool:
+      name: Hosted VS2017
+      demands: npm
+    workspace:
+      clean: all
+    
+#    steps:
+#    - template: templates/npm-build-steps.yaml
+#      parameters:
+#        extensionName: $(ExtensionName)
+";
+
+            //Act
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(yaml);
+
+            //Assert
+            string expected = @"
+name: ${{ env.Version }}.${{ env.rev:r }}
+on:
+  push:
+    branches:
+    - dev
+    - feature/*
+    - hotfix/*
+    paths:
+    - Netlify/*
+    paths-ignore:
+    - pipelines/*
+    - scripts/*
+    - .editorconfig
+    - .gitignore
+    - README.md
+env: {}
+jobs:
+  Build_Stage_HostedVs2017:
+    name: Hosted VS2017
+    runs-on: Hosted VS2017
+";
+
+            expected = UtilityTests.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+        }
+
     }
 }

@@ -15,17 +15,20 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
         public void PoolUbuntuLatestStringTest()
         {
             //Arrange
-            string input = "pool:" + Environment.NewLine +
-                           "  vmImage: ubuntu-latest";
+            string input = @"
+pool:
+  vmImage: ubuntu-latest";
             Conversion conversion = new Conversion();
 
             //Act
             ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(input);
 
             //Assert
-            string expected = "jobs:" + Environment.NewLine +
-                                    "  build:" + Environment.NewLine +
-                                    "    runs-on: ubuntu-latest";
+            string expected = @"
+jobs:
+  build:
+    runs-on: ubuntu-latest";
+            expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
         }
 
@@ -33,17 +36,42 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
         public void PoolWindowsLatestStringTest()
         {
             //Arrange
-            string input = "pool: " + Environment.NewLine +
-                           "  vmImage: windows-latest";
+            string input = @"
+pool: 
+  vmImage: windows-latest";
             Conversion conversion = new Conversion();
 
             //Act
             ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(input);
 
             //Assert
-            string expected = "jobs:" + Environment.NewLine +
-                                    "  build:" + Environment.NewLine +
-                                    "    runs-on: windows-latest";
+            string expected = @"
+jobs:
+  build:
+    runs-on: windows-latest";
+            expected = UtilityTests.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+        }
+
+        [TestMethod]
+        public void PoolNameDependsStringTest()
+        {
+            //Arrange
+            string input = @"
+pool:
+  name: Hosted VS2017
+  demands: npm";
+            Conversion conversion = new Conversion();
+
+            //Act
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(input);
+
+            //Assert
+            string expected = @"
+jobs:
+  build:
+    runs-on: Hosted VS2017";
+            expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
         }
 

@@ -378,7 +378,14 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
             string newPool = null;
             if (pool != null)
             {
-                newPool = pool.vmImage;
+                if (pool.vmImage != null)
+                {
+                    newPool = pool.vmImage;
+                }
+                else if (pool.name != null)
+                {
+                    newPool = pool.name;
+                }
             }
             return newPool;
         }
