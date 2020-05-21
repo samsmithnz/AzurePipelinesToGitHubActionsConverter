@@ -155,6 +155,10 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                 //https://docs.microsoft.com/en-us/azure/devops/pipelines/yaml-schema?view=azure-devops&tabs=schema#publish
                 gitHubStep = CreatePublishBuildArtifactsStep(step);
             }
+            else if (step.template != null)
+            {
+                gitHubStep = CreateTemplateStep(step);
+            }
 
             if (gitHubStep != null)
             {
@@ -1514,6 +1518,59 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
             {
                 gitHubStep.with["path"].Replace("$(build.artifactstagingdirectory)", "");
             }
+            return gitHubStep;
+        }
+
+        private GitHubActions.Step CreateTemplateStep(AzurePipelines.Step step)
+        {
+
+            //There is no conversion for this: https://github.community/t5/GitHub-Actions/Call-an-action-from-another-action/td-p/45034
+            //- template: templates/npm-build-steps.yaml
+            //  parameters:
+            //    extensionName: $(ExtensionName)
+
+
+
+            //string name = "";
+            //if (step.inputs != null && step.inputs.ContainsKey("artifactname") == true)
+            //{
+            //    name = GetStepInput(step, "artifactname");
+            //}
+            //string path = "";
+            //if (step.task?.ToUpper() == "PUBLISHBUILDARTIFACTS@1")
+            //{
+            //    path = GetStepInput(step, "pathtopublish");
+            //}
+            //else if (step.task?.ToUpper() == "PUBLISHPIPELINEARTIFACT@0")
+            //{
+            //    path = GetStepInput(step, "targetpath");
+            //}
+            //else if (step.publish != null)
+            //{
+            //    name = step.artifact;
+            //    path = step.publish;
+            //}
+
+            GitHubActions.Step gitHubStep = new GitHubActions.Step
+            {
+                run = "#" + step.template,
+                step_message = "There is no conversion path for templates, currently there is no support to call other actions/yaml files from a GitHub Action"
+            };
+
+
+            string stepParameters = "";
+            if (step.parameters != null)
+            {
+                foreach (KeyValuePair<string, string> item in step.parameters)
+                {
+                    stepParameters += item.Key + ": " + item.Value + Environment.NewLine;
+                }
+            }
+            if (stepParameters != "")
+            {
+                gitHubStep.run += Environment.NewLine + stepParameters;
+            }
+
             return gitHubStep;
         }
 

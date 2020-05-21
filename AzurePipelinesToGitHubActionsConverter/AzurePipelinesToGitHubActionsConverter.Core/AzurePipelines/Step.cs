@@ -80,7 +80,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.AzurePipelines
         }
         //public string checkout { get; set; }
         public string task { get; set; }
-        //public string templateReference { get; set; }
+        public string template { get; set; }
         public string publish { get; set; }
         public string artifact { get; set; }
         public string displayName { get; set; }
@@ -94,5 +94,6 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.AzurePipelines
         public Target target { get; set; }
         public Dictionary<string, string> inputs { get; set; }
         public Dictionary<string, string> env { get; set; }
+        public Dictionary<string, string> parameters { get; set; }
     }
 }

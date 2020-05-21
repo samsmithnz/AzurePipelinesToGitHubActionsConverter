@@ -777,6 +777,31 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
         }
 
+        [TestMethod]
+        public void TemplateStepTest()
+        {
+            //Arrange
+            Conversion conversion = new Conversion();
+            string yaml = @"
+- template: templates/npm-build-steps.yaml
+  parameters:
+    extensionName: $(ExtensionName)
+";
+
+            //Act
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineTaskToGitHubActionTask(yaml);
+
+            //Assert
+            string expected = @"
+- #: There is no conversion path for templates, currently there is no support to call other actions/yaml files from a GitHub Action
+  run: |
+    #templates/npm-build-steps.yaml
+    extensionName: ${{ env.ExtensionName }}
+";
+            expected = UtilityTests.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+        }
+
         //        [TestMethod]
         //        public void KubernetesStepTest()
         //        {

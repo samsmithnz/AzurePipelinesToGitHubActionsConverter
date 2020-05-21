@@ -973,7 +973,7 @@ jobs:
         }
 
         [TestMethod]
-        public void FullPipelineTest()
+        public void PipelineWithWorkspaceAndTemplateStepTest()
         {
             //Arrange
             Conversion conversion = new Conversion();
@@ -1012,10 +1012,10 @@ stages:
     workspace:
       clean: all
     
-#    steps:
-#    - template: templates/npm-build-steps.yaml
-#      parameters:
-#        extensionName: $(ExtensionName)
+    steps:
+    - template: templates/npm-build-steps.yaml
+      parameters:
+        extensionName: $(ExtensionName)
 ";
 
             //Act
@@ -1023,7 +1023,8 @@ stages:
 
             //Assert
             string expected = @"
-name: ${{ env.Version }}.${{ env.rev:r }}
+#There is no conversion path for templates, currently there is no support to call other actions/yaml files from a GitHub Action
+name: ${{ env.Version }}.${GITHUB_RUN_NUMBER}
 on:
   push:
     branches:
@@ -1038,11 +1039,18 @@ on:
     - .editorconfig
     - .gitignore
     - README.md
-env: {}
+env:
+  group: Common Netlify
 jobs:
   Build_Stage_HostedVs2017:
     name: Hosted VS2017
     runs-on: Hosted VS2017
+    steps:
+    - uses: actions/checkout@v2
+    - #: There is no conversion path for templates, currently there is no support to call other actions/yaml files from a GitHub Action
+      run: |
+        #templates/npm-build-steps.yaml
+        extensionName: ${{ env.ExtensionName }}
 ";
 
             expected = UtilityTests.TrimNewLines(expected);
