@@ -378,7 +378,14 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
             string newPool = null;
             if (pool != null)
             {
-                newPool = pool.vmImage;
+                if (pool.vmImage != null)
+                {
+                    newPool = pool.vmImage;
+                }
+                else if (pool.name != null)
+                {
+                    newPool = pool.name;
+                }
             }
             return newPool;
         }
@@ -545,13 +552,23 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                 //update variables from the $(variableName) format to ${{variableName}} format, by piping them into a list for replacement later.
                 for (int i = 0; i < variables.Length; i++)
                 {
+                    //name/value pairs
                     if (variables[i].name != null && variables[i].value != null)
                     {
                         processedVariables.Add(variables[i].name, variables[i].value);
                     }
+                    //groups
+                    if (variables[i].group != null)
+                    {
+                        processedVariables.Add("group", variables[i].group);
+                    }
+                    //template
+                    if (variables[i].template != null)
+                    {
+                        processedVariables.Add("template", variables[i].template);
+                    }
                 }
-                //TODO: Add groups
-                //TODO: Add template
+
             }
             return processedVariables;
         }

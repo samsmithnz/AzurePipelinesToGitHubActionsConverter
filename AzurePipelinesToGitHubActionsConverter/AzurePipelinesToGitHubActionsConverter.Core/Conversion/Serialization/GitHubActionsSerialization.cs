@@ -161,6 +161,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion.Serialization
                     yaml = yaml.Replace("${{" + item + " }}", "${{ env." + item + " }}");
                     yaml = yaml.Replace("${{ " + item + "}}", "${{ env." + item + " }}");
                     yaml = yaml.Replace("env.parameters.", "env.");
+                    yaml = yaml.Replace("${{ env.rev:r }}", "${GITHUB_RUN_NUMBER}"); //Replace the unique version number in Azure DevOps with a unique system variable in GitHub Actions
                 }
             }
 

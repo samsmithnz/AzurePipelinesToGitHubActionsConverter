@@ -972,5 +972,90 @@ jobs:
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
         }
 
+        [TestMethod]
+        public void PipelineWithWorkspaceAndTemplateStepTest()
+        {
+            //Arrange
+            Conversion conversion = new Conversion();
+            //Source is: https://raw.githubusercontent.com/microsoft/azure-pipelines-yaml/master/templates/xamarin.ios.yml
+            string yaml = @"
+name: $(Version).$(rev:r)
+
+variables:
+- group: Common Netlify
+
+trigger:
+  branches:
+    include:
+    - dev
+    - feature/*
+    - hotfix/*
+  paths:
+    include:
+    - 'Netlify/*'
+    exclude:
+    - 'pipelines/*'
+    - 'scripts/*'
+    - '.editorconfig'
+    - '.gitignore'
+    - 'README.md'
+
+stages:
+# Build Pipeline
+- stage: Build
+  jobs:
+  - job: HostedVs2017
+    displayName: Hosted VS2017
+    pool:
+      name: Hosted VS2017
+      demands: npm
+    workspace:
+      clean: all
+    
+    steps:
+    - template: templates/npm-build-steps.yaml
+      parameters:
+        extensionName: $(ExtensionName)
+";
+
+            //Act
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(yaml);
+
+            //Assert
+            string expected = @"
+#There is no conversion path for templates, currently there is no support to call other actions/yaml files from a GitHub Action
+name: ${{ env.Version }}.${GITHUB_RUN_NUMBER}
+on:
+  push:
+    branches:
+    - dev
+    - feature/*
+    - hotfix/*
+    paths:
+    - Netlify/*
+    paths-ignore:
+    - pipelines/*
+    - scripts/*
+    - .editorconfig
+    - .gitignore
+    - README.md
+env:
+  group: Common Netlify
+jobs:
+  Build_Stage_HostedVs2017:
+    name: Hosted VS2017
+    runs-on: Hosted VS2017
+    steps:
+    - uses: actions/checkout@v2
+    - #: There is no conversion path for templates, currently there is no support to call other actions/yaml files from a GitHub Action
+      run: |
+        #templates/npm-build-steps.yaml
+        extensionName: ${{ env.ExtensionName }}
+";
+
+            expected = UtilityTests.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+        }
+
     }
 }

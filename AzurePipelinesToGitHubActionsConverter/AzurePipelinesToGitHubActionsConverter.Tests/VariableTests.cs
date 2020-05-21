@@ -149,7 +149,8 @@ variables:
             string expected = @"
 env:
   myVariable: myValue
-  myVariable2: myValue2";
+  myVariable2: myValue2
+  group: myVariablegroup";
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
         }
@@ -228,7 +229,8 @@ on:
     - v1.*
 env:
   myVariable: myValue
-  myVariable2: myValue2";
+  myVariable2: myValue2
+  group: myVariablegroup";
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
         } 
