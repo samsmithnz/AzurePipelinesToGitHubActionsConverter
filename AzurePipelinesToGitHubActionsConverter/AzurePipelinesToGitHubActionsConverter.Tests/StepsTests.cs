@@ -751,6 +751,32 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
         }
 
         [TestMethod]
+        public void PublishTestResultsStepTest()
+        {
+            //Arrange
+            Conversion conversion = new Conversion();
+            string yaml = @"
+- task: PublishTestResults@2
+  inputs:
+    testRunner: VSTest
+    testResultsFiles: '**/*.trx'
+    failTaskOnFailedTests: true
+        ";
+
+            //Act
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineTaskToGitHubActionTask(yaml);
+
+            //Assert
+            string expected = @"
+- #: 'PublishTestResults@2 is a Azure DevOps specific task. There is no equivalent in GitHub Actions until there is a testing summary tab. See: https://github.community/t/publishing-test-results/16215'
+  run: echo ""This task equivalent does not yet exist in GitHub Actions""
+";
+
+            expected = UtilityTests.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+        }
+
+        [TestMethod]
         public void TimeoutAndContinueOnErrorStepTest()
         {
             //Arrange

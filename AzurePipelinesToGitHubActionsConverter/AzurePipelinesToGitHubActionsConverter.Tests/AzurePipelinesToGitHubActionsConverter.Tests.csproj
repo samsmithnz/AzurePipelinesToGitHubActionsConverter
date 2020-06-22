@@ -126,7 +126,7 @@
     <None Update="yamlFiles\powershell-functionapp-to-windows-on-azure.yml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="filesNotCurrentlyWorking\python-django.yml">
+    <None Update="yamlFiles\python-django.yml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="yamlFiles\python-functionapp-to-linux-on-azure.yml">
