@@ -25,9 +25,12 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.AzurePipelines
     //pr: pr
     //stages: [ stage | templateReference ]
 
-    public class AzurePipelinesRoot<T, T2>
+    public class AzurePipelinesRoot<TTriggers, TVariables>
     {
         public string name { get; set; }
+
+        public List<Parameter> parameters { get; set; }
+
         public string container { get; set; }
         public Resources resources { get; set; }
 
@@ -35,7 +38,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.AzurePipelines
         //To solve this, we added a generic to try to convert to a string[], and failing that, try to convert with Trigger
         //All outputs will return the complex version
         //https://docs.microsoft.com/en-us/azure/devops/pipelines/yaml-schema?view=azure-devops&tabs=schema#triggers
-        public T trigger { get; set; }
+        public TTriggers trigger { get; set; }
         //public string[] trigger { get; set; }         
         //public Trigger trigger { get; set; }
 
@@ -45,14 +48,13 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.AzurePipelines
         public Strategy strategy { get; set; }
 
         //Variables is similar to triggers, this can be a simple list, or a more complex variable object
-        public T2 variables { get; set; }
+        public TVariables variables { get; set; }
         //public Dictionary<string, string> variables { get; set; }
 
         public Stage[] stages { get; set; }
         public Job[] jobs { get; set; }
         public Step[] steps { get; set; }
         //TODO: Add code for services
-        public Dictionary<string, string> services { get; set; }
-        public Dictionary<string, string> parameters { get; set; }
+        public Dictionary<string, string> services { get; set; }        
     }
 }

@@ -10,7 +10,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.AzurePipelines
     //- group: myvariablegroup
     //# a reference to a variable template
     //- template: myvariabletemplate.yml
-    public class Variables
+    public class Variable
     {
         public string name { get; set; }
         public string value { get; set; }

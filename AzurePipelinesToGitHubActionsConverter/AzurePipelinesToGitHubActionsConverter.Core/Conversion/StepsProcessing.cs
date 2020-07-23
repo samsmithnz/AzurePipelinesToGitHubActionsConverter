@@ -1,5 +1,6 @@
 ﻿using AzurePipelinesToGitHubActionsConverter.Core.AzurePipelines;
 using AzurePipelinesToGitHubActionsConverter.Core.Conversion.Serialization;
+using AzurePipelinesToGitHubActionsConverter.Core.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -197,11 +198,11 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                         }
                     }
                 }
-                if (string.IsNullOrEmpty(step.continueOnError) == false)
+                if (step.continueOnError)
                 {
                     gitHubStep.continue_on_error = step.continueOnError;
                 }
-                if (string.IsNullOrEmpty(step.timeoutInMinutes) == false)
+                if (step.timeoutInMinutes != 0)
                 {
                     gitHubStep.timeout_minutes = step.timeoutInMinutes;
                 }
@@ -1312,7 +1313,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
             return gitHubStep;
         }
 
-                private GitHubActions.Step CreatePublishTestResultsStep(AzurePipelines.Step step)
+        private GitHubActions.Step CreatePublishTestResultsStep(AzurePipelines.Step step)
         {
             //coming from:
             //# Publish Test Results
@@ -1596,7 +1597,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
             string stepParameters = "";
             if (step.parameters != null)
             {
-                foreach (KeyValuePair<string, string> item in step.parameters)
+                foreach (var item in step.parameters)
                 {
                     stepParameters += item.Key + ": " + item.Value + Environment.NewLine;
                 }

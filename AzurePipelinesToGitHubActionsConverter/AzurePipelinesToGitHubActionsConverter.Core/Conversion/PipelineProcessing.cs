@@ -18,7 +18,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
         /// <param name="simpleTrigger">When the YAML has a simple trigger, (String[]). Can be null</param>
         /// <param name="complexTrigger">When the YAML has a complex trigger. Can be null</param>
         /// <returns>GitHub Actions object</returns>
-        public GitHubActionsRoot ProcessPipeline(AzurePipelinesRoot<T, T2> azurePipeline, string[] simpleTrigger, AzurePipelines.Trigger complexTrigger, Dictionary<string, string> simpleVariables, AzurePipelines.Variables[] complexVariables)
+        public GitHubActionsRoot ProcessPipeline(AzurePipelinesRoot<T, T2> azurePipeline, string[] simpleTrigger, AzurePipelines.Trigger complexTrigger, Dictionary<string, string> simpleVariables, AzurePipelines.Variable[] complexVariables)
         {
             VariableList = new List<string>();
             GitHubActionsRoot gitHubActions = new GitHubActionsRoot();
@@ -105,11 +105,11 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                         }
                         if (azurePipeline.resources.pipelines[0].trigger != null)
                         {
-                            if (azurePipeline.resources.pipelines[0].trigger.autoCancel != null)
+                            if (azurePipeline.resources.pipelines[0].trigger.autoCancel)
                             {
                                 Console.WriteLine("autoCancel: " + azurePipeline.resources.pipelines[0].trigger.autoCancel);
                             }
-                            if (azurePipeline.resources.pipelines[0].trigger.batch != null)
+                            if (azurePipeline.resources.pipelines[0].trigger.batch)
                             {
                                 Console.WriteLine("batch: " + azurePipeline.resources.pipelines[0].trigger.batch);
                             }
@@ -245,7 +245,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
             else if (azurePipeline.parameters != null)
             {
                 //For now, convert the parameters to variables
-                gitHubActions.env = ProcessSimpleVariables(azurePipeline.parameters);
+                gitHubActions.env = ProcessSimpleVariables(azurePipeline.parameters.ToDictionary(k => k.name, v => v.@default));
             }
 
             return gitHubActions;
@@ -544,7 +544,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
         }
 
         //process all (complex) variables
-        private Dictionary<string, string> ProcessComplexVariables(AzurePipelines.Variables[] variables)
+        private Dictionary<string, string> ProcessComplexVariables(AzurePipelines.Variable[] variables)
         {
             Dictionary<string, string> processedVariables = new Dictionary<string, string>();
             if (variables != null)
@@ -643,7 +643,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                     newJob.job_message += Environment.NewLine;
                 }
             }
-            if (string.IsNullOrEmpty(job.continueOnError) == false)
+            if (job.continueOnError)
             {
                 newJob.continue_on_error = job.continueOnError;
             }

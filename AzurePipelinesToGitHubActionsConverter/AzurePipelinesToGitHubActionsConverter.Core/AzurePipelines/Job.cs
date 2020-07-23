@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Text;
 
 namespace AzurePipelinesToGitHubActionsConverter.Core.AzurePipelines
@@ -29,10 +30,14 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.AzurePipelines
         public string deployment { get; set; }
         public string environment { get; set; }
         public string displayName { get; set; }
-        public string dependsOn { get; set; }
+        public string[] dependsOn { get; set; }
+        [DefaultValue("succeeded()")]
         public string condition { get; set; } //https://docs.microsoft.com/en-us/azure/devops/pipelines/process/conditions?tabs=yaml&view=azure-devops
-        public string continueOnError { get; set; }
-        public string timeoutInMinutes { get; set; }
+        public bool continueOnError { get; set; }
+        [DefaultValue(0)]
+        public int timeoutInMinutes { get; set; } = 0;
+        [DefaultValue(1)]
+        public int cancelTimeoutInMinutes { get; set; } = 1;
         public Strategy strategy { get; set; }
         public Pool pool { get; set; }
         public Dictionary<string, string> variables { get; set; }
@@ -40,8 +45,8 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.AzurePipelines
         //TODO: Add code for services
         public Dictionary<string, string> services { get; set; }
         public string template { get; set; }
-        public Dictionary<string, string> parameters { get; set; }
+        public List<Parameter> parameters { get; set; }
         public Workspace workspace { get; set; }
-  
+
     }
 }

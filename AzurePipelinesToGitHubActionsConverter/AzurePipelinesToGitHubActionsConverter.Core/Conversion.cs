@@ -1,5 +1,6 @@
 ﻿using AzurePipelinesToGitHubActionsConverter.Core.AzurePipelines;
 using AzurePipelinesToGitHubActionsConverter.Core.Conversion.Serialization;
+using AzurePipelinesToGitHubActionsConverter.Core.Extensions;
 using AzurePipelinesToGitHubActionsConverter.Core.GitHubActions;
 using System;
 using System.Collections.Generic;
@@ -27,9 +28,9 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
             //Triggers and variables are hard, as there are two data types for each that can exist, so we need to go with the most common type and handle the less common type with exceptions. 
             //There are 4 combinations here, simple/simple, simple/complex, complex/simple, and complex/complex
             AzurePipelinesRoot<string[], Dictionary<string, string>> azurePipelineWithSimpleTriggerAndSimpleVariables = null;
-            AzurePipelinesRoot<string[], AzurePipelines.Variables[]> azurePipelineWithSimpleTriggerAndComplexVariables = null;
+            AzurePipelinesRoot<string[], AzurePipelines.Variable[]> azurePipelineWithSimpleTriggerAndComplexVariables = null;
             AzurePipelinesRoot<AzurePipelines.Trigger, Dictionary<string, string>> azurePipelineWithComplexTriggerAndSimpleVariables = null;
-            AzurePipelinesRoot<AzurePipelines.Trigger, AzurePipelines.Variables[]> azurePipelineWithComplexTriggerAndComplexVariables = null;
+            AzurePipelinesRoot<AzurePipelines.Trigger, AzurePipelines.Variable[]> azurePipelineWithComplexTriggerAndComplexVariables = null;
             try
             {
                 azurePipelineWithSimpleTriggerAndSimpleVariables = AzurePipelinesSerialization<string[], Dictionary<string, string>>.DeserializeSimpleTriggerAndSimpleVariables(input);
@@ -44,11 +45,11 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                 {
                     try
                     {
-                        azurePipelineWithSimpleTriggerAndComplexVariables = AzurePipelinesSerialization<string[], AzurePipelines.Variables[]>.DeserializeSimpleTriggerAndComplexVariables(input);
+                        azurePipelineWithSimpleTriggerAndComplexVariables = AzurePipelinesSerialization<string[], AzurePipelines.Variable[]>.DeserializeSimpleTriggerAndComplexVariables(input);
                     }
                     catch
                     {
-                        azurePipelineWithComplexTriggerAndComplexVariables = AzurePipelinesSerialization<AzurePipelines.Trigger, AzurePipelines.Variables[]>.DeserializeComplexTriggerAndComplexVariables(input);
+                        azurePipelineWithComplexTriggerAndComplexVariables = AzurePipelinesSerialization<AzurePipelines.Trigger, AzurePipelines.Variable[]>.DeserializeComplexTriggerAndComplexVariables(input);
                     }
                 }
             }
@@ -66,7 +67,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
             }
             else if (azurePipelineWithSimpleTriggerAndComplexVariables != null)
             {
-                PipelineProcessing<string[], AzurePipelines.Variables[]> processing = new PipelineProcessing<string[], AzurePipelines.Variables[]>();
+                PipelineProcessing<string[], AzurePipelines.Variable[]> processing = new PipelineProcessing<string[], AzurePipelines.Variable[]>();
                 gitHubActions = processing.ProcessPipeline(azurePipelineWithSimpleTriggerAndComplexVariables, azurePipelineWithSimpleTriggerAndComplexVariables.trigger, null, null, azurePipelineWithSimpleTriggerAndComplexVariables.variables);
                 if (processing.MatrixVariableName != null)
                 {
@@ -86,7 +87,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
             }
             else if (azurePipelineWithComplexTriggerAndComplexVariables != null)
             {
-                PipelineProcessing<AzurePipelines.Trigger, AzurePipelines.Variables[]> processing = new PipelineProcessing<AzurePipelines.Trigger, AzurePipelines.Variables[]>();
+                PipelineProcessing<AzurePipelines.Trigger, AzurePipelines.Variable[]> processing = new PipelineProcessing<AzurePipelines.Trigger, AzurePipelines.Variable[]>();
                 gitHubActions = processing.ProcessPipeline(azurePipelineWithComplexTriggerAndComplexVariables, null, azurePipelineWithComplexTriggerAndComplexVariables.trigger, null, azurePipelineWithComplexTriggerAndComplexVariables.variables);
                 if (processing.MatrixVariableName != null)
                 {
