@@ -19,7 +19,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
         {
             //Arrange
             //Files downloaded from repo at: https://github.com/microsoft/azure-pipelines-yaml
-            string sourceFolder = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location) + "/yamlFiles";
+            var sourceFolder = Path.Combine(Directory.GetCurrentDirectory(), "yamlFiles");
             string[] files = Directory.GetFiles(sourceFolder);
             Conversion conversion = new Conversion();
             List<string> comments = new List<string>();
