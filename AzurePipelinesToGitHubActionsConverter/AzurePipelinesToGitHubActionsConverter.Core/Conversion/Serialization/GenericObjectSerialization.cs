@@ -1,4 +1,6 @@
-﻿using YamlDotNet.Serialization;
+﻿using System;
+using System.Diagnostics;
+using YamlDotNet.Serialization;
 
 namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion.Serialization
 {
@@ -7,9 +9,17 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion.Serialization
         //Read in a YAML file and convert it to a T object
         public static T DeserializeYaml<T>(string yaml)
         {
+            T yamlObject = default;
             IDeserializer deserializer = new DeserializerBuilder().Build();
-            T yamlObject = deserializer.Deserialize<T>(yaml);
-
+            try
+            {
+                yamlObject = deserializer.Deserialize<T>(yaml);
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex);
+                //hide any exception for the moment
+            }
             return yamlObject;
         }
 

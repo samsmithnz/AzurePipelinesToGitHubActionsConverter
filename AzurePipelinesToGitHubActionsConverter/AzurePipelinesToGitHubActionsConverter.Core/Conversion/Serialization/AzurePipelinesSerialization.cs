@@ -8,7 +8,7 @@ using System.Text;
 
 namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion.Serialization
 {
-    public class AzurePipelinesSerialization<T, T2>
+    public class AzurePipelinesSerialization<TTriggers, TVariables>
     {
         /// <summary>
         /// Deserialize an Azure DevOps Pipeline with a simple trigger/ string[] and simple variable list/ Dictionary<string, string>
