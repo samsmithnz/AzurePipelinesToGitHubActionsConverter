@@ -21,6 +21,5 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.AzurePipelines
         //Variables is similar to triggers, this can be a simple list, or a more complex variable object
         public List<Variable> variables { get; set; }
         public Job[] jobs { get; set; }
-        public Pool pool { get; set; }
     }
 }

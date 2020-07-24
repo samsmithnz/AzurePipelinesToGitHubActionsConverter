@@ -1597,7 +1597,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
             string stepParameters = "";
             if (step.parameters != null)
             {
-                foreach (var item in step.parameters)
+                foreach (KeyValuePair<string, string> item in step.parameters)
                 {
                     stepParameters += item.Key + ": " + item.Value + Environment.NewLine;
                 }
