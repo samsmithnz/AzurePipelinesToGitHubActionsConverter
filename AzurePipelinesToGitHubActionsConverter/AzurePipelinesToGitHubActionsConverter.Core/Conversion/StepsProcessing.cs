@@ -198,10 +198,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                         }
                     }
                 }
-                if (step.continueOnError)
-                {
-                    gitHubStep.continue_on_error = step.continueOnError;
-                }
+                gitHubStep.continue_on_error = step.continueOnError;
                 if (step.timeoutInMinutes != 0)
                 {
                     gitHubStep.timeout_minutes = step.timeoutInMinutes;
