@@ -30,7 +30,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.AzurePipelines
         public string deployment { get; set; }
         public string environment { get; set; }
         public string displayName { get; set; }
-        public string[] dependsOn { get; set; }
+        public string dependsOn { get; set; }
         [DefaultValue("succeeded()")]
         public string condition { get; set; } //https://docs.microsoft.com/en-us/azure/devops/pipelines/process/conditions?tabs=yaml&view=azure-devops
         public bool continueOnError { get; set; }
