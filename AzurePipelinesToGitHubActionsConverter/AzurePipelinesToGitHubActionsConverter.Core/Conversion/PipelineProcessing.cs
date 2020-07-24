@@ -245,7 +245,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
             else if (azurePipeline.parameters != null)
             {
                 //For now, convert the parameters to variables
-                gitHubActions.env = ProcessSimpleVariables(azurePipeline.parameters.ToDictionary(k => k.name, v => v.@default));
+                gitHubActions.env = ProcessSimpleVariables(azurePipeline.parameters);
             }
 
             return gitHubActions;

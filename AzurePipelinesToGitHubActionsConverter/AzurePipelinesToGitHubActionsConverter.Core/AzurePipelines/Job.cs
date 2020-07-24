@@ -45,7 +45,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.AzurePipelines
         //TODO: Add code for services
         public Dictionary<string, string> services { get; set; }
         public string template { get; set; }
-        public List<Parameter> parameters { get; set; }
+        public Dictionary<string, string> parameters { get; set; }
         public Workspace workspace { get; set; }
 
     }

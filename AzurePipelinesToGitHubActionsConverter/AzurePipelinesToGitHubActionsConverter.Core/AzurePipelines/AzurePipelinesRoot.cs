@@ -29,7 +29,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.AzurePipelines
     {
         public string name { get; set; }
 
-        public List<Parameter> parameters { get; set; }
+        public Dictionary<string, string> parameters { get; set; }
 
         public string container { get; set; }
         public Resources resources { get; set; }
