@@ -32,8 +32,8 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.GitHubActions
         public Dictionary<string, string> env { get; set; } //Similar to the job env: https://help.github.com/en/articles/workflow-syntax-for-github-actions#jobsjob_idenv
         //as "if" is a reserved word in C#, added an "_", and remove this "_" when serializing
         public string _if { get; set; } //https://help.github.com/en/articles/workflow-syntax-for-github-actions#jobsjob_idif
-        public string continue_on_error { get; set; }
-        public string timeout_minutes { get; set; }
+        public bool continue_on_error { get; set; }
+        public int timeout_minutes { get; set; }
 
 
         //This is used for tracking errors, so we don't want it to convert to YAML

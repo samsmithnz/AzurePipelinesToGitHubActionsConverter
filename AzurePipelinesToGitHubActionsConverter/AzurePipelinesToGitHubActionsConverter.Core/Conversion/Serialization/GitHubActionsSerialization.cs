@@ -1,4 +1,5 @@
-﻿using AzurePipelinesToGitHubActionsConverter.Core.GitHubActions;
+﻿using AzurePipelinesToGitHubActionsConverter.Core.Extensions;
+using AzurePipelinesToGitHubActionsConverter.Core.GitHubActions;
 using System;
 using System.Collections.Generic;
 using System.IO;

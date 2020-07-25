@@ -1,4 +1,6 @@
-﻿namespace AzurePipelinesToGitHubActionsConverter.Core.AzurePipelines
+﻿using System.ComponentModel;
+
+namespace AzurePipelinesToGitHubActionsConverter.Core.AzurePipelines
 {
     //trigger:
     //  batch: boolean # batch changes if true (the default); start a new build for every push if false
@@ -14,9 +16,11 @@
     public class Trigger
     {
         //Note: There is no batch property in actions
-        public string batch { get; set; }
+        [DefaultValue(false)]
+        public bool batch { get; set; } = false;
         //Note: There is no autoCancel property in actions
-        public string autoCancel { get; set; }
+        [DefaultValue(true)]
+        public bool autoCancel { get; set; } = true;
         public IncludeExclude branches { get; set; }
         public IncludeExclude tags { get; set; }
         public IncludeExclude paths { get; set; }

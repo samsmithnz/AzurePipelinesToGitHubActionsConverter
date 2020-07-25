@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.ComponentModel;
 
 namespace AzurePipelinesToGitHubActionsConverter.Core.AzurePipelines
 {
@@ -86,9 +87,11 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.AzurePipelines
         public string displayName { get; set; }
         public string name { get; set; }
         public string condition { get; set; }
-        public string continueOnError { get; set; }
-        public string enabled { get; set; }
-        public string timeoutInMinutes { get; set; }
+        [DefaultValue(false)]
+        public bool continueOnError { get; set; } = false;
+        [DefaultValue(true)]
+        public bool enabled { get; set; } = true;
+        public int timeoutInMinutes { get; set; }
         public string workingDirectory { get; set; }
         public string failOnStderr { get; set; }
         public Target target { get; set; }

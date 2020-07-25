@@ -10,12 +10,12 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.GitHubActions
         //public T container { get; set; }
         public Container container { get; set; } //https://docs.microsoft.com/en-us/azure/devops/pipelines/yaml-schema?view=azure-devops&tabs=schema#job
         //public string container { get; set; } //https://docs.microsoft.com/en-us/azure/devops/pipelines/yaml-schema?view=azure-devops&tabs=schema#job
-        public string timeout_minutes { get; set; } //https://help.github.com/en/articles/workflow-syntax-for-github-actions#jobsjob_idtimeout-minutes
+        public int timeout_minutes { get; set; } //https://help.github.com/en/articles/workflow-syntax-for-github-actions#jobsjob_idtimeout-minutes
         public string needs { get; set; } //https://help.github.com/en/articles/workflow-syntax-for-github-actions#jobsjob_idneeds
         public Dictionary<string, string> env { get; set; } //https://help.github.com/en/articles/workflow-syntax-for-github-actions#jobsjob_idenv
         //as "if" is a reserved word in C#, added an "_", and remove this "_" when serializing
         public string _if { get; set; } //https://help.github.com/en/articles/workflow-syntax-for-github-actions#jobsjob_idif
-        public string continue_on_error { get; set; }
+        public bool continue_on_error { get; set; }
         public Step[] steps { get; set; } //https://help.github.com/en/articles/workflow-syntax-for-github-actions#jobsjob_idsteps
         //This is used for tracking errors, so we don't want it to convert to YAML
         //[YamlIgnore]

@@ -1,11 +1,9 @@
-using AzurePipelinesToGitHubActionsConverter.Core;
 using AzurePipelinesToGitHubActionsConverter.Core.Conversion;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace AzurePipelinesToGitHubActionsConverter.Tests
 {
@@ -15,33 +13,30 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
     {
 
         [TestMethod]
-        public async Task ProcessFolderOfYAMLTest()
+        public void ProcessFolderOfYAMLTest()
         {
             //Arrange
             //Files downloaded from repo at: https://github.com/microsoft/azure-pipelines-yaml
-            string sourceFolder = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location) + "/yamlFiles";
+            var sourceFolder = Path.Combine(Directory.GetCurrentDirectory(), "yamlFiles");
             string[] files = Directory.GetFiles(sourceFolder);
             Conversion conversion = new Conversion();
             List<string> comments = new List<string>();
 
             //Act            
-            foreach (string file in files) //convert every YML file in the folder
-            { 
+            foreach (string path in files) //convert every YML file in the folder
+            {
                 try
                 {
                     //Open the file
-                    using (StreamReader sr = new StreamReader(file))
-                    {
-                        string yaml = await sr.ReadToEndAsync();
-                        //Process the yaml string
-                        ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(yaml);
-                        //Add any comments to a string list list 
-                        comments.AddRange(gitHubOutput.comments);
-                    }
+                    string yaml = File.ReadAllText(path);
+                    //Process the yaml string
+                    ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(yaml);
+                    //Add any comments to a string list list 
+                    comments.AddRange(gitHubOutput.comments);
                 }
                 catch (Exception ex)
                 {
-                    Assert.AreEqual("", "File: " + file + ", Exception: " + ex.ToString());
+                    Assert.AreEqual("", "File: " + Path.GetFileName(path) + ", Exception: " + ex.ToString());
                 }
             }
 
