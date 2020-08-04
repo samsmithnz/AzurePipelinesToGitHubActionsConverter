@@ -1,5 +1,5 @@
 using AnimalSerialization.Tests.Conversion;
-using AnimalsSerialization.Tests;
+using AnimalsSerialization.Tests.SampleDocs;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace AnimalSerialization.Tests
@@ -13,11 +13,10 @@ namespace AnimalSerialization.Tests
         {
             //Arrange
             FarmConversionAlex conversion = new FarmConversionAlex();
-            JSONDocs docs = new JSONDocs();
-            string json = docs.AnimalGenericJson;
+            string yaml = YAMLDocs.AnimalGenericYaml;
 
             //Act
-            FarmResponse response = conversion.ConvertFarm(json);
+            FarmResponse response = conversion.ConvertFarm(yaml);
 
             //Assert
             Assert.IsNotNull(response);
@@ -33,11 +32,10 @@ namespace AnimalSerialization.Tests
         {
             //Arrange
             FarmConversionAlex conversion = new FarmConversionAlex();
-            JSONDocs docs = new JSONDocs();
-            string json = docs.AnimalDogJson;
+            string yaml = YAMLDocs.AnimalDogYaml;
 
             //Act
-            FarmResponse response = conversion.ConvertFarm(json);
+            FarmResponse response = conversion.ConvertFarm(yaml);
 
             //Assert
             Assert.IsNotNull(response);
@@ -53,11 +51,10 @@ namespace AnimalSerialization.Tests
         {
             //Arrange
             FarmConversionAlex conversion = new FarmConversionAlex();
-            JSONDocs docs = new JSONDocs();
-            string json = docs.AnimalBarnJson;
+            string yaml = YAMLDocs.AnimalBarnYaml;
 
             //Act
-            FarmResponse response = conversion.ConvertFarm(json);
+            FarmResponse response = conversion.ConvertFarm(yaml);
 
             //Assert
             Assert.IsNotNull(response);
@@ -73,11 +70,10 @@ namespace AnimalSerialization.Tests
         {
             //Arrange
             FarmConversionAlex conversion = new FarmConversionAlex();
-            JSONDocs docs = new JSONDocs();
-            string json = docs.AnimalDogBarnJson;
+            string yaml = YAMLDocs.AnimalDogBarnYaml;
 
             //Act
-            FarmResponse response = conversion.ConvertFarm(json);
+            FarmResponse response = conversion.ConvertFarm(yaml);
 
             //Assert
             Assert.IsNotNull(response);
@@ -89,24 +85,19 @@ namespace AnimalSerialization.Tests
         }
 
         //This test is meant to fail, the code is not expecting the Barn/dog combination
+        //Note that this solution does not currently return feedback to indiciate failure
         [TestMethod]
         public void AlexInvalidAnimalDogTractorTest()
         {
             //Arrange
             FarmConversionAlex conversion = new FarmConversionAlex();
-            JSONDocs docs = new JSONDocs();
-            string json = docs.AnimalDogTractorJson;
+            string yaml = YAMLDocs.AnimalDogTractorYaml;
 
             //Act
-            FarmResponse response = conversion.ConvertFarm(json);
+            FarmResponse response = conversion.ConvertFarm(yaml);
 
             //Assert
-            Assert.IsNotNull(response);
-            Assert.AreEqual(2, response.Items.Count);
-            Assert.AreEqual("Rover", response.Items[0]);
-            Assert.AreEqual(null, response.Items[1]);
-            Assert.AreEqual(4, response.AnimalLegCount);
-            Assert.AreEqual(1, response.BuildingCount);
+            Assert.IsNull(response);
         }
 
     }

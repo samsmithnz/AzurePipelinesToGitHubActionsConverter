@@ -6,14 +6,14 @@ namespace AnimalSerialization.Tests.Conversion
     public class FarmConversionAlex
     {
 
-        public FarmResponse ConvertFarm(string json)
+        public FarmResponse ConvertFarm(string yaml)
         {
             FarmResponse response = new FarmResponse();
 
             bool success = false;
             if (!success)
             {
-                var animalStringString = DeserializeStringString(json); 
+                var animalStringString = DeserializeStringString(yaml); 
                 if (animalStringString != null)
                 {
                     success = true;
@@ -26,7 +26,7 @@ namespace AnimalSerialization.Tests.Conversion
 
             if (!success)
             {
-                var animalDogString = DeserializeDogString(json); 
+                var animalDogString = DeserializeDogString(yaml); 
                 if (animalDogString != null)
                 {
                     success = true;
@@ -40,7 +40,7 @@ namespace AnimalSerialization.Tests.Conversion
 
             if (!success)
             {
-                var animalStringBarn = DeserializeStringBarn(json); 
+                var animalStringBarn = DeserializeStringBarn(yaml); 
                 if (animalStringBarn != null)
                 {
                     success = true;
@@ -54,16 +54,21 @@ namespace AnimalSerialization.Tests.Conversion
 
             if (!success)
             {
-                var animalDogBarn = DeserializeDogBarn(json); 
+                var animalDogBarn = DeserializeDogBarn(yaml); 
                 if (animalDogBarn != null)
                 {
-                    //success = true;
+                    success = true;
                     response.Items.Add(animalDogBarn.FarmItem1.Name);
                     response.AnimalLegCount += 4;
 
                     response.Items.Add(animalDogBarn.FarmItem2.BarnType);
                     response.BuildingCount += 1;
                 }
+            }
+
+            if (!success)
+            {
+                response = null;
             }
 
             return response;

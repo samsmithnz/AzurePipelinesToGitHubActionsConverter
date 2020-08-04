@@ -1,17 +1,21 @@
-﻿using Newtonsoft.Json;
+﻿using YamlDotNet.Serialization;
 
 namespace AnimalSerialization.Tests.Conversion
 {
     public static class FarmSerialization
     {
-        public static T Deserialize<T>(string json)
+        public static T Deserialize<T>(string yaml)
         {
-            return JsonConvert.DeserializeObject<T>(json);
+            IDeserializer deserializer = new DeserializerBuilder().Build();
+            return deserializer.Deserialize<T>(yaml);
         }
 
-        public static string Serialize<T>(T item)
+        public static string Serialize<T>(T obj)
         {
-            return JsonConvert.SerializeObject(item);
+            ISerializer serializer = new SerializerBuilder()
+                .ConfigureDefaultValuesHandling(DefaultValuesHandling.OmitDefaults) //New as of YamlDotNet 8.0.0: https://github.com/aaubry/YamlDotNet/wiki/Serialization.Serializer#configuredefaultvalueshandlingdefaultvalueshandling. This will not show null properties, e.g. "app-name: " will not display when the value is null, as the value is nullable
+                .Build();
+            return serializer.Serialize(obj);
         }
     }
 }
