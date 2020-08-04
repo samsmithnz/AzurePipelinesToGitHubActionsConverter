@@ -8,10 +8,11 @@ namespace AnimalSerialization.Tests.Conversion
     {
         public FarmResponse()
         {
-            AnimalNames = new List<string>();
+            Items = new List<string>();
         }
 
-        public List<string> AnimalNames { get; set; }
+        public List<string> Items { get; set; }
+        public int BuildingCount { get; set; }
         public int AnimalLegCount { get; set; }
     }
 }

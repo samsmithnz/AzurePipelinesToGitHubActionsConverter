@@ -3,7 +3,7 @@ using System;
 
 namespace AnimalSerialization.Tests.Conversion
 {
-    public class FarmConversion
+    public class FarmConversionSam
     {
 
         public FarmResponse ConvertFarm(string json)
@@ -12,8 +12,8 @@ namespace AnimalSerialization.Tests.Conversion
 
             Farm<string, string> animalStringString = null;
             Farm<Dog, string> animalDogString = null;
-            Farm<string, Cat> animalStringCat = null;
-            Farm<Dog, Cat> animalDogCat = null;
+            Farm<string, Barn> animalStringBarn = null;
+            Farm<Dog, Barn> animalDogBarn = null;
             try
             {
                 animalStringString = DeserializeStringString(json);
@@ -29,39 +29,45 @@ namespace AnimalSerialization.Tests.Conversion
                 {
                     try
                     {
-                        animalStringCat = DeserializeStringCat(json);
+                        animalStringBarn = DeserializeStringBarn(json);
                     }
                     catch
                     {
-                        animalDogCat = DeserializeDogCat(json);
+                        animalDogBarn = DeserializeDogBarn(json);
                     }
                     Console.WriteLine(ex.ToString());
                 }
             }
             if (animalStringString != null)
             {
-                response.AnimalNames.Add(animalStringString.Animal1);
-                response.AnimalNames.Add(animalStringString.Animal2);
-                response.AnimalLegCount = 0;
+                response.Items.Add(animalStringString.FarmItem1);
+                response.AnimalLegCount += 0;
+                response.Items.Add(animalStringString.FarmItem2);
+                response.BuildingCount += 0;
             }
             if (animalDogString != null)
             {
-                response.AnimalNames.Add(animalDogString.Animal1.Name);
+                response.Items.Add(animalDogString.FarmItem1.Name);
                 response.AnimalLegCount += 4;
-                response.AnimalNames.Add(animalDogString.Animal2);
+
+                response.Items.Add(animalDogString.FarmItem2);
+                response.BuildingCount += 0;
             }
-            if (animalStringCat != null)
+            if (animalStringBarn != null)
             {
-                response.AnimalNames.Add(animalStringCat.Animal1);
-                response.AnimalNames.Add(animalStringCat.Animal2.Name);
-                response.AnimalLegCount += 4;
+                response.Items.Add(animalStringBarn.FarmItem1);
+                response.AnimalLegCount += 0;
+
+                response.Items.Add(animalStringBarn.FarmItem2.BarnType);
+                response.BuildingCount += 1;
             }
-            if (animalDogCat != null)
+            if (animalDogBarn != null)
             {
-                response.AnimalNames.Add(animalDogCat.Animal1.Name);
+                response.Items.Add(animalDogBarn.FarmItem1.Name);
                 response.AnimalLegCount += 4;
-                response.AnimalNames.Add(animalDogCat.Animal2.Name);
-                response.AnimalLegCount += 4;
+
+                response.Items.Add(animalDogBarn.FarmItem2.BarnType);
+                response.BuildingCount += 1;
             }
 
             return response;
@@ -77,14 +83,14 @@ namespace AnimalSerialization.Tests.Conversion
             return FarmSerialization.Deserialize<Farm<Dog, string>>(json);
         }
 
-        private Farm<string, Cat> DeserializeStringCat(string json)
+        private Farm<string, Barn> DeserializeStringBarn(string json)
         {
-            return FarmSerialization.Deserialize<Farm<string, Cat>>(json);
+            return FarmSerialization.Deserialize<Farm<string, Barn>>(json);
         }
 
-        private Farm<Dog, Cat> DeserializeDogCat(string json)
+        private Farm<Dog, Barn> DeserializeDogBarn(string json)
         {
-            return FarmSerialization.Deserialize<Farm<Dog, Cat>>(json);
+            return FarmSerialization.Deserialize<Farm<Dog, Barn>>(json);
         }
     }
 }
