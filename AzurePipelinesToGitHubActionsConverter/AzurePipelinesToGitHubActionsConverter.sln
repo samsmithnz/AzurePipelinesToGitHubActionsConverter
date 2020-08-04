@@ -13,6 +13,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		..\README.md = ..\README.md
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AnimalsSerialization.Tests", "AnimalsSerialization.Tests\AnimalsSerialization.Tests.csproj", "{D037B7D2-1B96-4172-8835-B26EF836F5CC}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,10 @@ Global
 		{102D54AE-A0FB-4CE8-972E-5B0A4CF61F7A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{102D54AE-A0FB-4CE8-972E-5B0A4CF61F7A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{102D54AE-A0FB-4CE8-972E-5B0A4CF61F7A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D037B7D2-1B96-4172-8835-B26EF836F5CC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D037B7D2-1B96-4172-8835-B26EF836F5CC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D037B7D2-1B96-4172-8835-B26EF836F5CC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D037B7D2-1B96-4172-8835-B26EF836F5CC}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
