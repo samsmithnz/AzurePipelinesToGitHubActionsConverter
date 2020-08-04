@@ -6,7 +6,7 @@ namespace AnimalSerialization.Tests.Conversion
     public class FarmConversionSam
     {
 
-        public FarmResponse ConvertFarm(string json)
+        public FarmResponse ConvertFarm(string yaml)
         {
             FarmResponse response = new FarmResponse();
 
@@ -16,24 +16,24 @@ namespace AnimalSerialization.Tests.Conversion
             Farm<Dog, Barn> animalDogBarn = null;
             try
             {
-                animalStringString = DeserializeStringString(json);
+                animalStringString = DeserializeStringString(yaml);
             }
             catch (Exception ex)
             {
                 Console.WriteLine(ex.ToString());
                 try
                 {
-                    animalDogString = DeserializeDogString(json);
+                    animalDogString = DeserializeDogString(yaml);
                 }
                 catch
                 {
                     try
                     {
-                        animalStringBarn = DeserializeStringBarn(json);
+                        animalStringBarn = DeserializeStringBarn(yaml);
                     }
                     catch
                     {
-                        animalDogBarn = DeserializeDogBarn(json);
+                        animalDogBarn = DeserializeDogBarn(yaml);
                     }
                     Console.WriteLine(ex.ToString());
                 }
@@ -73,24 +73,24 @@ namespace AnimalSerialization.Tests.Conversion
             return response;
         }
 
-        private Farm<string, string> DeserializeStringString(string json)
+        private Farm<string, string> DeserializeStringString(string yaml)
         {
-            return (Farm<string, string>)FarmSerialization.Deserialize<Farm<string, string>>(json);
+            return (Farm<string, string>)FarmSerialization.Deserialize<Farm<string, string>>(yaml);
         }
 
-        private Farm<Dog, string> DeserializeDogString(string json)
+        private Farm<Dog, string> DeserializeDogString(string yaml)
         {
-            return FarmSerialization.Deserialize<Farm<Dog, string>>(json);
+            return FarmSerialization.Deserialize<Farm<Dog, string>>(yaml);
         }
 
-        private Farm<string, Barn> DeserializeStringBarn(string json)
+        private Farm<string, Barn> DeserializeStringBarn(string yaml)
         {
-            return FarmSerialization.Deserialize<Farm<string, Barn>>(json);
+            return FarmSerialization.Deserialize<Farm<string, Barn>>(yaml);
         }
 
-        private Farm<Dog, Barn> DeserializeDogBarn(string json)
+        private Farm<Dog, Barn> DeserializeDogBarn(string yaml)
         {
-            return FarmSerialization.Deserialize<Farm<Dog, Barn>>(json);
+            return FarmSerialization.Deserialize<Farm<Dog, Barn>>(yaml);
         }
     }
 }

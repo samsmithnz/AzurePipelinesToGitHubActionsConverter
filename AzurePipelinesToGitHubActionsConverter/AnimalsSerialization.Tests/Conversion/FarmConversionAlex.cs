@@ -75,11 +75,11 @@ namespace AnimalSerialization.Tests.Conversion
         }
 
         //Note that the exception capture is here, so that the serialization class can be kept completely generic between the two approaches
-        private Farm<string, string> DeserializeStringString(string json)
+        private Farm<string, string> DeserializeStringString(string yaml)
         {
             try
             {
-                return (Farm<string, string>)FarmSerialization.Deserialize<Farm<string, string>>(json);
+                return (Farm<string, string>)FarmSerialization.Deserialize<Farm<string, string>>(yaml);
             }
             catch
             {
@@ -88,11 +88,11 @@ namespace AnimalSerialization.Tests.Conversion
             }
         }
 
-        private Farm<Dog, string> DeserializeDogString(string json)
+        private Farm<Dog, string> DeserializeDogString(string yaml)
         {
             try
             {
-                return FarmSerialization.Deserialize<Farm<Dog, string>>(json);
+                return FarmSerialization.Deserialize<Farm<Dog, string>>(yaml);
             }
             catch
             {
@@ -101,11 +101,11 @@ namespace AnimalSerialization.Tests.Conversion
             }
         }
 
-        private Farm<string, Barn> DeserializeStringBarn(string json)
+        private Farm<string, Barn> DeserializeStringBarn(string yaml)
         {
             try
             {
-                return FarmSerialization.Deserialize<Farm<string, Barn>>(json);
+                return FarmSerialization.Deserialize<Farm<string, Barn>>(yaml);
             }
             catch
             {
@@ -114,11 +114,11 @@ namespace AnimalSerialization.Tests.Conversion
             }
         }
 
-        private Farm<Dog, Barn> DeserializeDogBarn(string json)
+        private Farm<Dog, Barn> DeserializeDogBarn(string yaml)
         {
             try
             {
-                return FarmSerialization.Deserialize<Farm<Dog, Barn>>(json);
+                return FarmSerialization.Deserialize<Farm<Dog, Barn>>(yaml);
             }
             catch
             {
