@@ -23,17 +23,17 @@ namespace AnimalSerialization.Tests.Conversion
                 Console.WriteLine(ex.ToString());
                 try
                 {
-                    animalDogString = DeserializeDogString(yaml);
+                    animalDogString = DeserializeObjectString(yaml);
                 }
                 catch
                 {
                     try
                     {
-                        animalStringBarn = DeserializeStringBarn(yaml);
+                        animalStringBarn = DeserializeStringObject(yaml);
                     }
                     catch
                     {
-                        animalDogBarn = DeserializeDogBarn(yaml);
+                        animalDogBarn = DeserializeObjectObject(yaml);
                     }
                     Console.WriteLine(ex.ToString());
                 }
@@ -73,22 +73,23 @@ namespace AnimalSerialization.Tests.Conversion
             return response;
         }
 
+        //DANGER WILL ROBINSON, DANGER!!!
         private Farm<string, string> DeserializeStringString(string yaml)
         {
             return (Farm<string, string>)FarmSerialization.Deserialize<Farm<string, string>>(yaml);
         }
 
-        private Farm<Dog, string> DeserializeDogString(string yaml)
+        private Farm<Dog, string> DeserializeObjectString(string yaml)
         {
             return FarmSerialization.Deserialize<Farm<Dog, string>>(yaml);
         }
 
-        private Farm<string, Barn> DeserializeStringBarn(string yaml)
+        private Farm<string, Barn> DeserializeStringObject(string yaml)
         {
             return FarmSerialization.Deserialize<Farm<string, Barn>>(yaml);
         }
 
-        private Farm<Dog, Barn> DeserializeDogBarn(string yaml)
+        private Farm<Dog, Barn> DeserializeObjectObject(string yaml)
         {
             return FarmSerialization.Deserialize<Farm<Dog, Barn>>(yaml);
         }
