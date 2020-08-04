@@ -13,7 +13,7 @@ namespace AnimalSerialization.Tests
         {
             //Arrange
             FarmConversionAlex conversion = new FarmConversionAlex();
-            string yaml = YAMLDocs.AnimalGenericYaml;
+            string yaml = YAMLDocs.AnimalStringStringYaml;
 
             //Act
             FarmResponse response = conversion.ConvertFarm(yaml);
@@ -33,7 +33,7 @@ namespace AnimalSerialization.Tests
         {
             //Arrange
             FarmConversionAlex conversion = new FarmConversionAlex();
-            string yaml = YAMLDocs.AnimalDogYaml;
+            string yaml = YAMLDocs.AnimalObjectStringYaml;
 
             //Act
             FarmResponse response = conversion.ConvertFarm(yaml);
@@ -53,7 +53,7 @@ namespace AnimalSerialization.Tests
         {
             //Arrange
             FarmConversionAlex conversion = new FarmConversionAlex();
-            string yaml = YAMLDocs.AnimalBarnYaml;
+            string yaml = YAMLDocs.AnimalStringObjectYaml;
 
             //Act
             FarmResponse response = conversion.ConvertFarm(yaml);
@@ -73,7 +73,7 @@ namespace AnimalSerialization.Tests
         {
             //Arrange
             FarmConversionAlex conversion = new FarmConversionAlex();
-            string yaml = YAMLDocs.AnimalDogBarnYaml;
+            string yaml = YAMLDocs.AnimalObjectObjectYaml;
 
             //Act
             FarmResponse response = conversion.ConvertFarm(yaml);

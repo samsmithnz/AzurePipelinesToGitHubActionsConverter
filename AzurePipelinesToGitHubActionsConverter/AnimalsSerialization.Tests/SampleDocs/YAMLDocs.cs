@@ -4,17 +4,17 @@ namespace AnimalsSerialization.Tests.SampleDocs
 {
     public static class YAMLDocs
     {
-        public static string AnimalGenericYaml = @"
+        public static string AnimalStringStringYaml = @"
 FarmItem1: dogstring
 FarmItem2: barnstring
 ";
-        public static string AnimalDogYaml = @"
+        public static string AnimalObjectStringYaml = @"
 FarmItem1: 
   Name: Rover
   NumberOfLegs: 4
 FarmItem2: barnstring
 ";
-        public static string AnimalBarnYaml = @"
+        public static string AnimalStringObjectYaml = @"
 FarmItem1: dogstring
 FarmItem2: 
   BarnType: New England barn
@@ -24,7 +24,7 @@ FarmItem2:
   - Wrench
   - Shovel
 ";
-        public static string AnimalDogBarnYaml = @"
+        public static string AnimalObjectObjectYaml = @"
 FarmItem1: 
   Name: Rover
   NumberOfLegs: 0
