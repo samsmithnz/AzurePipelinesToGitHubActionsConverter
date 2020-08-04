@@ -60,6 +60,7 @@ namespace AnimalSerialization.Tests.Conversion
 
                 response.Items.Add(animalStringBarn.FarmItem2.BarnType);
                 response.BuildingCount += 1;
+                response.BarnTools.AddRange(animalStringBarn.FarmItem2.Tools);
             }
             if (animalDogBarn != null)
             {
@@ -68,6 +69,7 @@ namespace AnimalSerialization.Tests.Conversion
 
                 response.Items.Add(animalDogBarn.FarmItem2.BarnType);
                 response.BuildingCount += 1;
+                response.BarnTools.AddRange(animalDogBarn.FarmItem2.Tools);
             }
 
             return response;

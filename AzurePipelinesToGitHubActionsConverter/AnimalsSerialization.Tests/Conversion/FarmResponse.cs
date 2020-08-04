@@ -9,10 +9,12 @@ namespace AnimalSerialization.Tests.Conversion
         public FarmResponse()
         {
             Items = new List<string>();
+            BarnTools = new List<string>();
         }
 
         public List<string> Items { get; set; }
         public int BuildingCount { get; set; }
         public int AnimalLegCount { get; set; }
+        public List<string> BarnTools { get; set; }
     }
 }

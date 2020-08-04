@@ -49,6 +49,7 @@ namespace AnimalSerialization.Tests.Conversion
 
                     response.Items.Add(animalStringBarn.FarmItem2.BarnType);
                     response.BuildingCount += 1;
+                    response.BarnTools.AddRange(animalStringBarn.FarmItem2.Tools);
                 }
             }
 
@@ -57,12 +58,13 @@ namespace AnimalSerialization.Tests.Conversion
                 var animalDogBarn = DeserializeObjectObject(yaml); 
                 if (animalDogBarn != null)
                 {
-                    /success = true;
+                    success = true;
                     response.Items.Add(animalDogBarn.FarmItem1.Name);
                     response.AnimalLegCount += 4;
 
                     response.Items.Add(animalDogBarn.FarmItem2.BarnType);
                     response.BuildingCount += 1;
+                    response.BarnTools.AddRange(animalDogBarn.FarmItem2.Tools);
                 }
             }
 

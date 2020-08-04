@@ -26,6 +26,7 @@ namespace AnimalSerialization.Tests
             Assert.AreEqual("barnstring", response.Items[1]);
             Assert.AreEqual(0, response.AnimalLegCount);
             Assert.AreEqual(0, response.BuildingCount);
+            Assert.AreEqual(0, response.BarnTools.Count);
         }
 
         [TestMethod]
@@ -45,6 +46,7 @@ namespace AnimalSerialization.Tests
             Assert.AreEqual("barnstring", response.Items[1]);
             Assert.AreEqual(4, response.AnimalLegCount);
             Assert.AreEqual(0, response.BuildingCount);
+            Assert.AreEqual(0, response.BarnTools.Count);
         }
 
         [TestMethod]
@@ -64,6 +66,7 @@ namespace AnimalSerialization.Tests
             Assert.AreEqual("New England barn", response.Items[1]);
             Assert.AreEqual(0, response.AnimalLegCount);
             Assert.AreEqual(1, response.BuildingCount);
+            Assert.AreEqual(3, response.BarnTools.Count);
         }
 
         [TestMethod]
@@ -83,6 +86,7 @@ namespace AnimalSerialization.Tests
             Assert.AreEqual("New England barn", response.Items[1]);
             Assert.AreEqual(4, response.AnimalLegCount);
             Assert.AreEqual(1, response.BuildingCount);
+            Assert.AreEqual(3, response.BarnTools.Count);
         }
 
         //This test is meant to fail, the code is not expecting the Barn/dog combination. 

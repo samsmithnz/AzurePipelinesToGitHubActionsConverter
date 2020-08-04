@@ -19,6 +19,10 @@ FarmItem1: dogstring
 FarmItem2: 
   BarnType: New England barn
   Color: Red
+  Tools:
+  - Hammer
+  - Wrench
+  - Shovel
 ";
         public static string AnimalDogBarnYaml = @"
 FarmItem1: 
@@ -27,6 +31,10 @@ FarmItem1:
 FarmItem2: 
   BarnType: New England barn
   Color: Red
+  Tools:
+  - Hammer
+  - Wrench
+  - Shovel
 ";
         public static string AnimalDogTractorYaml = @"
 FarmItem1: 
