@@ -108,8 +108,9 @@ namespace AnimalSerialization.Tests
             catch (Exception ex)
             {
                 Assert.IsNotNull(ex);
-                string expectedMessage = "(Line: 6, Col: 3, Idx: 64) - (Line: 6, Col: 3, Idx: 64): Exception during deserialization";
-                Assert.AreEqual(expectedMessage, ex.Message);
+                //string expectedMessage = "(Line: 6, Col: 3, Idx: 64) - (Line: 6, Col: 3, Idx: 64): Exception during deserialization";
+                //Assert.AreEqual(expectedMessage, ex.Message);
+                Assert.IsTrue(ex.Message.IndexOf("Exception during deserialization") >= 0);
             }
 
             //Assert
