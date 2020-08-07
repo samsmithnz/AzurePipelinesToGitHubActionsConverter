@@ -286,26 +286,29 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
 
         public string ProcessSimplePoolsAndSimpleDemands(string yaml)
         {
-            //If the yaml contains pools, check if it's a "simple pool" (pool: string]), 
-            //and convert it to a "complex pool", (pool: \n  name: string)
-
-            //e.g. "  pool: myImage\n" will become:
-            //     "  pool: \n
-            //     "    name: myImage\n
-
             if (yaml == null)
             {
                 return yaml;
             }
 
+            //If the yaml contains pools, check if it's a "simple pool" (pool: string]), 
+            //and convert it to a "complex pool", (pool: \n  name: string)
+            //
+            //e.g. "  pool: myImage\n" will become:
+            //     "  pool: \n
+            //     "    name: myImage\n
+            //
+            //We also repeat this same logic with demands, converting string to string[]
+
             string yamlToReturn = yaml;
 
-            if (yaml.IndexOf("pool", StringComparison.OrdinalIgnoreCase) >= 0)
+            //Process the pool first
+            if (yaml.ToLower().IndexOf("pool", StringComparison.OrdinalIgnoreCase) >= 0)
             {
                 StringBuilder newYaml = new StringBuilder();
                 foreach (string line in yaml.Split(Environment.NewLine))
                 {
-                    if (line.IndexOf("pool", StringComparison.OrdinalIgnoreCase) >= 0)
+                    if (line.ToLower().IndexOf("pool", StringComparison.OrdinalIgnoreCase) >= 0)
                     {
                         string[] items = line.Split(':');
                         if (items.Length > 1 && items[1].ToString().Trim().Length > 0)
@@ -334,12 +337,13 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                 }
                 yamlToReturn = newYaml.ToString();
             }
-            if (yaml.IndexOf("demands", StringComparison.OrdinalIgnoreCase) >= 0)
+            //Then process the demands
+            if (yaml.ToLower().IndexOf("demands", StringComparison.OrdinalIgnoreCase) >= 0)
             {
                 StringBuilder newYaml = new StringBuilder();
                 foreach (string line in yaml.Split(Environment.NewLine))
                 {
-                    if (line.IndexOf("demands", StringComparison.OrdinalIgnoreCase) >= 0)
+                    if (line.ToLower().IndexOf("demands", StringComparison.OrdinalIgnoreCase) >= 0)
                     {
                         string[] items = line.Split(':');
                         if (items.Length > 1 && items[1].ToString().Trim().Length > 0)
