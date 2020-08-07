@@ -118,15 +118,16 @@ namespace AnimalSerialization.Tests.Conversion
 
         private Farm<Dog, Barn> DeserializeObjectObject(string json)
         {
-            try
-            {
+            //We need to not throw away this exception, the last one.
+            //try
+            //{
                 return FarmSerialization.Deserialize<Farm<Dog, Barn>>(json);
-            }
-            catch
-            {
-                //Do nothing with this exception
-                return null;
-            }
+            //}
+            //catch
+            //{
+            //    //Do nothing with this exception
+            //    return null;
+            //}
         }
     }
 }

@@ -1,5 +1,4 @@
-﻿using AzurePipelinesToGitHubActionsConverter.Core.AzurePipelines;
-using AzurePipelinesToGitHubActionsConverter.Core.Conversion.Serialization;
+﻿using AzurePipelinesToGitHubActionsConverter.Core.Conversion.Serialization;
 using AzurePipelinesToGitHubActionsConverter.Core.Extensions;
 using AzurePipelinesToGitHubActionsConverter.Core.GitHubActions;
 using System;
@@ -25,144 +24,279 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
             string yaml;
             GitHubActionsRoot gitHubActions = null;
 
-            //Triggers and variables are hard, as there are two data types for each that can exist, so we need to go with the most common type and handle the less common type with exceptions. 
-            //There are 4 combinations here, simple/simple, simple/complex, complex/simple, and complex/complex
-            AzurePipelinesRoot<string[], Dictionary<string, string>> azurePipelineWithSimpleTriggerAndSimpleVariables = null;
-            AzurePipelinesRoot<string[], AzurePipelines.Variable[]> azurePipelineWithSimpleTriggerAndComplexVariables = null;
-            AzurePipelinesRoot<AzurePipelines.Trigger, Dictionary<string, string>> azurePipelineWithComplexTriggerAndSimpleVariables = null;
-            AzurePipelinesRoot<AzurePipelines.Trigger, AzurePipelines.Variable[]> azurePipelineWithComplexTriggerAndComplexVariables = null;
-            try
+            input = ProcessSimplePools(input);
+
+            //Some of the types are complex, having two data types. 
+            //We handle this with generics, but it creates a lot of combinations we need to code around. 
+            //Currently we have 12 combinations (typically this would be 16, but one of the types filters out another).
+            //There is a picture of this in the Docs folder
+            //Simple Trigger: string[]
+            //Complex Trigger: AzurePipelines.Trigger
+            //Simple Pool: string
+            //Complex Pool: AzurePipelines.Pool
+            //Simple DemandsOn: string (only possible with Complex Pool)
+            //Complex DemandsOn: string[] (only possible with Complex Pool)
+            //Simple Variables: Dictionary<string, string>
+            //Complex Variables: AzurePipelines.Variable[]
+
+            //There are 12 combinations here:
+            var success = false;
+
+            //SimpleTriggerSimplePoolSimpleVariables
+            if (!success)
             {
-                azurePipelineWithSimpleTriggerAndSimpleVariables = AzurePipelinesSerialization<string[], Dictionary<string, string>>.DeserializeSimpleTriggerAndSimpleVariables(input);
-            }
-            catch
-            {
-                try
+                var pipeline = AzurePipelinesSerialization<string[], string, string, Dictionary<string, string>>.DeserializeSimpleTriggerSimplePoolSimpleVariables(input);
+                if (pipeline != null)
                 {
-                    azurePipelineWithComplexTriggerAndSimpleVariables = AzurePipelinesSerialization<AzurePipelines.Trigger, Dictionary<string, string>>.DeserializeComplexTriggerAndSimpleVariables(input);
-                }
-                catch
-                {
-                    try
+                    success = true;
+                    var processing = new PipelineProcessing<string[], string, string, Dictionary<string, string>>();
+                    gitHubActions = processing.ProcessPipeline(pipeline,
+                        pipeline.trigger, null,
+                        pipeline.pool, null,
+                        pipeline.variables, null);
+                    if (processing.MatrixVariableName != null)
                     {
-                        azurePipelineWithSimpleTriggerAndComplexVariables = AzurePipelinesSerialization<string[], AzurePipelines.Variable[]>.DeserializeSimpleTriggerAndComplexVariables(input);
+                        _matrixVariableName = processing.MatrixVariableName;
                     }
-                    catch
+                    variableList.AddRange(processing.VariableList);
+                }
+            }
+
+            //SimpleTriggerSimplePoolComplexVariables
+            if (!success)
+            {
+                var pipeline = AzurePipelinesSerialization<string[], string, string, AzurePipelines.Variable[]>.DeserializeSimpleTriggerSimplePoolComplexVariables(input);
+                if (pipeline != null)
+                {
+                    success = true;
+                    var processing = new PipelineProcessing<string[], string, string, AzurePipelines.Variable[]>();
+                    gitHubActions = processing.ProcessPipeline(pipeline,
+                        pipeline.trigger, null,
+                        pipeline.pool, null,
+                        null, pipeline.variables);
+                    if (processing.MatrixVariableName != null)
                     {
-                        azurePipelineWithComplexTriggerAndComplexVariables = AzurePipelinesSerialization<AzurePipelines.Trigger, AzurePipelines.Variable[]>.DeserializeComplexTriggerAndComplexVariables(input);
+                        _matrixVariableName = processing.MatrixVariableName;
                     }
+                    variableList.AddRange(processing.VariableList);
                 }
-            }
-            //Generate the github actions
-            if (azurePipelineWithSimpleTriggerAndSimpleVariables != null)
-            {
-                PipelineProcessing<string[], Dictionary<string, string>> processing = new PipelineProcessing<string[], Dictionary<string, string>>();
-                gitHubActions = processing.ProcessPipeline(azurePipelineWithSimpleTriggerAndSimpleVariables, azurePipelineWithSimpleTriggerAndSimpleVariables.trigger, null, azurePipelineWithSimpleTriggerAndSimpleVariables.variables, null);
-                if (processing.MatrixVariableName != null)
-                {
-                    _matrixVariableName = processing.MatrixVariableName;
-                }
-                variableList.AddRange(processing.VariableList);
-            }
-            else if (azurePipelineWithSimpleTriggerAndComplexVariables != null)
-            {
-                PipelineProcessing<string[], AzurePipelines.Variable[]> processing = new PipelineProcessing<string[], AzurePipelines.Variable[]>();
-                gitHubActions = processing.ProcessPipeline(azurePipelineWithSimpleTriggerAndComplexVariables, azurePipelineWithSimpleTriggerAndComplexVariables.trigger, null, null, azurePipelineWithSimpleTriggerAndComplexVariables.variables);
-                if (processing.MatrixVariableName != null)
-                {
-                    _matrixVariableName = processing.MatrixVariableName;
-                }
-                variableList.AddRange(processing.VariableList);
-            }
-            else if (azurePipelineWithComplexTriggerAndSimpleVariables != null)
-            {
-                PipelineProcessing<AzurePipelines.Trigger, Dictionary<string, string>> processing = new PipelineProcessing<AzurePipelines.Trigger, Dictionary<string, string>>();
-                gitHubActions = processing.ProcessPipeline(azurePipelineWithComplexTriggerAndSimpleVariables, null, azurePipelineWithComplexTriggerAndSimpleVariables.trigger, azurePipelineWithComplexTriggerAndSimpleVariables.variables, null);
-                if (processing.MatrixVariableName != null)
-                {
-                    _matrixVariableName = processing.MatrixVariableName;
-                }
-                variableList.AddRange(processing.VariableList);
-            }
-            else if (azurePipelineWithComplexTriggerAndComplexVariables != null)
-            {
-                PipelineProcessing<AzurePipelines.Trigger, AzurePipelines.Variable[]> processing = new PipelineProcessing<AzurePipelines.Trigger, AzurePipelines.Variable[]>();
-                gitHubActions = processing.ProcessPipeline(azurePipelineWithComplexTriggerAndComplexVariables, null, azurePipelineWithComplexTriggerAndComplexVariables.trigger, null, azurePipelineWithComplexTriggerAndComplexVariables.variables);
-                if (processing.MatrixVariableName != null)
-                {
-                    _matrixVariableName = processing.MatrixVariableName;
-                }
-                variableList.AddRange(processing.VariableList);
             }
 
-            //Commented out the new solution, as it doesn't process failed/invalid documents.
-            //var success = false;
-            //if (!success)
-            //{
-            //    var azurePipelineWithSimpleTriggerAndSimpleVariables = AzurePipelinesSerialization<string[], Dictionary<string, string>>.DeserializeSimpleTriggerAndSimpleVariables(input);
-            //    if (azurePipelineWithSimpleTriggerAndSimpleVariables != null)
-            //    {
-            //        success = true;
-            //        PipelineProcessing<string[], Dictionary<string, string>> processing = new PipelineProcessing<string[], Dictionary<string, string>>();
-            //        gitHubActions = processing.ProcessPipeline(azurePipelineWithSimpleTriggerAndSimpleVariables, azurePipelineWithSimpleTriggerAndSimpleVariables.trigger, null, azurePipelineWithSimpleTriggerAndSimpleVariables.variables, null);
-            //        if (processing.MatrixVariableName != null)
-            //        {
-            //            _matrixVariableName = processing.MatrixVariableName;
-            //        }
-            //        variableList.AddRange(processing.VariableList);
-            //    }
-            //}
 
-            //if (!success)
-            //{
-            //    var azurePipelineWithSimpleTriggerAndComplexVariables = AzurePipelinesSerialization<string[], AzurePipelines.Variable[]>.DeserializeSimpleTriggerAndComplexVariables(input);
-            //    if (azurePipelineWithSimpleTriggerAndComplexVariables != null)
-            //    {
-            //        success = true;
-            //        PipelineProcessing<string[], AzurePipelines.Variable[]> processing = new PipelineProcessing<string[], AzurePipelines.Variable[]>();
-            //        gitHubActions = processing.ProcessPipeline(azurePipelineWithSimpleTriggerAndComplexVariables, azurePipelineWithSimpleTriggerAndComplexVariables.trigger, null, null, azurePipelineWithSimpleTriggerAndComplexVariables.variables);
-            //        if (processing.MatrixVariableName != null)
-            //        {
-            //            _matrixVariableName = processing.MatrixVariableName;
-            //        }
-            //        variableList.AddRange(processing.VariableList);
-            //    }
-            //}
+            //SimpleTriggerComplexPoolSimpleDemandsOnSimpleVariables
+            if (!success)
+            {
+                var pipeline = AzurePipelinesSerialization<string[], AzurePipelines.Pool, string, Dictionary<string, string>>.DeserializeSimpleTriggerComplexPoolSimpleDemandsOnSimpleVariables(input);
+                if (pipeline != null)
+                {
+                    success = true;
+                    var processing = new PipelineProcessing<string[], AzurePipelines.Pool, string, Dictionary<string, string>>();
+                    gitHubActions = processing.ProcessPipeline(pipeline,
+                        pipeline.trigger, null,
+                        null, pipeline.pool,
+                        pipeline.variables, null);
+                    if (processing.MatrixVariableName != null)
+                    {
+                        _matrixVariableName = processing.MatrixVariableName;
+                    }
+                    variableList.AddRange(processing.VariableList);
+                }
+            }
 
-            //if (!success)
-            //{
-            //    var azurePipelineWithComplexTriggerAndSimpleVariables = AzurePipelinesSerialization<AzurePipelines.Trigger, Dictionary<string, string>>.DeserializeComplexTriggerAndSimpleVariables(input);
-            //    if (azurePipelineWithComplexTriggerAndSimpleVariables != null)
-            //    {
-            //        success = true;
-            //        PipelineProcessing<AzurePipelines.Trigger, Dictionary<string, string>> processing = new PipelineProcessing<AzurePipelines.Trigger, Dictionary<string, string>>();
-            //        gitHubActions = processing.ProcessPipeline(azurePipelineWithComplexTriggerAndSimpleVariables, null, azurePipelineWithComplexTriggerAndSimpleVariables.trigger, azurePipelineWithComplexTriggerAndSimpleVariables.variables, null);
-            //        if (processing.MatrixVariableName != null)
-            //        {
-            //            _matrixVariableName = processing.MatrixVariableName;
-            //        }
-            //        variableList.AddRange(processing.VariableList);
-            //    }
-            //}
 
-            //if (!success)
-            //{
-            //    var azurePipelineWithComplexTriggerAndComplexVariables = AzurePipelinesSerialization<AzurePipelines.Trigger, AzurePipelines.Variable[]>.DeserializeComplexTriggerAndComplexVariables(input);
-            //    if (azurePipelineWithComplexTriggerAndComplexVariables != null)
-            //    {
-            //        PipelineProcessing<AzurePipelines.Trigger, AzurePipelines.Variable[]> processing = new PipelineProcessing<AzurePipelines.Trigger, AzurePipelines.Variable[]>();
-            //        gitHubActions = processing.ProcessPipeline(azurePipelineWithComplexTriggerAndComplexVariables, null, azurePipelineWithComplexTriggerAndComplexVariables.trigger, null, azurePipelineWithComplexTriggerAndComplexVariables.variables);
-            //        if (processing.MatrixVariableName != null)
-            //        {
-            //            _matrixVariableName = processing.MatrixVariableName;
-            //        }
-            //        variableList.AddRange(processing.VariableList);
-            //    }
-            //}
-            //if (!success)
-            //{
-            //    throw new NotSupportedException("All deserialisation methods failed... oops! Please create a GitHub issue so we can fix this");
-            //}
+            //SimpleTriggerComplexPoolSimpleDemandsOnComplexVariables
+            if (!success)
+            {
+                var pipeline = AzurePipelinesSerialization<string[], AzurePipelines.Pool, string, AzurePipelines.Variable[]>.DeserializeSimpleTriggerComplexPoolSimpleDemandsOnComplexVariables(input);
+                if (pipeline != null)
+                {
+                    success = true;
+                    var processing = new PipelineProcessing<string[], AzurePipelines.Pool, string, AzurePipelines.Variable[]>();
+                    gitHubActions = processing.ProcessPipeline(pipeline,
+                        pipeline.trigger, null,
+                        null, pipeline.pool,
+                        null, pipeline.variables);
+                    if (processing.MatrixVariableName != null)
+                    {
+                        _matrixVariableName = processing.MatrixVariableName;
+                    }
+                    variableList.AddRange(processing.VariableList);
+                }
+            }
+
+
+            //SimpleTriggerComplexPoolComplexDemandsOnSimpleVariables
+            if (!success)
+            {
+                var pipeline = AzurePipelinesSerialization<string[], AzurePipelines.Pool, string[], Dictionary<string, string>>.DeserializeSimpleTriggerComplexPoolComplexDemandsOnSimpleVariables(input);
+                if (pipeline != null)
+                {
+                    success = true;
+                    var processing = new PipelineProcessing<string[], AzurePipelines.Pool, string[], Dictionary<string, string>>();
+                    gitHubActions = processing.ProcessPipeline(pipeline,
+                        pipeline.trigger, null,
+                        null, pipeline.pool,
+                        pipeline.variables, null);
+                    if (processing.MatrixVariableName != null)
+                    {
+                        _matrixVariableName = processing.MatrixVariableName;
+                    }
+                    variableList.AddRange(processing.VariableList);
+                }
+            }
+
+
+            //SimpleTriggerComplexPoolComplexDemandsOnComplexVariables
+            if (!success)
+            {
+                var pipeline = AzurePipelinesSerialization<string[], AzurePipelines.Pool, string[], AzurePipelines.Variable[]>.DeserializeSimpleTriggerComplexPoolComplexDemandsOnComplexVariables(input);
+                if (pipeline != null)
+                {
+                    success = true;
+                    var processing = new PipelineProcessing<string[], AzurePipelines.Pool, string[], AzurePipelines.Variable[]>();
+                    gitHubActions = processing.ProcessPipeline(pipeline,
+                        pipeline.trigger, null,
+                        null, pipeline.pool,
+                        null, pipeline.variables);
+                    if (processing.MatrixVariableName != null)
+                    {
+                        _matrixVariableName = processing.MatrixVariableName;
+                    }
+                    variableList.AddRange(processing.VariableList);
+                }
+            }
+
+
+            //ComplexTriggerSimplePoolSimpleVariables
+            if (!success)
+            {
+                var pipeline = AzurePipelinesSerialization<AzurePipelines.Trigger, string, string, Dictionary<string, string>>.DeserializeComplexTriggerSimplePoolSimpleVariables(input);
+                if (pipeline != null)
+                {
+                    success = true;
+                    var processing = new PipelineProcessing<AzurePipelines.Trigger, string, string, Dictionary<string, string>>();
+                    gitHubActions = processing.ProcessPipeline(pipeline,
+                        null, pipeline.trigger,
+                        pipeline.pool, null,
+                        pipeline.variables, null);
+                    if (processing.MatrixVariableName != null)
+                    {
+                        _matrixVariableName = processing.MatrixVariableName;
+                    }
+                    variableList.AddRange(processing.VariableList);
+                }
+            }
+
+
+            //ComplexTriggerSimplePoolComplexVariables
+            if (!success)
+            {
+                var pipeline = AzurePipelinesSerialization<AzurePipelines.Trigger, string, string, AzurePipelines.Variable[]>.DeserializeComplexTriggerSimplePoolComplexVariables(input);
+                if (pipeline != null)
+                {
+                    success = true;
+                    var processing = new PipelineProcessing<AzurePipelines.Trigger, string, string, AzurePipelines.Variable[]>();
+                    gitHubActions = processing.ProcessPipeline(pipeline,
+                        null, pipeline.trigger,
+                        pipeline.pool, null,
+                        null, pipeline.variables);
+                    if (processing.MatrixVariableName != null)
+                    {
+                        _matrixVariableName = processing.MatrixVariableName;
+                    }
+                    variableList.AddRange(processing.VariableList);
+                }
+            }
+
+
+            //ComplexTriggerComplexPoolSimpleDemandsOnSimpleVariables
+            if (!success)
+            {
+                var pipeline = AzurePipelinesSerialization<AzurePipelines.Trigger, AzurePipelines.Pool, string, Dictionary<string, string>>.DeserializeComplexTriggerComplexPoolSimpleDemandsOnSimpleVariables(input);
+                if (pipeline != null)
+                {
+                    success = true;
+                    var processing = new PipelineProcessing<AzurePipelines.Trigger, AzurePipelines.Pool, string, Dictionary<string, string>>();
+                    gitHubActions = processing.ProcessPipeline(pipeline,
+                        null, pipeline.trigger,
+                        null, pipeline.pool,
+                        pipeline.variables, null);
+                    if (processing.MatrixVariableName != null)
+                    {
+                        _matrixVariableName = processing.MatrixVariableName;
+                    }
+                    variableList.AddRange(processing.VariableList);
+                }
+            }
+
+
+            //ComplexTriggerComplexPoolSimpleDemandsOnComplexVariables
+            if (!success)
+            {
+                var pipeline = AzurePipelinesSerialization<AzurePipelines.Trigger, AzurePipelines.Pool, string, AzurePipelines.Variable[]>.DeserializeComplexTriggerComplexPoolSimpleDemandsOnComplexVariables(input);
+                if (pipeline != null)
+                {
+                    success = true;
+                    var processing = new PipelineProcessing<AzurePipelines.Trigger, AzurePipelines.Pool, string, AzurePipelines.Variable[]>();
+                    gitHubActions = processing.ProcessPipeline(pipeline,
+                        null, pipeline.trigger,
+                        null, pipeline.pool,
+                        null, pipeline.variables);
+                    if (processing.MatrixVariableName != null)
+                    {
+                        _matrixVariableName = processing.MatrixVariableName;
+                    }
+                    variableList.AddRange(processing.VariableList);
+                }
+            }
+
+
+            //ComplexTriggerComplexPoolComplexDemandsOnSimpleVariables
+            if (!success)
+            {
+                var pipeline = AzurePipelinesSerialization<AzurePipelines.Trigger, AzurePipelines.Pool, string[], Dictionary<string, string>>.DeserializeComplexTriggerComplexPoolComplexDemandsOnSimpleVariables(input);
+                if (pipeline != null)
+                {
+                    success = true;
+                    var processing = new PipelineProcessing<AzurePipelines.Trigger, AzurePipelines.Pool, string[], Dictionary<string, string>>();
+                    gitHubActions = processing.ProcessPipeline(pipeline,
+                        null, pipeline.trigger,
+                        null, pipeline.pool,
+                        pipeline.variables, null);
+                    if (processing.MatrixVariableName != null)
+                    {
+                        _matrixVariableName = processing.MatrixVariableName;
+                    }
+                    variableList.AddRange(processing.VariableList);
+                }
+            }
+
+
+            //ComplexTriggerComplexPoolComplexDemandsOnComplexVariables
+            if (!success)
+            {
+                var pipeline = AzurePipelinesSerialization<AzurePipelines.Trigger, AzurePipelines.Pool, string[], AzurePipelines.Variable[]>.DeserializeComplexTriggerComplexPoolComplexDemandsOnComplexVariables(input);
+                if (pipeline != null)
+                {
+                    success = true;
+                    var processing = new PipelineProcessing<AzurePipelines.Trigger, AzurePipelines.Pool, string[], AzurePipelines.Variable[]>();
+                    gitHubActions = processing.ProcessPipeline(pipeline,
+                        null, pipeline.trigger,
+                        null, pipeline.pool,
+                        null, pipeline.variables);
+                    if (processing.MatrixVariableName != null)
+                    {
+                        _matrixVariableName = processing.MatrixVariableName;
+                    }
+                    variableList.AddRange(processing.VariableList);
+                }
+            }
+
+            if (!success)
+            {
+                gitHubActions = null;
+            }
+
 
             //Search for any other variables. Duplicates are ok, they are processed the same
             variableList.AddRange(SearchForVariables(input));
@@ -279,6 +413,47 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                 actionsYaml = yaml,
                 comments = allComments
             };
+        }
+
+        public string ProcessSimplePools(string yaml)
+        {
+            //If the yaml contains pools, check if it's a "simple pool" (pool: string]), 
+            //and convert it to a "complex pool", (pool: \n  name: string)
+
+            //e.g. "  pool: myImage\n" will become:
+            //     "  pool: \n
+            //     "    name: myImage\n
+
+            if (yaml.IndexOf("pool", StringComparison.OrdinalIgnoreCase) >= 0)
+            {
+                StringBuilder newYaml = new StringBuilder();
+                foreach (string line in yaml.Split(Environment.NewLine))
+                {
+                    if (line.IndexOf("pool", StringComparison.OrdinalIgnoreCase) >= 0)
+                    {
+                        string[] items = line.Split(':');
+                        if (items.Length > 1)
+                        {
+                            int prefixSpaceCount = items[0].TakeWhile(Char.IsWhiteSpace).Count();
+                            newYaml.Append(items[0].Trim());
+                            newYaml.Append(Environment.NewLine);
+                            newYaml.Append("  name: ");
+                            newYaml.Append(items[1].Trim());
+                            newYaml.Append(Environment.NewLine);
+                        }
+                    }
+                    else
+                    {
+                        newYaml.Append(line);
+                        newYaml.Append(Environment.NewLine);
+                    }
+                }
+                return newYaml.ToString();
+            }
+            else
+            {
+                return yaml;
+            }
         }
 
         private string ConvertMessageToYamlComment(string message)

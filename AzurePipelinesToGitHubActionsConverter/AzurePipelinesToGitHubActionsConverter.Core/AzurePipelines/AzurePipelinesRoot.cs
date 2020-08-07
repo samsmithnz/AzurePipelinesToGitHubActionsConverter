@@ -25,7 +25,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.AzurePipelines
     //pr: pr
     //stages: [ stage | templateReference ]
 
-    public class AzurePipelinesRoot<TTriggers, TVariables>
+    public class AzurePipelinesRoot<TTriggers, TPool, TDemands, TVariables>
     {
         public string name { get; set; }
 
@@ -44,7 +44,10 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.AzurePipelines
 
         public Trigger pr { get; set; }
         public Schedule[] schedules { get; set; }
-        public Pool pool { get; set; }
+        public TPool pool { get; set; }
+        //public string pool { get; set; }
+        //public Pool pool { get; set; }
+
         public Strategy strategy { get; set; }
 
         //Variables is similar to triggers, this can be a simple list, or a more complex variable object

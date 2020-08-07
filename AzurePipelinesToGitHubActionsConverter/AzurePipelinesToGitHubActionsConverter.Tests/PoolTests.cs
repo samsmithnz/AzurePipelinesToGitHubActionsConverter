@@ -114,7 +114,8 @@ jobs:
         {
             //Arrange
             string input = @"
-pool: windows-latest";
+pool: windows-latest
+";
             Conversion conversion = new Conversion();
 
             //Act
@@ -122,9 +123,8 @@ pool: windows-latest";
 
             //Assert
             string expected = @"
-jobs:
-  build:
-    runs-on: windows-latest";
+runs-on: windows-latest
+";
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
         }

@@ -11,23 +11,6 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion.Serialization
         {
             IDeserializer deserializer = new DeserializerBuilder().Build();
             T yamlObject = deserializer.Deserialize<T>(yaml);
-
-            //Commented out the new solution, as it doesn't process failed/invalid documents.
-            //If we leave this in, then errors are returned to the call stack root. 
-            //If we capture the error, we will capture a lot of false negatives,
-            // as we have to try a few YAML combinations depending on the trigger and pool
-
-            //T yamlObject = default;
-            //IDeserializer deserializer = new DeserializerBuilder().Build();
-            //try
-            //{
-            //    yamlObject = deserializer.Deserialize<T>(yaml);
-            //}
-            //catch (Exception ex)
-            //{
-            //    Debug.WriteLine(ex);
-            //    //hide any exception for the moment
-            //}
             return yamlObject;
         }
 

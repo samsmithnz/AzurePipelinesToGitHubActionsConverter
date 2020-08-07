@@ -1,6 +1,7 @@
 using AnimalSerialization.Tests.Conversion;
 using AnimalsSerialization.Tests.SampleDocs;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System;
 
 namespace AnimalSerialization.Tests
 {
@@ -90,15 +91,26 @@ namespace AnimalSerialization.Tests
 
         //This test is meant to fail, the code is not expecting the Barn/dog combination
         //Note that this solution does not currently return feedback to indiciate failure
+        //Cancel that second point, it does now, as I removed the error handling from the last deserializing statement
         [TestMethod]
         public void AlexInvalidAnimalDogTractorTest()
         {
             //Arrange
             FarmConversionAlex conversion = new FarmConversionAlex();
             string yaml = YAMLDocs.AnimalDogTractorYaml;
+            FarmResponse response = null;
 
             //Act
-            FarmResponse response = conversion.ConvertFarm(yaml);
+            try
+            {
+                response = conversion.ConvertFarm(yaml);
+            }
+            catch (Exception ex)
+            {
+                Assert.IsNotNull(ex);
+                string expectedMessage = "(Line: 6, Col: 3, Idx: 64) - (Line: 6, Col: 3, Idx: 64): Exception during deserialization";
+                Assert.AreEqual(expectedMessage, ex.Message);
+            }
 
             //Assert
             Assert.IsNull(response);
