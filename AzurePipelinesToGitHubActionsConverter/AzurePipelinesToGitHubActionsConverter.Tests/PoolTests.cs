@@ -63,12 +63,32 @@ jobs:
         }
 
         [TestMethod]
-        public void PoolWindowsLatestStringTest()
+        public void PoolWindowsVMImageLatestStringTest()
         {
             //Arrange
             string input = @"
 pool: 
   vmImage: windows-latest";
+            Conversion conversion = new Conversion();
+
+            //Act
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(input);
+
+            //Assert
+            string expected = @"
+jobs:
+  build:
+    runs-on: windows-latest";
+            expected = UtilityTests.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+        }
+
+        [TestMethod]
+        public void PoolWindowsStringLatestStringTest()
+        {
+            //Arrange
+            string input = @"
+pool:  windows-latest";
             Conversion conversion = new Conversion();
 
             //Act
