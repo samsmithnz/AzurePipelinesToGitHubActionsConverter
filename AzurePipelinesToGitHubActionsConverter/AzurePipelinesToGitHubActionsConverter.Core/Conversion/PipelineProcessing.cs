@@ -6,7 +6,7 @@ using System.Linq;
 
 namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
 {
-    public class PipelineProcessing<T, T2>
+    public class PipelineProcessing<TTriggers, TVariables>
     {
         public List<string> VariableList;
         public string MatrixVariableName;
@@ -18,7 +18,9 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
         /// <param name="simpleTrigger">When the YAML has a simple trigger, (String[]). Can be null</param>
         /// <param name="complexTrigger">When the YAML has a complex trigger. Can be null</param>
         /// <returns>GitHub Actions object</returns>
-        public GitHubActionsRoot ProcessPipeline(AzurePipelinesRoot<T, T2> azurePipeline, string[] simpleTrigger, AzurePipelines.Trigger complexTrigger, Dictionary<string, string> simpleVariables, AzurePipelines.Variable[] complexVariables)
+        public GitHubActionsRoot ProcessPipeline(AzurePipelinesRoot<TTriggers, TVariables> azurePipeline, 
+            string[] simpleTrigger, AzurePipelines.Trigger complexTrigger, 
+            Dictionary<string, string> simpleVariables, AzurePipelines.Variable[] complexVariables)
         {
             VariableList = new List<string>();
             GitHubActionsRoot gitHubActions = new GitHubActionsRoot();
