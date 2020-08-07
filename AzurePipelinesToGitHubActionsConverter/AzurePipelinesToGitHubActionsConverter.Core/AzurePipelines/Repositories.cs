@@ -4,12 +4,12 @@ using System.Text;
 
 namespace AzurePipelinesToGitHubActionsConverter.Core.AzurePipelines
 {
-  //repositories:
-  //- repository: string  # identifier (A-Z, a-z, 0-9, and underscore)
-  //  type: enum  # see below
-  //  name: string  # repository name (format Demands on `type`)
-  //  ref: string  # ref name to use, defaults to 'refs/heads/master'
-  //  endpoint: string  # name of the service connection to use (for non-Azure Repos types)
+    //repositories:
+    //- repository: string  # identifier (A-Z, a-z, 0-9, and underscore)
+    //  type: enum  # see below
+    //  name: string  # repository name (format depends on `type`)
+    //  ref: string  # ref name to use, defaults to 'refs/heads/master'
+    //  endpoint: string  # name of the service connection to use (for non-Azure Repos types)
     public class Repositories
     {
         //TODO: Add code to process repositories
