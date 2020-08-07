@@ -21,12 +21,33 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
     public class PoolTests
     {
         [TestMethod]
-        public void PoolUbuntuLatestStringTest()
+        public void PoolUbuntuVMImageLatestStringTest()
         {
             //Arrange
             string input = @"
 pool:
   vmImage: ubuntu-latest";
+            Conversion conversion = new Conversion();
+
+            //Act
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(input);
+
+            //Assert
+            string expected = @"
+jobs:
+  build:
+    runs-on: ubuntu-latest";
+            expected = UtilityTests.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+        }
+
+        [TestMethod]
+        public void PoolUbuntuNameLatestStringTest()
+        {
+            //Arrange
+            string input = @"
+pool:
+  name: ubuntu-latest";
             Conversion conversion = new Conversion();
 
             //Act
@@ -86,7 +107,7 @@ jobs:
         }
 
         [TestMethod]
-        public void PoolNameDependsListStringTest()
+        public void PoolNameDemandsListStringTest()
         {
             //Arrange
             string input = @"

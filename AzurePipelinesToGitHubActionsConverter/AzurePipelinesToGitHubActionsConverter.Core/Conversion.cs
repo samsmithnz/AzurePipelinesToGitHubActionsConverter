@@ -25,6 +25,9 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
             string yaml;
             GitHubActionsRoot gitHubActions = null;
 
+            //Run some processing to convert simple pools and demands to the complex editions, to avoid adding to the combinations below.
+            input = ProcessSimplePoolsAndSimpleDemands(input);
+
             //Triggers and variables are hard, as there are two data types for each that can exist, so we need to go with the most common type and handle the less common type with exceptions. 
             //There are 4 combinations here, simple/simple, simple/complex, complex/simple, and complex/complex
             AzurePipelinesRoot<string[], Dictionary<string, string>> azurePipelineWithSimpleTriggerAndSimpleVariables = null;
@@ -279,6 +282,95 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                 actionsYaml = yaml,
                 comments = allComments
             };
+        }
+
+        public string ProcessSimplePoolsAndSimpleDemands(string yaml)
+        {
+            //If the yaml contains pools, check if it's a "simple pool" (pool: string]), 
+            //and convert it to a "complex pool", (pool: \n  name: string)
+
+            //e.g. "  pool: myImage\n" will become:
+            //     "  pool: \n
+            //     "    name: myImage\n
+
+            if (yaml == null)
+            {
+                return yaml;
+            }
+
+            string yamlToReturn = yaml;
+
+            if (yaml.IndexOf("pool", StringComparison.OrdinalIgnoreCase) >= 0)
+            {
+                StringBuilder newYaml = new StringBuilder();
+                foreach (string line in yaml.Split(Environment.NewLine))
+                {
+                    if (line.IndexOf("pool", StringComparison.OrdinalIgnoreCase) >= 0)
+                    {
+                        string[] items = line.Split(':');
+                        if (items.Length > 1 && items[1].ToString().Trim().Length > 0)
+                        {
+                            int prefixSpaceCount = items[0].TakeWhile(Char.IsWhiteSpace).Count();
+                            newYaml.Append(Utility.GenerateSpaces(prefixSpaceCount)); //Account for the current YAML positioning
+                            newYaml.Append(items[0].Trim()); //pool
+                            newYaml.Append(": ");
+                            newYaml.Append(Environment.NewLine);
+                            newYaml.Append(Utility.GenerateSpaces(prefixSpaceCount + 2)); //Account for the current YAML positioning and add two more spaces to indent
+                            newYaml.Append("name: ");
+                            newYaml.Append(items[1].Trim());
+                            newYaml.Append(Environment.NewLine);
+                        }
+                        else
+                        {
+                            newYaml.Append(line);
+                            newYaml.Append(Environment.NewLine);
+                        }
+                    }
+                    else
+                    {
+                        newYaml.Append(line);
+                        newYaml.Append(Environment.NewLine);
+                    }
+                }
+                yamlToReturn = newYaml.ToString();
+            }
+            if (yaml.IndexOf("demands", StringComparison.OrdinalIgnoreCase) >= 0)
+            {
+                StringBuilder newYaml = new StringBuilder();
+                foreach (string line in yaml.Split(Environment.NewLine))
+                {
+                    if (line.IndexOf("demands", StringComparison.OrdinalIgnoreCase) >= 0)
+                    {
+                        string[] items = line.Split(':');
+                        if (items.Length > 1 && items[1].ToString().Trim().Length > 0)
+                        {
+                            int prefixSpaceCount = items[0].TakeWhile(Char.IsWhiteSpace).Count();
+                            newYaml.Append(Utility.GenerateSpaces(prefixSpaceCount)); //Account for the current YAML positioning
+                            newYaml.Append(items[0].Trim()); //demands
+                            newYaml.Append(": ");
+                            newYaml.Append(Environment.NewLine);
+                            newYaml.Append(Utility.GenerateSpaces(prefixSpaceCount + 2)); //Account for the current YAML positioning and add two more spaces to indent
+                            newYaml.Append("- ");
+                            newYaml.Append(items[1].Trim());
+                            newYaml.Append(Environment.NewLine);
+                        }
+                        else
+                        {
+                            newYaml.Append(line);
+                            newYaml.Append(Environment.NewLine);
+                        }
+                    }
+                    else
+                    {
+                        newYaml.Append(line);
+                        newYaml.Append(Environment.NewLine);
+                    }
+                }
+                yamlToReturn = newYaml.ToString();
+            }
+
+            return yamlToReturn;
+
         }
 
         private string ConvertMessageToYamlComment(string message)
