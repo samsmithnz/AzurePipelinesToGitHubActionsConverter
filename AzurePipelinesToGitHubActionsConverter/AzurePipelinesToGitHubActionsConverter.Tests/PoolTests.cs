@@ -85,49 +85,5 @@ jobs:
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
         }
 
-        [TestMethod]
-        public void PoolNameDependsListStringTest()
-        {
-            //Arrange
-            string input = @"
-pool:
-  name: Hosted VS2017
-  demands: 
-  - npm";
-            Conversion conversion = new Conversion();
-
-            //Act
-            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(input);
-
-            //Assert
-            string expected = @"
-#Note: GitHub Actions does not have a 'demands' command on 'runs-on' yet
-jobs:
-  build:
-    runs-on: Hosted VS2017";
-            expected = UtilityTests.TrimNewLines(expected);
-            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
-        }
-
-        [TestMethod]
-        public void PoolSimpleNameTest()
-        {
-            //Arrange
-            string input = @"
-pool: windows-latest
-";
-            Conversion conversion = new Conversion();
-
-            //Act
-            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(input);
-
-            //Assert
-            string expected = @"
-runs-on: windows-latest
-";
-            expected = UtilityTests.TrimNewLines(expected);
-            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
-        }
-
     }
 }

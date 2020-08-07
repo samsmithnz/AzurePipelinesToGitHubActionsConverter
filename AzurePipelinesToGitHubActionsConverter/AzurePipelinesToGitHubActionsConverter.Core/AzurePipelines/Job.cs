@@ -10,7 +10,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.AzurePipelines
         //jobs:
         //- job: string  # name of the job, A-Z, a-z, 0-9, and underscore
         //  displayName: string  # friendly name to display in the UI
-        //  DemandsOn: string | [ string ]
+        //  dependsOn: string | [ string ]
         //  condition: string
         //  strategy:
         //    parallel: # parallel strategy, see below
@@ -30,7 +30,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.AzurePipelines
         public string deployment { get; set; }
         public string environment { get; set; }
         public string displayName { get; set; }
-        public string DemandsOn { get; set; }
+        public string dependsOn { get; set; }
         [DefaultValue("succeeded()")]
         public string condition { get; set; } //https://docs.microsoft.com/en-us/azure/devops/pipelines/process/conditions?tabs=yaml&view=azure-devops
         public bool continueOnError { get; set; }

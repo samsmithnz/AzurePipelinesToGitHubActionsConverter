@@ -6,7 +6,7 @@ using System.Linq;
 
 namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
 {
-    public class PipelineProcessing<TTriggers, TPool, TDemands, TVariables>
+    public class PipelineProcessing<TTriggers, TVariables>
     {
         public List<string> VariableList;
         public string MatrixVariableName;
@@ -17,12 +17,9 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
         /// <param name="azurePipeline">Azure DevOps Pipeline object</param>
         /// <param name="simpleTrigger">When the YAML has a simple trigger, (String[]). Can be null</param>
         /// <param name="complexTrigger">When the YAML has a complex trigger. Can be null</param>
-        /// <param name="simpleVariables">When the YAML has simple variables, (Dictionary<string, string>). Can be null</param>
-        /// <param name="complexVariables">When the YAML has complex variables. (AzurePipelines.Variable[]). Can be null</param>
         /// <returns>GitHub Actions object</returns>
-        public GitHubActionsRoot ProcessPipeline(AzurePipelinesRoot<TTriggers, TPool, TDemands, TVariables> azurePipeline,
-            string[] simpleTrigger, AzurePipelines.Trigger complexTrigger,
-            string simplePool, Pool complexPool,
+        public GitHubActionsRoot ProcessPipeline(AzurePipelinesRoot<TTriggers, TVariables> azurePipeline, 
+            string[] simpleTrigger, AzurePipelines.Trigger complexTrigger, 
             Dictionary<string, string> simpleVariables, AzurePipelines.Variable[] complexVariables)
         {
             VariableList = new List<string>();
@@ -67,7 +64,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
             }
 
             //Container
-            if (complexPool != null && complexPool.demands != null)
+            if (azurePipeline.pool != null && azurePipeline.pool.demands != null)
             {
                 gitHubActions.messages.Add("Note: GitHub Actions does not have a 'demands' command on 'runs-on' yet");
             }
@@ -231,6 +228,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                         "build",
                         new GitHubActions.Job
                         {
+                            runs_on = ProcessPool(azurePipeline.pool),
                             strategy = ProcessStrategy(azurePipeline.strategy),
                             container = ProcessContainer(azurePipeline.resources),
                             //resources = ProcessResources(azurePipeline.resources),
@@ -238,14 +236,6 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                         }
                     }
                 };
-                if (simplePool != null)
-                {
-                    gitHubActions.jobs.FirstOrDefault().Value.runs_on = ProcessSimplePool(simplePool);
-                }
-                else if (complexPool != null)
-                {
-                    gitHubActions.jobs.FirstOrDefault().Value.runs_on = ProcessComplexPool(complexPool);
-                }
             }
 
             //Variables
@@ -390,18 +380,8 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
             return newSchedules;
         }
 
-        private string ProcessSimplePool(string pool)
-        {
-            string newPool = null;
-            if (pool != null)
-            {
-                newPool = pool;
-            }
-            return newPool;
-        }
-
         //process the build pool/agent
-        private string ProcessComplexPool(Pool pool) // , string simpleDemands, string[] complexDemands
+        private string ProcessPool(Pool pool)
         {
             string newPool = null;
             if (pool != null)
@@ -620,35 +600,26 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                     {
                         jobName = "job_" + (i + 1).ToString() + "_template";
                     }
-                    newJobs.Add(jobName, ProcessIndividualJob(jobs[i], jobs[i].job, null, resources));
+                    newJobs.Add(jobName, ProcessIndividualJob(jobs[i], resources));
                 }
             }
             return newJobs;
         }
 
-        private GitHubActions.Job ProcessIndividualJob(AzurePipelines.Job job, string simplePool, Pool complexPool, AzurePipelines.Resources resources)
+        private GitHubActions.Job ProcessIndividualJob(AzurePipelines.Job job, AzurePipelines.Resources resources)
         {
             GitHubActions.Job newJob = new GitHubActions.Job
             {
                 name = job.displayName,
-                needs = job.DemandsOn,
+                needs = job.dependsOn,
                 _if = ProcessCondition(job.condition),
+                runs_on = ProcessPool(job.pool),
                 strategy = ProcessStrategy(job.strategy),
                 container = ProcessContainer(resources),
                 env = ProcessSimpleVariables(job.variables),
                 timeout_minutes = job.timeoutInMinutes,
                 steps = ProcessSteps(job.steps)
             };
-
-            //runs_on = ProcessPool(job.pool),
-            if (simplePool != null)
-            {
-                newJob.runs_on = ProcessSimplePool(simplePool);
-            }
-            else if (complexPool != null)
-            {
-                newJob.runs_on = ProcessComplexPool(complexPool);
-            }
 
             if (newJob.steps == null & job.template != null)
             {
