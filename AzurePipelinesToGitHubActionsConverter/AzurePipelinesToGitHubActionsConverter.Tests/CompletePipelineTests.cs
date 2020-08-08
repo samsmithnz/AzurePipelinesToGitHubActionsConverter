@@ -1068,6 +1068,7 @@ jobs:
 //trigger:
 //- master
 
+//pool: 'Pipeline-Demo-Windows'
 
 
 //variables:
@@ -1082,6 +1083,8 @@ jobs:
 //    - job: BuildSpark
 //      pool:
 //        name: 'Pipeline-Demo-Windows'
+//        demands:
+//        - Agent.OS -equals Windows_NT
 //      steps:
 //      - task: NuGetToolInstaller@1
 
@@ -1170,7 +1173,9 @@ jobs:
 //";
 
 //            expected = UtilityTests.TrimNewLines(expected);
-//            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+//            //Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+//            Assert.IsTrue(gitHubOutput.actionsYaml != null);
+//            Assert.IsTrue(gitHubOutput.actionsYaml != "");
 //        }
 
     }
