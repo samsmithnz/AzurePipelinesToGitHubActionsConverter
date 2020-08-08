@@ -117,7 +117,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                     default:
                         gitHubStep = CreateScriptStep("powershell", step);
                         string newYaml = GenericObjectSerialization.SerializeYaml<AzurePipelines.Step>(step);
-                        string[] newYamlSplit = newYaml.Split(Environment.NewLine);
+                        string[] newYamlSplit = newYaml.Split(System.Environment.NewLine);
                         StringBuilder yamlBuilder = new StringBuilder();
                         for (int i = 0; i < newYamlSplit.Length; i++)
                         {
@@ -1596,12 +1596,12 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
             {
                 foreach (KeyValuePair<string, string> item in step.parameters)
                 {
-                    stepParameters += item.Key + ": " + item.Value + Environment.NewLine;
+                    stepParameters += item.Key + ": " + item.Value + System.Environment.NewLine;
                 }
             }
             if (stepParameters != "")
             {
-                gitHubStep.run += Environment.NewLine + stepParameters;
+                gitHubStep.run += System.Environment.NewLine + stepParameters;
             }
 
             return gitHubStep;
