@@ -648,7 +648,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
             {
                 if (newJob.job_message != null)
                 {
-                    newJob.job_message += Environment.NewLine;
+                    newJob.job_message += System.Environment.NewLine;
                 }
             }
             if (job.continueOnError)

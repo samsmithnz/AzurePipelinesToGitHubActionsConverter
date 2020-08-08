@@ -134,7 +134,9 @@ jobs:
 pool:
   name: Hosted VS2017
   demands: 
-  - npm";
+  - npm
+  - Agent.OS -equals Windows_NT";    
+      
             Conversion conversion = new Conversion();
 
             //Act
@@ -155,7 +157,7 @@ jobs:
         {
             //Arrange
             string input = @"
-pool: windows-latest";
+pool: 'Pipeline-Demo-Windows'";
             Conversion conversion = new Conversion();
 
             //Act
@@ -165,7 +167,37 @@ pool: windows-latest";
             string expected = @"
 jobs:
   build:
-    runs-on: windows-latest";
+    runs-on: Pipeline-Demo-Windows";
+            expected = UtilityTests.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+        }     
+        
+        [TestMethod]
+        public void PoolMultipleInstancesWithDemandsTest()
+        {
+            //Arrange
+            string input = @"
+pool: 'Pipeline-Demo-Windows'
+
+stages:
+- stage: Build
+  jobs: 
+    - job: BuildSpark
+      pool:
+        name: 'Pipeline-Demo-Windows'
+        demands:
+        - Agent.OS -equals Windows_NT
+";
+            Conversion conversion = new Conversion();
+
+            //Act
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(input);
+
+            //Assert
+            string expected = @"
+jobs:
+  build:
+    runs-on: Pipeline-Demo-Windows";
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
         }

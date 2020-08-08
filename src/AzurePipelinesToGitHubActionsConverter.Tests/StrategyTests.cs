@@ -122,5 +122,49 @@ jobs:
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
         }
 
+        [TestMethod]
+        public void StrategyRunOnceWithComplexEnvironmentsDeploymentTest()
+        {
+            //Arrange
+            string input = @"
+jobs:
+  - deployment: DeployInfrastructure
+    displayName: Deploy job
+    environment: 
+      name: windows-server
+      resourceType: VirtualMachine
+      tags: web
+    pool:
+      vmImage: windows-latest     
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - task: PowerShell@2
+            displayName: 'Test'
+            inputs:
+              targetType: inline
+              script: |
+                Write-Host ""Hello world""";
+            Conversion conversion = new Conversion();
+
+            //Act
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(input);
+
+            //Assert
+            string expected = @"
+#Note: Azure DevOps strategy>runOnce>deploy does not have an equivalent in GitHub Actions yetNote: Azure DevOps job environment does not have an equivalent in GitHub Actions yet
+jobs:
+  DeployInfrastructure:
+    #: 'Note: Azure DevOps strategy>runOnce>deploy does not have an equivalent in GitHub Actions yetNote: Azure DevOps job environment does not have an equivalent in GitHub Actions yet'
+    name: Deploy job
+    runs-on: windows-latest
+    steps:
+    - name: Test
+      run: Write-Host ""Hello world""
+      shell: powershell";
+            expected = UtilityTests.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+        }
     }
 }

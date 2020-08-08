@@ -218,7 +218,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
             //Append all of the comments to the top of the file
             foreach (string item in stepComments)
             {
-                yaml = item + Environment.NewLine + yaml;
+                yaml = item + System.Environment.NewLine + yaml;
             }
 
             //Return the final conversion result, with the original (pipeline) yaml, processed (actions) yaml, and any comments
@@ -303,71 +303,142 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
             string yamlToReturn = yaml;
 
             //Process the pool first
-            if (yaml.ToLower().IndexOf("pool", StringComparison.OrdinalIgnoreCase) >= 0)
+            if (yamlToReturn.ToLower().IndexOf("pool:", StringComparison.OrdinalIgnoreCase) >= 0)
             {
                 StringBuilder newYaml = new StringBuilder();
-                foreach (string line in yaml.Split(Environment.NewLine))
+                foreach (string line in yamlToReturn.Split(System.Environment.NewLine))
                 {
-                    if (line.ToLower().IndexOf("pool", StringComparison.OrdinalIgnoreCase) >= 0)
+                    if (line.ToLower().IndexOf("pool:", StringComparison.OrdinalIgnoreCase) >= 0)
                     {
                         string[] items = line.Split(':');
                         if (items.Length > 1 && items[1].ToString().Trim().Length > 0)
                         {
-                            int prefixSpaceCount = items[0].TakeWhile(Char.IsWhiteSpace).Count();
+                            int prefixSpaceCount = items[0].TakeWhile(char.IsWhiteSpace).Count();
                             newYaml.Append(Utility.GenerateSpaces(prefixSpaceCount)); //Account for the current YAML positioning
                             newYaml.Append(items[0].Trim()); //pool
                             newYaml.Append(": ");
-                            newYaml.Append(Environment.NewLine);
+                            newYaml.Append(System.Environment.NewLine);
                             newYaml.Append(Utility.GenerateSpaces(prefixSpaceCount + 2)); //Account for the current YAML positioning and add two more spaces to indent
                             newYaml.Append("name: ");
                             newYaml.Append(items[1].Trim());
-                            newYaml.Append(Environment.NewLine);
+                            newYaml.Append(System.Environment.NewLine);
                         }
                         else
                         {
                             newYaml.Append(line);
-                            newYaml.Append(Environment.NewLine);
+                            newYaml.Append(System.Environment.NewLine);
                         }
                     }
                     else
                     {
                         newYaml.Append(line);
-                        newYaml.Append(Environment.NewLine);
+                        newYaml.Append(System.Environment.NewLine);
                     }
                 }
                 yamlToReturn = newYaml.ToString();
             }
             //Then process the demands
-            if (yaml.ToLower().IndexOf("demands", StringComparison.OrdinalIgnoreCase) >= 0)
+            if (yamlToReturn.ToLower().IndexOf(" demands:", StringComparison.OrdinalIgnoreCase) >= 0)
             {
                 StringBuilder newYaml = new StringBuilder();
-                foreach (string line in yaml.Split(Environment.NewLine))
+                foreach (string line in yamlToReturn.Split(System.Environment.NewLine))
                 {
-                    if (line.ToLower().IndexOf("demands", StringComparison.OrdinalIgnoreCase) >= 0)
+                    if (line.ToLower().IndexOf(" demands:", StringComparison.OrdinalIgnoreCase) >= 0)
                     {
                         string[] items = line.Split(':');
                         if (items.Length > 1 && items[1].ToString().Trim().Length > 0)
                         {
-                            int prefixSpaceCount = items[0].TakeWhile(Char.IsWhiteSpace).Count();
+                            int prefixSpaceCount = items[0].TakeWhile(char.IsWhiteSpace).Count();
                             newYaml.Append(Utility.GenerateSpaces(prefixSpaceCount)); //Account for the current YAML positioning
                             newYaml.Append(items[0].Trim()); //demands
                             newYaml.Append(": ");
-                            newYaml.Append(Environment.NewLine);
+                            newYaml.Append(System.Environment.NewLine);
                             newYaml.Append(Utility.GenerateSpaces(prefixSpaceCount + 2)); //Account for the current YAML positioning and add two more spaces to indent
                             newYaml.Append("- ");
                             newYaml.Append(items[1].Trim());
-                            newYaml.Append(Environment.NewLine);
+                            newYaml.Append(System.Environment.NewLine);
                         }
                         else
                         {
                             newYaml.Append(line);
-                            newYaml.Append(Environment.NewLine);
+                            newYaml.Append(System.Environment.NewLine);
                         }
                     }
                     else
                     {
                         newYaml.Append(line);
-                        newYaml.Append(Environment.NewLine);
+                        newYaml.Append(System.Environment.NewLine);
+                    }
+                }
+                yamlToReturn = newYaml.ToString();
+            }
+            //Then process environment, to convert the simple string to a resourceName
+            if (yamlToReturn.ToLower().IndexOf(" environment:", StringComparison.OrdinalIgnoreCase) >= 0)
+            {
+                StringBuilder newYaml = new StringBuilder();
+                foreach (string line in yamlToReturn.Split(System.Environment.NewLine))
+                {
+                    if (line.ToLower().IndexOf(" environment:", StringComparison.OrdinalIgnoreCase) >= 0)
+                    {
+                        string[] items = line.Split(':');
+                        if (items.Length > 1 && items[1].ToString().Trim().Length > 0)
+                        {
+                            int prefixSpaceCount = items[0].TakeWhile(char.IsWhiteSpace).Count();
+                            newYaml.Append(Utility.GenerateSpaces(prefixSpaceCount)); //Account for the current YAML positioning
+                            newYaml.Append(items[0].Trim()); //environment
+                            newYaml.Append(": ");
+                            newYaml.Append(System.Environment.NewLine);
+                            newYaml.Append(Utility.GenerateSpaces(prefixSpaceCount + 2)); //Account for the current YAML positioning and add two more spaces to indent
+                            newYaml.Append("resourceName: ");
+                            newYaml.Append(items[1].Trim());
+                            newYaml.Append(System.Environment.NewLine);
+                        }
+                        else
+                        {
+                            newYaml.Append(line);
+                            newYaml.Append(System.Environment.NewLine);
+                        }
+                    }
+                    else
+                    {
+                        newYaml.Append(line);
+                        newYaml.Append(System.Environment.NewLine);
+                    }
+                }
+                yamlToReturn = newYaml.ToString();
+            }
+            //Then process the tags (almost identical to demands)
+            //TODO: Refactor to function
+            if (yamlToReturn.ToLower().IndexOf(" tags:", StringComparison.OrdinalIgnoreCase) >= 0)
+            {
+                StringBuilder newYaml = new StringBuilder();
+                foreach (string line in yamlToReturn.Split(System.Environment.NewLine))
+                {
+                    if (line.ToLower().IndexOf(" tags:", StringComparison.OrdinalIgnoreCase) >= 0 && line.ToLower().IndexOf(" tags: |") == -1) //We don't want to catch the docker tags. This isn't perfect, but should catch most situations.
+                    {
+                        string[] items = line.Split(':');
+                        if (items.Length > 1 && items[1].ToString().Trim().Length > 0)
+                        {
+                            int prefixSpaceCount = items[0].TakeWhile(char.IsWhiteSpace).Count();
+                            newYaml.Append(Utility.GenerateSpaces(prefixSpaceCount)); //Account for the current YAML positioning
+                            newYaml.Append(items[0].Trim()); //demands
+                            newYaml.Append(": ");
+                            newYaml.Append(System.Environment.NewLine);
+                            newYaml.Append(Utility.GenerateSpaces(prefixSpaceCount + 2)); //Account for the current YAML positioning and add two more spaces to indent
+                            newYaml.Append("- ");
+                            newYaml.Append(items[1].Trim());
+                            newYaml.Append(System.Environment.NewLine);
+                        }
+                        else
+                        {
+                            newYaml.Append(line);
+                            newYaml.Append(System.Environment.NewLine);
+                        }
+                    }
+                    else
+                    {
+                        newYaml.Append(line);
+                        newYaml.Append(System.Environment.NewLine);
                     }
                 }
                 yamlToReturn = newYaml.ToString();
@@ -394,7 +465,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
             if (input.Trim().StartsWith("steps:") == false)
             {
                 //we need to add steps, before we do, we need to see if the task needs an indent
-                string[] stepLines = input.Split(Environment.NewLine);
+                string[] stepLines = input.Split(System.Environment.NewLine);
                 if (stepLines.Length > 0)
                 {
                     int i = 0;
@@ -413,12 +484,12 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                         {
                             newInput.Append(buffer);
                             newInput.Append(line);
-                            newInput.Append(Environment.NewLine);
+                            newInput.Append(System.Environment.NewLine);
                         }
                         input = newInput.ToString();
                     }
 
-                    input = "steps:" + Environment.NewLine + input;
+                    input = "steps:" + System.Environment.NewLine + input;
                 }
             }
             return input;
@@ -430,7 +501,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
 
             if (input != null)
             {
-                string[] stepLines = input.Split(Environment.NewLine);
+                string[] stepLines = input.Split(System.Environment.NewLine);
                 foreach (string line in stepLines)
                 {
                     List<string> variableResults = FindPipelineVariablesInString(line);
