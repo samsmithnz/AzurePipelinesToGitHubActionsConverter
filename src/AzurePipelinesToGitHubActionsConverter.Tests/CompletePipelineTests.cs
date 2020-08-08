@@ -1135,7 +1135,7 @@ stages:
                     DIR
                   workingDirectory: '$(Pipeline.Workspace)'
                   
-              - task: IISWebAppDeploymentOnMachineGroup@0
+              - task: IISWebAppManagementOnMachineGroup@0
                 inputs:
                   IISDeploymentType: 'IISWebsite'
                   ActionIISWebsite: 'CreateOrUpdateWebsite'

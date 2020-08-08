@@ -338,12 +338,12 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                 yamlToReturn = newYaml.ToString();
             }
             //Then process the demands
-            if (yamlToReturn.ToLower().IndexOf("demands:", StringComparison.OrdinalIgnoreCase) >= 0)
+            if (yamlToReturn.ToLower().IndexOf(" demands:", StringComparison.OrdinalIgnoreCase) >= 0)
             {
                 StringBuilder newYaml = new StringBuilder();
                 foreach (string line in yamlToReturn.Split(System.Environment.NewLine))
                 {
-                    if (line.ToLower().IndexOf("demands:", StringComparison.OrdinalIgnoreCase) >= 0)
+                    if (line.ToLower().IndexOf(" demands:", StringComparison.OrdinalIgnoreCase) >= 0)
                     {
                         string[] items = line.Split(':');
                         if (items.Length > 1 && items[1].ToString().Trim().Length > 0)
@@ -373,12 +373,12 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                 yamlToReturn = newYaml.ToString();
             }
             //Then process environment, to convert the simple string to a resourceName
-            if (yamlToReturn.ToLower().IndexOf("environment:", StringComparison.OrdinalIgnoreCase) >= 0)
+            if (yamlToReturn.ToLower().IndexOf(" environment:", StringComparison.OrdinalIgnoreCase) >= 0)
             {
                 StringBuilder newYaml = new StringBuilder();
                 foreach (string line in yamlToReturn.Split(System.Environment.NewLine))
                 {
-                    if (line.ToLower().IndexOf("environment:", StringComparison.OrdinalIgnoreCase) >= 0)
+                    if (line.ToLower().IndexOf(" environment:", StringComparison.OrdinalIgnoreCase) >= 0)
                     {
                         string[] items = line.Split(':');
                         if (items.Length > 1 && items[1].ToString().Trim().Length > 0)
@@ -409,12 +409,12 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
             }
             //Then process the tags (almost identical to demands)
             //TODO: Refactor to function
-            if (yamlToReturn.ToLower().IndexOf("tags:", StringComparison.OrdinalIgnoreCase) >= 0)
+            if (yamlToReturn.ToLower().IndexOf(" tags:", StringComparison.OrdinalIgnoreCase) >= 0)
             {
                 StringBuilder newYaml = new StringBuilder();
                 foreach (string line in yamlToReturn.Split(System.Environment.NewLine))
                 {
-                    if (line.ToLower().IndexOf("tags:", StringComparison.OrdinalIgnoreCase) >= 0)
+                    if (line.ToLower().IndexOf(" tags:", StringComparison.OrdinalIgnoreCase) >= 0 && line.ToLower().IndexOf(" tags: |") == -1) //We don't want to catch the docker tags. This isn't perfect, but should catch most situations.
                     {
                         string[] items = line.Split(':');
                         if (items.Length > 1 && items[1].ToString().Trim().Length > 0)
