@@ -28,7 +28,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.AzurePipelines
         //  services: { string: string | container } # container resources to run as a service container
         public string job { get; set; }
         public string deployment { get; set; }
-        public string environment { get; set; }
+        public JobEnvironment environment { get; set; }
         public string displayName { get; set; }
         public string dependsOn { get; set; }
         [DefaultValue("succeeded()")]

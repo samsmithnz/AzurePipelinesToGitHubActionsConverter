@@ -1113,10 +1113,10 @@ stages:
 #      - name: Art
 #        value: ""Server=.;Database=Art;Trusted_Connection=True;""
 #        
-#      environment: 
-#        name: windows-server
-#        resourceType: VirtualMachine
-#        tags: web
+      environment: 
+        name: windows-server
+        resourceType: VirtualMachine
+        tags: web
       strategy:
         runOnce:
           deploy:
