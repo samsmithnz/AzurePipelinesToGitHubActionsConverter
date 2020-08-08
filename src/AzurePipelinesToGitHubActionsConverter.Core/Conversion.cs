@@ -303,12 +303,12 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
             string yamlToReturn = yaml;
 
             //Process the pool first
-            if (yaml.ToLower().IndexOf("pool", StringComparison.OrdinalIgnoreCase) >= 0)
+            if (yamlToReturn.ToLower().IndexOf("pool:", StringComparison.OrdinalIgnoreCase) >= 0)
             {
                 StringBuilder newYaml = new StringBuilder();
-                foreach (string line in yaml.Split(Environment.NewLine))
+                foreach (string line in yamlToReturn.Split(Environment.NewLine))
                 {
-                    if (line.ToLower().IndexOf("pool", StringComparison.OrdinalIgnoreCase) >= 0)
+                    if (line.ToLower().IndexOf("pool:", StringComparison.OrdinalIgnoreCase) >= 0)
                     {
                         string[] items = line.Split(':');
                         if (items.Length > 1 && items[1].ToString().Trim().Length > 0)
@@ -338,12 +338,12 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                 yamlToReturn = newYaml.ToString();
             }
             //Then process the demands
-            if (yaml.ToLower().IndexOf("demands", StringComparison.OrdinalIgnoreCase) >= 0)
+            if (yamlToReturn.ToLower().IndexOf("demands:", StringComparison.OrdinalIgnoreCase) >= 0)
             {
                 StringBuilder newYaml = new StringBuilder();
-                foreach (string line in yaml.Split(Environment.NewLine))
+                foreach (string line in yamlToReturn.Split(Environment.NewLine))
                 {
-                    if (line.ToLower().IndexOf("demands", StringComparison.OrdinalIgnoreCase) >= 0)
+                    if (line.ToLower().IndexOf("demands:", StringComparison.OrdinalIgnoreCase) >= 0)
                     {
                         string[] items = line.Split(':');
                         if (items.Length > 1 && items[1].ToString().Trim().Length > 0)

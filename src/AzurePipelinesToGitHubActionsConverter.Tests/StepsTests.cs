@@ -550,6 +550,43 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
         }
 
         [TestMethod]
+        public void IISWebManagementStepTest()
+        {
+            //Arrange
+            Conversion conversion = new Conversion();
+            string yaml = @"
+              - task: IISWebAppManagementOnMachineGroup@0
+                inputs:
+                  IISDeploymentType: 'IISWebsite'
+                  ActionIISWebsite: 'CreateOrUpdateWebsite'
+                  WebsiteName: 'Spark'
+                  WebsitePhysicalPath: '%SystemDrive%\inetpub\wwwroot'
+                  WebsitePhysicalPathAuth: 'WebsiteUserPassThrough'
+                  AddBinding: true
+                  CreateOrUpdateAppPoolForWebsite: true
+                  ConfigureAuthenticationForWebsite: true
+                  AppPoolNameForWebsite: 'Spark'
+                  DotNetVersionForWebsite: 'v4.0'
+                  PipeLineModeForWebsite: 'Integrated'
+                  AppPoolIdentityForWebsite: 'ApplicationPoolIdentity'
+                  AnonymousAuthenticationForWebsite: true
+                  WindowsAuthenticationForWebsite: false
+                  protocol: 'http' 
+                  iPAddress: 'All Unassigned'
+                  port: '80'
+";
+
+            //Act
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineTaskToGitHubActionTask(yaml);
+
+            //Assert
+            string expected = @"
+";
+            expected = UtilityTests.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+        }
+
+        [TestMethod]
         public void SQLAzureDacPacDeployStepTest()
         {
             //Arrange
