@@ -1171,7 +1171,7 @@ stages:
 ";
 
             expected = UtilityTests.TrimNewLines(expected);
-            //Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
             Assert.IsTrue(gitHubOutput.actionsYaml != null);
             Assert.IsTrue(gitHubOutput.actionsYaml != "");
         }

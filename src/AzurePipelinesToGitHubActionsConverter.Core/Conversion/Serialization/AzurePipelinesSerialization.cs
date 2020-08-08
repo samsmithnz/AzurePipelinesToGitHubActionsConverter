@@ -17,8 +17,16 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion.Serialization
         /// <returns>Azure DevOps Pipeline with simple trigger and simple variables</returns>
         public static AzurePipelinesRoot<string[], Dictionary<string, string>> DeserializeSimpleTriggerAndSimpleVariables(string yaml)
         {
-            yaml = CleanYamlBeforeDeserialization(yaml);
-            AzurePipelinesRoot<string[], Dictionary<string, string>> azurePipeline = GenericObjectSerialization.DeserializeYaml<AzurePipelinesRoot<string[], Dictionary<string, string>>>(yaml);
+            AzurePipelinesRoot<string[], Dictionary<string, string>> azurePipeline = null;
+            try
+            {
+                yaml = CleanYamlBeforeDeserialization(yaml);
+                azurePipeline = GenericObjectSerialization.DeserializeYaml<AzurePipelinesRoot<string[], Dictionary<string, string>>>(yaml);
+            }
+            catch (Exception)
+            {
+                //Do nothing
+            }
             return azurePipeline;
         }
 
@@ -29,8 +37,16 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion.Serialization
         /// <returns>Azure DevOps Pipeline with simple trigger and complex variables</returns>
         public static AzurePipelinesRoot<string[], AzurePipelines.Variable[]> DeserializeSimpleTriggerAndComplexVariables(string yaml)
         {
-            yaml = CleanYamlBeforeDeserialization(yaml);
-            AzurePipelinesRoot<string[], AzurePipelines.Variable[]> azurePipeline = GenericObjectSerialization.DeserializeYaml<AzurePipelinesRoot<string[], AzurePipelines.Variable[]>>(yaml);
+            AzurePipelinesRoot<string[], AzurePipelines.Variable[]> azurePipeline = null;
+            try
+            {
+                yaml = CleanYamlBeforeDeserialization(yaml);
+                azurePipeline = GenericObjectSerialization.DeserializeYaml<AzurePipelinesRoot<string[], AzurePipelines.Variable[]>>(yaml);
+            }
+            catch (Exception)
+            {
+                //Do nothing
+            }
             return azurePipeline;
         }
 
@@ -41,8 +57,16 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion.Serialization
         /// <returns>Azure DevOps Pipeline with complex trigger and simple variables</returns>
         public static AzurePipelinesRoot<AzurePipelines.Trigger, Dictionary<string, string>> DeserializeComplexTriggerAndSimpleVariables(string yaml)
         {
-            yaml = CleanYamlBeforeDeserialization(yaml);
-            AzurePipelinesRoot<AzurePipelines.Trigger, Dictionary<string, string>> azurePipeline = GenericObjectSerialization.DeserializeYaml<AzurePipelinesRoot<AzurePipelines.Trigger, Dictionary<string, string>>>(yaml);
+            AzurePipelinesRoot<AzurePipelines.Trigger, Dictionary<string, string>> azurePipeline = null;
+            try
+            {
+                yaml = CleanYamlBeforeDeserialization(yaml);
+                azurePipeline = GenericObjectSerialization.DeserializeYaml<AzurePipelinesRoot<AzurePipelines.Trigger, Dictionary<string, string>>>(yaml);
+            }
+            catch (Exception)
+            {
+                //Do nothing
+            }
             return azurePipeline;
         }
 
@@ -53,8 +77,18 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion.Serialization
         /// <returns>Azure DevOps Pipeline with complex trigger and complex variables</returns>
         public static AzurePipelinesRoot<AzurePipelines.Trigger, AzurePipelines.Variable[]> DeserializeComplexTriggerAndComplexVariables(string yaml)
         {
+            //DANGER WILL ROBINSON - DANGER
+            //Unlike the other deserializers, we need to leave this last error handler off - so that errors can be returned to the client, where as the others can fail so that they can try the next deserializer method.
+            AzurePipelinesRoot<AzurePipelines.Trigger, AzurePipelines.Variable[]> azurePipeline = null;
+            //try
+            //{
             yaml = CleanYamlBeforeDeserialization(yaml);
-            AzurePipelinesRoot<AzurePipelines.Trigger, AzurePipelines.Variable[]> azurePipeline = GenericObjectSerialization.DeserializeYaml<AzurePipelinesRoot<AzurePipelines.Trigger, AzurePipelines.Variable[]>>(yaml);
+            azurePipeline = GenericObjectSerialization.DeserializeYaml<AzurePipelinesRoot<AzurePipelines.Trigger, AzurePipelines.Variable[]>>(yaml);
+            //}
+            //catch (Exception)
+            //{
+            //    //Do nothing
+            //}
             return azurePipeline;
         }
 
