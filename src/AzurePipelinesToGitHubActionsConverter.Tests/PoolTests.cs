@@ -196,7 +196,7 @@ stages:
             //Assert
             string expected = @"
 jobs:
-  build:
+  Build_Stage_BuildSpark:
     runs-on: Pipeline-Demo-Windows";
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
