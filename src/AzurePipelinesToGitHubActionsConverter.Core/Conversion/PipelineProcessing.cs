@@ -18,8 +18,8 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
         /// <param name="simpleTrigger">When the YAML has a simple trigger, (String[]). Can be null</param>
         /// <param name="complexTrigger">When the YAML has a complex trigger. Can be null</param>
         /// <returns>GitHub Actions object</returns>
-        public GitHubActionsRoot ProcessPipeline(AzurePipelinesRoot<TTriggers, TVariables> azurePipeline, 
-            string[] simpleTrigger, AzurePipelines.Trigger complexTrigger, 
+        public GitHubActionsRoot ProcessPipeline(AzurePipelinesRoot<TTriggers, TVariables> azurePipeline,
+            string[] simpleTrigger, AzurePipelines.Trigger complexTrigger,
             Dictionary<string, string> simpleVariables, AzurePipelines.Variable[] complexVariables)
         {
             VariableList = new List<string>();
@@ -172,7 +172,10 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                 int jobCounter = 0;
                 foreach (Stage stage in azurePipeline.stages)
                 {
-                    jobCounter += stage.jobs.Length;
+                    if (stage.jobs != null)
+                    {
+                        jobCounter += stage.jobs.Length;
+                    }
                 }
                 azurePipeline.jobs = new AzurePipelines.Job[jobCounter];
 
@@ -180,23 +183,26 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                 int currentIndex = 0;
                 foreach (Stage stage in azurePipeline.stages)
                 {
-                    int j = 0;
-                    for (int i = currentIndex; i < currentIndex + stage.jobs.Length; i++)
+                    if (stage.jobs != null)
                     {
-                        //Get the job name
-                        string jobName = stage.jobs[j].job;
-                        if (jobName == null && stage.jobs[j].template != null)
+                        int j = 0;
+                        for (int i = currentIndex; i < currentIndex + stage.jobs.Length; i++)
                         {
-                            jobName = "Template";
+                            //Get the job name
+                            string jobName = stage.jobs[j].job;
+                            if (jobName == null && stage.jobs[j].template != null)
+                            {
+                                jobName = "Template";
+                            }
+                            //Rename the job, using the stage name as prefix, so that we keep the job names unique
+                            stage.jobs[j].job = stage.stage + "_Stage_" + jobName;
+                            Console.WriteLine("This variable is not needed in actions: " + stage.displayName);
+                            azurePipeline.jobs[i] = stage.jobs[j];
+                            azurePipeline.jobs[i].condition = stage.condition;
+                            j++;
                         }
-                        //Rename the job, using the stage name as prefix, so that we keep the job names unique
-                        stage.jobs[j].job = stage.stage + "_Stage_" + jobName;
-                        Console.WriteLine("This variable is not needed in actions: " + stage.displayName);
-                        azurePipeline.jobs[i] = stage.jobs[j];
-                        azurePipeline.jobs[i].condition = stage.condition;
-                        j++;
+                        currentIndex += stage.jobs.Length;
                     }
-                    currentIndex += stage.jobs.Length;
                 }
             }
 
@@ -216,6 +222,10 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                     }
                 }
                 gitHubActions.jobs = ProcessJobs(azurePipeline.jobs, azurePipeline.resources);
+                if (gitHubActions.jobs.Count == 0)
+                {
+                    gitHubActions.messages.Add("Note that although having no jobs is valid YAML, it is not a valid GitHub Action.");
+                }
             }
 
             //Pool + Steps (When there are no jobs defined)
