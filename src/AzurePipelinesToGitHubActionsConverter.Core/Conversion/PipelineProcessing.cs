@@ -172,37 +172,43 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                 int jobCounter = 0;
                 foreach (Stage stage in azurePipeline.stages)
                 {
-                    jobCounter += stage.jobs.Length;
+                    if (stage.jobs != null)
+                    {
+                        jobCounter += stage.jobs.Length;
+                    }
                 }
                 azurePipeline.jobs = new AzurePipelines.Job[jobCounter];
                 //We are going to take each stage and assign it a set of jobs
                 int currentIndex = 0;
                 foreach (Stage stage in azurePipeline.stages)
                 {
-                    int j = 0;
-                    for (int i = 0; i < stage.jobs.Length; i++)
+                    if (stage.jobs != null)
                     {
-                        //Get the job name
-                        string jobName = stage.jobs[j].job;
-                        if (jobName == null && stage.jobs[i].deployment != null)
+                        int j = 0;
+                        for (int i = 0; i < stage.jobs.Length; i++)
                         {
-                            jobName = stage.jobs[i].deployment;
+                            //Get the job name
+                            string jobName = stage.jobs[j].job;
+                            if (jobName == null && stage.jobs[i].deployment != null)
+                            {
+                                jobName = stage.jobs[i].deployment;
+                            }
+                            if (jobName == null && stage.jobs[j].template != null)
+                            {
+                                jobName = "Template";
+                            }
+                            if (jobName == null)
+                            {
+                                jobName = "job" + currentIndex.ToString();
+                            }
+                            //Rename the job, using the stage name as prefix, so that we keep the job names unique
+                            stage.jobs[j].job = stage.stage + "_Stage_" + jobName;
+                            Console.WriteLine("This variable is not needed in actions: " + stage.displayName);
+                            azurePipeline.jobs[currentIndex] = stage.jobs[j];
+                            azurePipeline.jobs[currentIndex].condition = stage.condition;
+                            j++;
+                            currentIndex++;
                         }
-                        if (jobName == null && stage.jobs[j].template != null)
-                        {
-                            jobName = "Template";
-                        }
-                        if (jobName == null)
-                        {
-                            jobName = "job" + currentIndex.ToString();
-                        }
-                        //Rename the job, using the stage name as prefix, so that we keep the job names unique
-                        stage.jobs[j].job = stage.stage + "_Stage_" + jobName;
-                        Console.WriteLine("This variable is not needed in actions: " + stage.displayName);
-                        azurePipeline.jobs[currentIndex] = stage.jobs[j];
-                        azurePipeline.jobs[currentIndex].condition = stage.condition;
-                        j++;
-                        currentIndex++;
                     }
                 }
             }
@@ -230,7 +236,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
             }
 
             //Pool + Steps (When there are no jobs defined)
-            if ((azurePipeline.pool != null && azurePipeline.jobs== null) || (azurePipeline.steps != null && azurePipeline.steps.Length > 0))
+            if ((azurePipeline.pool != null && azurePipeline.jobs == null) || (azurePipeline.steps != null && azurePipeline.steps.Length > 0))
             {
                 //Steps only have one job, so we just create it here
                 gitHubActions.jobs = new Dictionary<string, GitHubActions.Job>
