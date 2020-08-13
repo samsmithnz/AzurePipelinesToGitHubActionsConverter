@@ -264,6 +264,62 @@ env:
 
 
         [TestMethod]
+        public void VariablesWithConditionalStatementsTest()
+        {
+            //Arrange
+            string input = @"
+variables:
+  # Agent VM image name
+  vmImageName: 'ubuntu-latest'
+  
+  {{#if reviewApp}}
+  # Name of the new namespace being created to deploy the PR changes.
+  k8sNamespaceForPR: 'inconditionalstatement'
+  {{/if}}";
+            Conversion conversion = new Conversion();
+
+            //Act
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(input);
+
+            //Assert
+            string expected = @"
+env:
+  vmImageName: ubuntu-latest
+  k8sNamespaceForPR: inconditionalstatement";
+            expected = UtilityTests.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+        }
+
+
+        [TestMethod]
+        public void VariablesWithConditionalStatementsVariationTest()
+        {
+            //Arrange
+            string input = @"
+  variables:
+    ${{ if ne(variables['Build.SourceBranchName'], 'master') }}:
+      prId: '00A'
+    ${{ if eq(variables['Build.SourceBranchName'], 'master') }}:
+      prId: '00B'
+    prUC: '002'
+    prLC: '003'";
+            Conversion conversion = new Conversion();
+
+            //Act
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(input);
+
+            //Assert
+            string expected = @"
+env:
+  prId: 00B
+  prUC: 002
+  prLC: 003";
+            expected = UtilityTests.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+        }
+
+
+        [TestMethod]
         public void ParametersReservedWordTest()
         {
             //Arrange
