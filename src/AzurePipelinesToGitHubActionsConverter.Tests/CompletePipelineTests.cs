@@ -1128,12 +1128,12 @@ stages:
                   targetPath: '$(Pipeline.Workspace)'
 
 
-              - task: CmdLine@2
-                inputs:
-                  script: |
-                    echo Write your commands here    
-                    DIR
-                  workingDirectory: '$(Pipeline.Workspace)'
+              #- task: CmdLine@2
+              #  inputs:
+              #    script: |
+              #      echo Write your commands here    
+              #      DIR
+              #    workingDirectory: '$(Pipeline.Workspace)'
                   
               - task: IISWebAppManagementOnMachineGroup@0
                 inputs:
@@ -1167,11 +1167,51 @@ stages:
 
             //Assert
             string expected = @"
-
+#Note: Error! This step does not have a conversion path yet: IISWebAppDeploymentOnMachineGroup@0
+#Note: Error! This step does not have a conversion path yet: IISWebAppManagementOnMachineGroup@0
+#Note: Error! This step does not have a conversion path yet: DownloadPipelineArtifact@2
+#Note: Azure DevOps strategy>runOnce>deploy does not have an equivalent in GitHub Actions yetNote: Azure DevOps job environment does not have an equivalent in GitHub Actions yet
+#Note: This is a third party action: https://github.com/warrenbuckley/Setup-Nuget
+on:
+  push:
+    branches:
+    - master
+env:
+  solution: '**/*.sln'
+  buildPlatform: Any CPU
+  buildConfiguration: Release
+jobs:
+  Build_Stage_BuildSpark:
+    runs-on: Pipeline-Demo-Windows
+    steps:
+    - uses: actions/checkout@v2
+    - uses: microsoft/setup-msbuild@v1.0.0
+    - #: 'Note: This is a third party action: https://github.com/warrenbuckley/Setup-Nuget'
+      uses: warrenbuckley/Setup-Nuget@v1
+    - run: nuget  ${{ env.solution }}
+      shell: powershell
+    - run: msbuild '${{ env.solution }}' /p:configuration='${{ env.buildConfiguration }}' /p:platform='${{ env.buildPlatform }}' /p:DeployOnBuild=true /p:WebPublishMethod=Package /p:PackageAsSingleFile=true /p:SkipInvalidConfigurations=true /p:PackageLocation=""${{ env.build.artifactStagingDirectory }}""
+    - uses: actions/upload-artifact@v2
+      with:
+        path: ${{ env.build.artifactStagingDirectory }}
+  Deploy_Stage_job1:
+    #: 'Note: Azure DevOps strategy>runOnce>deploy does not have an equivalent in GitHub Actions yetNote: Azure DevOps job environment does not have an equivalent in GitHub Actions yet'
+    env:
+      Art: Server=.;Database=Art;Trusted_Connection=True;
+    steps:
+    - #: 'Note: Error! This step does not have a conversion path yet: DownloadPipelineArtifact@2'
+      run: 'Write-Host Note: Error! This step does not have a conversion path yet: DownloadPipelineArtifact@2 #task: DownloadPipelineArtifact@2#inputs:#  buildtype: current#  artifactname: WebDeploy#  targetpath: ${{ env.Pipeline.Workspace }}'
+      shell: powershell
+    - #: 'Note: Error! This step does not have a conversion path yet: IISWebAppManagementOnMachineGroup@0'
+      run: ""Write-Host Note: Error! This step does not have a conversion path yet: IISWebAppManagementOnMachineGroup@0 #task: IISWebAppManagementOnMachineGroup@0#inputs:#  iisdeploymenttype: IISWebsite#  actioniiswebsite: CreateOrUpdateWebsite#  websitename: Spark#  websitephysicalpath: '%SystemDrive%\\inetpub\\wwwroot'#  websitephysicalpathauth: WebsiteUserPassThrough#  addbinding: true#  createorupdateapppoolforwebsite: true#  configureauthenticationforwebsite: true#  apppoolnameforwebsite: Spark#  dotnetversionforwebsite: v4.0#  pipelinemodeforwebsite: Integrated#  apppoolidentityforwebsite: ApplicationPoolIdentity#  anonymousauthenticationforwebsite: true#  windowsauthenticationforwebsite: false#  protocol: http#  ipaddress: All Unassigned#  port: 80""
+      shell: powershell
+    - #: 'Note: Error! This step does not have a conversion path yet: IISWebAppDeploymentOnMachineGroup@0'
+      run: 'Write-Host Note: Error! This step does not have a conversion path yet: IISWebAppDeploymentOnMachineGroup@0 #task: IISWebAppDeploymentOnMachineGroup@0#inputs:#  websitename: Spark#  package: ${{ env.Pipeline.Workspace }}\Art.Web.zip#  xmlvariablesubstitution: true'
+      shell: powershell
 ";
 
             expected = UtilityTests.TrimNewLines(expected);
-            //Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
             Assert.IsTrue(gitHubOutput.actionsYaml != null);
             Assert.IsTrue(gitHubOutput.actionsYaml != "");
         }
