@@ -55,6 +55,9 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                     case "DOWNLOADBUILDARTIFACTS@0":
                         gitHubStep = CreateDownloadBuildArtifacts(step);
                         break;
+                    //case "DOWNLOADPIPELINEARTIFACTS@2":
+                    //    gitHubStep = CreateDownloadPipelineArtifacts(step);
+                    //    break;
                     case "GRADLE@2":
                         gitHubStep = CreateGradleStep(step);
                         break;
@@ -80,6 +83,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                         gitHubStep = CreateScriptStep("powershell", step);
                         break;
                     case "PUBLISHPIPELINEARTIFACT@0":
+                    case "PUBLISHPIPELINEARTIFACT@1":
                     case "PUBLISHBUILDARTIFACTS@1":
                         gitHubStep = CreatePublishBuildArtifactsStep(step);
                         break;
@@ -277,6 +281,47 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
             //    name: serviceapp
             return gitHubStep;
         }
+
+        //private GitHubActions.Step CreateDownloadPipelineArtifacts(AzurePipelines.Step step)
+        //{
+        //    string artifactName = GetStepInput(step, "artifact");
+
+        ////buildtype: current#  
+        ////artifactname: WebDeploy#  
+        ////targetpath: ${{ env.Pipeline.Workspace }}
+
+
+        //    GitHubActions.Step gitHubStep = new GitHubActions.Step
+        //    {
+        //        uses = "actions/download-artifact@v1.0.0",
+        //        with = new Dictionary<string, string>
+        //        {
+        //            { "name", artifactName }
+        //        }
+        //    };
+
+        //    //From: 
+        //    //- task: DownloadPipelineArtifact@2
+        //    //  inputs:
+        //    //    #source: 'current' # Options: current, specific
+        //    //    #project: # Required when source == Specific
+        //    //    #pipeline: # Required when source == Specific
+        //    //    #preferTriggeringPipeline: false # Optional
+        //    //    #runVersion: 'latest' # Required when source == Specific# Options: latest, latestFromBranch, specific
+        //    //    #runBranch: 'refs/heads/master' # Required when source == Specific && RunVersion == LatestFromBranch
+        //    //    #runId: # Required when source == Specific && RunVersion == Specific
+        //    //    #tags: # Optional
+        //    //    #artifact: # Optional
+        //    //    #patterns: '**' # Optional
+        //    //    #path: '$(Pipeline.Workspace)' 
+
+        //    //To:
+        //    //- name: Download serviceapp artifact
+        //    //  uses: actions/download-artifact@v1.0.0
+        //    //  with:
+        //    //    name: serviceapp
+        //    return gitHubStep;
+        //}
 
         private GitHubActions.Step CreateCopyFilesStep(AzurePipelines.Step step)
         {
@@ -1524,6 +1569,10 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                 path = GetStepInput(step, "pathtopublish");
             }
             else if (step.task?.ToUpper() == "PUBLISHPIPELINEARTIFACT@0")
+            {
+                path = GetStepInput(step, "targetpath");
+            }
+            else if (step.task?.ToUpper() == "PUBLISHPIPELINEARTIFACT@1")
             {
                 path = GetStepInput(step, "targetpath");
             }
