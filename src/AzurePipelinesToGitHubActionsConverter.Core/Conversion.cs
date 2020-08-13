@@ -26,7 +26,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
             GitHubActionsRoot gitHubActions = null;
 
             //Run some processing to convert simple pools and demands to the complex editions, to avoid adding to the combinations below.
-            input = ProcessSimplePoolsAndSimpleDemands(input);
+            input = CleanYamlBeforeDeserialization(input);
 
             //Triggers and variables are hard, as there are two data types for each that can exist, so we need to go with the most common type and handle the less common type with exceptions. 
             //There are 4 combinations here, simple/simple, simple/complex, complex/simple, and complex/complex
@@ -284,7 +284,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
             };
         }
 
-        public string ProcessSimplePoolsAndSimpleDemands(string yaml)
+        public string CleanYamlBeforeDeserialization(string yaml)
         {
             if (yaml == null)
             {
@@ -300,13 +300,13 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
             //
             //We also repeat this same logic with demands, converting string to string[]
 
-            string yamlToReturn = yaml;
+            string processedYaml = yaml;
 
             //Process the pool first
-            if (yamlToReturn.ToLower().IndexOf("pool:", StringComparison.OrdinalIgnoreCase) >= 0)
+            if (processedYaml.ToLower().IndexOf("pool:", StringComparison.OrdinalIgnoreCase) >= 0)
             {
                 StringBuilder newYaml = new StringBuilder();
-                foreach (string line in yamlToReturn.Split(System.Environment.NewLine))
+                foreach (string line in processedYaml.Split(System.Environment.NewLine))
                 {
                     if (line.ToLower().IndexOf("pool:", StringComparison.OrdinalIgnoreCase) >= 0)
                     {
@@ -335,13 +335,13 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                         newYaml.Append(System.Environment.NewLine);
                     }
                 }
-                yamlToReturn = newYaml.ToString();
+                processedYaml = newYaml.ToString();
             }
             //Then process the demands
-            if (yamlToReturn.ToLower().IndexOf(" demands:", StringComparison.OrdinalIgnoreCase) >= 0)
+            if (processedYaml.ToLower().IndexOf(" demands:", StringComparison.OrdinalIgnoreCase) >= 0)
             {
                 StringBuilder newYaml = new StringBuilder();
-                foreach (string line in yamlToReturn.Split(System.Environment.NewLine))
+                foreach (string line in processedYaml.Split(System.Environment.NewLine))
                 {
                     if (line.ToLower().IndexOf(" demands:", StringComparison.OrdinalIgnoreCase) >= 0)
                     {
@@ -370,13 +370,13 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                         newYaml.Append(System.Environment.NewLine);
                     }
                 }
-                yamlToReturn = newYaml.ToString();
+                processedYaml = newYaml.ToString();
             }
             //Then process environment, to convert the simple string to a resourceName
-            if (yamlToReturn.ToLower().IndexOf(" environment:", StringComparison.OrdinalIgnoreCase) >= 0)
+            if (processedYaml.ToLower().IndexOf(" environment:", StringComparison.OrdinalIgnoreCase) >= 0)
             {
                 StringBuilder newYaml = new StringBuilder();
-                foreach (string line in yamlToReturn.Split(System.Environment.NewLine))
+                foreach (string line in processedYaml.Split(System.Environment.NewLine))
                 {
                     if (line.ToLower().IndexOf(" environment:", StringComparison.OrdinalIgnoreCase) >= 0)
                     {
@@ -405,14 +405,14 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                         newYaml.Append(System.Environment.NewLine);
                     }
                 }
-                yamlToReturn = newYaml.ToString();
+                processedYaml = newYaml.ToString();
             }
             //Then process the tags (almost identical to demands)
             //TODO: Refactor to function
-            if (yamlToReturn.ToLower().IndexOf(" tags:", StringComparison.OrdinalIgnoreCase) >= 0)
+            if (processedYaml.ToLower().IndexOf(" tags:", StringComparison.OrdinalIgnoreCase) >= 0)
             {
                 StringBuilder newYaml = new StringBuilder();
-                foreach (string line in yamlToReturn.Split(System.Environment.NewLine))
+                foreach (string line in processedYaml.Split(System.Environment.NewLine))
                 {
                     if (line.ToLower().IndexOf(" tags:", StringComparison.OrdinalIgnoreCase) >= 0 && line.ToLower().IndexOf(" tags: |") == -1) //We don't want to catch the docker tags. This isn't perfect, but should catch most situations.
                     {
@@ -441,10 +441,34 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                         newYaml.Append(System.Environment.NewLine);
                     }
                 }
-                yamlToReturn = newYaml.ToString();
+                processedYaml = newYaml.ToString();
+            }
+            //Process conditional variables
+            if (processedYaml.IndexOf("{{#if") >= 0 || processedYaml.IndexOf("{{ #if") >= 0 ||
+                processedYaml.IndexOf("${{if") >= 0 || processedYaml.IndexOf("${{ if") >= 0 )
+            {
+                StringBuilder sb = new StringBuilder();
+                foreach (string line in processedYaml.Split(System.Environment.NewLine))
+                {
+                    if (line.IndexOf("{{#if") >= 0 || line.IndexOf("{{ #if") >= 0 ||
+                        line.IndexOf("${{if") >= 0 || line.IndexOf("${{ if") >= 0) 
+                    {
+                        //don't add line, remove
+                    }
+                    else if (line.IndexOf("{{/if") >= 0) //ending if 
+                    {
+                        //don't add line, remove
+                    }
+                    else
+                    {
+                        sb.Append(line);
+                        sb.Append(System.Environment.NewLine);
+                    }
+                }
+                processedYaml = sb.ToString();
             }
 
-            return yamlToReturn;
+            return processedYaml;
 
         }
 
