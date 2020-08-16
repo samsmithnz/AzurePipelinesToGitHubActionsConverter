@@ -325,12 +325,8 @@ env:
             //Arrange
             string input = @"
 parameters: # defaults for any parameters that aren't specified
-  #environment: 'Dev'
-  #strategy: 'have one'
-  #pool: 'heated'
-  #variables: 'yes'
-  #workspace: 'no'
   plainVar: 'ok'
+  environment2: 'Dev'
 ";
             Conversion conversion = new Conversion();
 
@@ -341,6 +337,7 @@ parameters: # defaults for any parameters that aren't specified
             string expected = @"
 env:
   plainVar: ok
+  environment2: Dev
 ";
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);

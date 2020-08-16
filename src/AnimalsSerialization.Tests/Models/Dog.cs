@@ -4,6 +4,7 @@ using System.Text;
 
 namespace AnimalSerialization.Tests.Models
 {
+    [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
     public class Dog
     {
         public string Name { get; set; }

@@ -238,6 +238,10 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
             {
                 runScript += GetStepInput(step, "projects") + " ";
             }
+            if (step.inputs.ContainsKey("packagesToPack") == true)
+            {
+                runScript += GetStepInput(step, "packagesToPack") + " ";
+            }
             if (step.inputs.ContainsKey("arguments") == true)
             {
                 runScript += GetStepInput(step, "arguments") + " ";

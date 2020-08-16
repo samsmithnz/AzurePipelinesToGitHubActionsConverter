@@ -4,6 +4,7 @@ using System.Text;
 
 namespace AnimalSerialization.Tests.Conversion
 {
+    [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
     public class FarmResponse
     {
         public FarmResponse()

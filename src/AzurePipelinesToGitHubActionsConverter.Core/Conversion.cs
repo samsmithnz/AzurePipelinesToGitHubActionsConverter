@@ -26,6 +26,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
             GitHubActionsRoot gitHubActions = null;
 
             //Run some processing to convert simple pools and demands to the complex editions, to avoid adding to the combinations below.
+            //Also clean and remove variables with reserved words that get into trouble during deserialization. HACK alert... :(
             input = CleanYamlBeforeDeserialization(input);
 
             //Start the main deserialization methods
