@@ -584,7 +584,10 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                     //groups
                     if (variables[i].group != null)
                     {
-                        processedVariables.Add("group", variables[i].group);
+                        if (!processedVariables.ContainsKey("group"))
+                            processedVariables.Add("group", variables[i].group);
+                        else
+                            WriteLine("group: only 1 variable group is supported at present");
                     }
                     //template
                     if (variables[i].template != null)
