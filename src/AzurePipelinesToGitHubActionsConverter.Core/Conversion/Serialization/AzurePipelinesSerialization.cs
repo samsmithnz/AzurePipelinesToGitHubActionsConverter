@@ -25,6 +25,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion.Serialization
             }
             catch (Exception)
             {
+                Debug.WriteLine($"{nameof(DeserializeSimpleTriggerAndSimpleVariables)} swallowed an exception, to be reviewed...");
                 //Do nothing
             }
             return azurePipeline;
@@ -45,6 +46,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion.Serialization
             }
             catch (Exception)
             {
+                Debug.WriteLine($"{nameof(DeserializeSimpleTriggerAndComplexVariables)} swallowed an exception, to be reviewed...");
                 //Do nothing
             }
             return azurePipeline;
@@ -65,6 +67,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion.Serialization
             }
             catch (Exception)
             {
+                Debug.WriteLine($"{nameof(DeserializeComplexTriggerAndSimpleVariables)} swallowed an exception, to be reviewed...");
                 //Do nothing
             }
             return azurePipeline;
