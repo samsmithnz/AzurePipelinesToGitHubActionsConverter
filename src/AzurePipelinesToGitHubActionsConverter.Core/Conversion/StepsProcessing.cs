@@ -231,7 +231,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
         private GitHubActions.Step CreateDotNetCommandStep(AzurePipelines.Step step)
         {
             if (step.inputs is null)
-                return null;//this is an misconfigured task
+                return null;//this is a misconfigured task
             string runScript = "dotnet ";
             if (step.inputs.ContainsKey("command") == true)
             {
