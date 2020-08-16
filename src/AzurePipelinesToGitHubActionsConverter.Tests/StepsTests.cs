@@ -498,7 +498,8 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
 
             //Assert
             string expected = @"
-
+- name: Restore
+  run: dotnet restore MyProject/MyProject.Models/MyProject.Models.csproj
 ";
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
@@ -603,7 +604,8 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
 
             //Assert
             string expected = @"
-
+- #: This DotNetCoreCLI task is misconfigured, inputs are required
+  name: dotnet build but no inputs
 ";
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
