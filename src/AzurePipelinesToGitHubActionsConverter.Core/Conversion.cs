@@ -13,6 +13,9 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
     public class Conversion
     {
         private string _matrixVariableName;
+        private bool _verbose;
+
+        public Conversion(bool verbose = true) => _verbose = verbose;
 
         /// <summary>
         /// Convert an entire Azure DevOps Pipeline to a GitHub Actions 
@@ -37,7 +40,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                 if (azurePipelineWithSimpleTriggerAndSimpleVariables != null)
                 {
                     success = true;
-                    var processing = new PipelineProcessing<string[], Dictionary<string, string>>();
+                    var processing = new PipelineProcessing<string[], Dictionary<string, string>>(_verbose);
                     gitHubActions = processing.ProcessPipeline(azurePipelineWithSimpleTriggerAndSimpleVariables, azurePipelineWithSimpleTriggerAndSimpleVariables.trigger, null, azurePipelineWithSimpleTriggerAndSimpleVariables.variables, null);
                     if (processing.MatrixVariableName != null)
                     {
@@ -53,7 +56,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                 if (azurePipelineWithSimpleTriggerAndComplexVariables != null)
                 {
                     success = true;
-                    var processing = new PipelineProcessing<string[], AzurePipelines.Variable[]>();
+                    var processing = new PipelineProcessing<string[], AzurePipelines.Variable[]>(_verbose);
                     gitHubActions = processing.ProcessPipeline(azurePipelineWithSimpleTriggerAndComplexVariables, azurePipelineWithSimpleTriggerAndComplexVariables.trigger, null, null, azurePipelineWithSimpleTriggerAndComplexVariables.variables);
                     if (processing.MatrixVariableName != null)
                     {
@@ -69,7 +72,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                 if (azurePipelineWithComplexTriggerAndSimpleVariables != null)
                 {
                     success = true;
-                    var processing = new PipelineProcessing<AzurePipelines.Trigger, Dictionary<string, string>>();
+                    var processing = new PipelineProcessing<AzurePipelines.Trigger, Dictionary<string, string>>(_verbose);
                     gitHubActions = processing.ProcessPipeline(azurePipelineWithComplexTriggerAndSimpleVariables, null, azurePipelineWithComplexTriggerAndSimpleVariables.trigger, azurePipelineWithComplexTriggerAndSimpleVariables.variables, null);
                     if (processing.MatrixVariableName != null)
                     {
@@ -85,7 +88,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                 if (azurePipelineWithComplexTriggerAndComplexVariables != null)
                 {
                     success = true;
-                    var processing = new PipelineProcessing<AzurePipelines.Trigger, AzurePipelines.Variable[]>();
+                    var processing = new PipelineProcessing<AzurePipelines.Trigger, AzurePipelines.Variable[]>(_verbose);
                     gitHubActions = processing.ProcessPipeline(azurePipelineWithComplexTriggerAndComplexVariables, null, azurePipelineWithComplexTriggerAndComplexVariables.trigger, null, azurePipelineWithComplexTriggerAndComplexVariables.variables);
                     if (processing.MatrixVariableName != null)
                     {
@@ -377,13 +380,13 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
             }
             //Process conditional variables
             if (processedYaml.IndexOf("{{#if") >= 0 || processedYaml.IndexOf("{{ #if") >= 0 ||
-                processedYaml.IndexOf("${{if") >= 0 || processedYaml.IndexOf("${{ if") >= 0 )
+                processedYaml.IndexOf("${{if") >= 0 || processedYaml.IndexOf("${{ if") >= 0)
             {
                 StringBuilder sb = new StringBuilder();
                 foreach (string line in processedYaml.Split(System.Environment.NewLine))
                 {
                     if (line.IndexOf("{{#if") >= 0 || line.IndexOf("{{ #if") >= 0 ||
-                        line.IndexOf("${{if") >= 0 || line.IndexOf("${{ if") >= 0) 
+                        line.IndexOf("${{if") >= 0 || line.IndexOf("${{ if") >= 0)
                     {
                         //don't add line, remove
                     }

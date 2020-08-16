@@ -10,6 +10,15 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
     {
         public List<string> VariableList;
         public string MatrixVariableName;
+        private bool _verbose;
+
+        public PipelineProcessing(bool verbose) => _verbose = verbose;
+
+        void WriteLine(string message)
+        {
+            if (_verbose)
+                Console.WriteLine(message);
+        }
 
         /// <summary>
         /// Process an Azure DevOps Pipeline, converting it to a GitHub Action
@@ -93,33 +102,33 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                     {
                         if (azurePipeline.resources.pipelines[0].pipeline != null)
                         {
-                            Console.WriteLine("pipeline: " + azurePipeline.resources.pipelines[0].pipeline);
+                            WriteLine("pipeline: " + azurePipeline.resources.pipelines[0].pipeline);
                         }
                         if (azurePipeline.resources.pipelines[0].project != null)
                         {
-                            Console.WriteLine("project: " + azurePipeline.resources.pipelines[0].project);
+                            WriteLine("project: " + azurePipeline.resources.pipelines[0].project);
                         }
                         if (azurePipeline.resources.pipelines[0].source != null)
                         {
-                            Console.WriteLine("source: " + azurePipeline.resources.pipelines[0].source);
+                            WriteLine("source: " + azurePipeline.resources.pipelines[0].source);
                         }
                         if (azurePipeline.resources.pipelines[0].branch != null)
                         {
-                            Console.WriteLine("branch: " + azurePipeline.resources.pipelines[0].branch);
+                            WriteLine("branch: " + azurePipeline.resources.pipelines[0].branch);
                         }
                         if (azurePipeline.resources.pipelines[0].version != null)
                         {
-                            Console.WriteLine("version: " + azurePipeline.resources.pipelines[0].version);
+                            WriteLine("version: " + azurePipeline.resources.pipelines[0].version);
                         }
                         if (azurePipeline.resources.pipelines[0].trigger != null)
                         {
                             if (azurePipeline.resources.pipelines[0].trigger.autoCancel)
                             {
-                                Console.WriteLine("autoCancel: " + azurePipeline.resources.pipelines[0].trigger.autoCancel);
+                                WriteLine("autoCancel: " + azurePipeline.resources.pipelines[0].trigger.autoCancel);
                             }
                             if (azurePipeline.resources.pipelines[0].trigger.batch)
                             {
-                                Console.WriteLine("batch: " + azurePipeline.resources.pipelines[0].trigger.batch);
+                                WriteLine("batch: " + azurePipeline.resources.pipelines[0].trigger.batch);
                             }
                         }
 
@@ -135,31 +144,31 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                     {
                         if (azurePipeline.resources.repositories[0].repository != null)
                         {
-                            Console.WriteLine("repository: " + azurePipeline.resources.repositories[0].repository);
+                            WriteLine("repository: " + azurePipeline.resources.repositories[0].repository);
                         }
                         if (azurePipeline.resources.repositories[0].type != null)
                         {
-                            Console.WriteLine("type: " + azurePipeline.resources.repositories[0].type);
+                            WriteLine("type: " + azurePipeline.resources.repositories[0].type);
                         }
                         if (azurePipeline.resources.repositories[0].name != null)
                         {
-                            Console.WriteLine("name: " + azurePipeline.resources.repositories[0].name);
+                            WriteLine("name: " + azurePipeline.resources.repositories[0].name);
                         }
                         if (azurePipeline.resources.repositories[0]._ref != null)
                         {
-                            Console.WriteLine("ref: " + azurePipeline.resources.repositories[0]._ref);
+                            WriteLine("ref: " + azurePipeline.resources.repositories[0]._ref);
                         }
                         if (azurePipeline.resources.repositories[0].endpoint != null)
                         {
-                            Console.WriteLine("endpoint: " + azurePipeline.resources.repositories[0].endpoint);
+                            WriteLine("endpoint: " + azurePipeline.resources.repositories[0].endpoint);
                         }
                         if (azurePipeline.resources.repositories[0].connection != null)
                         {
-                            Console.WriteLine("connection: " + azurePipeline.resources.repositories[0].connection);
+                            WriteLine("connection: " + azurePipeline.resources.repositories[0].connection);
                         }
                         if (azurePipeline.resources.repositories[0].source != null)
                         {
-                            Console.WriteLine("source: " + azurePipeline.resources.repositories[0].source);
+                            WriteLine("source: " + azurePipeline.resources.repositories[0].source);
                         }
                     }
                 }
@@ -471,7 +480,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                 }
                 if (strategy.parallel != null)
                 {
-                    Console.WriteLine("This variable is not needed in actions: " + strategy.parallel);
+                    WriteLine("This variable is not needed in actions: " + strategy.parallel);
                 }
                 if (strategy.maxParallel != null)
                 {
@@ -484,7 +493,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                 if (strategy.runOnce != null)
                 {
                     //TODO: Process other strategies
-                    Console.WriteLine("TODO: " + strategy.runOnce);
+                    WriteLine("TODO: " + strategy.runOnce);
                 }
                 return processedStrategy;
             }
@@ -585,7 +594,10 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                     //groups
                     if (variables[i].group != null)
                     {
-                        processedVariables.Add("group", variables[i].group);
+                        if (!processedVariables.ContainsKey("group"))
+                            processedVariables.Add("group", variables[i].group);
+                        else
+                            WriteLine("group: only 1 variable group is supported at present");
                     }
                     //template
                     if (variables[i].template != null)
