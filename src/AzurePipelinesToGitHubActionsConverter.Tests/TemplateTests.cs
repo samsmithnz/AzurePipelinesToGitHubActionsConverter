@@ -77,7 +77,7 @@ jobs:
       shell: powershell";
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
-        }        
+        }    
 
     }
 }

@@ -2,6 +2,7 @@
 
 namespace AnimalSerialization.Tests.Conversion
 {
+    [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
     public static class FarmSerialization
     {
         public static T Deserialize<T>(string yaml)

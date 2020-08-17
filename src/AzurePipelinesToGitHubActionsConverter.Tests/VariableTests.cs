@@ -318,5 +318,35 @@ env:
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
         }
 
+
+        [TestMethod]
+        public void ParametersReservedWordTest()
+        {
+            //Arrange
+            string input = @"
+parameters: # defaults for any parameters that aren't specified
+  plainVar: 'ok'
+  environment: 'Dev'
+  strategy: Dev
+  pool: 'Dev'
+";
+
+            Conversion conversion = new Conversion();
+
+            //Act
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(input);
+
+            //Assert
+            string expected = @"
+env:
+  plainVar: ok
+  environment2: Dev
+  strategy2: Dev
+  pool2: Dev
+";
+            expected = UtilityTests.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+        }
+
     }
 }

@@ -535,7 +535,7 @@ jobs:
     - name: Publish
       run: dotnet publish MyProject/MyProject.Models/MyProject.Models.csproj --configuration ${{ env.BuildConfiguration }} --output ${GITHUB_WORKSPACE}
     - name: dotnet pack
-      run: dotnet pack
+      run: dotnet pack MyProject/MyProject.Models/MyProject.Models.csproj
     - name: Publish Artifact
       uses: actions/upload-artifact@v2
       with:

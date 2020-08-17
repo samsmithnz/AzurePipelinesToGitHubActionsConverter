@@ -254,5 +254,30 @@ jobs:
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
         }
 
+        //Test that stages translate to jobs correctly.
+        [TestMethod]
+        public void StagingNoJobsPipelineTest()
+        {
+            //Arrange
+            Conversion conversion = new Conversion();
+            string yaml = @"
+stages:
+- stage: BuildA
+  displayName: 'BuildA Stage'
+";
+
+            //Act
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(yaml);
+
+            //Assert
+            string expected = @"
+#Note that although having no jobs is valid YAML, it is not a valid GitHub Action.
+jobs: {}
+";
+
+            expected = UtilityTests.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+        }
+
     }
 }

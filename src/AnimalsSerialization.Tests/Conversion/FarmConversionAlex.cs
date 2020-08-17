@@ -3,6 +3,7 @@ using System;
 
 namespace AnimalSerialization.Tests.Conversion
 {
+    [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
     public class FarmConversionAlex
     {
 

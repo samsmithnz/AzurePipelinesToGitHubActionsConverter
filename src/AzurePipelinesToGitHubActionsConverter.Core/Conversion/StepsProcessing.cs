@@ -230,29 +230,42 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
 
         private GitHubActions.Step CreateDotNetCommandStep(AzurePipelines.Step step)
         {
-            if (step.inputs is null)
-                return null;//this is a misconfigured task
-            string runScript = "dotnet ";
-            if (step.inputs.ContainsKey("command") == true)
+            if (step.inputs != null)
             {
-                runScript += GetStepInput(step, "command") + " ";
-            }
-            if (step.inputs.ContainsKey("projects") == true)
-            {
-                runScript += GetStepInput(step, "projects") + " ";
-            }
-            if (step.inputs.ContainsKey("arguments") == true)
-            {
-                runScript += GetStepInput(step, "arguments") + " ";
-            }
-            //Remove the new line characters
-            runScript = runScript.Replace("\n", "");
-            GitHubActions.Step gitHubStep = new GitHubActions.Step
-            {
-                run = runScript
-            };
+                string runScript = "dotnet ";
+                if (step.inputs.ContainsKey("command") == true)
+                {
+                    runScript += GetStepInput(step, "command") + " ";
+                }
+                if (step.inputs.ContainsKey("projects") == true)
+                {
+                    runScript += GetStepInput(step, "projects") + " ";
+                }
+                if (step.inputs.ContainsKey("packagestopack") == true)
+                {
+                    runScript += GetStepInput(step, "packagesToPack") + " ";
+                }
+                if (step.inputs.ContainsKey("arguments") == true)
+                {
+                    runScript += GetStepInput(step, "arguments") + " ";
+                }
+                //Remove the new line characters
+                runScript = runScript.Replace("\n", "");
+                GitHubActions.Step gitHubStep = new GitHubActions.Step
+                {
+                    run = runScript
+                };
 
-            return gitHubStep;
+                return gitHubStep;
+            }
+            else
+            {
+                GitHubActions.Step gitHubStep = new GitHubActions.Step
+                {
+                    step_message = "This DotNetCoreCLI task is misconfigured, inputs are required"
+                };
+                return gitHubStep;
+            }
         }
 
         private GitHubActions.Step CreateDownloadBuildArtifacts(AzurePipelines.Step step)

@@ -10,10 +10,11 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{90C45174-BE52-4642-BBB4-609E29A8CE48}"
 	ProjectSection(SolutionItems) = preProject
 		BuildVersion.ps1 = BuildVersion.ps1
+		..\.github\dependabot.yml = ..\.github\dependabot.yml
 		..\README.md = ..\README.md
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AnimalsSerialization.Tests", "AnimalsSerialization.Tests\AnimalsSerialization.Tests.csproj", "{D037B7D2-1B96-4172-8835-B26EF836F5CC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AnimalsSerialization.Tests", "AnimalsSerialization.Tests\AnimalsSerialization.Tests.csproj", "{D037B7D2-1B96-4172-8835-B26EF836F5CC}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
