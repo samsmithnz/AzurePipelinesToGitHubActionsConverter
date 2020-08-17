@@ -244,7 +244,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                         line.ToLower().IndexOf("parameters:", StringComparison.OrdinalIgnoreCase) >= 0)
                     {
                         string[] items = line.Split(':');
-                        if (items.Length > 1 && items[0].ToString().Trim().Length > 0)
+                        if (items.Length == 2 && items[0].ToString().Trim().Length > 0)
                         {
                             variablePrefixSpaceCount = items[0].TakeWhile(char.IsWhiteSpace).Count();
                             //now that we have the variables start, we need to loop through the variable prefix space count + 2
