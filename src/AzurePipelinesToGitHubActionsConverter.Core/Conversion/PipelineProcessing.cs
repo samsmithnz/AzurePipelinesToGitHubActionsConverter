@@ -681,14 +681,13 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
             {
                 newJob.job_message += "Note: Azure DevOps job environment does not have an equivalent in GitHub Actions yet";
             }
-
-            if (newJob._if != null)
-            {
-                if (newJob.job_message != null)
-                {
-                    newJob.job_message += System.Environment.NewLine;
-                }
-            }
+            //if (newJob._if != null)
+            //{
+            //    if (newJob.job_message != null)
+            //    {
+            //        newJob.job_message += System.Environment.NewLine;
+            //    }
+            //}
             if (job.continueOnError)
             {
                 newJob.continue_on_error = job.continueOnError;

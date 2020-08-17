@@ -21,7 +21,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
 
             //Assert
             string expected = @"
-- #: 'Note: Error! This step does not have a conversion path yet: invalid fake task'
+- # 'Note: Error! This step does not have a conversion path yet: invalid fake task'
   run: 'Write-Host Note: Error! This step does not have a conversion path yet: invalid fake task #task: invalid fake task'
   shell: powershell
 ";
@@ -604,7 +604,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
 
             //Assert
             string expected = @"
-- #: This DotNetCoreCLI task is misconfigured, inputs are required
+- # This DotNetCoreCLI task is misconfigured, inputs are required
   name: dotnet build but no inputs
 ";
             expected = UtilityTests.TrimNewLines(expected);
@@ -740,7 +740,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
 
             //Assert
             string expected = @"
-- #: ""Note: Connection string needs to be specified - this is different than Pipelines where the server, database, user, and password were specified separately. It's recommended you use secrets for the connection string.""
+- # ""Note: Connection string needs to be specified - this is different than Pipelines where the server, database, user, and password were specified separately. It's recommended you use secrets for the connection string.""
   name: Azure SQL dacpac publish
   uses: azure/sql-action@v1
   with:
@@ -936,7 +936,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
 
             //Assert
             string expected = @"
-- #: 'PublishTestResults@2 is a Azure DevOps specific task. There is no equivalent in GitHub Actions until there is a testing summary tab. See: https://github.community/t/publishing-test-results/16215'
+- # 'PublishTestResults@2 is a Azure DevOps specific task. There is no equivalent in GitHub Actions until there is a testing summary tab. See: https://github.community/t/publishing-test-results/16215'
   run: echo ""This task equivalent does not yet exist in GitHub Actions""
 ";
 
@@ -987,7 +987,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
 
             //Assert
             string expected = @"
-- #: There is no conversion path for templates, currently there is no support to call other actions/yaml files from a GitHub Action
+- # There is no conversion path for templates, currently there is no support to call other actions/yaml files from a GitHub Action
   run: |
     #templates/npm-build-steps.yaml
     extensionName: ${{ env.ExtensionName }}

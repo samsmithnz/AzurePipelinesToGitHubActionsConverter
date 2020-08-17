@@ -133,7 +133,7 @@ jobs:
     continue-on-error: true
     steps:
     - uses: actions/checkout@v2
-    - #: ""Note: 'AZURE_SP' secret is required to be setup and added into GitHub Secrets: https://help.github.com/en/actions/automating-your-workflow-with-github-actions/creating-and-using-encrypted-secrets""
+    - # ""Note: 'AZURE_SP' secret is required to be setup and added into GitHub Secrets: https://help.github.com/en/actions/automating-your-workflow-with-github-actions/creating-and-using-encrypted-secrets""
       name: Azure Login
       uses: azure/login@v1
       with:

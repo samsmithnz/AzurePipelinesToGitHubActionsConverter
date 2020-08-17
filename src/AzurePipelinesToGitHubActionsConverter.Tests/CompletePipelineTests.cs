@@ -59,7 +59,7 @@ jobs:
       ResourceGroupName: MyProjectRG
     steps:
     - uses: actions/checkout@v2
-    - #: ""Note: 'AZURE_SP' secret is required to be setup and added into GitHub Secrets: https://help.github.com/en/actions/automating-your-workflow-with-github-actions/creating-and-using-encrypted-secrets""
+    - # ""Note: 'AZURE_SP' secret is required to be setup and added into GitHub Secrets: https://help.github.com/en/actions/automating-your-workflow-with-github-actions/creating-and-using-encrypted-secrets""
       name: Azure Login
       uses: azure/login@v1
       with:
@@ -240,7 +240,7 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - uses: microsoft/setup-msbuild@v1.0.0
-    - #: 'Note: This is a third party action: https://github.com/warrenbuckley/Setup-Nuget'
+    - # 'Note: This is a third party action: https://github.com/warrenbuckley/Setup-Nuget'
       uses: warrenbuckley/Setup-Nuget@v1
     - run: nuget  ${{ env.solution }}
       shell: powershell
@@ -738,7 +738,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
-    - #: 'Note: This is a third party action: https://github.com/marketplace/actions/create-zip-file'
+    - # 'Note: This is a third party action: https://github.com/marketplace/actions/create-zip-file'
       uses: montudor/action-zip@v0.1.0
       with:
         args: zip -qq -r  ${{ env.build.sourcesDirectory }}
@@ -883,7 +883,7 @@ jobs:
     runs-on: macos-latest
     steps:
     - uses: actions/checkout@v2
-    - #: 'Note: This is a third party action: https://github.com/warrenbuckley/Setup-Nuget'
+    - # 'Note: This is a third party action: https://github.com/warrenbuckley/Setup-Nuget'
       uses: warrenbuckley/Setup-Nuget@v1
     - run: nuget  **/*.sln
       shell: powershell
@@ -957,7 +957,7 @@ jobs:
     - uses: actions/checkout@v2
     - name: Select the Xamarin SDK version
       run: sudo $AGENT_HOMEDIRECTORY/scripts/select-xamarin-sdk.sh 5_12_0
-    - #: 'Note: This is a third party action: https://github.com/warrenbuckley/Setup-Nuget'
+    - # 'Note: This is a third party action: https://github.com/warrenbuckley/Setup-Nuget'
       uses: warrenbuckley/Setup-Nuget@v1
     - run: nuget  **/*.sln
       shell: powershell
@@ -1047,7 +1047,7 @@ jobs:
     runs-on: Hosted VS2017
     steps:
     - uses: actions/checkout@v2
-    - #: There is no conversion path for templates, currently there is no support to call other actions/yaml files from a GitHub Action
+    - # There is no conversion path for templates, currently there is no support to call other actions/yaml files from a GitHub Action
       run: |
         #templates/npm-build-steps.yaml
         extensionName: ${{ env.ExtensionName }}
@@ -1187,7 +1187,7 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - uses: microsoft/setup-msbuild@v1.0.0
-    - #: 'Note: This is a third party action: https://github.com/warrenbuckley/Setup-Nuget'
+    - # 'Note: This is a third party action: https://github.com/warrenbuckley/Setup-Nuget'
       uses: warrenbuckley/Setup-Nuget@v1
     - run: nuget  ${{ env.solution }}
       shell: powershell
@@ -1196,11 +1196,11 @@ jobs:
       with:
         path: ${{ env.build.artifactStagingDirectory }}
   Deploy_Stage_job1:
-    #: 'Note: Azure DevOps strategy>runOnce>deploy does not have an equivalent in GitHub Actions yetNote: Azure DevOps job environment does not have an equivalent in GitHub Actions yet'
+    # 'Note: Azure DevOps strategy>runOnce>deploy does not have an equivalent in GitHub Actions yetNote: Azure DevOps job environment does not have an equivalent in GitHub Actions yet'
     env:
       Art: Server=.;Database=Art;Trusted_Connection=True;
     steps:
-    - #: 'Note: Error! This step does not have a conversion path yet: DownloadPipelineArtifact@2'
+    - # 'Note: Error! This step does not have a conversion path yet: DownloadPipelineArtifact@2'
       run: 'Write-Host Note: Error! This step does not have a conversion path yet: DownloadPipelineArtifact@2 #task: DownloadPipelineArtifact@2#inputs:#  buildtype: current#  artifactname: WebDeploy#  targetpath: ${{ env.Pipeline.Workspace }}'
       shell: powershell
     - run: |
@@ -1208,10 +1208,10 @@ jobs:
 
         DIR
       shell: cmd
-    - #: 'Note: Error! This step does not have a conversion path yet: IISWebAppManagementOnMachineGroup@0'
+    - # 'Note: Error! This step does not have a conversion path yet: IISWebAppManagementOnMachineGroup@0'
       run: ""Write-Host Note: Error! This step does not have a conversion path yet: IISWebAppManagementOnMachineGroup@0 #task: IISWebAppManagementOnMachineGroup@0#inputs:#  iisdeploymenttype: IISWebsite#  actioniiswebsite: CreateOrUpdateWebsite#  websitename: Spark#  websitephysicalpath: '%SystemDrive%\\inetpub\\wwwroot'#  websitephysicalpathauth: WebsiteUserPassThrough#  addbinding: true#  createorupdateapppoolforwebsite: true#  configureauthenticationforwebsite: true#  apppoolnameforwebsite: Spark#  dotnetversionforwebsite: v4.0#  pipelinemodeforwebsite: Integrated#  apppoolidentityforwebsite: ApplicationPoolIdentity#  anonymousauthenticationforwebsite: true#  windowsauthenticationforwebsite: false#  protocol: http#  ipaddress: All Unassigned#  port: 80""
       shell: powershell
-    - #: 'Note: Error! This step does not have a conversion path yet: IISWebAppDeploymentOnMachineGroup@0'
+    - # 'Note: Error! This step does not have a conversion path yet: IISWebAppDeploymentOnMachineGroup@0'
       run: 'Write-Host Note: Error! This step does not have a conversion path yet: IISWebAppDeploymentOnMachineGroup@0 #task: IISWebAppDeploymentOnMachineGroup@0#inputs:#  websitename: Spark#  package: ${{ env.Pipeline.Workspace }}\Art.Web.zip#  xmlvariablesubstitution: true'
       shell: powershell
 ";
@@ -1232,37 +1232,12 @@ jobs:
             Conversion conversion = new Conversion();
             //Source is: https://github.com/samsmithnz/AzurePipelinesToGitHubActionsConverter/issues/128
             string yaml = @"
-trigger:
-- master
-pr:
-  branches:
-    include:
-    - '*'  # must quote since ""*"" is a YAML reserved character; we want a string
-
-schedules:
-- cron: ""0 1/2 * * *""
-  branches:
-    include: 
-    - master
-  always: true
-
 variables:
 - group: 'myapp KeyVault'
 - name: vmImage #Note this weird name/value syntax if you need to reference a variable group in variables
   value: 'windows-latest'
 
 stages:
-- stage: Build
-  displayName: 'Build & Test stage'
-  jobs:
-  - template: azure-pipelines-build-template.yml
-    parameters:
-      buildConfiguration: 'Release'
-      buildPlatform: 'Any CPU'
-      vmImage: $(vmImage)
-      clientSecret: $(AppSettings--ClientSecretDev)
-      redisCacheConnectionString: $(AppSettings--RedisCacheConnectionStringDev)
-
 - stage: DeployPR
   displayName: 'Deploy PR Stage'
   condition: and(succeeded(), eq(variables['Build.Reason'], 'PullRequest'), ne(variables['System.PullRequest.PullRequestId'], 'Null'))
@@ -1312,132 +1287,7 @@ stages:
       websiteName: 'myapp-$(prLC)-eu-web'
       websiteDomainName: '$(prLC).myapp.com'
       websiteStagingUrl: 'https://myapp-$(prLC)-eu-web-staging.azurewebsites.net/'
-      websiteUrl: 'https://myapp-$(prLC)-eu-web.azurewebsites.net/'
-
-- stage: DeployDev
-  displayName: 'Deploy Dev Stage'
-  condition: and(succeeded(), eq(variables['Build.SourceBranchName'], 'master'))
-  dependsOn: Build
-  jobs:
-  - template: azure-pipelines-deployment-template.yml
-    parameters:
-      applicationInsightsApiKey: '$(ApplicationInsights--APIKeyDev)'
-      applicationInsightsApplicationId: '$(ApplicationInsights--ApplicationIdDev)'
-      applicationInsightsInstrumentationKey: $(ApplicationInsights--InstrumentationKeyDev)
-      applicationInsightsLocation: 'East US'
-      appServiceContributerClientSecret: $(appServiceContributerClientSecret)
-      ASPNETCOREEnvironmentSetting: 'Development'
-      captureStartErrors: true
-      cognitiveServicesSubscriptionKey: $(cognitiveServicesSubscriptionKey)
-      environment: 'Dev'  
-      environmentLowercase: 'dev'
-      databaseLoginName: $(databaseLoginNameDev) 
-      databaseLoginPassword: $(databaseLoginPasswordDev)
-      databaseServerName: 'myapp-dev-eu-sqlserver'
-      godaddy_key: $(GoDaddyAPIKey)
-      godaddy_secret: $(GoDaddyAPISecret)
-      keyVaultClientId: '$(KeyVaultClientId)'
-      keyVaultClientSecret: '$(KeyVaultClientSecret)'
-      imagesStorageCDNURL: 'https://myapp-dev-eu-cdnendpoint.azureedge.net/'
-      imagesStorageURL: 'https://myappdeveustorage.blob.core.windows.net/'
-      redisCacheConnectionString: '$(AppSettings--RedisCacheConnectionStringDev)'
-      resourceGroupName: 'myappDev'
-      resourceGroupLocation: 'East US'
-      resourceGroupLocationShort: 'eu'
-      myappConnectionString: '$(ConnectionStrings--myappConnectionStringDev)'
-      serviceName: 'myapp-dev-eu-service'
-      serviceStagingUrl: 'https://myapp-dev-eu-service-staging.azurewebsites.net/'
-      serviceUrl: 'https://myapp-dev-eu-service.azurewebsites.net/'
-      storageAccountName: 'myappdeveustorage'
-      userPrincipalLogin: $(userPrincipalLogin)
-      vmImage: $(vmImage)
-      websiteName: 'myapp-dev-eu-web'
-      websiteDomainName: 'dev.myapp.com'
-      websiteStagingUrl: 'https://myapp-dev-eu-web-staging.azurewebsites.net/'
-      websiteUrl: 'https://myapp-dev-eu-web.azurewebsites.net/'
-
-- stage: DeployQA
-  displayName: 'Deploy QA Stage'
-  condition: and(succeeded(), eq(variables['Build.SourceBranchName'], 'master'))
-  dependsOn: DeployDev
-  jobs:
-  - template: azure-pipelines-deployment-template.yml
-    parameters:
-      applicationInsightsApiKey: '$(ApplicationInsights--APIKeyQA)'
-      applicationInsightsApplicationId: '$(ApplicationInsights--ApplicationIdQA)'
-      applicationInsightsInstrumentationKey: $(ApplicationInsights--InstrumentationKeyQA)
-      applicationInsightsLocation: 'East US'
-      appServiceContributerClientSecret: $(appServiceContributerClientSecret)
-      captureStartErrors: false
-      cognitiveServicesSubscriptionKey: $(cognitiveServicesSubscriptionKey)
-      environment: 'QA'  
-      environmentLowercase: 'qa'
-      databaseLoginName: $(databaseLoginNameQA) 
-      databaseLoginPassword: $(databaseLoginPasswordQA)
-      databaseServerName: 'myapp-qa-eu-sqlserver'
-      godaddy_key: $(GoDaddyAPIKey)
-      godaddy_secret: $(GoDaddyAPISecret)
-      keyVaultClientId: '$(KeyVaultClientId)'
-      keyVaultClientSecret: '$(KeyVaultClientSecret)'
-      letsEncryptUniqueRoleAssignmentGuid: '6e4cff57-e63a-403e-822c-e98e5ba02146'
-      imagesStorageCDNURL: 'https://myapp-qa-eu-cdnendpoint.azureedge.net/'
-      imagesStorageURL: 'https://myappqaeustorage.blob.core.windows.net/'
-      redisCacheConnectionString: '$(AppSettings--RedisCacheConnectionStringQA)'
-      resourceGroupName: 'myappQA'
-      resourceGroupLocation: 'East US'
-      resourceGroupLocationShort: 'eu'
-      myappConnectionString: '$(ConnectionStrings--myappConnectionStringQA)'
-      serviceName: 'myapp-qa-eu-service'
-      serviceStagingUrl: 'https://myapp-qa-eu-service-staging.azurewebsites.net/'
-      serviceUrl: 'https://myapp-qa-eu-service.azurewebsites.net/'
-      storageAccountName: 'myappqaeustorage'
-      userPrincipalLogin: $(userPrincipalLogin)
-      vmImage: $(vmImage)
-      websiteName: 'myapp-qa-eu-web'
-      websiteDomainName: 'qa.myapp.com'
-      websiteStagingUrl: 'https://myapp-qa-eu-web-staging.azurewebsites.net/'
-      websiteUrl: 'https://myapp-qa-eu-web.azurewebsites.net/'
-      
-- stage: DeployProd
-  displayName: 'Deploy Prod Stage'
-  condition: and(succeeded(), eq(variables['Build.SourceBranchName'], 'master'))
-  dependsOn: DeployQA
-  jobs:
-  - template: azure-pipelines-deployment-template.yml
-    parameters:
-      applicationInsightsApiKey: '$(ApplicationInsights--APIKeyProd)'
-      applicationInsightsApplicationId: '$(ApplicationInsights--ApplicationIdProd)'
-      applicationInsightsInstrumentationKey: $(ApplicationInsights--InstrumentationKeyProd)
-      applicationInsightsLocation: 'East US'
-      appServiceContributerClientSecret: $(appServiceContributerClientSecret)
-      captureStartErrors: false
-      cognitiveServicesSubscriptionKey: $(cognitiveServicesSubscriptionKey)
-      environment: 'Prod'  
-      environmentLowercase: 'prod'
-      databaseLoginName: $(databaseLoginNameProd) 
-      databaseLoginPassword: $(databaseLoginPasswordProd)
-      databaseServerName: 'myapp-prod-eu-sqlserver'
-      godaddy_key: $(GoDaddyAPIKey)
-      godaddy_secret: $(GoDaddyAPISecret)
-      keyVaultClientId: '$(KeyVaultClientId)'
-      keyVaultClientSecret: '$(KeyVaultClientSecret)'
-      imagesStorageCDNURL: 'https://myapp-prod-eu-cdnendpoint.azureedge.net/'
-      imagesStorageURL: 'https://myappprodeustorage.blob.core.windows.net/'
-      redisCacheConnectionString: '$(AppSettings--RedisCacheConnectionStringProd)'
-      resourceGroupName: 'myappProd'
-      resourceGroupLocation: 'East US'
-      resourceGroupLocationShort: 'eu'
-      myappConnectionString: '$(ConnectionStrings--myappConnectionStringProd)'
-      serviceName: 'myapp-prod-eu-service'
-      serviceStagingUrl: 'https://myapp-prod-eu-service-staging.azurewebsites.net/'
-      serviceUrl: 'https://myapp-prod-eu-service.azurewebsites.net/'
-      storageAccountName: 'myappprodeustorage'
-      userPrincipalLogin: $(userPrincipalLogin)
-      vmImage: $(vmImage)
-      websiteName: 'myapp-prod-eu-web'
-      websiteDomainName: 'myapp.com'
-      websiteStagingUrl: 'https://myapp-prod-eu-web-staging.azurewebsites.net/'
-      websiteUrl: 'https://myapp-prod-eu-web.azurewebsites.net/'     
+      websiteUrl: 'https://myapp-$(prLC)-eu-web.azurewebsites.net/'   
 ";
 
             //Act
@@ -1446,53 +1296,17 @@ stages:
             //Assert
             string expected = @"
 #Note: Azure DevOps template does not have an equivalent in GitHub Actions yet
-
-#Note: Azure DevOps template does not have an equivalent in GitHub Actions yet
-
-#Note: Azure DevOps template does not have an equivalent in GitHub Actions yet
-
-#Note: Azure DevOps template does not have an equivalent in GitHub Actions yet
-
-#Note: Azure DevOps template does not have an equivalent in GitHub Actions yet
-on:
-  push:
-    branches:
-    - master
-  pull-request:
-    branches:
-    - '*'
-  schedule:
-  - cron: '0 1/2 * * *'
 env:
   group: myapp KeyVault
   vmImage: windows-latest
 jobs:
-  Build_Stage_Template:
-    #: 'Note: Azure DevOps template does not have an equivalent in GitHub Actions yet'
-    steps:
-    - uses: actions/checkout@v2
   DeployPR_Stage_Template:
-    #: Note: Azure DevOps template does not have an equivalent in GitHub Actions yet
+    # 'Note: Azure DevOps template does not have an equivalent in GitHub Actions yet'
     env:
       prId: 000
       prUC: PR${{ env.prId }}
       prLC: pr${{ env.prId }}
     if: and(success(),eq(variables['Build.Reason'], 'PullRequest'),ne(variables['System.PullRequest.PullRequestId'], 'Null'))
-    steps:
-    - uses: actions/checkout@v2
-  DeployDev_Stage_Template:
-    #: Note: Azure DevOps template does not have an equivalent in GitHub Actions yet
-    if: and(success(),endsWith(github.ref, 'master'))
-    steps:
-    - uses: actions/checkout@v2
-  DeployQA_Stage_Template:
-    #: Note: Azure DevOps template does not have an equivalent in GitHub Actions yet
-    if: and(success(),endsWith(github.ref, 'master'))
-    steps:
-    - uses: actions/checkout@v2
-  DeployProd_Stage_Template:
-    #: Note: Azure DevOps template does not have an equivalent in GitHub Actions yet
-    if: and(success(),endsWith(github.ref, 'master'))
     steps:
     - uses: actions/checkout@v2
 ";
