@@ -115,6 +115,8 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion.Serialization
             yaml = yaml.Replace("_ref", "ref");
             yaml = yaml.Replace("continue_on_error", "continue-on-error");
             yaml = yaml.Replace("timeout_minutes", "timeout-minutes");
+            yaml = yaml.Replace("step_message:", "#");
+            yaml = yaml.Replace("job_message:", "#");
             yaml = yaml.Replace("step_message", "#");
             yaml = yaml.Replace("job_message", "#");
 

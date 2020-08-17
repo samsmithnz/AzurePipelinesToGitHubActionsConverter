@@ -59,7 +59,7 @@ jobs:
       ResourceGroupName: MyProjectRG
     steps:
     - uses: actions/checkout@v2
-    - #: ""Note: 'AZURE_SP' secret is required to be setup and added into GitHub Secrets: https://help.github.com/en/actions/automating-your-workflow-with-github-actions/creating-and-using-encrypted-secrets""
+    - # ""Note: 'AZURE_SP' secret is required to be setup and added into GitHub Secrets: https://help.github.com/en/actions/automating-your-workflow-with-github-actions/creating-and-using-encrypted-secrets""
       name: Azure Login
       uses: azure/login@v1
       with:
@@ -240,7 +240,7 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - uses: microsoft/setup-msbuild@v1.0.0
-    - #: 'Note: This is a third party action: https://github.com/warrenbuckley/Setup-Nuget'
+    - # 'Note: This is a third party action: https://github.com/warrenbuckley/Setup-Nuget'
       uses: warrenbuckley/Setup-Nuget@v1
     - run: nuget  ${{ env.solution }}
       shell: powershell
@@ -738,7 +738,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
-    - #: 'Note: This is a third party action: https://github.com/marketplace/actions/create-zip-file'
+    - # 'Note: This is a third party action: https://github.com/marketplace/actions/create-zip-file'
       uses: montudor/action-zip@v0.1.0
       with:
         args: zip -qq -r  ${{ env.build.sourcesDirectory }}
@@ -883,7 +883,7 @@ jobs:
     runs-on: macos-latest
     steps:
     - uses: actions/checkout@v2
-    - #: 'Note: This is a third party action: https://github.com/warrenbuckley/Setup-Nuget'
+    - # 'Note: This is a third party action: https://github.com/warrenbuckley/Setup-Nuget'
       uses: warrenbuckley/Setup-Nuget@v1
     - run: nuget  **/*.sln
       shell: powershell
@@ -957,7 +957,7 @@ jobs:
     - uses: actions/checkout@v2
     - name: Select the Xamarin SDK version
       run: sudo $AGENT_HOMEDIRECTORY/scripts/select-xamarin-sdk.sh 5_12_0
-    - #: 'Note: This is a third party action: https://github.com/warrenbuckley/Setup-Nuget'
+    - # 'Note: This is a third party action: https://github.com/warrenbuckley/Setup-Nuget'
       uses: warrenbuckley/Setup-Nuget@v1
     - run: nuget  **/*.sln
       shell: powershell
@@ -1047,7 +1047,7 @@ jobs:
     runs-on: Hosted VS2017
     steps:
     - uses: actions/checkout@v2
-    - #: There is no conversion path for templates, currently there is no support to call other actions/yaml files from a GitHub Action
+    - # There is no conversion path for templates, currently there is no support to call other actions/yaml files from a GitHub Action
       run: |
         #templates/npm-build-steps.yaml
         extensionName: ${{ env.ExtensionName }}
@@ -1110,9 +1110,9 @@ stages:
     - deployment: 
       variables:
         Art: ""Server=.;Database=Art;Trusted_Connection=True;""
-#      - name: Art
-#        value: ""Server=.;Database=Art;Trusted_Connection=True;""
-#        
+        #- name: Art
+        #  value: ""Server=.;Database=Art;Trusted_Connection=True;""
+        
       environment: 
         name: windows-server
         resourceType: VirtualMachine
@@ -1128,12 +1128,13 @@ stages:
                   targetPath: '$(Pipeline.Workspace)'
 
 
-              #- task: CmdLine@2
-              #  inputs:
-              #    script: |
-              #      echo Write your commands here    
-              #      DIR
-              #    workingDirectory: '$(Pipeline.Workspace)'
+              - task: CmdLine@2
+                inputs:
+                  script: |
+                    echo Write your commands here
+                    
+                    DIR
+                  workingDirectory: '$(Pipeline.Workspace)'
                   
               - task: IISWebAppManagementOnMachineGroup@0
                 inputs:
@@ -1186,7 +1187,7 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - uses: microsoft/setup-msbuild@v1.0.0
-    - #: 'Note: This is a third party action: https://github.com/warrenbuckley/Setup-Nuget'
+    - # 'Note: This is a third party action: https://github.com/warrenbuckley/Setup-Nuget'
       uses: warrenbuckley/Setup-Nuget@v1
     - run: nuget  ${{ env.solution }}
       shell: powershell
@@ -1195,19 +1196,119 @@ jobs:
       with:
         path: ${{ env.build.artifactStagingDirectory }}
   Deploy_Stage_job1:
-    #: 'Note: Azure DevOps strategy>runOnce>deploy does not have an equivalent in GitHub Actions yetNote: Azure DevOps job environment does not have an equivalent in GitHub Actions yet'
+    # 'Note: Azure DevOps strategy>runOnce>deploy does not have an equivalent in GitHub Actions yetNote: Azure DevOps job environment does not have an equivalent in GitHub Actions yet'
     env:
       Art: Server=.;Database=Art;Trusted_Connection=True;
     steps:
-    - #: 'Note: Error! This step does not have a conversion path yet: DownloadPipelineArtifact@2'
+    - # 'Note: Error! This step does not have a conversion path yet: DownloadPipelineArtifact@2'
       run: 'Write-Host Note: Error! This step does not have a conversion path yet: DownloadPipelineArtifact@2 #task: DownloadPipelineArtifact@2#inputs:#  buildtype: current#  artifactname: WebDeploy#  targetpath: ${{ env.Pipeline.Workspace }}'
       shell: powershell
-    - #: 'Note: Error! This step does not have a conversion path yet: IISWebAppManagementOnMachineGroup@0'
+    - run: |
+        echo Write your commands here
+
+        DIR
+      shell: cmd
+    - # 'Note: Error! This step does not have a conversion path yet: IISWebAppManagementOnMachineGroup@0'
       run: ""Write-Host Note: Error! This step does not have a conversion path yet: IISWebAppManagementOnMachineGroup@0 #task: IISWebAppManagementOnMachineGroup@0#inputs:#  iisdeploymenttype: IISWebsite#  actioniiswebsite: CreateOrUpdateWebsite#  websitename: Spark#  websitephysicalpath: '%SystemDrive%\\inetpub\\wwwroot'#  websitephysicalpathauth: WebsiteUserPassThrough#  addbinding: true#  createorupdateapppoolforwebsite: true#  configureauthenticationforwebsite: true#  apppoolnameforwebsite: Spark#  dotnetversionforwebsite: v4.0#  pipelinemodeforwebsite: Integrated#  apppoolidentityforwebsite: ApplicationPoolIdentity#  anonymousauthenticationforwebsite: true#  windowsauthenticationforwebsite: false#  protocol: http#  ipaddress: All Unassigned#  port: 80""
       shell: powershell
-    - #: 'Note: Error! This step does not have a conversion path yet: IISWebAppDeploymentOnMachineGroup@0'
+    - # 'Note: Error! This step does not have a conversion path yet: IISWebAppDeploymentOnMachineGroup@0'
       run: 'Write-Host Note: Error! This step does not have a conversion path yet: IISWebAppDeploymentOnMachineGroup@0 #task: IISWebAppDeploymentOnMachineGroup@0#inputs:#  websitename: Spark#  package: ${{ env.Pipeline.Workspace }}\Art.Web.zip#  xmlvariablesubstitution: true'
       shell: powershell
+";
+
+            expected = UtilityTests.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+            Assert.IsTrue(gitHubOutput.actionsYaml != null);
+            Assert.IsTrue(gitHubOutput.actionsYaml != "");
+        }
+
+
+
+
+        [TestMethod]
+        public void SSPipelineTest()
+        {
+            //Arrange
+            Conversion conversion = new Conversion();
+            //Source is: https://github.com/samsmithnz/AzurePipelinesToGitHubActionsConverter/issues/128
+            string yaml = @"
+variables:
+- group: 'myapp KeyVault'
+- name: vmImage #Note this weird name/value syntax if you need to reference a variable group in variables
+  value: 'windows-latest'
+
+stages:
+- stage: DeployPR
+  displayName: 'Deploy PR Stage'
+  condition: and(succeeded(), eq(variables['Build.Reason'], 'PullRequest'), ne(variables['System.PullRequest.PullRequestId'], 'Null'))
+  dependsOn: Build
+  variables:
+    ${{ if ne(variables['Build.SourceBranchName'], 'master') }}:
+      prId: ""$(System.PullRequest.PullRequestId)""
+    ${{ if eq(variables['Build.SourceBranchName'], 'master') }}:
+      prId: '000'
+    prUC: ""PR$(prId)""
+    prLC: ""pr$(prId)""
+  jobs:
+  - template: azure-pipelines-deployment-template.yml
+    parameters:
+      #Note that pull request environments use Dev credentials
+      applicationInsightsApiKey: '$(ApplicationInsights--APIKeyDev)'
+      applicationInsightsApplicationId: '$(ApplicationInsights--ApplicationIdDev)'
+      applicationInsightsInstrumentationKey: $(ApplicationInsights--InstrumentationKeyDev)
+      applicationInsightsLocation: 'East US'
+      appServiceContributerClientSecret: $(appServiceContributerClientSecret)
+      ASPNETCOREEnvironmentSetting: 'Development'
+      captureStartErrors: true
+      cognitiveServicesSubscriptionKey: $(cognitiveServicesSubscriptionKey)
+      environment: $(prUC)
+      environmentLowercase: $(prLC)
+      databaseLoginName: $(databaseLoginNameDev) 
+      databaseLoginPassword: $(databaseLoginPasswordDev)
+      databaseServerName: 'myapp-$(prLC)-eu-sqlserver'
+      godaddy_key: $(GoDaddyAPIKey)
+      godaddy_secret: $(GoDaddyAPISecret)
+      keyVaultClientId: '$(KeyVaultClientId)'
+      keyVaultClientSecret: '$(KeyVaultClientSecret)'
+      imagesStorageCDNURL: 'https://myapp-$(prLC)-eu-cdnendpoint.azureedge.net/'
+      imagesStorageURL: 'https://myapp$(prLC)eustorage.blob.core.windows.net/'
+      redisCacheConnectionString: '$(AppSettings--RedisCacheConnectionStringDev)'
+      resourceGroupName: 'myapp$(prUC)'
+      resourceGroupLocation: 'East US'
+      resourceGroupLocationShort: 'eu'
+      myappConnectionString: '$(ConnectionStrings--myappConnectionStringDev)'
+      serviceName: 'myapp-$(prLC)-eu-service'
+      serviceStagingUrl: 'https://myapp-$(prLC)-eu-service-staging.azurewebsites.net/'
+      serviceUrl: 'https://myapp-$(prLC)-eu-service.azurewebsites.net/'
+      storageAccountName: 'myapp$(prLC)eustorage'
+      storageAccountKey: '$(StorageAccountKeyProd)'
+      userPrincipalLogin: $(userPrincipalLogin)
+      vmImage: $(vmImage)
+      websiteName: 'myapp-$(prLC)-eu-web'
+      websiteDomainName: '$(prLC).myapp.com'
+      websiteStagingUrl: 'https://myapp-$(prLC)-eu-web-staging.azurewebsites.net/'
+      websiteUrl: 'https://myapp-$(prLC)-eu-web.azurewebsites.net/'   
+";
+
+            //Act
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(yaml);
+
+            //Assert
+            string expected = @"
+#Note: Azure DevOps template does not have an equivalent in GitHub Actions yet
+env:
+  group: myapp KeyVault
+  vmImage: windows-latest
+jobs:
+  DeployPR_Stage_Template:
+    # 'Note: Azure DevOps template does not have an equivalent in GitHub Actions yet'
+    env:
+      prId: 000
+      prUC: PR${{ env.prId }}
+      prLC: pr${{ env.prId }}
+    if: and(success(),eq(variables['Build.Reason'], 'PullRequest'),ne(variables['System.PullRequest.PullRequestId'], 'Null'))
+    steps:
+    - uses: actions/checkout@v2
 ";
 
             expected = UtilityTests.TrimNewLines(expected);

@@ -215,6 +215,15 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                             Console.WriteLine("This variable is not needed in actions: " + stage.displayName);
                             azurePipeline.jobs[currentIndex] = stage.jobs[j];
                             azurePipeline.jobs[currentIndex].condition = stage.condition;
+                            //Move over the variables, the stage variables will need to be applied to each job
+                            if (stage.variables != null && stage.variables.Count > 0)
+                            {
+                                azurePipeline.jobs[currentIndex].variables = new Dictionary<string, string>();
+                                foreach (KeyValuePair<string, string> stageVariable in stage.variables)
+                                {
+                                    azurePipeline.jobs[currentIndex].variables.Add(stageVariable.Key, stageVariable.Value);
+                                }
+                            }
                             j++;
                             currentIndex++;
                         }
@@ -672,14 +681,13 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
             {
                 newJob.job_message += "Note: Azure DevOps job environment does not have an equivalent in GitHub Actions yet";
             }
-
-            if (newJob._if != null)
-            {
-                if (newJob.job_message != null)
-                {
-                    newJob.job_message += System.Environment.NewLine;
-                }
-            }
+            //if (newJob._if != null)
+            //{
+            //    if (newJob.job_message != null)
+            //    {
+            //        newJob.job_message += System.Environment.NewLine;
+            //    }
+            //}
             if (job.continueOnError)
             {
                 newJob.continue_on_error = job.continueOnError;

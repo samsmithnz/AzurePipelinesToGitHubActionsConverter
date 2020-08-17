@@ -133,7 +133,7 @@ jobs:
     continue-on-error: true
     steps:
     - uses: actions/checkout@v2
-    - #: ""Note: 'AZURE_SP' secret is required to be setup and added into GitHub Secrets: https://help.github.com/en/actions/automating-your-workflow-with-github-actions/creating-and-using-encrypted-secrets""
+    - # ""Note: 'AZURE_SP' secret is required to be setup and added into GitHub Secrets: https://help.github.com/en/actions/automating-your-workflow-with-github-actions/creating-and-using-encrypted-secrets""
       name: Azure Login
       uses: azure/login@v1
       with:
@@ -273,6 +273,103 @@ stages:
             string expected = @"
 #Note that although having no jobs is valid YAML, it is not a valid GitHub Action.
 jobs: {}
+";
+
+            expected = UtilityTests.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+        }
+
+
+        [TestMethod]
+        public void VariablesWithStageAndConditionalStatementsVariationTest()
+        {
+            //Arrange
+            string input = @"
+stages:
+- stage: Deploy
+  variables:
+    prId: '00B'
+    prUC: '002'
+    prLC: '003'
+  jobs:
+  - job: Build1
+    displayName: 'Build1 job'
+    pool:
+      vmImage: windows-latest
+    steps:
+    - task: PowerShell@2
+      inputs:
+        targetType: 'inline'
+        script: Write-Host ""Hello world 1!""
+";
+            Conversion conversion = new Conversion();
+
+            //Act
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(input);
+
+            //Assert
+            string expected = @"
+jobs:
+  Deploy_Stage_Build1:
+    name: Build1 job
+    runs-on: windows-latest
+    env:
+      prId: 00B
+      prUC: 002
+      prLC: 003
+    steps:
+    - uses: actions/checkout@v2
+    - run: Write-Host ""Hello world 1!""
+      shell: powershell
+";
+            expected = UtilityTests.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+        }
+
+        [TestMethod]
+        public void StagingConditionalVariablesPipelineTest()
+        {
+            //Arrange
+            Conversion conversion = new Conversion();
+            string yaml = @"
+stages:
+- stage: Deploy
+  variables:
+    ${{ if ne(variables['Build.SourceBranchName'], 'master') }}:
+      prId: ""$(System.PullRequest.PullRequestId)""
+    ${{ if eq(variables['Build.SourceBranchName'], 'master') }}:
+      prId: '000'
+    prUC: ""PR$(prId)""
+    prLC: ""pr$(prId)""
+  jobs:
+  - job: Build1
+    displayName: 'Build1 job'
+    pool:
+      vmImage: windows-latest
+    steps:
+    - task: PowerShell@2
+      inputs:
+        targetType: 'inline'
+        script: Write-Host ""Hello world 1!""
+";
+
+            //Act
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(yaml);
+
+            //Assert
+            string expected = @"
+jobs:
+  Deploy_Stage_Build1:
+    name: Build1 job
+    runs-on: windows-latest
+    env:
+      prId: 000
+      prUC: PR${{ env.prId }}
+      prLC: pr${{ env.prId }}
+    steps:
+    - uses: actions/checkout@v2
+    - run: Write-Host ""Hello world 1!""
+      shell: powershell
 ";
 
             expected = UtilityTests.TrimNewLines(expected);
