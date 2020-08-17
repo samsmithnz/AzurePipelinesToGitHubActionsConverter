@@ -1110,9 +1110,9 @@ stages:
     - deployment: 
       variables:
         Art: ""Server=.;Database=Art;Trusted_Connection=True;""
-#      - name: Art
-#        value: ""Server=.;Database=Art;Trusted_Connection=True;""
-#        
+        #- name: Art
+        #  value: ""Server=.;Database=Art;Trusted_Connection=True;""
+        
       environment: 
         name: windows-server
         resourceType: VirtualMachine
@@ -1128,12 +1128,13 @@ stages:
                   targetPath: '$(Pipeline.Workspace)'
 
 
-              #- task: CmdLine@2
-              #  inputs:
-              #    script: |
-              #      echo Write your commands here    
-              #      DIR
-              #    workingDirectory: '$(Pipeline.Workspace)'
+              - task: CmdLine@2
+                inputs:
+                  script: |
+                    echo Write your commands here
+                    
+                    DIR
+                  workingDirectory: '$(Pipeline.Workspace)'
                   
               - task: IISWebAppManagementOnMachineGroup@0
                 inputs:
@@ -1202,12 +1203,298 @@ jobs:
     - #: 'Note: Error! This step does not have a conversion path yet: DownloadPipelineArtifact@2'
       run: 'Write-Host Note: Error! This step does not have a conversion path yet: DownloadPipelineArtifact@2 #task: DownloadPipelineArtifact@2#inputs:#  buildtype: current#  artifactname: WebDeploy#  targetpath: ${{ env.Pipeline.Workspace }}'
       shell: powershell
+    - run: |
+        echo Write your commands here
+
+        DIR
+      shell: cmd
     - #: 'Note: Error! This step does not have a conversion path yet: IISWebAppManagementOnMachineGroup@0'
       run: ""Write-Host Note: Error! This step does not have a conversion path yet: IISWebAppManagementOnMachineGroup@0 #task: IISWebAppManagementOnMachineGroup@0#inputs:#  iisdeploymenttype: IISWebsite#  actioniiswebsite: CreateOrUpdateWebsite#  websitename: Spark#  websitephysicalpath: '%SystemDrive%\\inetpub\\wwwroot'#  websitephysicalpathauth: WebsiteUserPassThrough#  addbinding: true#  createorupdateapppoolforwebsite: true#  configureauthenticationforwebsite: true#  apppoolnameforwebsite: Spark#  dotnetversionforwebsite: v4.0#  pipelinemodeforwebsite: Integrated#  apppoolidentityforwebsite: ApplicationPoolIdentity#  anonymousauthenticationforwebsite: true#  windowsauthenticationforwebsite: false#  protocol: http#  ipaddress: All Unassigned#  port: 80""
       shell: powershell
     - #: 'Note: Error! This step does not have a conversion path yet: IISWebAppDeploymentOnMachineGroup@0'
       run: 'Write-Host Note: Error! This step does not have a conversion path yet: IISWebAppDeploymentOnMachineGroup@0 #task: IISWebAppDeploymentOnMachineGroup@0#inputs:#  websitename: Spark#  package: ${{ env.Pipeline.Workspace }}\Art.Web.zip#  xmlvariablesubstitution: true'
       shell: powershell
+";
+
+            expected = UtilityTests.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+            Assert.IsTrue(gitHubOutput.actionsYaml != null);
+            Assert.IsTrue(gitHubOutput.actionsYaml != "");
+        }
+
+
+
+
+        [TestMethod]
+        public void SSPipelineTest()
+        {
+            //Arrange
+            Conversion conversion = new Conversion();
+            //Source is: https://github.com/samsmithnz/AzurePipelinesToGitHubActionsConverter/issues/128
+            string yaml = @"
+trigger:
+- master
+pr:
+  branches:
+    include:
+    - '*'  # must quote since ""*"" is a YAML reserved character; we want a string
+
+schedules:
+- cron: ""0 1/2 * * *""
+  branches:
+    include: 
+    - master
+  always: true
+
+variables:
+- group: 'myapp KeyVault'
+- name: vmImage #Note this weird name/value syntax if you need to reference a variable group in variables
+  value: 'windows-latest'
+
+stages:
+- stage: Build
+  displayName: 'Build & Test stage'
+  jobs:
+  - template: azure-pipelines-build-template.yml
+    parameters:
+      buildConfiguration: 'Release'
+      buildPlatform: 'Any CPU'
+      vmImage: $(vmImage)
+      clientSecret: $(AppSettings--ClientSecretDev)
+      redisCacheConnectionString: $(AppSettings--RedisCacheConnectionStringDev)
+
+- stage: DeployPR
+  displayName: 'Deploy PR Stage'
+  condition: and(succeeded(), eq(variables['Build.Reason'], 'PullRequest'), ne(variables['System.PullRequest.PullRequestId'], 'Null'))
+  dependsOn: Build
+  variables:
+    ${{ if ne(variables['Build.SourceBranchName'], 'master') }}:
+      prId: ""$(System.PullRequest.PullRequestId)""
+    ${{ if eq(variables['Build.SourceBranchName'], 'master') }}:
+      prId: '000'
+    prUC: ""PR$(prId)""
+    prLC: ""pr$(prId)""
+  jobs:
+  - template: azure-pipelines-deployment-template.yml
+    parameters:
+      #Note that pull request environments use Dev credentials
+      applicationInsightsApiKey: '$(ApplicationInsights--APIKeyDev)'
+      applicationInsightsApplicationId: '$(ApplicationInsights--ApplicationIdDev)'
+      applicationInsightsInstrumentationKey: $(ApplicationInsights--InstrumentationKeyDev)
+      applicationInsightsLocation: 'East US'
+      appServiceContributerClientSecret: $(appServiceContributerClientSecret)
+      ASPNETCOREEnvironmentSetting: 'Development'
+      captureStartErrors: true
+      cognitiveServicesSubscriptionKey: $(cognitiveServicesSubscriptionKey)
+      environment: $(prUC)
+      environmentLowercase: $(prLC)
+      databaseLoginName: $(databaseLoginNameDev) 
+      databaseLoginPassword: $(databaseLoginPasswordDev)
+      databaseServerName: 'myapp-$(prLC)-eu-sqlserver'
+      godaddy_key: $(GoDaddyAPIKey)
+      godaddy_secret: $(GoDaddyAPISecret)
+      keyVaultClientId: '$(KeyVaultClientId)'
+      keyVaultClientSecret: '$(KeyVaultClientSecret)'
+      imagesStorageCDNURL: 'https://myapp-$(prLC)-eu-cdnendpoint.azureedge.net/'
+      imagesStorageURL: 'https://myapp$(prLC)eustorage.blob.core.windows.net/'
+      redisCacheConnectionString: '$(AppSettings--RedisCacheConnectionStringDev)'
+      resourceGroupName: 'myapp$(prUC)'
+      resourceGroupLocation: 'East US'
+      resourceGroupLocationShort: 'eu'
+      myappConnectionString: '$(ConnectionStrings--myappConnectionStringDev)'
+      serviceName: 'myapp-$(prLC)-eu-service'
+      serviceStagingUrl: 'https://myapp-$(prLC)-eu-service-staging.azurewebsites.net/'
+      serviceUrl: 'https://myapp-$(prLC)-eu-service.azurewebsites.net/'
+      storageAccountName: 'myapp$(prLC)eustorage'
+      storageAccountKey: '$(StorageAccountKeyProd)'
+      userPrincipalLogin: $(userPrincipalLogin)
+      vmImage: $(vmImage)
+      websiteName: 'myapp-$(prLC)-eu-web'
+      websiteDomainName: '$(prLC).myapp.com'
+      websiteStagingUrl: 'https://myapp-$(prLC)-eu-web-staging.azurewebsites.net/'
+      websiteUrl: 'https://myapp-$(prLC)-eu-web.azurewebsites.net/'
+
+- stage: DeployDev
+  displayName: 'Deploy Dev Stage'
+  condition: and(succeeded(), eq(variables['Build.SourceBranchName'], 'master'))
+  dependsOn: Build
+  jobs:
+  - template: azure-pipelines-deployment-template.yml
+    parameters:
+      applicationInsightsApiKey: '$(ApplicationInsights--APIKeyDev)'
+      applicationInsightsApplicationId: '$(ApplicationInsights--ApplicationIdDev)'
+      applicationInsightsInstrumentationKey: $(ApplicationInsights--InstrumentationKeyDev)
+      applicationInsightsLocation: 'East US'
+      appServiceContributerClientSecret: $(appServiceContributerClientSecret)
+      ASPNETCOREEnvironmentSetting: 'Development'
+      captureStartErrors: true
+      cognitiveServicesSubscriptionKey: $(cognitiveServicesSubscriptionKey)
+      environment: 'Dev'  
+      environmentLowercase: 'dev'
+      databaseLoginName: $(databaseLoginNameDev) 
+      databaseLoginPassword: $(databaseLoginPasswordDev)
+      databaseServerName: 'myapp-dev-eu-sqlserver'
+      godaddy_key: $(GoDaddyAPIKey)
+      godaddy_secret: $(GoDaddyAPISecret)
+      keyVaultClientId: '$(KeyVaultClientId)'
+      keyVaultClientSecret: '$(KeyVaultClientSecret)'
+      imagesStorageCDNURL: 'https://myapp-dev-eu-cdnendpoint.azureedge.net/'
+      imagesStorageURL: 'https://myappdeveustorage.blob.core.windows.net/'
+      redisCacheConnectionString: '$(AppSettings--RedisCacheConnectionStringDev)'
+      resourceGroupName: 'myappDev'
+      resourceGroupLocation: 'East US'
+      resourceGroupLocationShort: 'eu'
+      myappConnectionString: '$(ConnectionStrings--myappConnectionStringDev)'
+      serviceName: 'myapp-dev-eu-service'
+      serviceStagingUrl: 'https://myapp-dev-eu-service-staging.azurewebsites.net/'
+      serviceUrl: 'https://myapp-dev-eu-service.azurewebsites.net/'
+      storageAccountName: 'myappdeveustorage'
+      userPrincipalLogin: $(userPrincipalLogin)
+      vmImage: $(vmImage)
+      websiteName: 'myapp-dev-eu-web'
+      websiteDomainName: 'dev.myapp.com'
+      websiteStagingUrl: 'https://myapp-dev-eu-web-staging.azurewebsites.net/'
+      websiteUrl: 'https://myapp-dev-eu-web.azurewebsites.net/'
+
+- stage: DeployQA
+  displayName: 'Deploy QA Stage'
+  condition: and(succeeded(), eq(variables['Build.SourceBranchName'], 'master'))
+  dependsOn: DeployDev
+  jobs:
+  - template: azure-pipelines-deployment-template.yml
+    parameters:
+      applicationInsightsApiKey: '$(ApplicationInsights--APIKeyQA)'
+      applicationInsightsApplicationId: '$(ApplicationInsights--ApplicationIdQA)'
+      applicationInsightsInstrumentationKey: $(ApplicationInsights--InstrumentationKeyQA)
+      applicationInsightsLocation: 'East US'
+      appServiceContributerClientSecret: $(appServiceContributerClientSecret)
+      captureStartErrors: false
+      cognitiveServicesSubscriptionKey: $(cognitiveServicesSubscriptionKey)
+      environment: 'QA'  
+      environmentLowercase: 'qa'
+      databaseLoginName: $(databaseLoginNameQA) 
+      databaseLoginPassword: $(databaseLoginPasswordQA)
+      databaseServerName: 'myapp-qa-eu-sqlserver'
+      godaddy_key: $(GoDaddyAPIKey)
+      godaddy_secret: $(GoDaddyAPISecret)
+      keyVaultClientId: '$(KeyVaultClientId)'
+      keyVaultClientSecret: '$(KeyVaultClientSecret)'
+      letsEncryptUniqueRoleAssignmentGuid: '6e4cff57-e63a-403e-822c-e98e5ba02146'
+      imagesStorageCDNURL: 'https://myapp-qa-eu-cdnendpoint.azureedge.net/'
+      imagesStorageURL: 'https://myappqaeustorage.blob.core.windows.net/'
+      redisCacheConnectionString: '$(AppSettings--RedisCacheConnectionStringQA)'
+      resourceGroupName: 'myappQA'
+      resourceGroupLocation: 'East US'
+      resourceGroupLocationShort: 'eu'
+      myappConnectionString: '$(ConnectionStrings--myappConnectionStringQA)'
+      serviceName: 'myapp-qa-eu-service'
+      serviceStagingUrl: 'https://myapp-qa-eu-service-staging.azurewebsites.net/'
+      serviceUrl: 'https://myapp-qa-eu-service.azurewebsites.net/'
+      storageAccountName: 'myappqaeustorage'
+      userPrincipalLogin: $(userPrincipalLogin)
+      vmImage: $(vmImage)
+      websiteName: 'myapp-qa-eu-web'
+      websiteDomainName: 'qa.myapp.com'
+      websiteStagingUrl: 'https://myapp-qa-eu-web-staging.azurewebsites.net/'
+      websiteUrl: 'https://myapp-qa-eu-web.azurewebsites.net/'
+      
+- stage: DeployProd
+  displayName: 'Deploy Prod Stage'
+  condition: and(succeeded(), eq(variables['Build.SourceBranchName'], 'master'))
+  dependsOn: DeployQA
+  jobs:
+  - template: azure-pipelines-deployment-template.yml
+    parameters:
+      applicationInsightsApiKey: '$(ApplicationInsights--APIKeyProd)'
+      applicationInsightsApplicationId: '$(ApplicationInsights--ApplicationIdProd)'
+      applicationInsightsInstrumentationKey: $(ApplicationInsights--InstrumentationKeyProd)
+      applicationInsightsLocation: 'East US'
+      appServiceContributerClientSecret: $(appServiceContributerClientSecret)
+      captureStartErrors: false
+      cognitiveServicesSubscriptionKey: $(cognitiveServicesSubscriptionKey)
+      environment: 'Prod'  
+      environmentLowercase: 'prod'
+      databaseLoginName: $(databaseLoginNameProd) 
+      databaseLoginPassword: $(databaseLoginPasswordProd)
+      databaseServerName: 'myapp-prod-eu-sqlserver'
+      godaddy_key: $(GoDaddyAPIKey)
+      godaddy_secret: $(GoDaddyAPISecret)
+      keyVaultClientId: '$(KeyVaultClientId)'
+      keyVaultClientSecret: '$(KeyVaultClientSecret)'
+      imagesStorageCDNURL: 'https://myapp-prod-eu-cdnendpoint.azureedge.net/'
+      imagesStorageURL: 'https://myappprodeustorage.blob.core.windows.net/'
+      redisCacheConnectionString: '$(AppSettings--RedisCacheConnectionStringProd)'
+      resourceGroupName: 'myappProd'
+      resourceGroupLocation: 'East US'
+      resourceGroupLocationShort: 'eu'
+      myappConnectionString: '$(ConnectionStrings--myappConnectionStringProd)'
+      serviceName: 'myapp-prod-eu-service'
+      serviceStagingUrl: 'https://myapp-prod-eu-service-staging.azurewebsites.net/'
+      serviceUrl: 'https://myapp-prod-eu-service.azurewebsites.net/'
+      storageAccountName: 'myappprodeustorage'
+      userPrincipalLogin: $(userPrincipalLogin)
+      vmImage: $(vmImage)
+      websiteName: 'myapp-prod-eu-web'
+      websiteDomainName: 'myapp.com'
+      websiteStagingUrl: 'https://myapp-prod-eu-web-staging.azurewebsites.net/'
+      websiteUrl: 'https://myapp-prod-eu-web.azurewebsites.net/'     
+";
+
+            //Act
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(yaml);
+
+            //Assert
+            string expected = @"
+#Note: Azure DevOps template does not have an equivalent in GitHub Actions yet
+
+#Note: Azure DevOps template does not have an equivalent in GitHub Actions yet
+
+#Note: Azure DevOps template does not have an equivalent in GitHub Actions yet
+
+#Note: Azure DevOps template does not have an equivalent in GitHub Actions yet
+
+#Note: Azure DevOps template does not have an equivalent in GitHub Actions yet
+on:
+  push:
+    branches:
+    - master
+  pull-request:
+    branches:
+    - '*'
+  schedule:
+  - cron: '0 1/2 * * *'
+env:
+  group: myapp KeyVault
+  vmImage: windows-latest
+jobs:
+  Build_Stage_Template:
+    #: 'Note: Azure DevOps template does not have an equivalent in GitHub Actions yet'
+    steps:
+    - uses: actions/checkout@v2
+  DeployPR_Stage_Template:
+    #: Note: Azure DevOps template does not have an equivalent in GitHub Actions yet
+    env:
+      prId: 000
+      prUC: PR${{ env.prId }}
+      prLC: pr${{ env.prId }}
+    if: and(success(),eq(variables['Build.Reason'], 'PullRequest'),ne(variables['System.PullRequest.PullRequestId'], 'Null'))
+    steps:
+    - uses: actions/checkout@v2
+  DeployDev_Stage_Template:
+    #: Note: Azure DevOps template does not have an equivalent in GitHub Actions yet
+    if: and(success(),endsWith(github.ref, 'master'))
+    steps:
+    - uses: actions/checkout@v2
+  DeployQA_Stage_Template:
+    #: Note: Azure DevOps template does not have an equivalent in GitHub Actions yet
+    if: and(success(),endsWith(github.ref, 'master'))
+    steps:
+    - uses: actions/checkout@v2
+  DeployProd_Stage_Template:
+    #: Note: Azure DevOps template does not have an equivalent in GitHub Actions yet
+    if: and(success(),endsWith(github.ref, 'master'))
+    steps:
+    - uses: actions/checkout@v2
 ";
 
             expected = UtilityTests.TrimNewLines(expected);

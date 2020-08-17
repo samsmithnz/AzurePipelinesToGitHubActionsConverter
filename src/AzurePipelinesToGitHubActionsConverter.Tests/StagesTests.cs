@@ -279,5 +279,102 @@ jobs: {}
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
         }
 
+
+        [TestMethod]
+        public void VariablesWithStageAndConditionalStatementsVariationTest()
+        {
+            //Arrange
+            string input = @"
+stages:
+- stage: Deploy
+  variables:
+    prId: '00B'
+    prUC: '002'
+    prLC: '003'
+  jobs:
+  - job: Build1
+    displayName: 'Build1 job'
+    pool:
+      vmImage: windows-latest
+    steps:
+    - task: PowerShell@2
+      inputs:
+        targetType: 'inline'
+        script: Write-Host ""Hello world 1!""
+";
+            Conversion conversion = new Conversion();
+
+            //Act
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(input);
+
+            //Assert
+            string expected = @"
+jobs:
+  Deploy_Stage_Build1:
+    name: Build1 job
+    runs-on: windows-latest
+    env:
+      prId: 00B
+      prUC: 002
+      prLC: 003
+    steps:
+    - uses: actions/checkout@v2
+    - run: Write-Host ""Hello world 1!""
+      shell: powershell
+";
+            expected = UtilityTests.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+        }
+
+        [TestMethod]
+        public void StagingConditionalVariablesPipelineTest()
+        {
+            //Arrange
+            Conversion conversion = new Conversion();
+            string yaml = @"
+stages:
+- stage: Deploy
+  variables:
+    ${{ if ne(variables['Build.SourceBranchName'], 'master') }}:
+      prId: ""$(System.PullRequest.PullRequestId)""
+    ${{ if eq(variables['Build.SourceBranchName'], 'master') }}:
+      prId: '000'
+    prUC: ""PR$(prId)""
+    prLC: ""pr$(prId)""
+  jobs:
+  - job: Build1
+    displayName: 'Build1 job'
+    pool:
+      vmImage: windows-latest
+    steps:
+    - task: PowerShell@2
+      inputs:
+        targetType: 'inline'
+        script: Write-Host ""Hello world 1!""
+";
+
+            //Act
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(yaml);
+
+            //Assert
+            string expected = @"
+jobs:
+  Deploy_Stage_Build1:
+    name: Build1 job
+    runs-on: windows-latest
+    env:
+      prId: 000
+      prUC: PR${{ env.prId }}
+      prLC: pr${{ env.prId }}
+    steps:
+    - uses: actions/checkout@v2
+    - run: Write-Host ""Hello world 1!""
+      shell: powershell
+";
+
+            expected = UtilityTests.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+        }
+
     }
 }

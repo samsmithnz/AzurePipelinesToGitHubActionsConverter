@@ -318,7 +318,6 @@ env:
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
         }
 
-
         [TestMethod]
         public void ParametersReservedWordTest()
         {
