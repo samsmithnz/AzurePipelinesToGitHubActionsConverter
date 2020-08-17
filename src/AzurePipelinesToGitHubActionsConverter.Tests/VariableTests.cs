@@ -327,7 +327,10 @@ env:
 parameters: # defaults for any parameters that aren't specified
   plainVar: 'ok'
   environment: 'Dev'
+  strategy: Dev
+  pool: 'Dev'
 ";
+
             Conversion conversion = new Conversion();
 
             //Act
@@ -337,7 +340,9 @@ parameters: # defaults for any parameters that aren't specified
             string expected = @"
 env:
   plainVar: ok
-  environment: Dev
+  environment2: Dev
+  strategy2: Dev
+  pool2: Dev
 ";
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
