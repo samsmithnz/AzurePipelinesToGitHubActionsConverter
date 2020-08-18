@@ -147,7 +147,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
 
             //Assert
             string expected = @"
-- # Error! No conversion path for build-push (does it need two tasks in GitHub?)
+- # 'Note: No conversion path currently exists for build-push (does it need two tasks in GitHub?)'
   name: Build and Push
   run: docker build-push . dockerRegistryServiceConnection1 contosoRepository --tags tag1,tag2
 ";
