@@ -13,7 +13,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
     public class Conversion
     {
         private string _matrixVariableName;
-        private bool _verbose;
+        private readonly bool _verbose;
 
         public Conversion(bool verbose = true)
         {
@@ -302,6 +302,11 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
             if (processedYaml.ToLower().IndexOf(" demands:", StringComparison.OrdinalIgnoreCase) >= 0)
             {
                 processedYaml = ProcessSection(processedYaml, "demands:", "- ");
+            }
+            //Then process the dependsOn
+            if (processedYaml.ToLower().IndexOf(" dependson:", StringComparison.OrdinalIgnoreCase) >= 0)
+            {
+                processedYaml = ProcessSection(processedYaml, "dependson:", "- ");
             }
             //Then process environment, to convert the simple string to a resourceName
             if (processedYaml.ToLower().IndexOf(" environment:", StringComparison.OrdinalIgnoreCase) >= 0)

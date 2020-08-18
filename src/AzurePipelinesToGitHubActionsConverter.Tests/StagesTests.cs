@@ -376,5 +376,94 @@ jobs:
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
         }
 
+
+        [TestMethod]
+        public void StagingSingleDependsOnPipelineTest()
+        {
+            //Arrange
+            Conversion conversion = new Conversion();
+            string yaml = @"
+stages:
+- stage: Deploy
+  jobs:
+  - job: Build1
+    displayName: 'Build1 job'
+    dependsOn: Build0
+    pool:
+      vmImage: windows-latest
+    steps:
+    - task: PowerShell@2
+      inputs:
+        targetType: 'inline'
+        script: Write-Host ""Hello world 1!""
+";
+
+            //Act
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(yaml);
+
+            //Assert
+            string expected = @"
+jobs:
+  Deploy_Stage_Build1:
+    name: Build1 job
+    runs-on: windows-latest
+    needs:
+    - Build0
+    steps:
+    - uses: actions/checkout@v2
+    - run: Write-Host ""Hello world 1!""
+      shell: powershell
+";
+
+            expected = UtilityTests.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+        }
+
+
+        [TestMethod]
+        public void StagingMultipleDependsOnPipelineTest()
+        {
+            //Arrange
+            Conversion conversion = new Conversion();
+            string yaml = @"
+stages:
+- stage: Deploy
+  jobs:
+  - job: Build1
+    displayName: 'Build1 job'
+    dependsOn: 
+    - Build0a 
+    - Build0b
+    pool:
+      vmImage: windows-latest
+    steps:
+    - task: PowerShell@2
+      inputs:
+        targetType: 'inline'
+        script: Write-Host ""Hello world 1!""
+";
+
+            //Act
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(yaml);
+
+            //Assert
+            string expected = @"
+jobs:
+  Deploy_Stage_Build1:
+    name: Build1 job
+    runs-on: windows-latest
+    needs:
+    - Build0a
+    - Build0b
+    steps:
+    - uses: actions/checkout@v2
+    - run: Write-Host ""Hello world 1!""
+      shell: powershell
+";
+
+            expected = UtilityTests.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+        }
+
     }
 }
