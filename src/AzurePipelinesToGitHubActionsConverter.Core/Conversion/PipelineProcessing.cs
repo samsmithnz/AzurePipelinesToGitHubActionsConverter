@@ -10,7 +10,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
     {
         public List<string> VariableList;
         public string MatrixVariableName;
-        private bool _verbose;
+        private readonly bool _verbose;
 
         public PipelineProcessing(bool verbose) => _verbose = verbose;
 

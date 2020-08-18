@@ -814,7 +814,8 @@ jobs:
   Build2:
     name: Build job
     runs-on: ubuntu-latest
-    needs: Build
+    needs:
+    - Build
     env:
       myJobVariable: data
     steps:
@@ -1222,11 +1223,8 @@ jobs:
             Assert.IsTrue(gitHubOutput.actionsYaml != "");
         }
 
-
-
-
         [TestMethod]
-        public void SSPipelineTest()
+        public void SSParentPipelineTest()
         {
             //Arrange
             Conversion conversion = new Conversion();
@@ -1309,6 +1307,139 @@ jobs:
     if: and(success(),eq(variables['Build.Reason'], 'PullRequest'),ne(variables['System.PullRequest.PullRequestId'], 'Null'))
     steps:
     - uses: actions/checkout@v2
+";
+
+            expected = UtilityTests.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+            Assert.IsTrue(gitHubOutput.actionsYaml != null);
+            Assert.IsTrue(gitHubOutput.actionsYaml != "");
+        }
+
+        [TestMethod]
+        public void SSDeploymentPipelineTest()
+        {
+            //Arrange
+            Conversion conversion = new Conversion();
+            //Source is: https://github.com/samsmithnz/AzurePipelinesToGitHubActionsConverter/issues/128
+            string yaml = @"
+parameters:
+  #Note that pull request environments use Dev credentials
+  applicationInsightsApiKey: '$(ApplicationInsights--APIKeyDev)'
+  applicationInsightsApplicationId: '$(ApplicationInsights--ApplicationIdDev)'
+  applicationInsightsInstrumentationKey: $(ApplicationInsights--InstrumentationKeyDev)
+  applicationInsightsLocation: 'East US'
+  appServiceContributerClientSecret: $(appServiceContributerClientSecret)
+  ASPNETCOREEnvironmentSetting: 'Development'
+  captureStartErrors: true
+  cognitiveServicesSubscriptionKey: $(cognitiveServicesSubscriptionKey)
+  environment: $(prUC)
+  environmentLowercase: $(prLC)
+  databaseLoginName: $(databaseLoginNameDev) 
+  databaseLoginPassword: $(databaseLoginPasswordDev)
+  databaseServerName: 'myapp-$(prLC)-eu-sqlserver'
+  godaddy_key: $(GoDaddyAPIKey)
+  godaddy_secret: $(GoDaddyAPISecret)
+  keyVaultClientId: '$(KeyVaultClientId)'
+  keyVaultClientSecret: '$(KeyVaultClientSecret)'
+  imagesStorageCDNURL: 'https://myapp-$(prLC)-eu-cdnendpoint.azureedge.net/'
+  imagesStorageURL: 'https://myapp$(prLC)eustorage.blob.core.windows.net/'
+  redisCacheConnectionString: '$(AppSettings--RedisCacheConnectionStringDev)'
+  resourceGroupName: 'myapp$(prUC)'
+  resourceGroupLocation: 'East US'
+  resourceGroupLocationShort: 'eu'
+  myappConnectionString: '$(ConnectionStrings--myappConnectionStringDev)'
+  serviceName: 'myapp-$(prLC)-eu-service'
+  serviceStagingUrl: 'https://myapp-$(prLC)-eu-service-staging.azurewebsites.net/'
+  serviceUrl: 'https://myapp-$(prLC)-eu-service.azurewebsites.net/'
+  storageAccountName: 'myapp$(prLC)eustorage'
+  storageAccountKey: '$(StorageAccountKeyProd)'
+  userPrincipalLogin: $(userPrincipalLogin)
+  vmImage: $(vmImage)
+  websiteName: 'myapp-$(prLC)-eu-web'
+  websiteDomainName: '$(prLC).myapp.com'
+  websiteStagingUrl: 'https://myapp-$(prLC)-eu-web-staging.azurewebsites.net/'
+  websiteUrl: 'https://myapp-$(prLC)-eu-web.azurewebsites.net/'
+ 
+jobs:
+  - deployment: DeployFunctionalTests
+    displayName: ""Deploy functional tests to ${{parameters.environment}} job""
+    environment: ${{parameters.environment}}
+    dependsOn: 
+    - DeployDatabase
+    - DeployWebServiceapp
+    - DeployWebsiteapp
+    pool:
+      vmImage: ${{parameters.vmImage}}        
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - task: DownloadBuildArtifacts@0
+            displayName: 'Download the build artifacts'
+            inputs:
+              buildType: 'current'
+              downloadType: 'single'
+              artifactName: 'drop'
+              downloadPath: '$(build.artifactstagingdirectory)'
+
+";
+
+            //Act
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(yaml);
+
+            //Assert
+            string expected = @"
+#Note: Azure DevOps strategy>runOnce>deploy does not have an equivalent in GitHub Actions yetNote: Azure DevOps job environment does not have an equivalent in GitHub Actions yet
+env:
+  applicationInsightsApiKey: ${{ env.ApplicationInsights--APIKeyDev }}
+  applicationInsightsApplicationId: ${{ env.ApplicationInsights--ApplicationIdDev }}
+  applicationInsightsInstrumentationKey: ${{ env.ApplicationInsights--InstrumentationKeyDev }}
+  applicationInsightsLocation: East US
+  appServiceContributerClientSecret: ${{ env.appServiceContributerClientSecret }}
+  ASPNETCOREEnvironmentSetting: Development
+  captureStartErrors: true
+  cognitiveServicesSubscriptionKey: ${{ env.cognitiveServicesSubscriptionKey }}
+  environment2: ${{ env.prUC }}
+  environment2Lowercase: ${{ env.prLC }}
+  databaseLoginName: ${{ env.databaseLoginNameDev }}
+  databaseLoginPassword: ${{ env.databaseLoginPasswordDev }}
+  databaseServerName: myapp-${{ env.prLC }}-eu-sqlserver
+  godaddy_key: ${{ env.GoDaddyAPIKey }}
+  godaddy_secret: ${{ env.GoDaddyAPISecret }}
+  keyVaultClientId: ${{ env.KeyVaultClientId }}
+  keyVaultClientSecret: ${{ env.KeyVaultClientSecret }}
+  imagesStorageCDNURL: https://myapp-${{ env.prLC }}-eu-cdnendpoint.azureedge.net/
+  imagesStorageURL: https://myapp${{ env.prLC }}eustorage.blob.core.windows.net/
+  redisCacheConnectionString: ${{ env.AppSettings--RedisCacheConnectionStringDev }}
+  resourceGroupName: myapp${{ env.prUC }}
+  resourceGroupLocation: East US
+  resourceGroupLocationShort: eu
+  myappConnectionString: ${{ env.ConnectionStrings--myappConnectionStringDev }}
+  serviceName: myapp-${{ env.prLC }}-eu-service
+  serviceStagingUrl: https://myapp-${{ env.prLC }}-eu-service-staging.azurewebsites.net/
+  serviceUrl: https://myapp-${{ env.prLC }}-eu-service.azurewebsites.net/
+  storageAccountName: myapp${{ env.prLC }}eustorage
+  storageAccountKey: ${{ env.StorageAccountKeyProd }}
+  userPrincipalLogin: ${{ env.userPrincipalLogin }}
+  vmImage: ${{ env.vmImage }}
+  websiteName: myapp-${{ env.prLC }}-eu-web
+  websiteDomainName: ${{ env.prLC }}.myapp.com
+  websiteStagingUrl: https://myapp-${{ env.prLC }}-eu-web-staging.azurewebsites.net/
+  websiteUrl: https://myapp-${{ env.prLC }}-eu-web.azurewebsites.net/
+jobs:
+  DeployFunctionalTests:
+    # 'Note: Azure DevOps strategy>runOnce>deploy does not have an equivalent in GitHub Actions yetNote: Azure DevOps job environment does not have an equivalent in GitHub Actions yet'
+    name: Deploy functional tests to ${{ env.environment }} job
+    runs-on: ${{ env.vmImage }}
+    needs:
+    - DeployDatabase
+    - DeployWebServiceapp
+    - DeployWebsiteapp
+    steps:
+    - name: Download the build artifacts
+      uses: actions/download-artifact@v1.0.0
+      with:
+        name: drop
 ";
 
             expected = UtilityTests.TrimNewLines(expected);
