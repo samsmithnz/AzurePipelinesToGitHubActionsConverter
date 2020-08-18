@@ -1360,14 +1360,12 @@ parameters:
   websiteStagingUrl: 'https://myapp-$(prLC)-eu-web-staging.azurewebsites.net/'
   websiteUrl: 'https://myapp-$(prLC)-eu-web.azurewebsites.net/'
  
+
 jobs:
-  - deployment: DeployFunctionalTests
+
+  - deployment: DeployTests1
     displayName: ""Deploy functional tests to ${{parameters.environment}} job""
     environment: ${{parameters.environment}}
-    dependsOn: 
-    - DeployDatabase
-    - DeployWebServiceapp
-    - DeployWebsiteapp
     pool:
       vmImage: ${{parameters.vmImage}}        
     strategy:
@@ -1382,6 +1380,58 @@ jobs:
               artifactName: 'drop'
               downloadPath: '$(build.artifactstagingdirectory)'
 
+  - deployment: DeployTests2
+    displayName: ""Deploy functional tests to ${{parameters.environment}} job""
+    environment: ${{parameters.environment}}
+    pool:
+      vmImage: ${{parameters.vmImage}}        
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - task: DownloadBuildArtifacts@0
+            displayName: 'Download the build artifacts'
+            inputs:
+              buildType: 'current'
+              downloadType: 'single'
+              artifactName: 'drop'
+              downloadPath: '$(build.artifactstagingdirectory)'
+
+#  - deployment: DeployAppInsightsAnnotation
+#    displayName: ""Deploy application insights annotation to ${{parameters.environment}} job""
+#    environment: ${{parameters.environment}}
+#    dependsOn: DeployInfrastructure
+#    pool:
+#      vmImage: ${{parameters.vmImage}}        
+#    strategy:
+#      runOnce:
+#        deploy:
+#          steps:
+#          - task: ms-appinsights.appinsightsreleaseannotations.release-task.ms-appinsights.ReleaseAnnotation@1
+#            displayName: 'Add release annotation to Azure Application Insights'
+#            inputs:
+#              applicationId: '${{parameters.applicationInsightsApplicationId}}'
+#              apiKey: '${{parameters.applicationInsightsApiKey}}'
+
+  - deployment: DeployTests3
+    displayName: ""Deploy functional tests to ${{parameters.environment}} job""
+    environment: ${{parameters.environment}}
+    dependsOn: 
+    - DeployTests1
+    - DeployTests2
+    pool:
+      vmImage: ${{parameters.vmImage}}        
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - task: DownloadBuildArtifacts@0
+            displayName: 'Download the build artifacts'
+            inputs:
+              buildType: 'current'
+              downloadType: 'single'
+              artifactName: 'drop'
+              downloadPath: '$(build.artifactstagingdirectory)'
 ";
 
             //Act
@@ -1389,6 +1439,8 @@ jobs:
 
             //Assert
             string expected = @"
+#Note: Azure DevOps strategy>runOnce>deploy does not have an equivalent in GitHub Actions yetNote: Azure DevOps job environment does not have an equivalent in GitHub Actions yet
+#Note: Azure DevOps strategy>runOnce>deploy does not have an equivalent in GitHub Actions yetNote: Azure DevOps job environment does not have an equivalent in GitHub Actions yet
 #Note: Azure DevOps strategy>runOnce>deploy does not have an equivalent in GitHub Actions yetNote: Azure DevOps job environment does not have an equivalent in GitHub Actions yet
 env:
   applicationInsightsApiKey: ${{ env.ApplicationInsights--APIKeyDev }}
@@ -1427,14 +1479,31 @@ env:
   websiteStagingUrl: https://myapp-${{ env.prLC }}-eu-web-staging.azurewebsites.net/
   websiteUrl: https://myapp-${{ env.prLC }}-eu-web.azurewebsites.net/
 jobs:
-  DeployFunctionalTests:
+  DeployTests1:
+    # 'Note: Azure DevOps strategy>runOnce>deploy does not have an equivalent in GitHub Actions yetNote: Azure DevOps job environment does not have an equivalent in GitHub Actions yet'
+    name: Deploy functional tests to ${{ env.environment }} job
+    runs-on: ${{ env.vmImage }}
+    steps:
+    - name: Download the build artifacts
+      uses: actions/download-artifact@v1.0.0
+      with:
+        name: drop
+  DeployTests2:
+    # 'Note: Azure DevOps strategy>runOnce>deploy does not have an equivalent in GitHub Actions yetNote: Azure DevOps job environment does not have an equivalent in GitHub Actions yet'
+    name: Deploy functional tests to ${{ env.environment }} job
+    runs-on: ${{ env.vmImage }}
+    steps:
+    - name: Download the build artifacts
+      uses: actions/download-artifact@v1.0.0
+      with:
+        name: drop
+  DeployTests3:
     # 'Note: Azure DevOps strategy>runOnce>deploy does not have an equivalent in GitHub Actions yetNote: Azure DevOps job environment does not have an equivalent in GitHub Actions yet'
     name: Deploy functional tests to ${{ env.environment }} job
     runs-on: ${{ env.vmImage }}
     needs:
-    - DeployDatabase
-    - DeployWebServiceapp
-    - DeployWebsiteapp
+    - DeployTests1
+    - DeployTests2
     steps:
     - name: Download the build artifacts
       uses: actions/download-artifact@v1.0.0

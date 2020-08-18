@@ -230,7 +230,28 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
             }
             string processedYaml = yaml;
 
-            //Part 1
+            //Part 1: remove full line comments. sometimes the yaml converter can't handle these - depending on where the # appears on the line (sometimes it's the first character, other times the first character after whitespace
+            if (processedYaml.IndexOf("#") >= 0)
+            {
+                StringBuilder sb = new StringBuilder();
+                foreach (string line in processedYaml.Split(System.Environment.NewLine))
+                {
+                    //Remove the comment if it's the a full line (after removing the preceeding white space)
+                    if (line.TrimStart().IndexOf("#") == 0)
+                    {
+                        //don't add line, remove
+                        Console.WriteLine(line);
+                    }
+                    else
+                    {
+                        sb.Append(line);
+                        sb.Append(System.Environment.NewLine);
+                    }
+                }
+                processedYaml = sb.ToString();
+            }
+
+            //Part 2
             //Process the variables, looking for reserved words
             if (processedYaml.ToLower().IndexOf("variables:", StringComparison.OrdinalIgnoreCase) >= 0 ||
                 processedYaml.ToLower().IndexOf("parameters:", StringComparison.OrdinalIgnoreCase) >= 0)
@@ -282,7 +303,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                 processedYaml = newYaml.ToString();
             }
 
-            //Part 2
+            //Part 3
             //If the yaml contains pools, check if it's a "simple pool" (pool: string]), 
             //and convert it to a "complex pool", (pool: \n  name: string)
             //
@@ -319,9 +340,9 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
             {
                 processedYaml = ProcessSection(processedYaml, " tags:", "- ");
             }
-            
 
-            //Part 3: conditional insertions/ variables
+
+            //Part 4: conditional insertions/ variables
             //Process conditional variables
             if (processedYaml.IndexOf("{{#if") >= 0 || processedYaml.IndexOf("{{ #if") >= 0 ||
                 processedYaml.IndexOf("${{if") >= 0 || processedYaml.IndexOf("${{ if") >= 0)
@@ -358,7 +379,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
             foreach (string line in yaml.Split(System.Environment.NewLine))
             {
                 //If the search string is found, start processing it
-                if (line.ToLower().IndexOf(searchString, StringComparison.OrdinalIgnoreCase) >= 0 && 
+                if (line.ToLower().IndexOf(searchString, StringComparison.OrdinalIgnoreCase) >= 0 &&
                     line.ToLower().IndexOf(searchString + " |") == -1) //We don't want to catch the docker tags. This isn't perfect, but should catch most situations.
                 {
                     //Split the string by the :
@@ -368,17 +389,17 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                     {
                         //Get the count of whitespaces in front of the variable
                         int prefixSpaceCount = items[0].TakeWhile(char.IsWhiteSpace).Count();
-                        
+
                         //start building the new string, with the white space count
                         newYaml.Append(Utility.GenerateSpaces(prefixSpaceCount));
                         //Add the main keyword
-                        newYaml.Append(items[0].Trim()); 
+                        newYaml.Append(items[0].Trim());
                         newYaml.Append(": ");
                         newYaml.Append(System.Environment.NewLine);
                         //on the new line, add the white spaces + two more spaces for the indent
-                        newYaml.Append(Utility.GenerateSpaces(prefixSpaceCount + 2));                         newYaml.Append(newLineName);
+                        newYaml.Append(Utility.GenerateSpaces(prefixSpaceCount + 2)); newYaml.Append(newLineName);
                         //The main value
-                        newYaml.Append(items[1].Trim()); 
+                        newYaml.Append(items[1].Trim());
                         newYaml.Append(System.Environment.NewLine);
                     }
                     else
