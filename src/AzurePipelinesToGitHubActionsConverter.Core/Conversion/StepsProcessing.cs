@@ -46,6 +46,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                     case "COPYFILES@2":
                         gitHubStep = CreateCopyFilesStep(step);
                         break;
+                    case "DOCKER@0":
                     case "DOCKER@1":
                     case "DOCKER@2":
                         gitHubStep = CreateDockerStep(step);
@@ -402,7 +403,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                     break;
                 case "buildAndPush":
                     dockerScript += "docker build-push .";
-                    stepMessage = "Error! No conversion path for build-push (does it need two tasks in GitHub?)";
+                    stepMessage = "Note: No conversion path currently exists for build-push (does it need two tasks in GitHub?)";
                     break;
                 case "login":
                     dockerScript += "docker login";
