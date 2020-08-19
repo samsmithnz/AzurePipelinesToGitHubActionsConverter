@@ -22,7 +22,7 @@ The table below shows current, functioning YML files that run on a regular sched
 
 
 # How this works
-**Currently this only supports one-way migrations from Azure Pipelines to GitHub Actions. There are functions to deserialize Azure Pipelines, and serialize and deserialize GitHub Actions. While this is translating many steps, it has so far been targeted to just supporting the basic .NET pipelines so far. Check the [issues](https://github.com/samsmithnz/AzurePipelinesToGitHubActionsConverter/issues) for incomplete items, or the TODO's in the source code.**
+**Currently this only supports one-way migrations from Azure Pipelines to GitHub Actions. There are functions to deserialize Azure Pipelines, and serialize and deserialize GitHub Actions. While this is translating many steps, there are nearly infinite combinations, therefore most of the focus has been supporting the basic .NET pipelines. Even if steps can't convert, the pipeline *should*. Check the [issues](https://github.com/samsmithnz/AzurePipelinesToGitHubActionsConverter/issues) for incomplete items, or the TODO's in the source code.**
  
 Yaml can be challenging. The [yaml wikipedia](https://en.wikipedia.org/wiki/YAML) page does a very good job of laying out the rules, but when we are talking about converting yaml to C#, there are a few things to know:
 
@@ -61,10 +61,10 @@ public string job { get; set; }
 public string displayName { get; set; }
 public Pool pool { get; set; }
 ```
-5. Yaml is wack. The white spaces can destroy you, as the errors returned are often not helpful at all. Take lots of breaks.
+5. Yaml is wack. The white spaces can destroy you, as the errors returned are often not helpful at all. Take lots of breaks. In the end YAML is worth it - I promise!
 
 ## Current limitations
-There are a number of Azure Pipeline features that don't currently match up well with a GitHub feature, and hence, these migrate with a change in functionality (e.g. parameters become variables and stages become jobs), or not at all (e.g. )
+There are a number of Azure Pipeline features that don't currently match up well with a GitHub feature, and hence, these migrate with a change in functionality (e.g. parameters become variables and stages become jobs), or not at all (e.g. deployment strategies/environments). As/if these features are added to Actions, we will build in the conversions
 
 #### **Stages**
 Stages are converted to jobs. For example, a job "JobA" in a stage "Stage1", becomes a job named "Stage1_JobA"
@@ -155,7 +155,7 @@ jobs:
 ```
 
 #### **RunOnce deployment strategy and deployment jobs**
-The strategy and deployment job is consolidated to a job
+The strategy and deployment job is consolidated to a job, with the strategy removed as there is no GitHub equivalent
 
 ###### Azure Pipelines YAML
 ```YAML
@@ -207,8 +207,7 @@ jobs:
 ```
 
 #### **Conditions**
-Conditions are processing with about 95% accuracy.  
-
+Conditions are processing with about 95% accuracy. There are some system variables that still need conversions, but we've tried to handle the most popular ones 
 
 ## Architecture
 The core functionality is contained in a .NET Standard 2.1 class, "AzurePipelinesToGitHubActionsConverter.Core".
@@ -218,8 +217,10 @@ The core functionality is contained in a .NET Standard 2.1 class, "AzurePipeline
 
 Testing:
 - There is a .NET CORE 3.1 MSTest project for tests, "AzurePipelinesToGitHubActionsConverter.Tests" 
-Current projects consuming it:
+
+Current projects consuming this:
 - There is a website in [another GitHub project](https://github.com/samsmithnz/AzurePipelinesToGitHubActionsConverterWeb) where you can test this interactively, at: https://pipelinestoactions.azurewebsites.net/ 
+- Alex, (who has made many contributions here), has created a classic Azure Pipelines to Azure Pipelines/GitHub Actions YAML converter: [yamlizer](https://github.com/f2calv/yamlizr)
 
 ## Example: 
 The Azure Pipelines YAML to build a dotnet application on ubuntu:

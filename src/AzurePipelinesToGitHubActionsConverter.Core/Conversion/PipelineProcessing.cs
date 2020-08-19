@@ -42,7 +42,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
             //Container
             if (azurePipeline.container != null)
             {
-                gitHubActions.messages.Add("TODO: Container conversion not yet done: https://github.com/samsmithnz/AzurePipelinesToGitHubActionsConverter/issues/39");
+                gitHubActions.messages.Add("TODO: Container conversion not yet done, we need help - our container skills are woeful: https://github.com/samsmithnz/AzurePipelinesToGitHubActionsConverter/issues/39");
             }
 
             //Triggers for pushs 
