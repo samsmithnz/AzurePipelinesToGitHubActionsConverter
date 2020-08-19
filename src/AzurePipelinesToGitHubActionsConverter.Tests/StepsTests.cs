@@ -326,7 +326,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
 - name: PowerShell test task
   run: Write-Host 'Hello World'
   shell: powershell
-  if: and(eq('ABCDE', 'BCD'),ne(0, 1))
+  if: and(eq('ABCDE', 'BCD'), ne(0, 1))
 ";
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
