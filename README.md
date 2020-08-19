@@ -206,8 +206,11 @@ jobs:
     - uses: actions/checkout@v1
 ```
 
+#### **Some variables combinations**
+In particular, variable groups with the name/value syntax inside of stages or jobs. We are looking for ways to handle this better.
+
 #### **Conditions**
-Conditions are processing with about 95% accuracy. There are some system variables that still need conversions, but we've tried to handle the most popular ones 
+Conditions are processing with about 95% accuracy. There are some system variables that still need conversions, but we've tried to handle the most popular combinations. 
 
 ## Architecture
 The core functionality is contained in a .NET Standard 2.1 class, "AzurePipelinesToGitHubActionsConverter.Core".

@@ -1517,5 +1517,410 @@ jobs:
             Assert.IsTrue(gitHubOutput.actionsYaml != "");
         }
 
+        [TestMethod]
+        public void TADeploymentPipelineTest()
+        {
+            //Arrange
+            Conversion conversion = new Conversion();
+            //Source is: https://github.com/samsmithnz/AzurePipelinesToGitHubActionsConverter/issues/149
+            string yaml = @"
+name: PRBuild_$(Year:yy)$(DayOfYear)$(Rev:.r)
+trigger: none
+
+stages:
+- stage: Stage
+  jobs:
+  - job: ""Job""
+    workspace:
+      clean: all
+
+    pool:
+      name: PoolName
+    steps:
+    - task: PowerShell@1
+      displayName: 'Script'
+      inputs:
+        scriptName: 'Script.ps1'
+";
+
+            //Act
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(yaml);
+
+            //Assert
+            string expected = @"
+#Note: Error! This step does not have a conversion path yet: PowerShell@1
+name: PRBuild_${{ env.Year:yy }}${{ env.DayOfYear }}${{ env.Rev:.r }}
+on:
+  push:
+    branches:
+    - none
+jobs:
+  Stage_Stage_Job:
+    runs-on: PoolName
+    steps:
+    - uses: actions/checkout@v2
+    - # 'Note: Error! This step does not have a conversion path yet: PowerShell@1'
+      name: Script
+      run: 'Write-Host Note: Error! This step does not have a conversion path yet: PowerShell@1 #task: PowerShell@1#displayName: Script#inputs:#  scriptname: Script.ps1'
+      shell: powershell
+";
+
+            expected = UtilityTests.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+        }
+
+
+        [TestMethod]
+        public void JLTestPipeline()
+        {
+            //Arrange
+            Conversion conversion = new Conversion();
+            string yaml = @"
+trigger:
+  branches:
+    include:
+    - master
+  paths:
+    include:
+    - source/*
+  tags:
+    include:
+    - ""v*""
+    exclude:
+    - ""*-*""
+variables:
+  buildFolderName: output
+  buildArtifactName: output
+  testResultFolderName: testResults
+  testArtifactName: testResults
+
+stages:
+  - stage: Build
+    jobs:
+      - job: Package_Module
+        displayName: 'Package Module'
+        pool:
+          vmImage: 'ubuntu 16.04'
+        steps:
+          - task: GitVersion@5
+            name: gitVersion
+            displayName: 'Evaluate Next Version'
+            inputs:
+              runtime: 'core'
+              configFilePath: 'GitVersion.yml'
+          - task: PowerShell@2
+            name: package
+            displayName: 'Build & Package Module'
+            inputs:
+              filePath: './build.ps1'
+              arguments: '-ResolveDependency -tasks pack'
+              pwsh: true
+            env:
+              ModuleVersion: $(gitVersion.NuGetVersionV2)
+          - task: PublishBuildArtifacts@1
+            displayName: 'Publish Build Artifact'
+            inputs:
+              pathToPublish: '$(buildFolderName)/'
+              artifactName: $(buildArtifactName)
+              publishLocation: 'Container'
+
+  - stage: Test
+    dependsOn: Build
+    jobs:
+      - job: Test_HQRM
+        displayName: 'HQRM'
+        pool:
+          vmImage: 'windows-2019'
+        timeoutInMinutes: 0
+        steps:
+          - task: DownloadBuildArtifacts@0
+            displayName: 'Download Build Artifact'
+            inputs:
+              buildType: 'current'
+              downloadType: 'single'
+              artifactName: 'output'
+              downloadPath: '$(Build.SourcesDirectory)'
+          - task: PowerShell@2
+            name: test
+            displayName: 'Run HQRM Test'
+            inputs:
+              filePath: './build.ps1'
+              arguments: '-Tasks hqrmtest'
+              pwsh: false
+          - task: PublishTestResults@2
+            displayName: 'Publish Test Results'
+            condition: succeededOrFailed()
+            inputs:
+              testResultsFormat: 'NUnit'
+              testResultsFiles: 'output/testResults/NUnit*.xml'
+              testRunTitle: 'HQRM'
+
+      - job: Test_Unit
+        displayName: 'Unit'
+        pool:
+          vmImage: 'windows-2019'
+        timeoutInMinutes: 0
+        steps:
+          - task: DownloadBuildArtifacts@0
+            displayName: 'Download Build Artifact'
+            inputs:
+              buildType: 'current'
+              downloadType: 'single'
+              artifactName: $(buildArtifactName)
+              downloadPath: '$(Build.SourcesDirectory)'
+          - task: PowerShell@2
+            name: test
+            displayName: 'Run Unit Test'
+            inputs:
+              filePath: './build.ps1'
+              arguments: ""-Tasks test -PesterScript 'tests/Unit'""
+              pwsh: true
+          - task: PublishTestResults@2
+            displayName: 'Publish Test Results'
+            condition: succeededOrFailed()
+            inputs:
+              testResultsFormat: 'NUnit'
+              testResultsFiles: '$(buildFolderName)/$(testResultFolderName)/NUnit*.xml'
+              testRunTitle: 'Unit (Windows Server Core)'
+          - task: PublishBuildArtifacts@1
+            displayName: 'Publish Test Artifact'
+            inputs:
+              pathToPublish: '$(buildFolderName)/$(testResultFolderName)/'
+              artifactName: $(testArtifactName)
+              publishLocation: 'Container'
+
+      - job: Test_Integration_SQL2016
+        displayName: 'Integration (SQL2016)'
+        pool:
+          vmImage: 'windows-2019'
+        timeoutInMinutes: 0
+        variables:
+          # This sets environment variable $env:CI.
+          CI: true
+          # This sets environment variable $env:CONFIGURATION.
+          configuration: Integration_SQL2016
+        steps:
+          - task: DownloadBuildArtifacts@0
+            displayName: 'Download Build Artifact'
+            inputs:
+              buildType: 'current'
+              downloadType: 'single'
+              artifactName: $(buildArtifactName)
+              downloadPath: '$(Build.SourcesDirectory)'
+          - task: PowerShell@2
+            name: configureWinRM
+            displayName: 'Configure WinRM'
+            inputs:
+              targetType: 'inline'
+              script: 'winrm quickconfig -quiet'
+              pwsh: false
+          - powershell: |
+              ./build.ps1 -Tasks test -CodeCoverageThreshold 0 -PesterScript @(
+                  # Run the integration tests in a specific group order.
+                  # Group 1
+                  'tests/Integration/DSC_SqlSetup.Integration.Tests.ps1'
+                  # Group 2
+                  'tests/Integration/DSC_SqlAgentAlert.Integration.Tests.ps1'
+                  'tests/Integration/DSC_SqlServerNetwork.Integration.Tests.ps1'
+                  'tests/Integration/DSC_SqlLogin.Integration.Tests.ps1'
+                  'tests/Integration/DSC_SqlEndpoint.Integration.Tests.ps1'
+                  'tests/Integration/DSC_SqlDatabaseMail.Integration.Tests.ps1'
+                  'tests/Integration/DSC_SqlRSSetup.Integration.Tests.ps1'
+                  'tests/Integration/DSC_SqlDatabaseDefaultLocation.Integration.Tests.ps1'
+                  'tests/Integration/DSC_SqlDatabase.Integration.Tests.ps1'
+                  'tests/Integration/DSC_SqlAlwaysOnService.Integration.Tests.ps1'
+                  'tests/Integration/DSC_SqlAgentOperator.Integration.Tests.ps1'
+                  'tests/Integration/DSC_SqlServiceAccount.Integration.Tests.ps1'
+                  'tests/Integration/DSC_SqlAgentFailsafe.Integration.Tests.ps1'
+                  # Group 3
+                  'tests/Integration/DSC_SqlRole.Integration.Tests.ps1'
+                  'tests/Integration/DSC_SqlRS.Integration.Tests.ps1'
+                  'tests/Integration/DSC_SqlDatabaseUser.Integration.Tests.ps1'
+                  'tests/Integration/DSC_SqlReplication.Integration.Tests.ps1'
+                  # Group 4
+                  'tests/Integration/DSC_SqlScript.Integration.Tests.ps1'
+                  'tests/Integration/DSC_SqlDatabasePermission.Integration.Tests.ps1'
+                  # Group 5
+                  'tests/Integration/DSC_SqlSecureConnection.Integration.Tests.ps1'
+                  'tests/Integration/DSC_SqlScriptQuery.Integration.Tests.ps1'
+                  'tests/Integration/DSC_SqlProtocol.Integration.Tests.ps1'
+                  # Group 6 (tests makes changes that could make SQL Server to loose connectivity)
+                  'tests/Integration/DSC_SqlProtocolTcpIp.Integration.Tests.ps1'
+                  'tests/Integration/DSC_SqlDatabaseObjectPermission.Integration.Tests.ps1'
+              )
+            name: test
+            displayName: 'Run Integration Test'
+          - task: PublishTestResults@2
+            displayName: 'Publish Test Results'
+            condition: succeededOrFailed()
+            inputs:
+              testResultsFormat: 'NUnit'
+              testResultsFiles: '$(buildFolderName)/$(testResultFolderName)/NUnit*.xml'
+              testRunTitle: 'Integration (SQL Server 2016 / Windows Server 2019)'
+
+      - job: Test_Integration_SQL2017
+        displayName: 'Integration (SQL2017)'
+        pool:
+          vmImage: 'windows-2019'
+        timeoutInMinutes: 0
+        variables:
+          # This sets environment variable $env:CI.
+          CI: true
+          # This sets environment variable $env:CONFIGURATION.
+          configuration: Integration_SQL2017
+        steps:
+          - task: DownloadBuildArtifacts@0
+            displayName: 'Download Build Artifact'
+            inputs:
+              buildType: 'current'
+              downloadType: 'single'
+              artifactName: $(buildArtifactName)
+              downloadPath: '$(Build.SourcesDirectory)'
+          - task: PowerShell@2
+            name: configureWinRM
+            displayName: 'Configure WinRM'
+            inputs:
+              targetType: 'inline'
+              script: 'winrm quickconfig -quiet'
+              pwsh: false
+          - powershell: |
+              ./build.ps1 -Tasks test -CodeCoverageThreshold 0 -PesterScript @(
+                  # Run the integration tests in a specific group order.
+                  # Group 1
+                  'tests/Integration/DSC_SqlSetup.Integration.Tests.ps1'
+                  # Group 2
+                  'tests/Integration/DSC_SqlAgentAlert.Integration.Tests.ps1'
+                  'tests/Integration/DSC_SqlLogin.Integration.Tests.ps1'
+                  'tests/Integration/DSC_SqlEndpoint.Integration.Tests.ps1'
+                  'tests/Integration/DSC_SqlDatabaseMail.Integration.Tests.ps1'
+                  'tests/Integration/DSC_SqlRSSetup.Integration.Tests.ps1'
+                  'tests/Integration/DSC_SqlDatabaseDefaultLocation.Integration.Tests.ps1'
+                  'tests/Integration/DSC_SqlDatabase.Integration.Tests.ps1'
+                  'tests/Integration/DSC_SqlAlwaysOnService.Integration.Tests.ps1'
+                  'tests/Integration/DSC_SqlAgentOperator.Integration.Tests.ps1'
+                  'tests/Integration/DSC_SqlServiceAccount.Integration.Tests.ps1'
+                  'tests/Integration/DSC_SqlAgentFailsafe.Integration.Tests.ps1'
+                  # Group 3
+                  'tests/Integration/DSC_SqlRole.Integration.Tests.ps1'
+                  'tests/Integration/DSC_SqlRS.Integration.Tests.ps1'
+                  'tests/Integration/DSC_SqlDatabaseUser.Integration.Tests.ps1'
+                  'tests/Integration/DSC_SqlReplication.Integration.Tests.ps1'
+                  # Group 4
+                  'tests/Integration/DSC_SqlScript.Integration.Tests.ps1'
+                  'tests/Integration/DSC_SqlDatabasePermission.Integration.Tests.ps1'
+                  # Group 5
+                  'tests/Integration/DSC_SqlSecureConnection.Integration.Tests.ps1'
+                  'tests/Integration/DSC_SqlScriptQuery.Integration.Tests.ps1'
+                  'tests/Integration/DSC_SqlProtocol.Integration.Tests.ps1'
+                  # Group 6 (tests makes changes that could make SQL Server to loose connectivity)
+                  'tests/Integration/DSC_SqlProtocolTcpIp.Integration.Tests.ps1'
+                  'tests/Integration/DSC_SqlDatabaseObjectPermission.Integration.Tests.ps1'
+              )
+            name: test
+            displayName: 'Run Integration Test'
+          - task: PublishTestResults@2
+            displayName: 'Publish Test Results'
+            condition: succeededOrFailed()
+            inputs:
+              testResultsFormat: 'NUnit'
+              testResultsFiles: '$(buildFolderName)/$(testResultFolderName)/NUnit*.xml'
+              testRunTitle: 'Integration (Windows Server Core)'
+
+      - job: Code_Coverage
+        displayName: 'Publish Code Coverage'
+        dependsOn: Test_Unit
+        pool:
+          vmImage: 'ubuntu 16.04'
+        timeoutInMinutes: 0
+        steps:
+          - pwsh: |
+              $repositoryOwner,$repositoryName = $env:BUILD_REPOSITORY_NAME -split '/'
+              echo ""##vso[task.setvariable variable=RepositoryOwner;isOutput=true]$repositoryOwner""
+              echo ""##vso[task.setvariable variable=RepositoryName;isOutput=true]$repositoryName""
+            name: dscBuildVariable
+            displayName: 'Set Environment Variables'
+          - task: DownloadBuildArtifacts@0
+            displayName: 'Download Build Artifact'
+            inputs:
+              buildType: 'current'
+              downloadType: 'single'
+              artifactName: $(buildArtifactName)
+              downloadPath: '$(Build.SourcesDirectory)'
+          - task: DownloadBuildArtifacts@0
+            displayName: 'Download Test Artifact'
+            inputs:
+              buildType: 'current'
+              downloadType: 'single'
+              artifactName: $(testArtifactName)
+              downloadPath: '$(Build.SourcesDirectory)/$(buildFolderName)'
+          - task: PublishCodeCoverageResults@1
+            displayName: 'Publish Azure Code Coverage'
+            condition: succeededOrFailed()
+            inputs:
+              codeCoverageTool: 'JaCoCo'
+              summaryFileLocation: '$(buildFolderName)/$(testResultFolderName)/JaCoCo_coverage.xml'
+              pathToSources: '$(Build.SourcesDirectory)/$(buildFolderName)/$(dscBuildVariable.RepositoryName)'
+          - script: |
+              bash <(curl -s https://codecov.io/bash) -f ""./$(buildFolderName)/$(testResultFolderName)/JaCoCo_coverage.xml"" -F unit
+            displayName: 'Upload to Codecov.io'
+            condition: succeededOrFailed()
+
+  - stage: Deploy
+    dependsOn: Test
+    condition: |
+      and(
+        succeeded(),
+        or(
+          eq(variables['Build.SourceBranch'], 'refs/heads/master'),
+          startsWith(variables['Build.SourceBranch'], 'refs/tags/')
+        ),
+        contains(variables['System.TeamFoundationCollectionUri'], 'dsccommunity')
+      )
+    jobs:
+      - job: Deploy_Module
+        displayName: 'Deploy Module'
+        pool:
+          vmImage: 'ubuntu 16.04'
+        steps:
+          - task: DownloadBuildArtifacts@0
+            displayName: 'Download Build Artifact'
+            inputs:
+              buildType: 'current'
+              downloadType: 'single'
+              artifactName: $(buildArtifactName)
+              downloadPath: '$(Build.SourcesDirectory)'
+          - task: PowerShell@2
+            name: publishRelease
+            displayName: 'Publish Release'
+            inputs:
+              filePath: './build.ps1'
+              arguments: '-tasks publish'
+              pwsh: true
+            env:
+              GitHubToken: $(GitHubToken)
+              GalleryApiToken: $(GalleryApiToken)
+          - task: PowerShell@2
+            name: sendChangelogPR
+            displayName: 'Send Changelog PR'
+            inputs:
+              filePath: './build.ps1'
+              arguments: '-tasks Create_ChangeLog_GitHub_PR'
+              pwsh: true
+            env:
+              GitHubToken: $(GitHubToken)
+";
+
+            //Act
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(yaml);
+
+            //Assert
+            string expected = @"
+
+";
+
+            expected = UtilityTests.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+        }
+
     }
 }

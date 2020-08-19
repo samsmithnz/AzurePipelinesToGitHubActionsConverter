@@ -24,7 +24,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
 
         [TestMethod]
         public void SuccessOrFailureTest()
-        { 
+        {
             string condition = "succeededOrFailed()";
 
             //Act
@@ -115,7 +115,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             string result = ConditionsProcessing.TranslateConditions(condition);
 
             //Assert
-            string expected = "and(eq('ABCDE', 'BCD'),ne(0, 1))";
+            string expected = "and(eq('ABCDE', 'BCD'), ne(0, 1))";
             Assert.AreEqual(expected, result);
         }
 
@@ -175,6 +175,86 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             Assert.AreEqual(2, results.Count);
             Assert.AreEqual("'ABCDE', 'BCD'", results[0]);
             Assert.AreEqual("contains('ABCDE', 'BCD')", results[1]);
+        }
+
+        [TestMethod]
+        public void MultilineBracketsTest()
+        {
+            //Arrange
+            string text = @"
+and(
+succeeded(),
+or(
+    eq(variables['Build.SourceBranch'], 'refs/heads/master'),
+    startsWith(variables['Build.SourceBranch'], 'refs/tags/')
+),
+contains(variables['System.TeamFoundationCollectionUri'], 'dsccommunity')
+)";
+
+            //Act
+            List<string> results = ConditionsProcessing.FindBracketedContentsInString(text);
+
+            //Assert
+            Assert.AreNotEqual(null, results);
+            Assert.AreEqual(6, results.Count);
+        }
+
+        [TestMethod]
+        public void MultilineConditionTest()
+        {
+            //Arrange
+            string text = @"
+and(
+succeeded(),
+startsWith(variables['Build.SourceBranch'], 'refs/tags/')
+)";
+//            string text2 = @"
+//and(
+//succeeded(),
+//or(
+//    eq(variables['Build.SourceBranch'], 'refs/heads/master'),
+//    startsWith(variables['Build.SourceBranch'], 'refs/tags/')
+//),
+//contains(variables['System.TeamFoundationCollectionUri'], 'dsccommunity')
+//)";
+
+            //Act
+            string result = ConditionsProcessing.TranslateConditions(text);
+
+            //Assert
+            string expected = "and(success(),endsWith(github.ref, 'master'))";
+            Assert.AreEqual(expected, result);
+        }
+
+        [TestMethod]
+        public void AndOrConditionTest()
+        {
+            //Arrange
+            string text = @"
+and(succeeded1(),or(succeeded2(),succeeded3()))";
+
+            //Act
+            string result = ConditionsProcessing.TranslateConditions(text);
+
+            //Assert
+            string expected = "and(success(),endsWith(github.ref, 'master'))";
+            Assert.AreEqual(expected, result);
+        }
+
+        [TestMethod]
+        public void StartsWithBranchTest()
+        {
+            //Arrange
+            string text = @"
+startsWith(variables['Build.SourceBranch'], 'refs/tags/')
+";
+
+            //Act
+            string result = ConditionsProcessing.TranslateConditions(text);
+
+            //Assert
+            string expected = "startsWith(github.ref, 'refs/tags/')";
+            Assert.AreEqual(expected, result);
         }
 
     }

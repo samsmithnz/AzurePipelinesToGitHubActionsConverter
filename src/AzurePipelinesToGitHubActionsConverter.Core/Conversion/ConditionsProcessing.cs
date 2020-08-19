@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Text.RegularExpressions;
 
 namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
@@ -13,6 +15,8 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
             {
                 return null;
             }
+            //Sometimes conditions are spread over multiple lines, we are going to compress this to one line to make the processing easier
+            condition = condition.Replace("\r\n", "");
 
             string processedCondition = "";
 
@@ -24,7 +28,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
             string conditionKeyWord = condition.Replace("(" + contents + ")", "");
             if (contents.IndexOf("(") >= 0)
             {
-                //Need to count the number "(" brackets. If it's > 1, then iterate to get to one.
+                //Need to count the number "(" brackets. If it's > 1, then iterate until we get to one.
                 int bracketsCount = CountCharactersInString(contents, ')');
                 if (bracketsCount > 1)
                 {
@@ -53,6 +57,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
             return processedCondition;
         }
 
+        //TODO: Move to a more generic place and apply to the entire pipeline, not just conditions
         private static string ProcessVariables(string condition)
         {
             if (condition.IndexOf("variables['Build.SourceBranch']") >= 0)
@@ -69,7 +74,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
 
         private static string ProcessCondition(string condition, string contents)
         {
-            switch (condition)
+            switch (condition.Trim())
             {
                 //Job/step status check functions: 
                 //Azure DevOps: https://docs.microsoft.com/en-us/azure/devops/pipelines/process/expressions?view=azure-devops#job-status-functions
@@ -114,11 +119,12 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
             }
         }
 
+        //Public so that it can be unit tested
         public static List<string> FindBracketedContentsInString(string text)
         {
             IEnumerable<string> results = Nested(text);
             List<string> list = results.ToList<string>();
-            //Remove the last item
+            //Remove the last item - that is the current item we don't need
             if (list.Count > 1)
             {
                 list.RemoveAt(list.Count - 1);
@@ -147,7 +153,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                 }
                 else if (ch == ')')
                 {
-                    //Possible Future enhancement: you may want to check if close ']' has corresponding open '('
+                    //TODO: Possible Future enhancement: you may want to check if close ']' has corresponding open '('
                     // i.e. stack has values: if (!brackets.Any()) throw ...
                     int openBracket = brackets.Pop();
 
@@ -165,22 +171,63 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
             return text.Count(x => x == character);
         }
 
-        //Takes a string, and splits it by commas, respecting (). For example, 
-        // the string "eq('ABCDE', 'BCD'), ne(0, 1)", is split into "eq('ABCDE', 'BCD')" and "ne(0, 1)"
-        private static List<string> SplitContents(string text)
+
+        //////RegEx cannot handle nested brackets, so we need 
+        //public static List<string> SplitContents(string text)
+        //{
+        //    MatchCollection results = Regex.Matches(text, @",(?![^\(\[]*[\]\)])");
+        //    List<string> list = new List<string>();
+        //    int startIndex = 0;
+        //    int endIndex;
+        //    foreach (Match result in results)
+        //    {
+        //        endIndex = result.Index;
+        //        list.Add(text.Substring(startIndex, (endIndex - startIndex)).Trim());
+        //        startIndex = result.Index + 1;
+        //    }
+        //    endIndex = text.Length;
+        //    list.Add(text.Substring(startIndex, (endIndex - startIndex)).Trim());
+        //    return list;
+        //}
+
+        //Public so that it can be unit tested
+        //Takes a string, and splits it by commas, respecting(). For example,
+        //the string "eq('ABCDE', 'BCD'), ne(0, 1)", is split into "eq('ABCDE', 'BCD')" and "ne(0, 1)"
+        public static List<string> SplitContents(string text)
         {
-            MatchCollection results = Regex.Matches(text, @",(?![^\(\[]*[\]\)])");
+            char splitCharacter = ',';
             List<string> list = new List<string>();
-            int startIndex = 0;
-            int endIndex;
-            foreach (Match result in results)
+            StringBuilder sb = new StringBuilder();
+            int openBracketCount = 0;
+
+            foreach (char nextChar in text)
             {
-                endIndex = result.Index;
-                list.Add(text.Substring(startIndex, (endIndex - startIndex)).Trim());
-                startIndex = result.Index + 1;
+                //If we have no open brackets, and the split character has been found, add the current string to the list 
+                if (openBracketCount == 0 && nextChar == splitCharacter)
+                {
+                    list.Add(sb.ToString());
+                    sb = new StringBuilder();
+                }
+                else if (nextChar == '(')
+                {
+                    //We found a open bracket - this is nested, but track it
+                    openBracketCount++;
+                    sb.Append(nextChar);
+                }
+                else if (nextChar == ')')
+                {
+                    //We found a closed bracket - if this is 0, we are not tracking anymore.
+                    openBracketCount--;
+                    sb.Append(nextChar);
+                }
+                else
+                {
+                    //Otherwise, append the character
+                    sb.Append(nextChar);
+                }
             }
-            endIndex = text.Length;
-            list.Add(text.Substring(startIndex, (endIndex - startIndex)).Trim());
+            list.Add(sb.ToString());
+
             return list;
         }
 

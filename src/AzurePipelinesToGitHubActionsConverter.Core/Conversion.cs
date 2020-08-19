@@ -314,6 +314,11 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
             //We also repeat this same logic with demands, converting string to string[]
             //And also environment and tags
 
+            //Process the trigger 
+            if (processedYaml.ToLower().IndexOf("trigger:", StringComparison.OrdinalIgnoreCase) >= 0)
+            {
+                processedYaml = ProcessSection(processedYaml, "trigger:", "- ");
+            }
             //Process the pool 
             if (processedYaml.ToLower().IndexOf("pool:", StringComparison.OrdinalIgnoreCase) >= 0)
             {
@@ -334,7 +339,6 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
             {
                 processedYaml = ProcessSection(processedYaml, " environment:", "resourceName: ");
             }
-
             //Then process the tags (almost identical to demands)
             if (processedYaml.ToLower().IndexOf(" tags:", StringComparison.OrdinalIgnoreCase) >= 0)
             {
