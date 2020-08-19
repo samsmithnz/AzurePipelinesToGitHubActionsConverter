@@ -23,7 +23,7 @@ $EndDate=(GET-DATE)
 $revisionNumber = [math]::Round((New-TimeSpan -Start $StartDate -End $EndDate).TotalSeconds / 2,0)
 
 #Final version number, using the Major, Minor and Patch versions, and then appends build and revision number together
-$finalBuildVersion = "$($splitVersion[0]).$($splitVersion[1]).$($splitVersion[2]).$($buildNumber)$($revisionNumber)"
+$finalBuildVersion = "$($splitVersion[0]).$($splitVersion[1]).$($splitVersion[2]).$($buildNumber)$($revisionNumber.ToString("000000"))"
 #Write-Host "Major.Minor,patch,Build+Revision"
 Write-Host "Final build number: $finalBuildVersion" 
 #Writing final version number back to Github variable
