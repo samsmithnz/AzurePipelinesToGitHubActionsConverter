@@ -639,7 +639,7 @@ resources:
 
             //Assert
             string expected = @"
-#TODO: Container conversion not yet done: https://github.com/samsmithnz/AzurePipelinesToGitHubActionsConverter/issues/39
+#TODO: Container conversion not yet done, we need help - our container skills are woeful: https://github.com/samsmithnz/AzurePipelinesToGitHubActionsConverter/issues/39
 on:
   push:
     branches:
