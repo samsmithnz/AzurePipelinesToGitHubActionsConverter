@@ -24,7 +24,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
 
         [TestMethod]
         public void SuccessOrFailureTest()
-        { 
+        {
             string condition = "succeededOrFailed()";
 
             //Act
@@ -148,7 +148,60 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
         }
 
         [TestMethod]
-        public void NestedStringTest()
+        public void MultilineConditionTest()
+        {
+            //Arrange
+            string text = @"
+and(
+succeeded(),
+or(
+    eq(variables['Build.SourceBranch'], 'refs/heads/master'),
+    startsWith(variables['Build.SourceBranch'], 'refs/tags/')
+),
+contains(variables['System.TeamFoundationCollectionUri'], 'dsccommunity')
+)";
+
+            //Act
+            string result = ConditionsProcessing.TranslateConditions(text);
+
+            //Assert
+            string expected = "and(success(),or(eq(github.ref, 'refs/heads/master'),startsWith(github.ref, 'refs/tags/')),contains(variables['System.TeamFoundationCollectionUri'], 'dsccommunity'))";
+            Assert.AreEqual(expected, result);
+        }
+
+        [TestMethod]
+        public void AndOrConditionTest()
+        {
+            //Arrange
+            string text = @"
+and(succeeded(),or(succeeded(),succeeded()))";
+
+            //Act
+            string result = ConditionsProcessing.TranslateConditions(text);
+
+            //Assert
+            string expected = "and(success(),or(success(),success()))";
+            Assert.AreEqual(expected, result);
+        }
+
+        [TestMethod]
+        public void StartsWithBranchTest()
+        {
+            //Arrange
+            string text = @"
+startsWith(variables['Build.SourceBranch'], 'refs/tags/')
+";
+
+            //Act
+            string result = ConditionsProcessing.TranslateConditions(text);
+
+            //Assert
+            string expected = "startsWith(github.ref, 'refs/tags/')";
+            Assert.AreEqual(expected, result);
+        }
+
+        [TestMethod]
+        public void NestedBracketsStringTest()
         {
             //Arrange
             string text = "(this is a (sample) string with (some special words. (another one)))";
@@ -162,7 +215,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
         }
 
         [TestMethod]
-        public void NestedString2Test()
+        public void NestedBracketsString2Test()
         {
             //Arrange
             string text = "not(contains('ABCDE', 'BCD'))";
@@ -175,6 +228,108 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             Assert.AreEqual(2, results.Count);
             Assert.AreEqual("'ABCDE', 'BCD'", results[0]);
             Assert.AreEqual("contains('ABCDE', 'BCD')", results[1]);
+        }
+
+        [TestMethod]
+        public void MultilineBracketsTest()
+        {
+            //Arrange
+            string text = @"
+and(
+succeeded(),
+or(
+    eq(variables['Build.SourceBranch'], 'refs/heads/master'),
+    startsWith(variables['Build.SourceBranch'], 'refs/tags/')
+),
+contains(variables['System.TeamFoundationCollectionUri'], 'dsccommunity')
+)";
+
+            //Act
+            List<string> results = ConditionsProcessing.FindBracketedContentsInString(text);
+
+            //Assert
+            Assert.AreNotEqual(null, results);
+            Assert.AreEqual(6, results.Count);
+        }
+
+        [TestMethod]
+        public void SimpleTwoSplitTest()
+        {
+            //Arrange
+            string condition = "'ABCDE', 'BCD'";
+
+            //Act
+            List<string> results = ConditionsProcessing.SplitContents(condition);
+
+            //Assert
+            Assert.AreEqual(2, results.Count);
+
+        }
+
+        [TestMethod]
+        public void TrickSingleSplitWithBracketsTest()
+        {
+            //Arrange
+            string condition = "contains('ABCDE', 'BCD')";
+
+            //Act
+            List<string> results = ConditionsProcessing.SplitContents(condition);
+
+            //Assert
+            Assert.AreEqual(1, results.Count);
+        }
+
+        [TestMethod]
+        public void ComplexDoubleNestedBracketsSplitTest()
+        {
+            //Arrange
+            string condition = "('ABCDE', 'BCD'), ne(0, 1)";
+
+            //Act
+            List<string> results = ConditionsProcessing.SplitContents(condition);
+
+            //Assert
+            Assert.AreEqual(2, results.Count);
+        }
+
+        [TestMethod]
+        public void SimpleThreeSplitTest()
+        {
+            //Arrange
+            string condition = "succeeded(), variables['Build.SourceBranch'], 'refs/heads/master'";
+
+            //Act
+            List<string> results = ConditionsProcessing.SplitContents(condition);
+
+            //Assert
+            Assert.AreEqual(3, results.Count);
+        }
+
+
+        [TestMethod]
+        public void ComplexDoubleSplitWithNesterBracketTest()
+        {
+            //Arrange
+            string text = @"succeeded1(),or(succeeded2(),succeeded3())";
+
+            //Act
+            List<string> results = ConditionsProcessing.SplitContents(text);
+
+            //Assert
+            Assert.AreEqual(2, results.Count);
+        }
+
+        [TestMethod]
+        public void ComplexTripleSplitWithDoubleNestedBracketsTest()
+        {
+            //Arrange
+            string text = @"succeeded(),eq('ABCDE', 'BCD'), ne(0, 1)";
+
+            //Act
+            List<string> results = ConditionsProcessing.SplitContents(text);
+
+            //Assert
+            Assert.AreEqual(3, results.Count);
         }
 
     }

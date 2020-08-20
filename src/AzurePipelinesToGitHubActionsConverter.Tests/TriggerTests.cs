@@ -26,6 +26,23 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
                                     "    - master";
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
         }
+        [TestMethod]
+        public void TriggerNoneSimpleStringTest()
+        {
+            //Arrange
+            string input = "trigger: none";
+            Conversion conversion = new Conversion();
+
+            //Act
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(input);
+
+            //Assert
+            string expected = "on:" + Environment.NewLine +
+                                    "  push:" + Environment.NewLine +
+                                    "    branches:" + Environment.NewLine +
+                                    "    - none";
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+        }
 
         [TestMethod]
         public void TriggerSimpleWithMultipleBranchesStringTest()
