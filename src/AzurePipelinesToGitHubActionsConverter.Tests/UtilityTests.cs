@@ -17,10 +17,10 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             int number9 = 9;
 
             //Act
-            string results0 = Utility.GenerateSpaces(number0);
-            string results1 = Utility.GenerateSpaces(number1);
-            string results4 = Utility.GenerateSpaces(number4);
-            string results9 = Utility.GenerateSpaces(number9);
+            string results0 = ConversionUtility.GenerateSpaces(number0);
+            string results1 = ConversionUtility.GenerateSpaces(number1);
+            string results4 = ConversionUtility.GenerateSpaces(number4);
+            string results9 = ConversionUtility.GenerateSpaces(number9);
 
             //Assert
             Assert.AreEqual( "", results0);

@@ -1,10 +1,7 @@
 ﻿using AzurePipelinesToGitHubActionsConverter.Core.AzurePipelines;
 using AzurePipelinesToGitHubActionsConverter.Core.Conversion.Serialization;
 using AzurePipelinesToGitHubActionsConverter.Core.Extensions;
-using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
 using System.Text;
 
 namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
@@ -377,8 +374,8 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
 
 
             //Docker 1 inputs
-            string azureSubscriptionEndpoint = GetStepInput(step, "azureSubscriptionEndpoint");
-            string azureContainerRegistry = GetStepInput(step, "azureContainerRegistry");
+            //string azureSubscriptionEndpoint = GetStepInput(step, "azureSubscriptionEndpoint");
+            //string azureContainerRegistry = GetStepInput(step, "azureContainerRegistry");
 
             //Docker 2 inputs
             string command = GetStepInput(step, "command");
@@ -386,7 +383,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
             string repository = GetStepInput(step, "repository");
             string tags = GetStepInput(step, "tags");
             string dockerFile = GetStepInput(step, "dockerfile");
-            string buildContext = GetStepInput(step, "buildContext");
+            //string buildContext = GetStepInput(step, "buildContext");
             string arguments = GetStepInput(step, "arguments");
             string imageName = GetStepInput(step, "imageName");
 
@@ -1392,7 +1389,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
             //Going to:
             //- run: echo "This task equivalent does not yet exist in GitHub Actions"
 
-            string scriptPath = GetStepInput(step, "scriptPath");
+            //string scriptPath = GetStepInput(step, "scriptPath");
 
             string command = @"echo ""This task equivalent does not yet exist in GitHub Actions""";
             step.script = command;
