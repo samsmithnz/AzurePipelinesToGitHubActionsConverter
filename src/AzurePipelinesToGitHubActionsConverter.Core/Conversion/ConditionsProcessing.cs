@@ -25,7 +25,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
 
             //Examine the contents for last set of contents, the most complete piece of the contents, to get the keywords, recursively, otherwise, convert the contents to GitHub
             string contents = contentList[contentList.Count - 1];
-            string conditionKeyWord = condition.Replace("(" + contents + ")", "");
+            string conditionKeyWord = condition.Replace("(" + contents + ")", "").Trim();
             if (contents.IndexOf("(") >= 0)
             {
                 //Need to count the number "(" brackets. If it's > 1, then iterate until we get to one.
@@ -172,7 +172,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
         }
 
 
-        //////RegEx cannot handle nested brackets, so we need 
+        //////RegEx cannot handle nested brackets, so this first version doesn't work
         //public static List<string> SplitContents(string text)
         //{
         //    MatchCollection results = Regex.Matches(text, @",(?![^\(\[]*[\]\)])");
@@ -193,6 +193,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
         //Public so that it can be unit tested
         //Takes a string, and splits it by commas, respecting(). For example,
         //the string "eq('ABCDE', 'BCD'), ne(0, 1)", is split into "eq('ABCDE', 'BCD')" and "ne(0, 1)"
+        //This was originally RegEx, but RegEx cannot handle nested brackets, so we wrote our own simple parser
         public static List<string> SplitContents(string text)
         {
             char splitCharacter = ',';

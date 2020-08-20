@@ -115,7 +115,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             string result = ConditionsProcessing.TranslateConditions(condition);
 
             //Assert
-            string expected = "and(eq('ABCDE', 'BCD'), ne(0, 1))";
+            string expected = "and(eq('ABCDE', 'BCD'),ne(0, 1))";
             Assert.AreEqual(expected, result);
         }
 
@@ -129,7 +129,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             string result = ConditionsProcessing.TranslateConditions(condition);
 
             //Assert
-            string expected = "and(success(), eq(github.ref, 'refs/heads/master'))";
+            string expected = "and(success(),eq(github.ref, 'refs/heads/master'))";
             Assert.AreEqual(expected, result);
         }
 
@@ -143,7 +143,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             string result = ConditionsProcessing.TranslateConditions(condition);
 
             //Assert
-            string expected = "and(success(), endsWith(github.ref, 'master'))";
+            string expected = "and(success(),endsWith(github.ref, 'master'))";
             Assert.AreEqual(expected, result);
         }
 
@@ -217,7 +217,7 @@ contains(variables['System.TeamFoundationCollectionUri'], 'dsccommunity')
             string result = ConditionsProcessing.TranslateConditions(text);
 
             //Assert
-            string expected = "and(success(),or(    eq(github.ref, 'refs/heads/master'),    startsWith(github.ref, 'refs/tags/')),contains(variables['System.TeamFoundationCollectionUri'], 'dsccommunity'))";
+            string expected = "and(success(),or(eq(github.ref, 'refs/heads/master'),startsWith(github.ref, 'refs/tags/')),contains(variables['System.TeamFoundationCollectionUri'], 'dsccommunity'))";
             Assert.AreEqual(expected, result);
         }
 
