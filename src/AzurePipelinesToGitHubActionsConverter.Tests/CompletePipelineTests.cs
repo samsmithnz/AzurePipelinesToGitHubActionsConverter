@@ -1915,7 +1915,225 @@ stages:
 
             //Assert
             string expected = @"
-
+#Note: Error! This step does not have a conversion path yet: PublishCodeCoverageResults@1
+#PublishTestResults@2 is a Azure DevOps specific task. There is no equivalent in GitHub Actions until there is a testing summary tab. See: https://github.community/t/publishing-test-results/16215
+#PublishTestResults@2 is a Azure DevOps specific task. There is no equivalent in GitHub Actions until there is a testing summary tab. See: https://github.community/t/publishing-test-results/16215
+#PublishTestResults@2 is a Azure DevOps specific task. There is no equivalent in GitHub Actions until there is a testing summary tab. See: https://github.community/t/publishing-test-results/16215
+#PublishTestResults@2 is a Azure DevOps specific task. There is no equivalent in GitHub Actions until there is a testing summary tab. See: https://github.community/t/publishing-test-results/16215
+#Note: Error! This step does not have a conversion path yet: GitVersion@5
+on:
+  push:
+    branches:
+    - master
+    paths:
+    - source/*
+    tags:
+    - v*
+    tags-ignore:
+    - '*-*'
+env:
+  buildFolderName: output
+  buildArtifactName: output
+  testResultFolderName: testResults
+  testArtifactName: testResults
+jobs:
+  Build_Stage_Package_Module:
+    name: Package Module
+    runs-on: ubuntu 16.04
+    steps:
+    - uses: actions/checkout@v2
+    - # 'Note: Error! This step does not have a conversion path yet: GitVersion@5'
+      name: Evaluate Next Version
+      run: 'Write-Host Note: Error! This step does not have a conversion path yet: GitVersion@5 #task: GitVersion@5#displayName: Evaluate Next Version#name: gitVersion#inputs:#  runtime: core#  configfilepath: GitVersion.yml'
+      shell: powershell
+    - name: Build & Package Module
+      shell: powershell
+    - name: Publish Build Artifact
+      uses: actions/upload-artifact@v2
+      with:
+        path: ${{ env.buildFolderName }}/
+        name: ${{ env.buildArtifactName }}
+  Test_Stage_Test_HQRM:
+    name: HQRM
+    runs-on: windows-2019
+    steps:
+    - uses: actions/checkout@v2
+    - name: Download Build Artifact
+      uses: actions/download-artifact@v1.0.0
+      with:
+        name: output
+    - name: Run HQRM Test
+      shell: powershell
+    - # 'PublishTestResults@2 is a Azure DevOps specific task. There is no equivalent in GitHub Actions until there is a testing summary tab. See: https://github.community/t/publishing-test-results/16215'
+      name: Publish Test Results
+      run: echo ""This task equivalent does not yet exist in GitHub Actions""
+      if: ne(${{ job.status }}, 'cancelled')
+  Test_Stage_Test_Unit:
+    name: Unit
+    runs-on: windows-2019
+    steps:
+    - uses: actions/checkout@v2
+    - name: Download Build Artifact
+      uses: actions/download-artifact@v1.0.0
+      with:
+        name: ${{ env.buildArtifactName }}
+    - name: Run Unit Test
+      shell: powershell
+    - # 'PublishTestResults@2 is a Azure DevOps specific task. There is no equivalent in GitHub Actions until there is a testing summary tab. See: https://github.community/t/publishing-test-results/16215'
+      name: Publish Test Results
+      run: echo ""This task equivalent does not yet exist in GitHub Actions""
+      if: ne(${{ job.status }}, 'cancelled')
+    - name: Publish Test Artifact
+      uses: actions/upload-artifact@v2
+      with:
+        path: ${{ env.buildFolderName }}/${{ env.testResultFolderName }}/
+        name: ${{ env.testArtifactName }}
+  Test_Stage_Test_Integration_SQL2016:
+    name: Integration (SQL2016)
+    runs-on: windows-2019
+    env:
+      CI: true
+      configuration: Integration_SQL2016
+    steps:
+    - uses: actions/checkout@v2
+    - name: Download Build Artifact
+      uses: actions/download-artifact@v1.0.0
+      with:
+        name: ${{ env.buildArtifactName }}
+    - name: Configure WinRM
+      run: winrm quickconfig -quiet
+      shell: powershell
+    - name: Run Integration Test
+      run: |
+        ./build.ps1 -Tasks test -CodeCoverageThreshold 0 -PesterScript @(
+            'tests/Integration/DSC_SqlSetup.Integration.Tests.ps1'
+            'tests/Integration/DSC_SqlAgentAlert.Integration.Tests.ps1'
+            'tests/Integration/DSC_SqlServerNetwork.Integration.Tests.ps1'
+            'tests/Integration/DSC_SqlLogin.Integration.Tests.ps1'
+            'tests/Integration/DSC_SqlEndpoint.Integration.Tests.ps1'
+            'tests/Integration/DSC_SqlDatabaseMail.Integration.Tests.ps1'
+            'tests/Integration/DSC_SqlRSSetup.Integration.Tests.ps1'
+            'tests/Integration/DSC_SqlDatabaseDefaultLocation.Integration.Tests.ps1'
+            'tests/Integration/DSC_SqlDatabase.Integration.Tests.ps1'
+            'tests/Integration/DSC_SqlAlwaysOnService.Integration.Tests.ps1'
+            'tests/Integration/DSC_SqlAgentOperator.Integration.Tests.ps1'
+            'tests/Integration/DSC_SqlServiceAccount.Integration.Tests.ps1'
+            'tests/Integration/DSC_SqlAgentFailsafe.Integration.Tests.ps1'
+            'tests/Integration/DSC_SqlRole.Integration.Tests.ps1'
+            'tests/Integration/DSC_SqlRS.Integration.Tests.ps1'
+            'tests/Integration/DSC_SqlDatabaseUser.Integration.Tests.ps1'
+            'tests/Integration/DSC_SqlReplication.Integration.Tests.ps1'
+            'tests/Integration/DSC_SqlScript.Integration.Tests.ps1'
+            'tests/Integration/DSC_SqlDatabasePermission.Integration.Tests.ps1'
+            'tests/Integration/DSC_SqlSecureConnection.Integration.Tests.ps1'
+            'tests/Integration/DSC_SqlScriptQuery.Integration.Tests.ps1'
+            'tests/Integration/DSC_SqlProtocol.Integration.Tests.ps1'
+            'tests/Integration/DSC_SqlProtocolTcpIp.Integration.Tests.ps1'
+            'tests/Integration/DSC_SqlDatabaseObjectPermission.Integration.Tests.ps1'
+        )
+      shell: powershell
+    - # 'PublishTestResults@2 is a Azure DevOps specific task. There is no equivalent in GitHub Actions until there is a testing summary tab. See: https://github.community/t/publishing-test-results/16215'
+      name: Publish Test Results
+      run: echo ""This task equivalent does not yet exist in GitHub Actions""
+      if: ne(${{ job.status }}, 'cancelled')
+  Test_Stage_Test_Integration_SQL2017:
+    name: Integration (SQL2017)
+    runs-on: windows-2019
+    env:
+      CI: true
+      configuration: Integration_SQL2017
+    steps:
+    - uses: actions/checkout@v2
+    - name: Download Build Artifact
+      uses: actions/download-artifact@v1.0.0
+      with:
+        name: ${{ env.buildArtifactName }}
+    - name: Configure WinRM
+      run: winrm quickconfig -quiet
+      shell: powershell
+    - name: Run Integration Test
+      run: |
+        ./build.ps1 -Tasks test -CodeCoverageThreshold 0 -PesterScript @(
+            'tests/Integration/DSC_SqlSetup.Integration.Tests.ps1'
+            'tests/Integration/DSC_SqlAgentAlert.Integration.Tests.ps1'
+            'tests/Integration/DSC_SqlLogin.Integration.Tests.ps1'
+            'tests/Integration/DSC_SqlEndpoint.Integration.Tests.ps1'
+            'tests/Integration/DSC_SqlDatabaseMail.Integration.Tests.ps1'
+            'tests/Integration/DSC_SqlRSSetup.Integration.Tests.ps1'
+            'tests/Integration/DSC_SqlDatabaseDefaultLocation.Integration.Tests.ps1'
+            'tests/Integration/DSC_SqlDatabase.Integration.Tests.ps1'
+            'tests/Integration/DSC_SqlAlwaysOnService.Integration.Tests.ps1'
+            'tests/Integration/DSC_SqlAgentOperator.Integration.Tests.ps1'
+            'tests/Integration/DSC_SqlServiceAccount.Integration.Tests.ps1'
+            'tests/Integration/DSC_SqlAgentFailsafe.Integration.Tests.ps1'
+            'tests/Integration/DSC_SqlRole.Integration.Tests.ps1'
+            'tests/Integration/DSC_SqlRS.Integration.Tests.ps1'
+            'tests/Integration/DSC_SqlDatabaseUser.Integration.Tests.ps1'
+            'tests/Integration/DSC_SqlReplication.Integration.Tests.ps1'
+            'tests/Integration/DSC_SqlScript.Integration.Tests.ps1'
+            'tests/Integration/DSC_SqlDatabasePermission.Integration.Tests.ps1'
+            'tests/Integration/DSC_SqlSecureConnection.Integration.Tests.ps1'
+            'tests/Integration/DSC_SqlScriptQuery.Integration.Tests.ps1'
+            'tests/Integration/DSC_SqlProtocol.Integration.Tests.ps1'
+            'tests/Integration/DSC_SqlProtocolTcpIp.Integration.Tests.ps1'
+            'tests/Integration/DSC_SqlDatabaseObjectPermission.Integration.Tests.ps1'
+        )
+      shell: powershell
+    - # 'PublishTestResults@2 is a Azure DevOps specific task. There is no equivalent in GitHub Actions until there is a testing summary tab. See: https://github.community/t/publishing-test-results/16215'
+      name: Publish Test Results
+      run: echo ""This task equivalent does not yet exist in GitHub Actions""
+      if: ne(${{ job.status }}, 'cancelled')
+  Test_Stage_Code_Coverage:
+    name: Publish Code Coverage
+    runs-on: ubuntu 16.04
+    needs:
+    - Test_Unit
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set Environment Variables
+      run: |
+        $repositoryOwner,$repositoryName = $env:BUILD_REPOSITORY_NAME -split '/'
+        echo ""##vso[task.setvariable variable=RepositoryOwner;isOutput=true]$repositoryOwner""
+        echo ""##vso[task.setvariable variable=RepositoryName;isOutput=true]$repositoryName""
+      shell: pwsh
+    - name: Download Build Artifact
+      uses: actions/download-artifact@v1.0.0
+      with:
+        name: ${{ env.buildArtifactName }}
+    - name: Download Test Artifact
+      uses: actions/download-artifact@v1.0.0
+      with:
+        name: ${{ env.testArtifactName }}
+    - # 'Note: Error! This step does not have a conversion path yet: PublishCodeCoverageResults@1'
+      name: Publish Azure Code Coverage
+      run: 'Write-Host Note: Error! This step does not have a conversion path yet: PublishCodeCoverageResults@1 #task: PublishCodeCoverageResults@1#displayName: Publish Azure Code Coverage#condition: succeededOrFailed()#inputs:#  codecoveragetool: JaCoCo#  summaryfilelocation: ${{ env.buildFolderName }}/${{ env.testResultFolderName }}/JaCoCo_coverage.xml#  pathtosources: ${{ env.Build.SourcesDirectory }}/${{ env.buildFolderName }}/${{ env.dscBuildVariable.RepositoryName }}'
+      shell: powershell
+      if: ne(${{ job.status }}, 'cancelled')
+    - name: Upload to Codecov.io
+      run: bash <(curl -s https://codecov.io/bash) -f ""./${{ env.buildFolderName }}/${{ env.testResultFolderName }}/JaCoCo_coverage.xml"" -F unit
+      if: ne(${{ job.status }}, 'cancelled')
+  Deploy_Stage_Deploy_Module:
+    name: Deploy Module
+    runs-on: ubuntu 16.04
+    if: -
+      and
+      (success(),
+        or(
+          eq(github.ref, 'refs/heads/master'),
+          startsWith
+        (github.ref, 'refs/tags/')),
+        contains
+      (variables['System.TeamFoundationCollectionUri'], 'dsccommunity'))
+    steps:
+    - uses: actions/checkout@v2
+    - name: Download Build Artifact
+      uses: actions/download-artifact@v1.0.0
+      with:
+        name: ${{ env.buildArtifactName }}
+    - name: Publish Release
+      shell: powershell
+    - name: Send Changelog PR
+      shell: powershell
 ";
 
             expected = UtilityTests.TrimNewLines(expected);

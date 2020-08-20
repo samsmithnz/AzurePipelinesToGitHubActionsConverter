@@ -129,7 +129,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             string result = ConditionsProcessing.TranslateConditions(condition);
 
             //Assert
-            string expected = "and(success(),eq(github.ref, 'refs/heads/master'))";
+            string expected = "and(success(), eq(github.ref, 'refs/heads/master'))";
             Assert.AreEqual(expected, result);
         }
 
@@ -143,7 +143,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             string result = ConditionsProcessing.TranslateConditions(condition);
 
             //Assert
-            string expected = "and(success(),endsWith(github.ref, 'master'))";
+            string expected = "and(success(), endsWith(github.ref, 'master'))";
             Assert.AreEqual(expected, result);
         }
 
@@ -206,23 +206,18 @@ contains(variables['System.TeamFoundationCollectionUri'], 'dsccommunity')
             string text = @"
 and(
 succeeded(),
-startsWith(variables['Build.SourceBranch'], 'refs/tags/')
+or(
+    eq(variables['Build.SourceBranch'], 'refs/heads/master'),
+    startsWith(variables['Build.SourceBranch'], 'refs/tags/')
+),
+contains(variables['System.TeamFoundationCollectionUri'], 'dsccommunity')
 )";
-//            string text2 = @"
-//and(
-//succeeded(),
-//or(
-//    eq(variables['Build.SourceBranch'], 'refs/heads/master'),
-//    startsWith(variables['Build.SourceBranch'], 'refs/tags/')
-//),
-//contains(variables['System.TeamFoundationCollectionUri'], 'dsccommunity')
-//)";
 
             //Act
             string result = ConditionsProcessing.TranslateConditions(text);
 
             //Assert
-            string expected = "and(success(),endsWith(github.ref, 'master'))";
+            string expected = "and(success(),or(    eq(github.ref, 'refs/heads/master'),    startsWith(github.ref, 'refs/tags/')),contains(variables['System.TeamFoundationCollectionUri'], 'dsccommunity'))";
             Assert.AreEqual(expected, result);
         }
 
@@ -231,13 +226,13 @@ startsWith(variables['Build.SourceBranch'], 'refs/tags/')
         {
             //Arrange
             string text = @"
-and(succeeded1(),or(succeeded2(),succeeded3()))";
+and(succeeded(),or(succeeded(),succeeded()))";
 
             //Act
             string result = ConditionsProcessing.TranslateConditions(text);
 
             //Assert
-            string expected = "and(success(),endsWith(github.ref, 'master'))";
+            string expected = "and(success(),or(success(),success()))";
             Assert.AreEqual(expected, result);
         }
 
