@@ -222,7 +222,21 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
             };
         }
 
-        public string CleanYamlBeforeDeserialization(string yaml)
+        public ConversionResponse ConvertAzurePipelineJobToGitHubActionJob(string input)
+        {
+            string yaml = "";
+
+            List<string> allComments = new List<string>();
+          
+            return new ConversionResponse
+            {
+                pipelinesYaml = input,
+                actionsYaml = yaml,
+                comments = allComments
+            };
+        }
+
+            public string CleanYamlBeforeDeserialization(string yaml)
         {
             if (yaml == null)
             {
