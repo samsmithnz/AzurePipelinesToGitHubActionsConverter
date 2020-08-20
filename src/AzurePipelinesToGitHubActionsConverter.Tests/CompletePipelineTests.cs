@@ -184,7 +184,6 @@ jobs:
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
         }
 
-        //TODO: Move to step, doesn't need to be here.
         [TestMethod]
         public void DotNetDesktopPipelineTest()
         {
@@ -251,7 +250,6 @@ jobs:
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
         }
 
-        //TODO: Move to step, doesn't need to be here.
         [TestMethod]
         public void GoPipelineTest()
         {
@@ -450,7 +448,6 @@ jobs:
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
         }
 
-        //TODO: Move to step, doesn't need to be here.
         [TestMethod]
         public void NuGetPackagePipelineTest()
         {
@@ -613,7 +610,7 @@ jobs:
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
         }
 
-        //TODO: Move to step, doesn't need to be here.
+
         [TestMethod]
         public void ResourcesContainersPipelineTest()
         {
@@ -700,7 +697,6 @@ jobs:
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
         }
 
-        //TODO: Move to step, doesn't need to be here.
         [TestMethod]
         public void TestHTMLPipeline()
         {
@@ -899,7 +895,6 @@ jobs:
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
         }
 
-        //TODO: Move to step, doesn't need to be here.
         [TestMethod]
         public void XamariniOSPipelineTest()
         {
