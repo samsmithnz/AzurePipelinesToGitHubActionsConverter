@@ -2,7 +2,6 @@
 using AzurePipelinesToGitHubActionsConverter.Core.GitHubActions;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
 {
