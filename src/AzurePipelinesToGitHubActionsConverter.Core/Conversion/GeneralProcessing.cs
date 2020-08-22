@@ -22,7 +22,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
             _verbose = verbose;
         }
 
-        public string ProcessName(string nameYaml)
+        public string ProcessNameV2(string nameYaml)
         {
             if (nameYaml != null)
             {
@@ -34,7 +34,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
             }
         }
 
-        public GitHubActions.Trigger ProcessTriggerPRAndSchedules(string triggerYaml, string prYaml, string schedulesYaml)
+        public GitHubActions.Trigger ProcessTriggerPRAndSchedulesV2(string triggerYaml, string prYaml, string schedulesYaml)
         {
             triggerYaml = ConversionUtility.ProcessAndCleanElement(triggerYaml, "trigger:", "- ");
             prYaml = ConversionUtility.ProcessAndCleanElement(prYaml, "pr:", "- ");
@@ -55,12 +55,14 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                         }
                     };
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
                     Debug.WriteLine($"DeserializeYaml<string[]>(triggerYaml) swallowed an exception, to be reviewed...");
                     trigger = GenericObjectSerialization.DeserializeYaml<AzurePipelines.Trigger>(triggerYaml);
                 }
             }
+
+            //Convert the simple prs to complex, and then serialize once.
             AzurePipelines.Trigger pr = null;
             if (prYaml != null)
             {
@@ -75,12 +77,14 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                         }
                     };
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
                     Debug.WriteLine($"DeserializeYaml<string[]>(prYaml) swallowed an exception, to be reviewed...");
                     pr = GenericObjectSerialization.DeserializeYaml<AzurePipelines.Trigger>(prYaml);
                 }
             }
+
+            //Convert the schedule (there is only one type)
             Schedule[] schedules = null;
             if (schedulesYaml != null)
             {
@@ -88,16 +92,18 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                 {
                     schedules = GenericObjectSerialization.DeserializeYaml<Schedule[]>(schedulesYaml);
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
                     Debug.WriteLine($"DeserializeYaml<Schedule[]>(schedulesYaml) swallowed an exception, to be reviewed...");
                 }
             }
 
+            //Convert the pieces to GitHub
             GitHubActions.Trigger push = ProcessComplexTrigger(trigger);
             GitHubActions.Trigger pullRequest = ProcessPullRequest(pr);
             string[] schedule = ProcessSchedules(schedules);
 
+            //Build the return results
             if (push != null || pullRequest != null || schedule != null)
             {
                 return new GitHubActions.Trigger
@@ -113,7 +119,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
             }
         }
 
-        public Dictionary<string, string> ProcessParametersAndVariables(string parametersYaml, string variablesYaml)
+        public Dictionary<string, string> ProcessParametersAndVariablesV2(string parametersYaml, string variablesYaml)
         {
             List<Variable> parameters = null;
             if (parametersYaml != null)
@@ -132,7 +138,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                         });
                     }
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
                     Debug.WriteLine($"DeserializeYaml<Dictionary<string, string>>(parametersYaml) swallowed an exception, to be reviewed...");
                     parameters = GenericObjectSerialization.DeserializeYaml<List<Variable>>(parametersYaml);
@@ -156,7 +162,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                         });
                     }
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
                     Debug.WriteLine($"DeserializeYaml<Dictionary<string, string>>(variablesYaml) swallowed an exception, to be reviewed...");
                     parameters = GenericObjectSerialization.DeserializeYaml<List<Variable>>(variablesYaml);
@@ -165,8 +171,8 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
 
 
             Dictionary<string, string> env = new Dictionary<string, string>();
-            Dictionary<string, string> processedParameters = ProcessComplexVariables2(parameters);
-            Dictionary<string, string> processedVariables = ProcessComplexVariables2(variables);
+            Dictionary<string, string> processedParameters = ProcessComplexVariablesV2(parameters);
+            Dictionary<string, string> processedVariables = ProcessComplexVariablesV2(variables);
             foreach (KeyValuePair<string, string> item in processedParameters)
             {
                 if (env.ContainsKey(item.Key) == false)
@@ -185,6 +191,116 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
             if (env.Count > 0)
             {
                 return env;
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        public Dictionary<string, GitHubActions.Job> ProcessStagesV2(string stagesYaml)
+        {
+            AzurePipelines.Job[] jobs = null;
+            AzurePipelines.Stage[] stages = null;
+            if (stagesYaml != null)
+            {
+                stagesYaml = ConversionUtility.RemoveFirstLine(stagesYaml);
+                //As the dependsOn for a stage can be string or string[], we need to convert the string to string[] for a consistent deserialization
+                try
+                {
+                    stages = GenericObjectSerialization.DeserializeYaml<AzurePipelines.Stage[]>(stagesYaml);
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"DeserializeYaml<Dictionary<string, string>>(parametersYaml) swallowed an exception: " + ex.Message);
+                    //jobs = GenericObjectSerialization.DeserializeYaml<Dictionary<string, GitHubActions.Job>>(jobYaml);
+                }
+                if (stages != null)
+                {
+                    int jobCount = 0;
+                    foreach (Stage stage in stages)
+                    {
+                        if (stage.jobs != null)
+                        {
+                            jobCount += stage.jobs.Length;
+                        }
+                    }
+                    jobs = new AzurePipelines.Job[jobCount];
+
+                    int jobIndex = 0;
+                    foreach (Stage stage in stages)
+                    {
+                        if (stage.jobs != null)
+                        {
+                            for (int i = 0; i < stage.jobs.Length; i++)
+                            {
+                                jobs[jobIndex] = stage.jobs[i];
+                                //TODO: this is duplicate code to PipelineProcessing, line 206. Need to refactor
+                                //Get the job name
+                                string jobName = stage.jobs[i].job;
+                                if (jobName == null && stage.jobs[i].deployment != null)
+                                {
+                                    jobName = stage.jobs[i].deployment;
+                                }
+                                if (jobName == null && stage.jobs[i].template != null)
+                                {
+                                    jobName = "Template";
+                                }
+                                if (jobName == null)
+                                {
+                                    jobName = "job" + jobIndex.ToString();
+                                }
+                                //Rename the job, using the stage name as prefix, so that we keep the job names unique
+                                jobs[jobIndex].job = stage.stage + "_Stage_" + jobName;
+                                jobIndex++;
+                            }
+                        }
+                    }
+                }
+            }
+
+            if (jobs != null)
+            {
+                Dictionary<string, GitHubActions.Job> gitHubJobs = new Dictionary<string, GitHubActions.Job>();
+                foreach (AzurePipelines.Job job in jobs)
+                {
+                    JobProcessing jobProcessing = new JobProcessing(_verbose);
+                    gitHubJobs.Add(job.job, jobProcessing.ProcessJob(job, null));
+                }
+                return gitHubJobs;
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        public Dictionary<string, GitHubActions.Job> ProcessJobsV2(string jobYaml)
+        {
+            AzurePipelines.Job[] jobs = null;
+            if (jobYaml != null)
+            {
+                jobYaml = ConversionUtility.RemoveFirstLine(jobYaml);
+                try
+                {
+                    jobs = GenericObjectSerialization.DeserializeYaml<AzurePipelines.Job[]>(jobYaml);
+                }
+                catch (Exception)
+                {
+                    Debug.WriteLine($"DeserializeYaml<Dictionary<string, string>>(parametersYaml) swallowed an exception, to be reviewed...");
+                    //jobs = GenericObjectSerialization.DeserializeYaml<Dictionary<string, GitHubActions.Job>>(jobYaml);
+                }
+            }
+
+            if (jobs != null)
+            {
+                Dictionary<string, GitHubActions.Job> gitHubJobs = new Dictionary<string, GitHubActions.Job>();
+                foreach (AzurePipelines.Job job in jobs)
+                {
+                    JobProcessing jobProcessing = new JobProcessing(_verbose);
+                    gitHubJobs.Add(job.job, jobProcessing.ProcessJob(job, null));
+                }
+                return gitHubJobs;
             }
             else
             {
@@ -496,7 +612,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
             return variables;
         }
 
-        public Dictionary<string, string> ProcessComplexVariables2(List<AzurePipelines.Variable> variables)
+        public Dictionary<string, string> ProcessComplexVariablesV2(List<AzurePipelines.Variable> variables)
         {
             Dictionary<string, string> processedVariables = new Dictionary<string, string>();
             if (variables != null)

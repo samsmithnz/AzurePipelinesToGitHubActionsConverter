@@ -21,14 +21,18 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
             _verbose = verbose;
         }
 
-        //New structure
-        // Get the yaml
-        // break it into yaml pieces
-        // process each yaml piece into a azure pipelines sub-object
-        // put it together into one azure pipelines object
-        // process the azure pipelines object to github action
 
-        public ConversionResponse ConvertAzurePipelineToGitHubAction2(string input)
+        /// <summary>
+        /// New structure:
+        /// 1. get the yaml
+        /// 2. break it into yaml pieces
+        /// 3. deserialize each yaml piece into a azure pipelines sub-object
+        /// 4. put it together into one azure pipelines object
+        /// 5. convert the azure pipelines object to github action
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        public ConversionResponse ConvertAzurePipelineToGitHubActionV2(string input)
         {
             List<string> variableList = new List<string>();
             string yaml = null;
@@ -46,44 +50,40 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                 GeneralProcessing gp = new GeneralProcessing(_verbose);
 
                 //Name
-                string name;
-                yamlElements.TryGetValue("name", out name);
-                gitHubActions.name = gp.ProcessName(name);
+                yamlElements.TryGetValue("name", out string nameYaml);
+                gitHubActions.name = gp.ProcessNameV2(nameYaml);
 
                 //Trigger/PR/Schedules
-                string trigger;
-                string pr;
-                string schedules;
-                yamlElements.TryGetValue("trigger", out trigger);
-                yamlElements.TryGetValue("pr", out pr);
-                yamlElements.TryGetValue("schedules", out schedules);
+                yamlElements.TryGetValue("trigger", out string triggerYaml);
+                yamlElements.TryGetValue("pr", out string prYaml);
+                yamlElements.TryGetValue("schedules", out string schedulesYaml);
+                //Refactor to do them seperately
                 //if (gitHubActions.on == null)
                 //{
                 //    gitHubActions.on = new GitHubActions.Trigger();
                 //}
                 //gitHubActions.on.schedule = schedules;
-                gitHubActions.on = gp.ProcessTriggerPRAndSchedules(trigger, pr, schedules);
+                gitHubActions.on = gp.ProcessTriggerPRAndSchedulesV2(triggerYaml, prYaml, schedulesYaml);
 
                 //Pool
-                string pool;
-                yamlElements.TryGetValue("pool", out pool);
+                //yamlElements.TryGetValue("pool", out string poolYaml);
 
                 //Variables
-                string parameters;
-                string variables;
-                yamlElements.TryGetValue("parameters", out parameters);
-                yamlElements.TryGetValue("variables", out variables);
-                gitHubActions.env = gp.ProcessParametersAndVariables(parameters, variables);
+                yamlElements.TryGetValue("parameters", out string parametersYaml);
+                yamlElements.TryGetValue("variables", out string variablesYaml);
+                gitHubActions.env = gp.ProcessParametersAndVariablesV2(parametersYaml, variablesYaml);
 
-                //Stages
-                string stages;
-                yamlElements.TryGetValue("stages", out stages);
-                List<AzurePipelines.Job> jobs = gp.ProcessStages( stages);
-
-                //Jobs
-                string jobs;
-                yamlElements.TryGetValue("jobs", out jobs);
-                List<AzurePipelines.Job> jobs = gp.ProcessJobs(jobs);
+                //No Jobs/Jobs/Stages
+                yamlElements.TryGetValue("stages", out string stagesYaml);
+                yamlElements.TryGetValue("jobs", out string jobsYaml);
+                if (stagesYaml != null)
+                {
+                    gitHubActions.jobs = gp.ProcessStagesV2(stagesYaml);
+                }
+                else if (jobsYaml != null)
+                {
+                    gitHubActions.jobs = gp.ProcessJobsV2(jobsYaml);
+                }
 
                 ////If there are no stages, or jobs, process the top level
                 //string steps;

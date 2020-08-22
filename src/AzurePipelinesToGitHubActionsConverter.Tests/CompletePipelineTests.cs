@@ -44,7 +44,7 @@ jobs:
 ";
 
             //Act
-            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction2(yaml);
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubActionV2(yaml);
 
             //Assert
             string expected = @"
@@ -109,7 +109,7 @@ steps:
 ";
 
             //Act
-            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction2(yaml);
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubActionV2(yaml);
 
             //Assert
             string expected = @"
@@ -160,7 +160,7 @@ steps:
 ";
 
             //Act
-            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction2(yaml);
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubActionV2(yaml);
 
             //Assert
             string expected = @"
@@ -220,7 +220,7 @@ steps:
 ";
 
             //Act
-            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction2(yaml);
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubActionV2(yaml);
 
             //Assert
             string expected = @"
@@ -299,7 +299,7 @@ steps:
 ";
 
             //Act
-            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction2(yaml);
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubActionV2(yaml);
 
             //Assert
             string expected = @"
@@ -370,7 +370,7 @@ steps:
 ";
 
             //Act
-            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction2(yaml);
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubActionV2(yaml);
 
             //Assert
             string expected = @"
@@ -421,7 +421,7 @@ steps:
 ";
 
             //Act
-            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction2(yaml);
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubActionV2(yaml);
 
             //Assert
             string expected = @"
@@ -507,7 +507,7 @@ steps:
 ";
 
             //Act
-            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction2(yaml);
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubActionV2(yaml);
 
             //Assert
             string expected = @"
@@ -579,7 +579,7 @@ steps:
 ";
 
             //Act
-            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction2(yaml);
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubActionV2(yaml);
 
             //Assert
             string expected = @"
@@ -632,7 +632,7 @@ resources:
 ";
 
             //Act
-            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction2(yaml);
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubActionV2(yaml);
 
             //Assert
             string expected = @"
@@ -673,7 +673,7 @@ steps:
 ";
 
             //Act
-            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction2(yaml);
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubActionV2(yaml);
 
             //Assert
             string expected = @"
@@ -720,7 +720,7 @@ steps:
 - task: PublishBuildArtifacts@1";
 
             //Act
-            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction2(yaml);
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubActionV2(yaml);
 
             //Assert
             string expected = @"
@@ -783,7 +783,7 @@ jobs:
     displayName: dotnet build part 3";
 
             //Act
-            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction2(yaml);
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubActionV2(yaml);
 
             //Assert
             string expected = @"
@@ -863,7 +863,7 @@ steps:
 ";
 
             //Act
-            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction2(yaml);
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubActionV2(yaml);
 
             //Assert
             string expected = @"
@@ -937,7 +937,7 @@ steps:
 ";
 
             //Act
-            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction2(yaml);
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubActionV2(yaml);
 
             //Assert
             string expected = @"
@@ -1015,7 +1015,7 @@ stages:
 ";
 
             //Act
-            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction2(yaml);
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubActionV2(yaml);
 
             //Assert
             string expected = @"
@@ -1160,7 +1160,7 @@ stages:
 ";
 
             //Act
-            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction2(yaml);
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubActionV2(yaml);
 
             //Assert
             string expected = @"
@@ -1284,7 +1284,7 @@ stages:
 ";
 
             //Act
-            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction2(yaml);
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubActionV2(yaml);
 
             //Assert
             string expected = @"
@@ -1430,7 +1430,7 @@ jobs:
 ";
 
             //Act
-            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction2(yaml);
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubActionV2(yaml);
 
             //Assert
             string expected = @"
@@ -1539,7 +1539,7 @@ stages:
 ";
 
             //Act
-            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction2(yaml);
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubActionV2(yaml);
 
             //Assert
             string expected = @"
@@ -1906,7 +1906,7 @@ stages:
 ";
 
             //Act
-            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction2(yaml);
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubActionV2(yaml);
 
             //Assert
             string expected = @"

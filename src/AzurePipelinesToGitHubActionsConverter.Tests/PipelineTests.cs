@@ -19,7 +19,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             Conversion conversion = new Conversion();
 
             //Act
-            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction2(input);
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubActionV2(input);
 
             //Assert
             string expected = "name: test ci pipelines";
@@ -34,7 +34,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             Conversion conversion = new Conversion();
 
             //Act
-            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction2(input);
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubActionV2(input);
 
             //Assert
             string expected = "{}";
@@ -49,7 +49,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             Conversion conversion = new Conversion();
 
             //Act
-            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction2(input);
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubActionV2(input);
 
             //Assert
             string expected = null;
