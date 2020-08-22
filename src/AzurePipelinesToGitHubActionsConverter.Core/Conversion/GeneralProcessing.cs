@@ -1,7 +1,13 @@
 ﻿using AzurePipelinesToGitHubActionsConverter.Core.AzurePipelines;
+using AzurePipelinesToGitHubActionsConverter.Core.Conversion.Serialization;
+using AzurePipelinesToGitHubActionsConverter.Core.Extensions;
 using AzurePipelinesToGitHubActionsConverter.Core.GitHubActions;
+using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
 using System.Linq;
+using System.Text;
 
 namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
 {
@@ -14,6 +20,176 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
         {
             VariableList = new List<string>();
             _verbose = verbose;
+        }
+
+        public string ProcessName(string nameYaml)
+        {
+            if (nameYaml != null)
+            {
+                return nameYaml.Replace("name:", "").Replace(System.Environment.NewLine, "").Trim();
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        public GitHubActions.Trigger ProcessTriggerPRAndSchedules(string triggerYaml, string prYaml, string schedulesYaml)
+        {
+            triggerYaml = ConversionUtility.ProcessAndCleanElement(triggerYaml, "trigger:", "- ");
+            prYaml = ConversionUtility.ProcessAndCleanElement(prYaml, "pr:", "- ");
+            schedulesYaml = ConversionUtility.RemoveFirstLine(schedulesYaml);
+
+            //Convert the simple triggers to complex, and then serialize once.
+            AzurePipelines.Trigger trigger = null;
+            if (triggerYaml != null)
+            {
+                try
+                {
+                    string[] simpleTrigger = GenericObjectSerialization.DeserializeYaml<string[]>(triggerYaml);
+                    trigger = new AzurePipelines.Trigger
+                    {
+                        branches = new IncludeExclude
+                        {
+                            include = simpleTrigger
+                        }
+                    };
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"DeserializeYaml<string[]>(triggerYaml) swallowed an exception, to be reviewed...");
+                    trigger = GenericObjectSerialization.DeserializeYaml<AzurePipelines.Trigger>(triggerYaml);
+                }
+            }
+            AzurePipelines.Trigger pr = null;
+            if (prYaml != null)
+            {
+                try
+                {
+                    string[] simplepr = GenericObjectSerialization.DeserializeYaml<string[]>(prYaml);
+                    pr = new AzurePipelines.Trigger
+                    {
+                        branches = new IncludeExclude
+                        {
+                            include = simplepr
+                        }
+                    };
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"DeserializeYaml<string[]>(prYaml) swallowed an exception, to be reviewed...");
+                    pr = GenericObjectSerialization.DeserializeYaml<AzurePipelines.Trigger>(prYaml);
+                }
+            }
+            Schedule[] schedules = null;
+            if (schedulesYaml != null)
+            {
+                try
+                {
+                    schedules = GenericObjectSerialization.DeserializeYaml<Schedule[]>(schedulesYaml);
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"DeserializeYaml<Schedule[]>(schedulesYaml) swallowed an exception, to be reviewed...");
+                }
+            }
+
+            GitHubActions.Trigger push = ProcessComplexTrigger(trigger);
+            GitHubActions.Trigger pullRequest = ProcessPullRequest(pr);
+            string[] schedule = ProcessSchedules(schedules);
+
+            if (push != null || pullRequest != null || schedule != null)
+            {
+                return new GitHubActions.Trigger
+                {
+                    push = push?.push,
+                    pull_request = pullRequest?.pull_request,
+                    schedule = schedule
+                };
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        public Dictionary<string, string> ProcessParametersAndVariables(string parametersYaml, string variablesYaml)
+        {
+            List<Variable> parameters = null;
+            if (parametersYaml != null)
+            {
+                parametersYaml = ConversionUtility.RemoveFirstLine(parametersYaml);
+                try
+                {
+                    Dictionary<string, string> simpleParameters = GenericObjectSerialization.DeserializeYaml<Dictionary<string, string>>(parametersYaml);
+                    parameters = new List<AzurePipelines.Variable>();
+                    foreach (KeyValuePair<string, string> item in simpleParameters)
+                    {
+                        parameters.Add(new Variable
+                        {
+                            name = item.Key,
+                            value = item.Value
+                        });
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"DeserializeYaml<Dictionary<string, string>>(parametersYaml) swallowed an exception, to be reviewed...");
+                    parameters = GenericObjectSerialization.DeserializeYaml<List<Variable>>(parametersYaml);
+                }
+            }
+
+            List<Variable> variables = null;
+            if (variablesYaml != null)
+            {
+                variablesYaml = ConversionUtility.RemoveFirstLine(variablesYaml);
+                try
+                {
+                    Dictionary<string, string> simpleVariables = GenericObjectSerialization.DeserializeYaml<Dictionary<string, string>>(variablesYaml);
+                    variables = new List<AzurePipelines.Variable>();
+                    foreach (KeyValuePair<string, string> item in simpleVariables)
+                    {
+                        variables.Add(new Variable
+                        {
+                            name = item.Key,
+                            value = item.Value
+                        });
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"DeserializeYaml<Dictionary<string, string>>(variablesYaml) swallowed an exception, to be reviewed...");
+                    parameters = GenericObjectSerialization.DeserializeYaml<List<Variable>>(variablesYaml);
+                }
+            }
+
+
+            Dictionary<string, string> env = new Dictionary<string, string>();
+            Dictionary<string, string> processedParameters = ProcessComplexVariables2(parameters);
+            Dictionary<string, string> processedVariables = ProcessComplexVariables2(variables);
+            foreach (KeyValuePair<string, string> item in processedParameters)
+            {
+                if (env.ContainsKey(item.Key) == false)
+                {
+                    env.Add(item.Key, item.Value);
+                }
+            }
+            foreach (KeyValuePair<string, string> item in processedVariables)
+            {
+                if (env.ContainsKey(item.Key) == false)
+                {
+                    env.Add(item.Key, item.Value);
+                }
+            }
+
+            if (env.Count > 0)
+            {
+                return env;
+            }
+            else
+            {
+                return null;
+            }
         }
 
         //Process a simple trigger, e.g. "Trigger: [master, develop]"
@@ -32,6 +208,10 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
         //Process a complex trigger, using the Trigger object
         public GitHubActions.Trigger ProcessComplexTrigger(AzurePipelines.Trigger trigger)
         {
+            if (trigger == null)
+            {
+                return null;
+            }
             //Note: as of 18-Oct, you receive an error if you try to post both a "branches" and a "ignore-branches", or a "paths and a ignore-paths". You can only have one or the other...
             TriggerDetail push = new TriggerDetail();
             //process branches
@@ -81,6 +261,10 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
         //process the pull request
         public GitHubActions.Trigger ProcessPullRequest(AzurePipelines.Trigger pr)
         {
+            if (pr == null)
+            {
+                return null;
+            }
             TriggerDetail pullRequest = new TriggerDetail();
             //process branches
             if (pr.branches != null)
@@ -128,6 +312,10 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
         //process the schedule
         public string[] ProcessSchedules(AzurePipelines.Schedule[] schedules)
         {
+            if (schedules == null)
+            {
+                return null;
+            }
             string[] newSchedules = new string[schedules.Length];
             for (int i = 0; i < schedules.Length; i++)
             {
@@ -211,7 +399,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                 }
                 if (strategy.parallel != null)
                 {
-                    ConversionUtility.WriteLine("This variable is not needed in actions: " + strategy.parallel,_verbose);
+                    ConversionUtility.WriteLine("This variable is not needed in actions: " + strategy.parallel, _verbose);
                 }
                 if (strategy.maxParallel != null)
                 {
@@ -306,6 +494,43 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
             }
 
             return variables;
+        }
+
+        public Dictionary<string, string> ProcessComplexVariables2(List<AzurePipelines.Variable> variables)
+        {
+            Dictionary<string, string> processedVariables = new Dictionary<string, string>();
+            if (variables != null)
+            {
+                //update variables from the $(variableName) format to ${{variableName}} format, by piping them into a list for replacement later.
+                for (int i = 0; i < variables.Count; i++)
+                {
+                    //name/value pairs
+                    if (variables[i].name != null && variables[i].value != null)
+                    {
+                        processedVariables.Add(variables[i].name, variables[i].value);
+                        VariableList.Add(variables[i].name);
+                    }
+                    //groups
+                    if (variables[i].group != null)
+                    {
+                        if (!processedVariables.ContainsKey("group"))
+                        {
+                            processedVariables.Add("group", variables[i].group);
+                        }
+                        else
+                        {
+                            ConversionUtility.WriteLine("group: only 1 variable group is supported at present", _verbose);
+                        }
+                    }
+                    //template
+                    if (variables[i].template != null)
+                    {
+                        processedVariables.Add("template", variables[i].template);
+                    }
+                }
+
+            }
+            return processedVariables;
         }
 
         //process all (complex) variables
@@ -475,5 +700,6 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
 
             return newSteps;
         }
+
     }
 }

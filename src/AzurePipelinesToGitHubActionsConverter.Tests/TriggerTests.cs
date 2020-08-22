@@ -1,6 +1,7 @@
 using AzurePipelinesToGitHubActionsConverter.Core.Conversion;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
+using System.Collections.Generic;
 
 namespace AzurePipelinesToGitHubActionsConverter.Tests
 {
@@ -12,35 +13,50 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
         public void TriggerSimpleStringTest()
         {
             //Arrange
-            string input = "trigger:" + Environment.NewLine +
-                           "- master";
+            string input = @"
+trigger:
+- master
+";
             Conversion conversion = new Conversion();
 
             //Act
-            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(input);
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction2(input);
 
             //Assert
-            string expected = "on:" + Environment.NewLine +
-                                    "  push:" + Environment.NewLine +
-                                    "    branches:" + Environment.NewLine +
-                                    "    - master";
+            string expected = @"
+on:
+  push:
+    branches:
+    - master
+"; 
+            expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
         }
+
         [TestMethod]
         public void TriggerNoneSimpleStringTest()
         {
             //Arrange
-            string input = "trigger: none";
+            string input = @"
+trigger: none
+pr: none
+";
             Conversion conversion = new Conversion();
 
             //Act
-            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(input);
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction2(input);
 
             //Assert
-            string expected = "on:" + Environment.NewLine +
-                                    "  push:" + Environment.NewLine +
-                                    "    branches:" + Environment.NewLine +
-                                    "    - none";
+            string expected = @"
+on:
+  push:
+    branches:
+    - none
+  pull-request:
+    branches:
+    - none
+";
+            expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
         }
 
@@ -48,20 +64,25 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
         public void TriggerSimpleWithMultipleBranchesStringTest()
         {
             //Arrange
-            string input = "trigger:" + Environment.NewLine +
-                            "- master" + Environment.NewLine +
-                            "- develop";
+            string input = @"
+trigger:
+- master
+- develop
+";
             Conversion conversion = new Conversion();
 
             //Act
-            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(input);
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction2(input);
 
             //Assert
-            string expected = "on:" + Environment.NewLine +
-                                    "  push:" + Environment.NewLine +
-                                    "    branches:" + Environment.NewLine +
-                                    "    - master" + Environment.NewLine +
-                                    "    - develop";
+            string expected = @"
+on:
+  push:
+    branches:
+    - master
+    - develop
+";
+            expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
         }
 
@@ -87,23 +108,26 @@ trigger:
             Conversion conversion = new Conversion();
 
             //Act
-            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(input);
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction2(input);
 
             //Assert
-            string expected = "on:" + Environment.NewLine +
-                        "  push:" + Environment.NewLine +
-                        "    branches:" + Environment.NewLine +
-                        "    - features/*" + Environment.NewLine +
-                        "    paths:" + Environment.NewLine +
-                        "    - README.md" + Environment.NewLine +
-                        "    tags:" + Environment.NewLine +
-                        "    - v1" + Environment.NewLine +
-                        "    - v1.*";
+            string expected = @"
+on:
+  push:
+    branches:
+    - features/*
+    paths:
+    - README.md
+    tags:
+    - v1
+    - v1.*
+";
+            expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
         }
 
         [TestMethod]
-        public void TriggerComplexWithPRStringTest()
+        public void PRComplexWithPRStringTest()
         {
             //Arrange
             string input = @"
@@ -119,22 +143,25 @@ pr:
   tags:
     include:
     - v1             
-    - v1.*";
+    - v1.*
+";
             Conversion conversion = new Conversion();
 
             //Act
-            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(input);
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction2(input);
 
             //Assert
-            string expected = "on:" + Environment.NewLine +
-                        "  pull-request:" + Environment.NewLine +
-                        "    branches:" + Environment.NewLine +
-                        "    - features/*" + Environment.NewLine +
-                        "    paths:" + Environment.NewLine +
-                        "    - README.md" + Environment.NewLine +
-                        "    tags:" + Environment.NewLine +
-                        "    - v1" + Environment.NewLine +
-                        "    - v1.*";
+            string expected = @"on:
+  pull-request:
+    branches:
+    - features/*
+    paths:
+    - README.md
+    tags:
+    - v1
+    - v1.*
+";
+            expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
         }
 
@@ -154,27 +181,30 @@ trigger:
   tags:
     exclude:
     - v1             
-    - v1.*";
+    - v1.*
+";
             Conversion conversion = new Conversion();
 
             //Act
-            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(input);
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction2(input);
 
             //Assert
-            string expected = "on:" + Environment.NewLine +
-                        "  push:" + Environment.NewLine +
-                        "    branches-ignore:" + Environment.NewLine +
-                        "    - features/experimental/*" + Environment.NewLine +
-                        "    paths-ignore:" + Environment.NewLine +
-                        "    - README.md" + Environment.NewLine +
-                        "    tags-ignore:" + Environment.NewLine +
-                        "    - v1" + Environment.NewLine +
-                        "    - v1.*";
+            string expected = @"on:
+  push:
+    branches-ignore:
+    - features/experimental/*
+    paths-ignore:
+    - README.md
+    tags-ignore:
+    - v1
+    - v1.*
+";
+            expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
         }
 
         [TestMethod]
-        public void TriggerComplexPRWithIgnoresStringTest()
+        public void PRTriggerComplexPRWithIgnoresStringTest()
         {
             //Arrange
             string input = @"
@@ -189,22 +219,26 @@ pr:
   tags:
     exclude:
     - v1             
-    - v1.*";
+    - v1.*
+";
             Conversion conversion = new Conversion();
 
             //Act
-            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(input);
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction2(input);
 
             //Assert
-            string expected = "on:" + Environment.NewLine +
-                        "  pull-request:" + Environment.NewLine +
-                        "    branches-ignore:" + Environment.NewLine +
-                        "    - features/experimental/*" + Environment.NewLine +
-                        "    paths-ignore:" + Environment.NewLine +
-                        "    - README.md" + Environment.NewLine +
-                        "    tags-ignore:" + Environment.NewLine +
-                        "    - v1" + Environment.NewLine +
-                        "    - v1.*";
+            string expected = @"
+on:
+  pull-request:
+    branches-ignore:
+    - features/experimental/*
+    paths-ignore:
+    - README.md
+    tags-ignore:
+    - v1
+    - v1.*
+";
+            expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
         }
 
@@ -232,27 +266,31 @@ pr:
   tags:
     exclude:
     - v1             
-    - v1.*";
+    - v1.*
+";
             Conversion conversion = new Conversion();
 
             //Act
-            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(input);
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction2(input);
 
             //Assert
-            string expected = "on:" + Environment.NewLine +
-                        "  push:" + Environment.NewLine +
-                        "    branches-ignore:" + Environment.NewLine +
-                        "    - features/experimental/*" + Environment.NewLine +
-                        "    paths-ignore:" + Environment.NewLine +
-                        "    - README.md" + Environment.NewLine +
-                        "  pull-request:" + Environment.NewLine +
-                        "    branches-ignore:" + Environment.NewLine +
-                        "    - features/experimental/*" + Environment.NewLine +
-                        "    paths-ignore:" + Environment.NewLine +
-                        "    - README.md" + Environment.NewLine +
-                        "    tags-ignore:" + Environment.NewLine +
-                        "    - v1" + Environment.NewLine +
-                        "    - v1.*";
+            string expected = @"
+on:
+  push:
+    branches-ignore:
+    - features/experimental/*
+    paths-ignore:
+    - README.md
+  pull-request:
+    branches-ignore:
+    - features/experimental/*
+    paths-ignore:
+    - README.md
+    tags-ignore:
+    - v1
+    - v1.*
+";
+            expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
         }
 
@@ -267,7 +305,7 @@ schedules:
             Conversion conversion = new Conversion();
 
             //Act
-            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(input);
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction2(input);
 
             //Assert
             string expected = @"
@@ -290,7 +328,7 @@ schedules:
             Conversion conversion = new Conversion();
 
             //Act
-            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(input);
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction2(input);
 
             //Assert
             string expected = @"
@@ -303,7 +341,7 @@ on:
         }
 
         [TestMethod]
-        public void CronRemoveExtraStringTest()
+        public void SchedulesCronRemoveExtraStringTest()
         {
             //Arrange
             string input = @"
@@ -314,7 +352,7 @@ schedules:
             Conversion conversion = new Conversion();
 
             //Act
-            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(input);
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction2(input);
 
             //Assert
             string expected = @"
@@ -343,7 +381,7 @@ schedules:
             Conversion conversion = new Conversion();
 
             //Act
-            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(input);
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction2(input);
 
             //Assert
             string expected = @"
@@ -355,5 +393,116 @@ on:
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
         }
 
+
+//        [TestMethod]
+//        public void TriggerConversionSimpleStringTest()
+//        {
+//            //Arrange
+//            string input = @"
+//trigger:
+//- master
+//";
+//            Conversion conversion = new Conversion();
+
+//            //Act
+//            string result = conversion.ProcessYAMLTest(input);
+
+//            //Assert
+//            string expected = @"
+//trigger:
+//- master
+//";
+//            //            string expected = @"
+//            //trigger:
+//            //  branches:
+//            //    include:
+//            //    - master
+//            //";
+//            Assert.AreEqual(expected.Trim(), result.Trim());
+//        }
+
+//        [TestMethod]
+//        public void TriggerConversionComplexStringTest()
+//        {
+//            //Arrange
+//            string input = @"
+//trigger:
+//  batch: true
+//  branches:
+//    include:
+//    - features/*
+//    exclude:
+//    - features/experimental/*
+//  paths:
+//    include:
+//    - README.md
+//  tags:
+//    include:
+//    - v1             
+//    - v1.*";
+//            Conversion conversion = new Conversion();
+
+//            //Act
+//            string result = conversion.ProcessYAMLTest(input);
+
+//            //Assert
+//            string expected = @"
+//trigger:
+//  batch: true
+//  branches:
+//    include:
+//    - features/*
+//    exclude:
+//    - features/experimental/*
+//  paths:
+//    include:
+//    - README.md
+//  tags:
+//    include:
+//    - v1             
+//    - v1.*"; 
+//            Assert.AreEqual(expected.Trim(), result.Trim());
+
+//        }
+
+//        [TestMethod]
+//        public void TriggerConversionComplex2StringTest()
+//        {
+//            //Arrange
+//            string input = @"
+//trigger:
+//- master
+
+//pool:
+//  vmImage: 'ubuntu-latest'
+
+//steps:
+//- task: UseRubyVersion@0
+//  inputs:
+//    versionSpec: '>= 2.5'
+//- script: ruby HelloWorld.rb
+//";
+//            Conversion conversion = new Conversion();
+
+//            //Act
+//            Dictionary<string, string> results = conversion.GetYamlElements(input);
+
+//            //Assert
+//            string expected = @"
+//trigger:
+//- master
+
+//pool:
+//  vmImage: 'ubuntu-latest'
+
+//steps:
+//- task: UseRubyVersion@0
+//  inputs:
+//    versionSpec: '>= 2.5'
+//- script: ruby HelloWorld.rb
+//"; 
+//            //Assert.AreEqual(expected.Trim(), result.Trim());
+
+//        }
     }
 }

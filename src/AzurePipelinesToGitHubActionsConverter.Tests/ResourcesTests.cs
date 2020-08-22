@@ -72,7 +72,7 @@ steps:
 ";
 
             //Act
-            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(yaml);
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction2(yaml);
 
             //Assert
             Assert.AreEqual(1, gitHubOutput.comments.Count);
@@ -114,7 +114,7 @@ steps:
 ";
 
             //Act
-            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(yaml);
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction2(yaml);
 
             //Assert
             Assert.AreEqual(1, gitHubOutput.comments.Count);
@@ -139,7 +139,7 @@ resources:
 ";
 
             //Act
-            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(yaml);
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction2(yaml);
 
             //Assert
             Assert.AreEqual(1, gitHubOutput.comments.Count);
@@ -165,7 +165,7 @@ resources:
 ";
 
             //Act
-            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(yaml);
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction2(yaml);
 
             //Assert
             Assert.AreEqual(1, gitHubOutput.comments.Count);
