@@ -1,9 +1,6 @@
-using AzurePipelinesToGitHubActionsConverter.Core;
 using AzurePipelinesToGitHubActionsConverter.Core.Conversion;
 using AzurePipelinesToGitHubActionsConverter.Core.Conversion.Serialization;
-using AzurePipelinesToGitHubActionsConverter.Core.GitHubActions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
 
 namespace AzurePipelinesToGitHubActionsConverter.Tests
 {
@@ -37,7 +34,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(input);
 
             //Assert
-            string expected = null;
+            string expected = "";
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
         }
 
@@ -52,7 +49,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(input);
 
             //Assert
-            string expected = null;
+            string expected = "";
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
         }
 

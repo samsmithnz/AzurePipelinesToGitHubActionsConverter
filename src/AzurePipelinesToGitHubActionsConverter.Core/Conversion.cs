@@ -1,17 +1,11 @@
-﻿using AzurePipelinesToGitHubActionsConverter.Core.AzurePipelines;
-using AzurePipelinesToGitHubActionsConverter.Core.Conversion.Serialization;
-using AzurePipelinesToGitHubActionsConverter.Core.Extensions;
+﻿using AzurePipelinesToGitHubActionsConverter.Core.Conversion.Serialization;
 using AzurePipelinesToGitHubActionsConverter.Core.GitHubActions;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.Design;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using Newtonsoft.Json;
-using YamlDotNet.Serialization;
 using System.IO;
-using Newtonsoft.Json.Linq;
+using YamlDotNet.Serialization;
 
 namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
 {
@@ -65,7 +59,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                 if (json["name"] != null)
                 {
                     string nameYaml = json["name"].ToString();
-                    gitHubActions.name = gp.ProcessNameV2(nameYaml);
+                    gitHubActions.name = gp.ProcessNameV3(nameYaml);
                 }
 
                 //Trigger/PR/Schedules
@@ -73,13 +67,13 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                 {
                     string triggerYaml = json["trigger"].ToString();
                     triggerYaml = ConversionUtility.ProcessNoneJsonElement(triggerYaml);
-                    gitHubActions.on = gp.ProcessTriggerV2(triggerYaml);
+                    gitHubActions.on = gp.ProcessTriggerV3(triggerYaml);
                 }
                 if (json["pr"] != null)
                 {
                     string prYaml = json["pr"].ToString();
                     prYaml = ConversionUtility.ProcessNoneJsonElement(prYaml);
-                    GitHubActions.Trigger prTrigger = gp.ProcessPullRequestV2(prYaml);
+                    GitHubActions.Trigger prTrigger = gp.ProcessPullRequestV3(prYaml);
                     if (gitHubActions.on == null)
                     {
                         gitHubActions.on = prTrigger;
@@ -92,7 +86,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                 if (json["schedules"] != null)
                 {
                     string schedulesYaml = json["schedules"].ToString();
-                    GitHubActions.Trigger schedules = gp.ProcessSchedulesV2(schedulesYaml);
+                    GitHubActions.Trigger schedules = gp.ProcessSchedulesV3(schedulesYaml);
                     if (gitHubActions.on == null)
                     {
                         gitHubActions.on = schedules;
@@ -185,144 +179,6 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
             foreach (string item in stepComments)
             {
                 gitHubYaml = item + System.Environment.NewLine + gitHubYaml;
-            }
-
-            //Return the final conversion result, with the original (pipeline) yaml, processed (actions) yaml, and any comments
-            return new ConversionResponse
-            {
-                pipelinesYaml = yaml,
-                actionsYaml = gitHubYaml,
-                comments = stepComments
-            };
-        }
-
-        /// <summary>
-        /// V2 plan:
-        /// 1. get the yaml
-        /// 2. break it into yaml pieces
-        /// 3. deserialize each yaml piece into azure pipelines sub-objects
-        /// 4. put it together into one azure pipelines object
-        /// 5. convert the azure pipelines object to github action
-        /// </summary>
-        /// <param name="yaml"></param>
-        /// <returns></returns>
-        public ConversionResponse ConvertAzurePipelineToGitHubActionV2(string yaml)
-        {
-
-            string gitHubYaml = null;
-            List<string> variableList = new List<string>();
-            List<string> stepComments = new List<string>();
-            string processedYaml = ConversionUtility.RemoveCommentsFromYaml(yaml);
-            processedYaml = processedYaml.Trim();
-
-            //Pre-processing. These are exceptions and must be dealt with correctly
-            yaml = ConversionUtility.ProcessNoneYamlElement(yaml, "trigger:none");
-            yaml = ConversionUtility.ProcessNoneYamlElement(yaml, "pr:none");
-            int spacesPrefix = ConversionUtility.CountSpacesBeforeText(yaml);
-
-            //Get a list of all top level Yaml Elements
-            List<KeyValuePair<string, string>> yamlElements = ConversionYamlParser.GetYamlElements(yaml, spacesPrefix, true, false);
-            if (yamlElements != null)
-            {
-                GitHubActionsRoot gitHubActions = new GitHubActionsRoot();
-                GeneralProcessing gp = new GeneralProcessing(_verbose);
-
-                //Name
-                string nameYaml = yamlElements.FirstOrDefault(c => c.Key == "name").Value;
-                gitHubActions.name = gp.ProcessNameV2(nameYaml);
-
-                //Trigger/PR/Schedules
-                //Refactor to do them seperately
-                //if (gitHubActions.on == null)
-                //{
-                //    gitHubActions.on = new GitHubActions.Trigger();
-                //}
-                //gitHubActions.on.schedule = schedules;
-                string triggerYaml = yamlElements.FirstOrDefault(c => c.Key == "trigger").Value;
-                string prYaml = yamlElements.FirstOrDefault(c => c.Key == "pr").Value;
-                string schedulesYaml = yamlElements.FirstOrDefault(c => c.Key == "schedules").Value;
-                gitHubActions.on = gp.ProcessTriggerPRAndSchedulesV2(triggerYaml, prYaml, schedulesYaml);
-
-                //Pool
-                //yamlElements.TryGetValue("pool", out string poolYaml);
-
-                //Variables
-                string parametersYaml = yamlElements.FirstOrDefault(c => c.Key == "parameters").Value;
-                string variablesYaml = yamlElements.FirstOrDefault(c => c.Key == "variables").Value;
-                gitHubActions.env = gp.ProcessParametersAndVariablesV2(parametersYaml, variablesYaml);
-
-                //No Jobs/Jobs/Stages
-                string stagesYaml = yamlElements.FirstOrDefault(c => c.Key == "stages").Value;
-                string jobsYaml = yamlElements.FirstOrDefault(c => c.Key == "jobs").Value;
-                if (stagesYaml != null)
-                {
-                    gitHubActions.jobs = gp.ProcessStagesV2(stagesYaml);
-                }
-                else if (jobsYaml != null)
-                {
-                    gitHubActions.jobs = gp.ProcessJobsV2(jobsYaml);
-                }
-
-                ////If there are no stages, or jobs, process the top level
-                //string steps;
-                //yamlElements.TryGetValue("steps", out steps);
-                //if (jobs == null || jobs.Count == 0)
-                //{
-                //    gp.ProcessJob(pool, steps)
-                //}
-
-                //Search for any other variables. Duplicates are ok, they are processed the same
-                variableList.AddRange(ConversionUtility.SearchForVariables(processedYaml));
-
-                //Create the GitHub YAML and apply some adjustments
-                if (gitHubActions != null)
-                {
-                    gitHubYaml = GitHubActionsSerialization.Serialize(gitHubActions, variableList, _matrixVariableName);
-                }
-                else
-                {
-                    gitHubYaml = "";
-                }
-
-                //Load failed task comments for processing
-                if (gitHubActions != null)
-                {
-                    //Add any header messages
-                    if (gitHubActions.messages != null)
-                    {
-                        foreach (string message in gitHubActions.messages)
-                        {
-                            stepComments.Add(ConversionUtility.ConvertMessageToYamlComment(message));
-                        }
-                    }
-                    if (gitHubActions.jobs != null)
-                    {
-                        //Add each individual step comments
-                        foreach (KeyValuePair<string, GitHubActions.Job> job in gitHubActions.jobs)
-                        {
-                            if (job.Value.steps != null)
-                            {
-                                if (job.Value.job_message != null)
-                                {
-                                    stepComments.Add(ConversionUtility.ConvertMessageToYamlComment(job.Value.job_message));
-                                }
-                                foreach (GitHubActions.Step step in job.Value.steps)
-                                {
-                                    if (step != null && string.IsNullOrEmpty(step.step_message) == false)
-                                    {
-                                        stepComments.Add(ConversionUtility.ConvertMessageToYamlComment(step.step_message));
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-
-                //Append all of the comments to the top of the file
-                foreach (string item in stepComments)
-                {
-                    gitHubYaml = item + System.Environment.NewLine + gitHubYaml;
-                }
             }
 
             //Return the final conversion result, with the original (pipeline) yaml, processed (actions) yaml, and any comments

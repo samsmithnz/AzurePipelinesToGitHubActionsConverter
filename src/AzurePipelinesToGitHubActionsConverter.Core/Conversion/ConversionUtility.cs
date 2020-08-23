@@ -278,40 +278,40 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
             return ConversionUtility.RemoveFirstLine(newYaml.ToString().Trim());
         }
 
-        // Some elements have a simple, same line string, we need to make into a list
-        // for example "trigger:none", becomes "trigger:\n\r- none"
-        public static string ProcessNoneYamlElement(string yaml, string noneSearchString)
-        {
-            if (yaml != null && yaml.Replace(" ", "").ToLower().IndexOf(noneSearchString) >= 0)
-            {
-                StringBuilder newYaml = new StringBuilder();
-                foreach (string line in yaml.Split(Environment.NewLine))
-                {
-                    if (line.Replace(" ", "").ToLower().IndexOf(noneSearchString) >= 0)
-                    {
-                        //Get the count of whitespaces in front of the variable
-                        int prefixSpaceCount = CountSpacesBeforeText(line);
+        //// Some elements have a simple, same line string, we need to make into a list
+        //// for example "trigger:none", becomes "trigger:\n\r- none"
+        //public static string ProcessNoneYamlElement(string yaml, string noneSearchString)
+        //{
+        //    if (yaml != null && yaml.Replace(" ", "").ToLower().IndexOf(noneSearchString) >= 0)
+        //    {
+        //        StringBuilder newYaml = new StringBuilder();
+        //        foreach (string line in yaml.Split(Environment.NewLine))
+        //        {
+        //            if (line.Replace(" ", "").ToLower().IndexOf(noneSearchString) >= 0)
+        //            {
+        //                //Get the count of whitespaces in front of the variable
+        //                int prefixSpaceCount = CountSpacesBeforeText(line);
 
-                        newYaml.Append(line.Replace("none", ""));
-                        newYaml.Append(System.Environment.NewLine);
+        //                newYaml.Append(line.Replace("none", ""));
+        //                newYaml.Append(System.Environment.NewLine);
 
-                        newYaml.Append(GenerateSpaces(prefixSpaceCount));
-                        newYaml.Append("- none");
-                        newYaml.Append(System.Environment.NewLine);
-                    }
-                    else
-                    {
-                        newYaml.Append(line);
-                        newYaml.Append(System.Environment.NewLine);
-                    }
-                }
-                return newYaml.ToString();
-            }
-            else
-            {
-                return yaml;
-            }
-        }
+        //                newYaml.Append(GenerateSpaces(prefixSpaceCount));
+        //                newYaml.Append("- none");
+        //                newYaml.Append(System.Environment.NewLine);
+        //            }
+        //            else
+        //            {
+        //                newYaml.Append(line);
+        //                newYaml.Append(System.Environment.NewLine);
+        //            }
+        //        }
+        //        return newYaml.ToString();
+        //    }
+        //    else
+        //    {
+        //        return yaml;
+        //    }
+        //}
 
         // Some elements have a simple, same line string, we need to make into a list
         // for example "trigger:none", becomes "trigger:\n\r- none"
@@ -375,10 +375,10 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
             return input;
         }
 
-        public static string JobsPreProcessing(string input)
-        {
-            return input;
-        }
+        //public static string JobsPreProcessing(string input)
+        //{
+        //    return input;
+        //}
 
         public static List<string> SearchForVariables(string input)
         {
@@ -459,36 +459,36 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
             return list;
         }
 
-        public static string RemoveCommentsFromYaml(string yaml)
-        {
-            if (yaml == null)
-            {
-                return yaml;
-            }
-            string processedYaml = yaml;
+        //public static string RemoveCommentsFromYaml(string yaml)
+        //{
+        //    if (yaml == null)
+        //    {
+        //        return yaml;
+        //    }
+        //    string processedYaml = yaml;
 
-            //Part 1: remove full line comments. sometimes the yaml converter can't handle these - depending on where the # appears on the line (sometimes it's the first character, other times the first character after whitespace
-            if (processedYaml.IndexOf("#") >= 0)
-            {
-                StringBuilder sb = new StringBuilder();
-                foreach (string line in processedYaml.Split(System.Environment.NewLine))
-                {
-                    //Remove the comment if it's the a full line (after removing the preceeding white space)
-                    if (line.TrimStart().IndexOf("#") == 0)
-                    {
-                        //don't add line, remove
-                        Console.WriteLine(line);
-                    }
-                    else
-                    {
-                        sb.Append(line);
-                        sb.Append(System.Environment.NewLine);
-                    }
-                }
-                processedYaml = sb.ToString();
-            }
-            return processedYaml;
-        }
+        //    //Part 1: remove full line comments. sometimes the yaml converter can't handle these - depending on where the # appears on the line (sometimes it's the first character, other times the first character after whitespace
+        //    if (processedYaml.IndexOf("#") >= 0)
+        //    {
+        //        StringBuilder sb = new StringBuilder();
+        //        foreach (string line in processedYaml.Split(System.Environment.NewLine))
+        //        {
+        //            //Remove the comment if it's the a full line (after removing the preceeding white space)
+        //            if (line.TrimStart().IndexOf("#") == 0)
+        //            {
+        //                //don't add line, remove
+        //                Console.WriteLine(line);
+        //            }
+        //            else
+        //            {
+        //                sb.Append(line);
+        //                sb.Append(System.Environment.NewLine);
+        //            }
+        //        }
+        //        processedYaml = sb.ToString();
+        //    }
+        //    return processedYaml;
+        //}
 
         //Remove the first line in a string
         public static string RemoveFirstLine(string input)
