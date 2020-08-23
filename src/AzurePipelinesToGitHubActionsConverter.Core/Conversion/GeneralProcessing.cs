@@ -570,7 +570,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                             string demands = null;
                             if (json["demands"] != null)
                             {
-                                vmImage = json["demands"].ToString();
+                                demands = json["demands"].ToString();
                             }
                             pool = new Pool
                             {

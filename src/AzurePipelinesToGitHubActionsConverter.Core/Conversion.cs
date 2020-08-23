@@ -120,26 +120,30 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                         gitHubActions.messages.Add("TODO: Resource repositories conversion not yet done: https://github.com/samsmithnz/AzurePipelinesToGitHubActionsConverter/issues/8");
                     }
                 }
+                //process the pool before stages/jobs/stepsS
+                string poolYaml = null;
+                if (json["pool"] != null)
+                {
+                    poolYaml = json["pool"].ToString();
+                    //pool/demands
+                    if (poolYaml.IndexOf("\"demands\":") >= 0)
+                    {
+                        gitHubActions.messages.Add("Note: GitHub Actions does not have a 'demands' command on 'runs-on' yet");
+                    }
+                }
+                //We have stages
                 if (json["stages"] != null)
                 {
                     gitHubActions.jobs = gp.ProcessStagesV3(json["stages"]);
                 }
+                //We just have jobs
                 else if (json["stages"] == null && json["jobs"] != null)
                 {
                     gitHubActions.jobs = gp.ProcessJobsV3(gp.ExtractAzurePipelinesJobsV3(json["jobs"]), gp.ExtractResourcesV3(resourcesYaml));
                 }
+                //We just have steps, and need to load them into a jobS
                 else if (json["stages"] == null && json["jobs"] == null)
                 {
-                    string poolYaml = null;
-                    if (json["pool"] != null)
-                    {
-                        poolYaml = json["pool"].ToString();
-                        //pool/demands
-                        if (poolYaml.IndexOf("demands:") >= 0)
-                        {
-                            gitHubActions.messages.Add("Note: GitHub Actions does not have a 'demands' command on 'runs-on' yet");
-                        }
-                    }
                     string stepsYaml = null;
                     if (json["steps"] != null)
                     {
