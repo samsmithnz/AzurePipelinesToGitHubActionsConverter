@@ -4,6 +4,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
+using System.Dynamic;
 using System.IO;
 using YamlDotNet.Serialization;
 
@@ -32,7 +33,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
 
         public ConversionResponse ConvertAzurePipelineToGitHubActionV3(string yaml)
         {
-            string gitHubYaml = null;
+            string gitHubYaml = "";
             List<string> variableList = new List<string>();
             List<string> stepComments = new List<string>();
 
@@ -120,15 +121,41 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                     {
                         gitHubActions.messages.Add("TODO: Resource pipelines conversion not yet done: https://github.com/samsmithnz/AzurePipelinesToGitHubActionsConverter/issues/8");
                     }
+                    if (json["resources"]["repositories"] != null)
+                    {
+                        gitHubActions.messages.Add("TODO: Resource repositories conversion not yet done: https://github.com/samsmithnz/AzurePipelinesToGitHubActionsConverter/issues/8");
+                    }
                 }
                 if (json["stages"] != null)
                 {
                     gitHubActions.jobs = gp.ProcessStagesV3(json["stages"]);
                 }
-                if (json["stages"] == null && json["jobs"] != null)
+                else if (json["stages"] == null && json["jobs"] != null)
                 {
                     gitHubActions.jobs = gp.ProcessJobsV3(gp.ExtractAzurePipelinesJobsV3(json["jobs"]), gp.ExtractResourcesV3(resourcesYaml));
                 }
+                else if (json["stages"] == null && json["jobs"] == null)
+                {
+                    string poolYaml = null;
+                    if (json["pool"] != null)
+                    {
+                        poolYaml = json["pool"].ToString();
+                    }
+                    string stepsYaml = null;
+                    if (json["steps"] != null)
+                    {
+                        stepsYaml = json["steps"].ToString();
+                    }
+                    string strategyYaml = null;
+                    if (json["strategy"] != null)
+                    {
+                        strategyYaml = json["strategy"].ToString();
+                    }
+                    AzurePipelines.Job[] pipelineJobs = gp.ProcessJobFromPipelineRootV3(poolYaml, strategyYaml, stepsYaml);
+                    gitHubActions.jobs = gp.ProcessJobsV3(pipelineJobs, gp.ExtractResourcesV3(resourcesYaml));
+                }
+
+
 
                 //Create the GitHub YAML and apply some adjustments
                 if (gitHubActions != null)

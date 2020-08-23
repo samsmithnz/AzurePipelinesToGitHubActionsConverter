@@ -165,7 +165,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                 return null;
             }
         }
-      
+
         public Dictionary<string, string> ProcessParametersAndVariablesV3(string parametersYaml, string variablesYaml)
         {
             List<Variable> parameters = null;
@@ -216,8 +216,8 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
 
 
             Dictionary<string, string> env = new Dictionary<string, string>();
-            Dictionary<string, string> processedParameters = ProcessComplexVariablesV2(parameters);
-            Dictionary<string, string> processedVariables = ProcessComplexVariablesV2(variables);
+            Dictionary<string, string> processedParameters = ProcessComplexVariablesV3(parameters);
+            Dictionary<string, string> processedVariables = ProcessComplexVariablesV3(variables);
             foreach (KeyValuePair<string, string> item in processedParameters)
             {
                 if (env.ContainsKey(item.Key) == false)
@@ -478,11 +478,69 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
             }
         }
 
+        public AzurePipelines.Job[] ProcessJobFromPipelineRootV3(string poolYaml, string strategyYaml, string stepsYaml)
+        {
+            Pool pool = null;
+            if (poolYaml != null)
+            {
+                pool = ProcessPoolV3(poolYaml);
+            }
+            AzurePipelines.Strategy strategy = null;
+            if (strategyYaml != null)
+            {
+                try
+                {
+                    strategy = GenericObjectSerialization.DeserializeYaml<AzurePipelines.Strategy>(strategyYaml);
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"DeserializeYaml<AzurePipelines.Strategy>(strategyYaml) swallowed an exception: " + ex.Message);
+                }
+            }
+            AzurePipelines.Step[] steps = null;
+            if (stepsYaml != null)
+            {
+                try
+                {
+                    steps = GenericObjectSerialization.DeserializeYaml<AzurePipelines.Step[]>(stepsYaml);
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"DeserializeYaml<AzurePipelines.Step[]>(stepsYaml) swallowed an exception: " + ex.Message);
+                }
+            }
+
+            AzurePipelines.Job job = new AzurePipelines.Job
+            {
+                pool = pool,
+                strategy = strategy,
+                steps = steps
+            };
+            //Don't add the build name unless there is content
+            if (job.pool != null || job.strategy != null || steps != null)
+            {
+                AzurePipelines.Job[] jobs = new AzurePipelines.Job[1];
+                job.job = "build";
+                jobs[0] = job;
+                return jobs;
+            }
+            else
+            {
+                return null;
+            }
+        }
+
         public Pool ProcessPoolV3(string poolYaml)
         {
             Pool pool = null;
             if (poolYaml != null)
             {
+                //If it's a simple demands (string), convert it to a string[] first.
+                if (poolYaml.ToLower().IndexOf(\"demands\": [") < 0)
+                {
+                    poolYaml = "[ none ]";
+                }
+
                 try
                 {
                     pool = GenericObjectSerialization.DeserializeYaml<Pool>(poolYaml);
@@ -490,11 +548,15 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                 catch (Exception ex)
                 {
                     Debug.WriteLine($"DeserializeYaml<Pool>(poolYaml) swallowed an exception: " + ex.Message);
+                    pool = new Pool
+                    {
+                        name = poolYaml
+                    };
                 }
             }
             return pool;
         }
-   
+
         //Process a simple trigger, e.g. "Trigger: [master, develop]"
         public GitHubActions.Trigger ProcessSimpleTrigger(string[] trigger)
         {
@@ -799,7 +861,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
             return variables;
         }
 
-        public Dictionary<string, string> ProcessComplexVariablesV2(List<AzurePipelines.Variable> variables)
+        public Dictionary<string, string> ProcessComplexVariablesV3(List<AzurePipelines.Variable> variables)
         {
             Dictionary<string, string> processedVariables = new Dictionary<string, string>();
             if (variables != null)

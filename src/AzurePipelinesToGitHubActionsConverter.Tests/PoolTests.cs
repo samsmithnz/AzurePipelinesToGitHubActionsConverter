@@ -104,7 +104,7 @@ jobs:
         }
 
         [TestMethod]
-        public void PoolNameDependsStringTest()
+        public void PoolNameDemandsStringTest()
         {
             //Arrange
             string input = @"

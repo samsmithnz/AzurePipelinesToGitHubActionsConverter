@@ -79,7 +79,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                 }
             }
 
-            //Container
+            //pool/demands
             if (azurePipeline.pool != null && azurePipeline.pool.demands != null)
             {
                 gitHubActions.messages.Add("Note: GitHub Actions does not have a 'demands' command on 'runs-on' yet");

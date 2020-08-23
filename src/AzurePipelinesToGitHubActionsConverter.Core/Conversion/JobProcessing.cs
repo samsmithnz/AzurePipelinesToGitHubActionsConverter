@@ -30,7 +30,6 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
             MatrixVariableName = generalProcessing.MatrixVariableName;
             VariableList = generalProcessing.VariableList;
 
-
             if (newJob.steps == null & job.template != null)
             {
                 //Initialize the array with no items
@@ -52,6 +51,10 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
             if (job.environment != null)
             {
                 newJob.job_message += "Note: Azure DevOps job environment does not have an equivalent in GitHub Actions yet";
+            }
+            if (job.pool != null && job.pool.demands != null)
+            {
+                newJob.job_message += "Note: GitHub Actions does not have a 'demands' command on 'runs-on' yet";
             }
             //if (newJob._if != null)
             //{
