@@ -63,7 +63,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
             if (processedYaml.ToLower().IndexOf("variables:", StringComparison.OrdinalIgnoreCase) >= 0 ||
                 processedYaml.ToLower().IndexOf("parameters:", StringComparison.OrdinalIgnoreCase) >= 0)
             {
-                StringBuilder sb = new StringBuilder();
+                StringBuilder newYaml = new StringBuilder();
                 int variablePrefixSpaceCount = -1;
                 foreach (string line in processedYaml.Split(System.Environment.NewLine))
                 {
@@ -104,53 +104,11 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                     {
                         variablePrefixSpaceCount = -1;
                     }
-                    sb.Append(newLine);
-                    sb.Append(System.Environment.NewLine);
+                    newYaml.Append(newLine);
+                    newYaml.Append(System.Environment.NewLine);
                 }
-                processedYaml = sb.ToString();
+                processedYaml = newYaml.ToString();
             }
-
-            ////Part 2b: Transform simple Variables to be complex variables:
-            //StringBuilder newYaml = new StringBuilder();
-            ////Search the YAML, line by line
-            //foreach (string line in yaml.Split(System.Environment.NewLine))
-            //{
-            //    //If the search string is found, start processing it
-            //    if (line.ToLower().IndexOf("variables:", StringComparison.OrdinalIgnoreCase) >= 0)
-            //    {
-            //        //Split the string by the :
-            //        string[] items = line.Split(':');
-            //        //if there are 2 sections, continue
-            //        if (items.Length == 2 && items[1].ToString().Trim().Length > 0)
-            //        {
-            //            //Get the count of whitespaces in front of the variable
-            //            int prefixSpaceCount = items[0].TakeWhile(char.IsWhiteSpace).Count();
-
-            //            //start building the new string, with the white space count
-            //            newYaml.Append(ConversionUtility.GenerateSpaces(prefixSpaceCount));
-            //            //Add the main keyword
-            //            newYaml.Append(items[0].Trim());
-            //            newYaml.Append(": ");
-            //            newYaml.Append(System.Environment.NewLine);
-            //            //on the new line, add the white spaces + two more spaces for the indent
-            //            newYaml.Append(ConversionUtility.GenerateSpaces(prefixSpaceCount + 2));
-            //            newYaml.Append(newLineName);
-            //            //The main value
-            //            newYaml.Append(items[1].Trim());
-            //            newYaml.Append(System.Environment.NewLine);
-            //        }
-            //        else
-            //        {
-            //            newYaml.Append(line);
-            //            newYaml.Append(System.Environment.NewLine);
-            //        }
-            //    }
-            //    else
-            //    {
-            //        newYaml.Append(line);
-            //        newYaml.Append(System.Environment.NewLine);
-            //    }
-            //}
 
             //Part 3
             //If the yaml contains pools, check if it's a "simple pool" (pool: string]), 
@@ -275,7 +233,8 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                     newYaml.Append(System.Environment.NewLine);
                 }
             }
-            return ConversionUtility.RemoveFirstLine(newYaml.ToString().Trim());
+            return newYaml.ToString();
+            //return ConversionUtility.RemoveFirstLine(newYaml.ToString().Trim());
         }
 
         //// Some elements have a simple, same line string, we need to make into a list

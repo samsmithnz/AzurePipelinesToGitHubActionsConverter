@@ -85,7 +85,8 @@ jobs:
         }
 
 
-         [TestMethod]
+        //This test doesn't work with V1
+        [TestMethod]
         public void ComplexVariablesJobTest()
         {
             //Arrange
@@ -135,7 +136,7 @@ jobs:
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
         }
 
-
+        //This test doesn't work with V1
         [TestMethod]
         public void ComplexVariablesWithSimpleDependsOnJobTest()
         {
