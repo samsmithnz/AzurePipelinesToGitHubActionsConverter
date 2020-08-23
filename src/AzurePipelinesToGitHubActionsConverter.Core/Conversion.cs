@@ -41,13 +41,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
             JObject json = null;
             if (yaml != null)
             {
-                StringWriter sw = new StringWriter();
-                StringReader sr = new StringReader(yaml);
-                Deserializer deserializer = new Deserializer();
-                var yamlObject = deserializer.Deserialize(sr);
-                JsonSerializer serializer = new JsonSerializer();
-                serializer.Serialize(sw, yamlObject);
-                json = JsonConvert.DeserializeObject<JObject>(sw.ToString());
+                json = JSONSerialization.DeserializeStringToObject(yaml);
             }
 
             //Build up the GitHub object piece by piece
@@ -140,6 +134,11 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                     if (json["pool"] != null)
                     {
                         poolYaml = json["pool"].ToString();
+                        //pool/demands
+                        if (poolYaml.IndexOf("demands:") >= 0)
+                        {
+                            gitHubActions.messages.Add("Note: GitHub Actions does not have a 'demands' command on 'runs-on' yet");
+                        }
                     }
                     string stepsYaml = null;
                     if (json["steps"] != null)
@@ -153,6 +152,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                     }
                     AzurePipelines.Job[] pipelineJobs = gp.ProcessJobFromPipelineRootV3(poolYaml, strategyYaml, stepsYaml);
                     gitHubActions.jobs = gp.ProcessJobsV3(pipelineJobs, gp.ExtractResourcesV3(resourcesYaml));
+
                 }
 
 

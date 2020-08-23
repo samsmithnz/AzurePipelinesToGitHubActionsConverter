@@ -39,7 +39,6 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
             GeneralProcessing generalProcessing = new GeneralProcessing(_verbose);
             GitHubActionsRoot gitHubActions = new GitHubActionsRoot();
 
-
             //Name
             if (azurePipeline.name != null)
             {
