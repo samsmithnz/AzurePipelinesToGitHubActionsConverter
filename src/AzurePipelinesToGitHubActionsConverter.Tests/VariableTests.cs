@@ -328,6 +328,11 @@ parameters: # defaults for any parameters that aren't specified
   environment: 'Dev'
   strategy: Dev
   pool: 'Dev'
+variables: 
+  plainVar2: 'ok2'
+  environment2: 'Dev2'
+  strategy2: Dev2
+  pool2: 'Dev2'  
 ";
 
             Conversion conversion = new Conversion();
@@ -342,6 +347,10 @@ env:
   environment: Dev
   strategy: Dev
   pool: Dev
+  plainVar2: ok2
+  environment2: Dev2
+  strategy2: Dev2
+  pool2: Dev2
 ";
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);

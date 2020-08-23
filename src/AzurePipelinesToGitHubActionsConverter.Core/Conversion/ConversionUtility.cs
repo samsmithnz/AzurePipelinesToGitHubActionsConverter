@@ -316,7 +316,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
         // Some elements have a simple, same line string, we need to make into a list
         // for example "trigger:none", becomes "trigger:\n\r- none"
         // This is a lot simplier in JSON, as it's already only returning the none string.
-        public static string ProcessNoneJsonElement(string yaml, string noneSearchString)
+        public static string ProcessNoneJsonElement(string yaml)
         {
             if (yaml == "none")
             {

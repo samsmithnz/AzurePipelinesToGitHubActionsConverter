@@ -23,9 +23,9 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion.Serialization
                 yaml = CleanYamlBeforeDeserialization(yaml);
                 azurePipeline = GenericObjectSerialization.DeserializeYaml<AzurePipelinesRoot<string[], Dictionary<string, string>>>(yaml);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                Debug.WriteLine($"{nameof(DeserializeSimpleTriggerAndSimpleVariables)} swallowed an exception, to be reviewed...");
+                Debug.WriteLine($"{nameof(DeserializeSimpleTriggerAndSimpleVariables)} swallowed an exception: " + ex.Message);
                 //Do nothing
             }
             return azurePipeline;
@@ -44,9 +44,9 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion.Serialization
                 yaml = CleanYamlBeforeDeserialization(yaml);
                 azurePipeline = GenericObjectSerialization.DeserializeYaml<AzurePipelinesRoot<string[], AzurePipelines.Variable[]>>(yaml);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                Debug.WriteLine($"{nameof(DeserializeSimpleTriggerAndComplexVariables)} swallowed an exception, to be reviewed...");
+                Debug.WriteLine($"{nameof(DeserializeSimpleTriggerAndComplexVariables)} swallowed an exception: " + ex.Message);
                 //Do nothing
             }
             return azurePipeline;
@@ -65,9 +65,9 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion.Serialization
                 yaml = CleanYamlBeforeDeserialization(yaml);
                 azurePipeline = GenericObjectSerialization.DeserializeYaml<AzurePipelinesRoot<AzurePipelines.Trigger, Dictionary<string, string>>>(yaml);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                Debug.WriteLine($"{nameof(DeserializeComplexTriggerAndSimpleVariables)} swallowed an exception, to be reviewed...");
+                Debug.WriteLine($"{nameof(DeserializeComplexTriggerAndSimpleVariables)} swallowed an exception: " + ex.Message);
                 //Do nothing
             }
             return azurePipeline;
@@ -82,13 +82,13 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion.Serialization
         {
             //DANGER WILL ROBINSON - DANGER
             //Unlike the other deserializers, we need to leave this last error handler off - so that errors can be returned to the client, where as the others can fail so that they can try the next deserializer method.
-            AzurePipelinesRoot<AzurePipelines.Trigger, AzurePipelines.Variable[]> azurePipeline = null;
+            AzurePipelinesRoot<AzurePipelines.Trigger, AzurePipelines.Variable[]> azurePipeline;
             //try
             //{
             yaml = CleanYamlBeforeDeserialization(yaml);
             azurePipeline = GenericObjectSerialization.DeserializeYaml<AzurePipelinesRoot<AzurePipelines.Trigger, AzurePipelines.Variable[]>>(yaml);
             //}
-            //catch (Exception)
+            //catch (Exception ex)
             //{
             //    //Do nothing
             //}

@@ -72,13 +72,13 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                 if (json["trigger"] != null)
                 {
                     string triggerYaml = json["trigger"].ToString();
-                    triggerYaml = ConversionUtility.ProcessNoneJsonElement(triggerYaml, "trigger:none");
+                    triggerYaml = ConversionUtility.ProcessNoneJsonElement(triggerYaml);
                     gitHubActions.on = gp.ProcessTriggerV2(triggerYaml);
                 }
                 if (json["pr"] != null)
                 {
                     string prYaml = json["pr"].ToString();
-                    prYaml = ConversionUtility.ProcessNoneJsonElement(prYaml, "pr:none");
+                    prYaml = ConversionUtility.ProcessNoneJsonElement(prYaml);
                     GitHubActions.Trigger prTrigger = gp.ProcessPullRequestV2(prYaml);
                     if (gitHubActions.on == null)
                     {
@@ -102,7 +102,31 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                         gitHubActions.on.schedule = schedules.schedule;
                     }
                 }
-                
+
+                //Parameters
+                string parametersYaml = null;
+                if (json["parameters"] != null)
+                {
+                    parametersYaml = json["parameters"].ToString();
+                }
+                //Variables
+                string variablesYaml = null;
+                if (json["variables"] != null)
+                {
+                    variablesYaml = json["variables"].ToString();
+                }
+                gitHubActions.env = gp.ProcessParametersAndVariablesV3(parametersYaml, variablesYaml);
+
+                //No Jobs/Jobs/Stages
+                if (json["stages"] != null)
+                {
+                    gitHubActions.jobs = gp.ProcessStagesV3(json["stages"]);
+                }
+                if (json["stages"] == null && json["jobs"] != null)
+                {
+                    gitHubActions.jobs = gp.ProcessJobsV3(gp.ExtractAzurePipelinesJobsV3(json["jobs"]));
+                }
+
                 //Create the GitHub YAML and apply some adjustments
                 if (gitHubActions != null)
                 {
