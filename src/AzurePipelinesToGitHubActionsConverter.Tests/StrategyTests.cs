@@ -48,7 +48,7 @@ jobs:
 ";
 
             //Act
-            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubActionV2(yaml);
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubActionV3(yaml);
 
             //Assert
             //Note that we are using the longer form, as sequence flow (showing an array like: [ubuntu-16.04, macos-10.13, vs2017-win2016]), doesn't exist in this YAML Serializer yet.
@@ -104,7 +104,7 @@ jobs:
             Conversion conversion = new Conversion();
 
             //Act
-            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubActionV2(input);
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubActionV3(input);
 
             //Assert
             string expected = @"
@@ -149,7 +149,7 @@ jobs:
             Conversion conversion = new Conversion();
 
             //Act
-            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubActionV2(input);
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubActionV3(input);
 
             //Assert
             string expected = @"

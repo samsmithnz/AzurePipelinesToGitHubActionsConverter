@@ -94,7 +94,7 @@ stages:
 ";
 
             //Act
-            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubActionV2(yaml);
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubActionV3(yaml);
 
             //Assert
             string expected = @"
@@ -215,7 +215,7 @@ stages:
 ";
 
             //Act
-            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubActionV2(yaml);
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubActionV3(yaml);
 
             //Assert
             string expected = @"
@@ -267,7 +267,7 @@ stages:
 ";
 
             //Act
-            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubActionV2(yaml);
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubActionV3(yaml);
 
             //Assert
             string expected = @"
@@ -305,7 +305,7 @@ stages:
             Conversion conversion = new Conversion();
 
             //Act
-            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubActionV2(input);
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubActionV3(input);
 
             //Assert
             string expected = @"
@@ -354,7 +354,7 @@ stages:
 ";
 
             //Act
-            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubActionV2(yaml);
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubActionV3(yaml);
 
             //Assert
             string expected = @"
@@ -399,7 +399,7 @@ stages:
 ";
 
             //Act
-            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubActionV2(yaml);
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubActionV3(yaml);
 
             //Assert
             string expected = @"
@@ -421,7 +421,7 @@ jobs:
 
 
         [TestMethod]
-        public void StagingMultipleDependsOnPipelineTest()
+        public void StagingComplexDependsOnPipelineTest()
         {
             //Arrange
             Conversion conversion = new Conversion();
@@ -444,7 +444,7 @@ stages:
 ";
 
             //Act
-            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubActionV2(yaml);
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubActionV3(yaml);
 
             //Assert
             string expected = @"

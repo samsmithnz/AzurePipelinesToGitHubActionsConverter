@@ -125,13 +125,13 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion.Serialization
                         {
                             //Start tracking variables and record the variables indent level
                             scanningForVariables = true;
-                            variablesIndentLevel = line.TakeWhile(Char.IsWhiteSpace).Count(); // https://stackoverflow.com/questions/20411812/count-the-spaces-at-start-of-a-string
+                            variablesIndentLevel = ConversionUtility.CountSpacesBeforeText(line);
                         }
                         else if (scanningForVariables == true)
                         {
                             //While scanning for variables, get the indent level. It should be (variablesIndentLevel + 2), if it's more than that, we have a variable insert.
                             Debug.WriteLine("Scanning for vars: " + line);
-                            int lineIndentLevel = line.TakeWhile(Char.IsWhiteSpace).Count();
+                            int lineIndentLevel = ConversionUtility.CountSpacesBeforeText(line);
                             if ((variablesIndentLevel - (lineIndentLevel - 2)) == 0)
                             {
                                 //If the line starts with a conditional insertation, then comment it out

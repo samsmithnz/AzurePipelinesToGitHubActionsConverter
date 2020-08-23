@@ -8,9 +8,11 @@
     <PackageProjectUrl>https://github.com/samsmithnz/AzurePipelinesToGitHubActionsConverter</PackageProjectUrl>
     <PackageDescription>A conversion tool to migrate from Azure Pipelines YAML to GitHub Actions YAML</PackageDescription>
     <PackageTags>yaml;serialization;github;github actions;azure devops;azure pipelines</PackageTags>
+    <Configurations>Debug;Release;test</Configurations>
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
     <PackageReference Include="YamlDotNet" Version="8.1.2" />
   </ItemGroup>
 

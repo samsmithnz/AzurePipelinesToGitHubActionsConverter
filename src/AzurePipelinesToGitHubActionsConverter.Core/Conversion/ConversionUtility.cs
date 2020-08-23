@@ -22,8 +22,10 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
             return new String(' ', number);
         }
 
+        // https://stackoverflow.com/questions/20411812/count-the-spaces-at-start-of-a-string
         public static int CountSpacesBeforeText(string input)
         {
+            input = input.Replace(Environment.NewLine, "");
             return input.TakeWhile(char.IsWhiteSpace).Count();
         }
 
@@ -246,7 +248,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                     if (items.Length == 2 && items[1].ToString().Trim().Length > 0)
                     {
                         //Get the count of whitespaces in front of the variable
-                        int prefixSpaceCount = items[0].TakeWhile(char.IsWhiteSpace).Count();
+                        int prefixSpaceCount = CountSpacesBeforeText(items[0]);
 
                         //start building the new string, with the white space count
                         newYaml.Append(GenerateSpaces(prefixSpaceCount));
@@ -276,7 +278,9 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
             return ConversionUtility.RemoveFirstLine(newYaml.ToString().Trim());
         }
 
-        public static string ProcessNoneElement(string yaml, string noneSearchString)
+        // Some elements have a simple, same line string, we need to make into a list
+        // for example "trigger:none", becomes "trigger:\n\r- none"
+        public static string ProcessNoneYamlElement(string yaml, string noneSearchString)
         {
             if (yaml != null && yaml.Replace(" ", "").ToLower().IndexOf(noneSearchString) >= 0)
             {
@@ -286,7 +290,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                     if (line.Replace(" ", "").ToLower().IndexOf(noneSearchString) >= 0)
                     {
                         //Get the count of whitespaces in front of the variable
-                        int prefixSpaceCount = line.TakeWhile(char.IsWhiteSpace).Count();
+                        int prefixSpaceCount = CountSpacesBeforeText(line);
 
                         newYaml.Append(line.Replace("none", ""));
                         newYaml.Append(System.Environment.NewLine);
@@ -307,6 +311,21 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
             {
                 return yaml;
             }
+        }
+
+        // Some elements have a simple, same line string, we need to make into a list
+        // for example "trigger:none", becomes "trigger:\n\r- none"
+        // This is a lot simplier in JSON, as it's already only returning the none string.
+        public static string ProcessNoneJsonElement(string yaml, string noneSearchString)
+        {
+            if (yaml == "none")
+            {
+                return "[ none ]";
+            }
+            else
+            {
+                return yaml;
+            }           
         }
 
         public static string ConvertMessageToYamlComment(string message)
