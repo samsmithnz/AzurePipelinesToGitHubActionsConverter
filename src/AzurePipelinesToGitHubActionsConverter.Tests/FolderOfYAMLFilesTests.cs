@@ -30,7 +30,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
                     //Open the file
                     string yaml = File.ReadAllText(path);
                     //Process the yaml string
-                    ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubActionV3(yaml);
+                    ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(yaml);
                     //Add any comments to a string list list 
                     comments.AddRange(gitHubOutput.comments);
                 }

@@ -75,6 +75,28 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
             }
         }
 
+        public string[] ProcessDependsOnV2(string dependsOnYaml)
+        {
+            string[] dependsOn = null;
+            if (dependsOnYaml != null)
+            {
+                try
+                {
+                    string simpleDependsOn = GenericObjectSerialization.DeserializeYaml<string>(dependsOnYaml);
+                    dependsOn = new string[1];
+                    dependsOn[0] = simpleDependsOn;
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"DeserializeYaml<string[]>(triggerYaml) swallowed an exception: " + ex.Message);
+                    dependsOn = GenericObjectSerialization.DeserializeYaml<string[]>(dependsOnYaml);
+                }
+            }
+
+            //Build the return results
+            return dependsOn;
+        }
+
         public GitHubActions.Trigger ProcessPullRequestV2(string pullRequestYaml)
         {
             AzurePipelines.Trigger trigger = null;
@@ -406,10 +428,10 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                     {
                         stage.displayName = stageJson["displayName"].ToString();
                     }
-                    //if (stageJson["dependsOn"] != null)
-                    //{
-                    //    stage.dependsOn = ProcessDependsOnV2(stageJson["dependsOn"].ToString());
-                    //}
+                    if (stageJson["dependsOn"] != null)
+                    {
+                        stage.dependsOn = ProcessDependsOnV2(stageJson["dependsOn"].ToString());
+                    }
                     if (stageJson["condition"] != null)
                     {
                         stage.condition = ProcessCondition(stageJson["condition"].ToString());
@@ -509,7 +531,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
 
         public AzurePipelines.Job[] ExtractAzurePipelinesJobsV3(JToken jobsJson)
         {
-            AzurePipelines.Job[] jobs =new  AzurePipelines.Job[jobsJson.Count()];
+            AzurePipelines.Job[] jobs = new AzurePipelines.Job[jobsJson.Count()];
             if (jobsJson != null)
             {
                 int i = 0;
@@ -532,10 +554,10 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                     {
                         job.pool = ProcessPoolV3(jobJson["pool"].ToString());
                     }
-                    //if (jobJson["dependsOn"] != null)
-                    //{
-                    //    job.dependsOn = ProcessDependsOnV2(jobJson["dependsOn"].ToString());
-                    //}
+                    if (jobJson["dependsOn"] != null)
+                    {
+                        job.dependsOn = ProcessDependsOnV2(jobJson["dependsOn"].ToString());
+                    }
                     if (jobJson["condition"] != null)
                     {
                         job.condition = ProcessCondition(jobJson["condition"].ToString());
@@ -588,7 +610,24 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
             //}
         }
 
-        public Dictionary<string, GitHubActions.Job> ProcessJobsV3(AzurePipelines.Job[] jobs)
+        public Resources ExtractResourcesV3(string resourcesYaml)
+        {
+            if (resourcesYaml != null)
+            {
+                try
+                {
+                    Resources resources = GenericObjectSerialization.DeserializeYaml<Resources>(resourcesYaml);
+                    return resources;
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"DeserializeYaml<Resources>(resourcesYaml) swallowed an exception: " + ex.Message);
+                }
+            }
+            return null;
+        }
+
+        public Dictionary<string, GitHubActions.Job> ProcessJobsV3(AzurePipelines.Job[] jobs, Resources resources)
         {
             if (jobs != null)
             {
@@ -596,7 +635,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                 foreach (AzurePipelines.Job job in jobs)
                 {
                     JobProcessing jobProcessing = new JobProcessing(_verbose);
-                    gitHubJobs.Add(job.job, jobProcessing.ProcessJob(job, null));
+                    gitHubJobs.Add(job.job, jobProcessing.ProcessJob(job, resources));
                 }
                 return gitHubJobs;
             }

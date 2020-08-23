@@ -14,27 +14,30 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             //Arrange
             Conversion conversion = new Conversion();
             string yaml = @"
-job: Build
-displayName: 'Build job'
-pool:
-  vmImage: 'windows-latest'
-steps:
-- task: CmdLine@2
-  inputs:
-    script: echo your commands here 
+jobs:
+- job: Build
+  displayName: 'Build job'
+  pool:
+    vmImage: 'windows-latest'
+  steps:
+  - task: CmdLine@2
+    inputs:
+      script: echo your commands here 
 ";
 
             //Act
-            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineJobToGitHubActionJob(yaml);
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(yaml);
 
             //Assert
             string expected = @"
-name: Build job
-runs-on: windows-latest
-steps:
-- uses: actions/checkout@v2
-- run: echo your commands here
-  shell: cmd
+jobs:
+  Build:
+    name: Build job
+    runs-on: windows-latest
+    steps:
+    - uses: actions/checkout@v2
+    - run: echo your commands here
+      shell: cmd
 ";
 
             expected = UtilityTests.TrimNewLines(expected);
@@ -47,7 +50,8 @@ steps:
             //Arrange
             Conversion conversion = new Conversion();
             string yaml = @"
-  job: Build
+jobs:
+- job: Build
   displayName: 'Build job'
   pool:
     vmImage: windows-latest
@@ -60,18 +64,20 @@ steps:
 ";
 
             //Act
-            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineJobToGitHubActionJob(yaml);
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(yaml);
 
             //Assert
             string expected = @"
-name: Build job
-runs-on: windows-latest
-env:
-  Variable1: new variable
-steps:
-- uses: actions/checkout@v2
-- run: echo your commands here ${{ env.Variable1 }}
-  shell: cmd
+jobs:
+  Build:
+    name: Build job
+    runs-on: windows-latest
+    env:
+      Variable1: new variable
+    steps:
+    - uses: actions/checkout@v2
+    - run: echo your commands here ${{ env.Variable1 }}
+      shell: cmd
 ";
 
             expected = UtilityTests.TrimNewLines(expected);
@@ -85,7 +91,8 @@ steps:
             //Arrange
             Conversion conversion = new Conversion();
             string yaml = @"
-    job: Build
+  jobs:
+  - job: Build
     displayName: 'Build job'
     pool:
         vmImage: 'windows-latest'
@@ -106,11 +113,23 @@ steps:
 ";
 
             //Act
-            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineJobToGitHubActionJob(yaml);
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(yaml);
 
             //Assert
             string expected = @"
-
+jobs:
+  Build:
+    name: Build job
+    runs-on: windows-latest
+    env:
+      group: Active Login
+      sourceArtifactName: nuget-windows
+      targetArtifactName: nuget-windows-signed
+      pathToNugetPackages: '**/*.nupkg'
+    steps:
+    - uses: actions/checkout@v2
+    - run: echo your commands here
+      shell: cmd
 ";
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
@@ -123,7 +142,8 @@ steps:
             //Arrange
             Conversion conversion = new Conversion();
             string yaml = @"
-    job: Build
+  jobs:
+  - job: Build
     displayName: 'Build job'
     pool:
         vmImage: 'windows-latest'
@@ -144,11 +164,25 @@ steps:
 ";
 
             //Act
-            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineJobToGitHubActionJob(yaml);
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(yaml);
 
             //Assert
             string expected = @"
-
+jobs:
+  Build:
+    name: Build job
+    runs-on: windows-latest
+    needs:
+    - AnotherJob
+    env:
+      group: Active Login
+      sourceArtifactName: nuget-windows
+      targetArtifactName: nuget-windows-signed
+      pathToNugetPackages: '**/*.nupkg'
+    steps:
+    - uses: actions/checkout@v2
+    - run: echo your commands here
+      shell: cmd
 ";
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
@@ -162,7 +196,8 @@ steps:
             //Arrange
             Conversion conversion = new Conversion();
             string yaml = @"
-  job: Build
+jobs:
+- job: Build
   displayName: 'Build job'
   pool:
     vmImage: windows-latest
@@ -176,20 +211,22 @@ steps:
 ";
 
             //Act
-            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineJobToGitHubActionJob(yaml);
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(yaml);
 
             //Assert
             string expected = @"
-name: Build job
-runs-on: windows-latest
-needs:
-- AnotherJob
-env:
-  Variable1: new variable
-steps:
-- uses: actions/checkout@v2
-- run: echo your commands here ${{ env.Variable1 }}
-  shell: cmd
+jobs:
+  Build:
+    name: Build job
+    runs-on: windows-latest
+    needs:
+    - AnotherJob
+    env:
+      Variable1: new variable
+    steps:
+    - uses: actions/checkout@v2
+    - run: echo your commands here ${{ env.Variable1 }}
+      shell: cmd
 ";
 
             expected = UtilityTests.TrimNewLines(expected);
@@ -204,7 +241,8 @@ steps:
             //Arrange
             Conversion conversion = new Conversion();
             string yaml = @"
-  job: Build
+jobs:
+- job: Build
   displayName: 'Build job'
   pool:
     vmImage: windows-latest
@@ -219,20 +257,22 @@ steps:
 ";
 
             //Act
-            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineJobToGitHubActionJob(yaml);
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(yaml);
 
             //Assert
             string expected = @"
-name: Build job
-runs-on: windows-latest
-needs:
-- AnotherJob
-env:
-  Variable1: new variable
-steps:
-- uses: actions/checkout@v2
-- run: echo your commands here ${{ env.Variable1 }}
-  shell: cmd
+jobs:
+  Build:
+    name: Build job
+    runs-on: windows-latest
+    needs:
+    - AnotherJob
+    env:
+      Variable1: new variable
+    steps:
+    - uses: actions/checkout@v2
+    - run: echo your commands here ${{ env.Variable1 }}
+      shell: cmd
 ";
 
             expected = UtilityTests.TrimNewLines(expected);

@@ -58,57 +58,57 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                 processedYaml = sb.ToString();
             }
 
-            ////Part 2
-            ////Process the variables, looking for reserved words
-            //if (processedYaml.ToLower().IndexOf("variables:", StringComparison.OrdinalIgnoreCase) >= 0 ||
-            //    processedYaml.ToLower().IndexOf("parameters:", StringComparison.OrdinalIgnoreCase) >= 0)
-            //{
-            //    StringBuilder newYaml = new StringBuilder();
-            //    int variablePrefixSpaceCount = -1;
-            //    foreach (string line in processedYaml.Split(System.Environment.NewLine))
-            //    {
-            //        string newLine = line;
-            //        if (line.ToLower().IndexOf("variables:", StringComparison.OrdinalIgnoreCase) >= 0 ||
-            //            line.ToLower().IndexOf("parameters:", StringComparison.OrdinalIgnoreCase) >= 0)
-            //        {
-            //            string[] items = line.Split(':');
-            //            if (items.Length == 2 && items[0].ToString().Trim().Length > 0)
-            //            {
-            //                variablePrefixSpaceCount = items[0].TakeWhile(char.IsWhiteSpace).Count();
-            //                //now that we have the variables start, we need to loop through the variable prefix space count + 2
-            //            }
-            //        }
-            //        else if (variablePrefixSpaceCount >= 0)
-            //        {
-            //            if ((variablePrefixSpaceCount + 2) == line.TakeWhile(char.IsWhiteSpace).Count())
-            //            {
-            //                if (line.IndexOf("environment", StringComparison.OrdinalIgnoreCase) >= 0)
-            //                {
-            //                    newLine = line.Replace("environment", "environment2");
-            //                }
-            //                if (line.IndexOf("strategy", StringComparison.OrdinalIgnoreCase) >= 0)
-            //                {
-            //                    newLine = line.Replace("strategy", "strategy2");
-            //                }
-            //                if (line.IndexOf("pool", StringComparison.OrdinalIgnoreCase) >= 0)
-            //                {
-            //                    newLine = line.Replace("pool", "pool2");
-            //                }
-            //            }
-            //            else
-            //            {
-            //                variablePrefixSpaceCount = -1;
-            //            }
-            //        }
-            //        else
-            //        {
-            //            variablePrefixSpaceCount = -1;
-            //        }
-            //        newYaml.Append(newLine);
-            //        newYaml.Append(System.Environment.NewLine);
-            //    }
-            //    processedYaml = newYaml.ToString();
-            //}
+            //Part 2
+            //Process the variables, looking for reserved words
+            if (processedYaml.ToLower().IndexOf("variables:", StringComparison.OrdinalIgnoreCase) >= 0 ||
+                processedYaml.ToLower().IndexOf("parameters:", StringComparison.OrdinalIgnoreCase) >= 0)
+            {
+                StringBuilder sb = new StringBuilder();
+                int variablePrefixSpaceCount = -1;
+                foreach (string line in processedYaml.Split(System.Environment.NewLine))
+                {
+                    string newLine = line;
+                    if (line.ToLower().IndexOf("variables:", StringComparison.OrdinalIgnoreCase) >= 0 ||
+                        line.ToLower().IndexOf("parameters:", StringComparison.OrdinalIgnoreCase) >= 0)
+                    {
+                        string[] items = line.Split(':');
+                        if (items.Length == 2 && items[0].ToString().Trim().Length > 0)
+                        {
+                            variablePrefixSpaceCount = items[0].TakeWhile(char.IsWhiteSpace).Count();
+                            //now that we have the variables start, we need to loop through the variable prefix space count + 2
+                        }
+                    }
+                    else if (variablePrefixSpaceCount >= 0)
+                    {
+                        if ((variablePrefixSpaceCount + 2) == line.TakeWhile(char.IsWhiteSpace).Count())
+                        {
+                            if (line.IndexOf("environment", StringComparison.OrdinalIgnoreCase) >= 0)
+                            {
+                                newLine = line.Replace("environment", "environment2");
+                            }
+                            if (line.IndexOf("strategy", StringComparison.OrdinalIgnoreCase) >= 0)
+                            {
+                                newLine = line.Replace("strategy", "strategy2");
+                            }
+                            if (line.IndexOf("pool", StringComparison.OrdinalIgnoreCase) >= 0)
+                            {
+                                newLine = line.Replace("pool", "pool2");
+                            }
+                        }
+                        else
+                        {
+                            variablePrefixSpaceCount = -1;
+                        }
+                    }
+                    else
+                    {
+                        variablePrefixSpaceCount = -1;
+                    }
+                    sb.Append(newLine);
+                    sb.Append(System.Environment.NewLine);
+                }
+                processedYaml = sb.ToString();
+            }
 
             ////Part 2b: Transform simple Variables to be complex variables:
             //StringBuilder newYaml = new StringBuilder();
@@ -133,7 +133,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
             //            newYaml.Append(": ");
             //            newYaml.Append(System.Environment.NewLine);
             //            //on the new line, add the white spaces + two more spaces for the indent
-            //            newYaml.Append(ConversionUtility.GenerateSpaces(prefixSpaceCount + 2)); 
+            //            newYaml.Append(ConversionUtility.GenerateSpaces(prefixSpaceCount + 2));
             //            newYaml.Append(newLineName);
             //            //The main value
             //            newYaml.Append(items[1].Trim());
