@@ -21,7 +21,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
         }
 
         /// <summary>
-        /// V3 plan:
+        /// V2 plan:
         /// 1. get the yaml, converting it to a json document
         /// 2. break the json into pieces
         /// 3. deserialize each json piece into azure pipelines sub-objects
@@ -31,7 +31,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
         /// <param name="yaml"></param>
         /// <returns></returns>
 
-        public ConversionResponse ConvertAzurePipelineToGitHubActionV3(string yaml)
+        public ConversionResponse ConvertAzurePipelineToGitHubActionV2(string yaml)
         {
             string gitHubYaml = "";
             List<string> variableList = new List<string>();
@@ -54,7 +54,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                 if (json["name"] != null)
                 {
                     string nameYaml = json["name"].ToString();
-                    gitHubActions.name = gp.ProcessNameV3(nameYaml);
+                    gitHubActions.name = gp.ProcessNameV2(nameYaml);
                 }
 
                 //Trigger/PR/Schedules
@@ -62,13 +62,13 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                 {
                     string triggerYaml = json["trigger"].ToString();
                     triggerYaml = ConversionUtility.ProcessNoneJsonElement(triggerYaml);
-                    gitHubActions.on = gp.ProcessTriggerV3(triggerYaml);
+                    gitHubActions.on = gp.ProcessTriggerV2(triggerYaml);
                 }
                 if (json["pr"] != null)
                 {
                     string prYaml = json["pr"].ToString();
                     prYaml = ConversionUtility.ProcessNoneJsonElement(prYaml);
-                    GitHubActions.Trigger prTrigger = gp.ProcessPullRequestV3(prYaml);
+                    GitHubActions.Trigger prTrigger = gp.ProcessPullRequestV2(prYaml);
                     if (gitHubActions.on == null)
                     {
                         gitHubActions.on = prTrigger;
@@ -81,7 +81,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                 if (json["schedules"] != null)
                 {
                     string schedulesYaml = json["schedules"].ToString();
-                    GitHubActions.Trigger schedules = gp.ProcessSchedulesV3(schedulesYaml);
+                    GitHubActions.Trigger schedules = gp.ProcessSchedulesV2(schedulesYaml);
                     if (gitHubActions.on == null)
                     {
                         gitHubActions.on = schedules;
@@ -104,7 +104,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                 {
                     variablesYaml = json["variables"].ToString();
                 }
-                gitHubActions.env = gp.ProcessParametersAndVariablesV3(parametersYaml, variablesYaml);
+                gitHubActions.env = gp.ProcessParametersAndVariablesV2(parametersYaml, variablesYaml);
 
                 string resourcesYaml = null;
                 if (json["resources"] != null)
@@ -138,12 +138,12 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                 //We have stages
                 if (json["stages"] != null)
                 {
-                    gitHubActions.jobs = gp.ProcessStagesV3(json["stages"]);
+                    gitHubActions.jobs = gp.ProcessStagesV2(json["stages"]);
                 }
                 //We just have jobs
                 else if (json["stages"] == null && json["jobs"] != null)
                 {
-                    gitHubActions.jobs = gp.ProcessJobsV3(gp.ExtractAzurePipelinesJobsV3(json["jobs"]), gp.ExtractResourcesV3(resourcesYaml));
+                    gitHubActions.jobs = gp.ProcessJobsV2(gp.ExtractAzurePipelinesJobsV2(json["jobs"]), gp.ExtractResourcesV2(resourcesYaml));
                 }
                 //We just have steps, and need to load them into a jobS
                 else if (json["stages"] == null && json["jobs"] == null)
@@ -158,8 +158,8 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                     {
                         strategyYaml = json["strategy"].ToString();
                     }
-                    AzurePipelines.Job[] pipelineJobs = gp.ProcessJobFromPipelineRootV3(poolYaml, strategyYaml, stepsYaml);
-                    gitHubActions.jobs = gp.ProcessJobsV3(pipelineJobs, gp.ExtractResourcesV3(resourcesYaml));
+                    AzurePipelines.Job[] pipelineJobs = gp.ProcessJobFromPipelineRootV2(poolYaml, strategyYaml, stepsYaml);
+                    gitHubActions.jobs = gp.ProcessJobsV2(pipelineJobs, gp.ExtractResourcesV2(resourcesYaml));
                 }
                 if (gitHubActions.jobs != null && gitHubActions.jobs.Count == 0)
                 {
@@ -169,7 +169,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
 
                 //Load in all variables. Duplicates are ok, they are processed the same
                 variableList.AddRange(ConversionUtility.SearchForVariables(yaml));
-                variableList.AddRange(gp.SearchForVariablesV3(gitHubActions));
+                variableList.AddRange(gp.SearchForVariablesV2(gitHubActions));
 
                 //Create the GitHub YAML and apply some adjustments
                 if (gitHubActions != null)

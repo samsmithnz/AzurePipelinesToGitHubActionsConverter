@@ -20,7 +20,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
             _verbose = verbose;
         }
 
-        public string ProcessNameV3(string nameYaml)
+        public string ProcessNameV2(string nameYaml)
         {
             if (nameYaml != null)
             {
@@ -32,7 +32,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
             }
         }
 
-        public GitHubActions.Trigger ProcessTriggerV3(string triggerYaml)
+        public GitHubActions.Trigger ProcessTriggerV2(string triggerYaml)
         {
             AzurePipelines.Trigger trigger = null;
             if (triggerYaml != null)
@@ -72,7 +72,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
             }
         }
 
-        public string[] ProcessDependsOnV3(string dependsOnYaml)
+        public string[] ProcessDependsOnV2(string dependsOnYaml)
         {
             string[] dependsOn = null;
             if (dependsOnYaml != null)
@@ -94,7 +94,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
             return dependsOn;
         }
 
-        public GitHubActions.Trigger ProcessPullRequestV3(string pullRequestYaml)
+        public GitHubActions.Trigger ProcessPullRequestV2(string pullRequestYaml)
         {
             AzurePipelines.Trigger trigger = null;
             if (pullRequestYaml != null)
@@ -134,7 +134,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
             }
         }
 
-        public GitHubActions.Trigger ProcessSchedulesV3(string schedulesYaml)
+        public GitHubActions.Trigger ProcessSchedulesV2(string schedulesYaml)
         {
             Schedule[] schedules = null;
             if (schedulesYaml != null)
@@ -166,7 +166,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
             }
         }
 
-        public Dictionary<string, string> ProcessParametersAndVariablesV3(string parametersYaml, string variablesYaml)
+        public Dictionary<string, string> ProcessParametersAndVariablesV2(string parametersYaml, string variablesYaml)
         {
             List<Variable> parameters = null;
             if (parametersYaml != null)
@@ -216,8 +216,8 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
 
 
             Dictionary<string, string> env = new Dictionary<string, string>();
-            Dictionary<string, string> processedParameters = ProcessComplexVariablesV3(parameters);
-            Dictionary<string, string> processedVariables = ProcessComplexVariablesV3(variables);
+            Dictionary<string, string> processedParameters = ProcessComplexVariablesV2(parameters);
+            Dictionary<string, string> processedVariables = ProcessComplexVariablesV2(variables);
             foreach (KeyValuePair<string, string> item in processedParameters)
             {
                 if (env.ContainsKey(item.Key) == false)
@@ -243,7 +243,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
             }
         }
 
-        public Dictionary<string, GitHubActions.Job> ProcessStagesV3(JToken stagesJson)
+        public Dictionary<string, GitHubActions.Job> ProcessStagesV2(JToken stagesJson)
         {
             AzurePipelines.Job[] jobs = null;
             List<AzurePipelines.Stage> stages = new List<AzurePipelines.Stage>();
@@ -263,7 +263,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                     }
                     if (stageJson["dependsOn"] != null)
                     {
-                        stage.dependsOn = ProcessDependsOnV3(stageJson["dependsOn"].ToString());
+                        stage.dependsOn = ProcessDependsOnV2(stageJson["dependsOn"].ToString());
                     }
                     if (stageJson["condition"] != null)
                     {
@@ -271,11 +271,11 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                     }
                     if (stageJson["variables"] != null)
                     {
-                        stage.variables = ProcessParametersAndVariablesV3(null, stageJson["variables"].ToString());
+                        stage.variables = ProcessParametersAndVariablesV2(null, stageJson["variables"].ToString());
                     }
                     if (stageJson["jobs"] != null)
                     {
-                        stage.jobs = ExtractAzurePipelinesJobsV3(stageJson["jobs"]);
+                        stage.jobs = ExtractAzurePipelinesJobsV2(stageJson["jobs"]);
                     }
                     stages.Add(stage);
                 }
@@ -362,7 +362,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
             }
         }
 
-        public AzurePipelines.Job[] ExtractAzurePipelinesJobsV3(JToken jobsJson)
+        public AzurePipelines.Job[] ExtractAzurePipelinesJobsV2(JToken jobsJson)
         {
             AzurePipelines.Job[] jobs = new AzurePipelines.Job[jobsJson.Count()];
             if (jobsJson != null)
@@ -385,11 +385,11 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                     }
                     if (jobJson["pool"] != null)
                     {
-                        job.pool = ProcessPoolV3(jobJson["pool"].ToString());
+                        job.pool = ProcessPoolV2(jobJson["pool"].ToString());
                     }
                     if (jobJson["dependsOn"] != null)
                     {
-                        job.dependsOn = ProcessDependsOnV3(jobJson["dependsOn"].ToString());
+                        job.dependsOn = ProcessDependsOnV2(jobJson["dependsOn"].ToString());
                     }
                     if (jobJson["condition"] != null)
                     {
@@ -397,11 +397,11 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                     }
                     if (jobJson["variables"] != null)
                     {
-                        job.variables = ProcessParametersAndVariablesV3(null, jobJson["variables"].ToString());
+                        job.variables = ProcessParametersAndVariablesV2(null, jobJson["variables"].ToString());
                     }
                     if (jobJson["steps"] != null)
                     {
-                        //job.steps = ProcessStepsV3(jobJson["steps"]);
+                        //job.steps = ProcessStepsV2(jobJson["steps"]);
                         try
                         {
                             job.steps = GenericObjectSerialization.DeserializeYaml<AzurePipelines.Step[]>(jobJson["steps"].ToString());
@@ -443,7 +443,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
             //}
         }
 
-        public Resources ExtractResourcesV3(string resourcesYaml)
+        public Resources ExtractResourcesV2(string resourcesYaml)
         {
             if (resourcesYaml != null)
             {
@@ -460,7 +460,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
             return null;
         }
 
-        public Dictionary<string, GitHubActions.Job> ProcessJobsV3(AzurePipelines.Job[] jobs, Resources resources)
+        public Dictionary<string, GitHubActions.Job> ProcessJobsV2(AzurePipelines.Job[] jobs, Resources resources)
         {
             if (jobs != null)
             {
@@ -478,12 +478,12 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
             }
         }
 
-        public AzurePipelines.Job[] ProcessJobFromPipelineRootV3(string poolYaml, string strategyYaml, string stepsYaml)
+        public AzurePipelines.Job[] ProcessJobFromPipelineRootV2(string poolYaml, string strategyYaml, string stepsYaml)
         {
             Pool pool = null;
             if (poolYaml != null)
             {
-                pool = ProcessPoolV3(poolYaml);
+                pool = ProcessPoolV2(poolYaml);
             }
             AzurePipelines.Strategy strategy = null;
             if (strategyYaml != null)
@@ -530,7 +530,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
             }
         }
 
-        public Pool ProcessPoolV3(string poolYaml)
+        public Pool ProcessPoolV2(string poolYaml)
         {
             Pool pool = null;
             if (poolYaml != null)
@@ -895,7 +895,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
             return variables;
         }
 
-        public Dictionary<string, string> ProcessComplexVariablesV3(List<AzurePipelines.Variable> variables)
+        public Dictionary<string, string> ProcessComplexVariablesV2(List<AzurePipelines.Variable> variables)
         {
             Dictionary<string, string> processedVariables = new Dictionary<string, string>();
             if (variables != null)
@@ -970,7 +970,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
             return processedVariables;
         }
 
-        public List<string> SearchForVariablesV3(GitHubActionsRoot gitHubActions)
+        public List<string> SearchForVariablesV2(GitHubActionsRoot gitHubActions)
         {
             List<string> variables = new List<string>();
             if (gitHubActions.env != null)

@@ -18,7 +18,7 @@ trigger:
             Conversion conversion = new Conversion();
 
             //Act
-            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubActionV3(input);
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubActionV2(input);
 
             //Assert
             string expected = @"
@@ -43,7 +43,7 @@ pr: none
             Conversion conversion = new Conversion();
 
             //Act
-            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubActionV3(input);
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubActionV2(input);
 
             //Assert
             string expected = @"
@@ -71,7 +71,7 @@ trigger:
             Conversion conversion = new Conversion();
 
             //Act
-            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubActionV3(input);
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubActionV2(input);
 
             //Assert
             string expected = @"
@@ -107,7 +107,7 @@ trigger:
             Conversion conversion = new Conversion();
 
             //Act
-            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubActionV3(input);
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubActionV2(input);
 
             //Assert
             string expected = @"
@@ -147,7 +147,7 @@ pr:
             Conversion conversion = new Conversion();
 
             //Act
-            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubActionV3(input);
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubActionV2(input);
 
             //Assert
             string expected = @"on:
@@ -185,7 +185,7 @@ trigger:
             Conversion conversion = new Conversion();
 
             //Act
-            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubActionV3(input);
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubActionV2(input);
 
             //Assert
             string expected = @"on:
@@ -223,7 +223,7 @@ pr:
             Conversion conversion = new Conversion();
 
             //Act
-            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubActionV3(input);
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubActionV2(input);
 
             //Assert
             string expected = @"
@@ -270,7 +270,7 @@ pr:
             Conversion conversion = new Conversion();
 
             //Act
-            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubActionV3(input);
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubActionV2(input);
 
             //Assert
             string expected = @"
@@ -304,7 +304,7 @@ schedules:
             Conversion conversion = new Conversion();
 
             //Act
-            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubActionV3(input);
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubActionV2(input);
 
             //Assert
             string expected = @"
@@ -327,7 +327,7 @@ schedules:
             Conversion conversion = new Conversion();
 
             //Act
-            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubActionV3(input);
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubActionV2(input);
 
             //Assert
             string expected = @"
@@ -351,7 +351,7 @@ schedules:
             Conversion conversion = new Conversion();
 
             //Act
-            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubActionV3(input);
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubActionV2(input);
 
             //Assert
             string expected = @"
@@ -380,7 +380,7 @@ schedules:
             Conversion conversion = new Conversion();
 
             //Act
-            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubActionV3(input);
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubActionV2(input);
 
             //Assert
             string expected = @"
