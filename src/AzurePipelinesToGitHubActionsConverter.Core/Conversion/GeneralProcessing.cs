@@ -322,6 +322,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                             for (int i = 0; i < stage.jobs.Length; i++)
                             {
                                 jobs[jobIndex] = stage.jobs[i];
+                                jobs[jobIndex].variables = stage.variables;
                                 //TODO: this is duplicate code to PipelineProcessing, line 206. Need to refactor
                                 //Get the job name
                                 string jobName = stage.jobs[i].job;
@@ -422,6 +423,14 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                     if (jobJson["condition"] != null)
                     {
                         job.condition = ProcessCondition(jobJson["condition"].ToString());
+                    }
+                    if (jobJson["timeoutInMinutes"] != null)
+                    {
+                        int.TryParse(jobJson["timeoutInMinutes"].ToString(), out int timeOut);
+                        if (timeOut > 0)
+                        {
+                            job.timeoutInMinutes = timeOut;
+                        }
                     }
                     if (jobJson["variables"] != null)
                     {
