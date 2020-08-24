@@ -53,9 +53,8 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
         /// <summary>
         /// V1 plan:
         /// 1. get the yaml
-        /// 2. try to serialize it on a few common combinations
-        /// 3. deserialize the entire doc into azure pipelines sub-objects
-        /// 4. Process the azure pipelines objects into a github action
+        /// 2. try to deserialize the entire doc on a few common combinations
+        /// 3. convert the azure pipelines objects into a github action
         /// </summary>
         /// <param name="yaml"></param>
         /// <returns></returns>
@@ -205,9 +204,9 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
 
         /// <summary>
         /// V2 plan:
-        /// 1. get the yaml, converting it to a json document
-        /// 2. break the json into pieces
-        /// 3. deserialize each json piece into azure pipelines sub-objects
+        /// 1. get the yaml
+        /// 2. converting the yaml into a json document
+        /// 3. parse the json document into azure pipelines sub-objects
         /// 4. put it together into one azure pipelines object
         /// 5. convert the azure pipelines object to github action
         /// </summary>
@@ -308,48 +307,51 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                         gitHubActions.messages.Add("TODO: Container conversion not yet done, we need help - our container skills are woeful: https://github.com/samsmithnz/AzurePipelinesToGitHubActionsConverter/issues/39");
                     }
                 }
-                //process the pool before stages/jobs/stepsS
-                string poolYaml = null;
-                if (json["pool"] != null)
+                //Strategy
+                string strategyYaml = null;
+                if (json["strategy"] != null)
                 {
-                    poolYaml = json["pool"].ToString();
-                    //pool/demands
-                    if (poolYaml.IndexOf("\"demands\":") >= 0)
-                    {
-                        gitHubActions.messages.Add("Note: GitHub Actions does not have a 'demands' command on 'runs-on' yet");
-                    }
+                    strategyYaml = json["strategy"].ToString();
                 }
+
                 //We have stages
                 if (json["stages"] != null)
                 {
-                    gitHubActions.jobs = gp.ProcessStagesV2(json["stages"]);
+                    gitHubActions.jobs = gp.ProcessStagesV2(json["stages"], strategyYaml);
                 }
                 //We just have jobs
                 else if (json["stages"] == null && json["jobs"] != null)
                 {
-                    gitHubActions.jobs = gp.ProcessJobsV2(gp.ExtractAzurePipelinesJobsV2(json["jobs"]), gp.ExtractResourcesV2(resourcesYaml));
+                    gitHubActions.jobs = gp.ProcessJobsV2(gp.ExtractAzurePipelinesJobsV2(json["jobs"], strategyYaml), gp.ExtractResourcesV2(resourcesYaml));
                 }
                 //We just have steps, and need to load them into a jobS
                 else if (json["stages"] == null && json["jobs"] == null)
                 {
+                    //Pool
+                    string poolYaml = null;
+                    if (json["pool"] != null)
+                    {
+                        poolYaml = json["pool"].ToString();
+                        //pool/demands
+                        if (poolYaml.IndexOf("\"demands\":") >= 0)
+                        {
+                            gitHubActions.messages.Add("Note: GitHub Actions does not have a 'demands' command on 'runs-on' yet");
+                        }
+                    }
+                    //Steps
                     string stepsYaml = null;
                     if (json["steps"] != null)
                     {
                         stepsYaml = json["steps"].ToString();
                     }
-                    string strategyYaml = null;
-                    if (json["strategy"] != null)
-                    {
-                        strategyYaml = json["strategy"].ToString();
-                    }
                     AzurePipelines.Job[] pipelineJobs = gp.ProcessJobFromPipelineRootV2(poolYaml, strategyYaml, stepsYaml);
                     gitHubActions.jobs = gp.ProcessJobsV2(pipelineJobs, gp.ExtractResourcesV2(resourcesYaml));
                 }
+                _matrixVariableName = gp.MatrixVariableName;
                 if (gitHubActions.jobs != null && gitHubActions.jobs.Count == 0)
                 {
                     gitHubActions.messages.Add("Note that although having no jobs is valid YAML, it is not a valid GitHub Action.");
                 }
-
 
                 //Load in all variables. Duplicates are ok, they are processed the same
                 variableList.AddRange(ConversionUtility.SearchForVariables(yaml));

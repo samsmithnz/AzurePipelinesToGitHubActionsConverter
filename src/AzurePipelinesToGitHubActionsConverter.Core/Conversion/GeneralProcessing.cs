@@ -243,7 +243,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
             }
         }
 
-        public Dictionary<string, GitHubActions.Job> ProcessStagesV2(JToken stagesJson)
+        public Dictionary<string, GitHubActions.Job> ProcessStagesV2(JToken stagesJson, string strategyYaml)
         {
             AzurePipelines.Job[] jobs = null;
             List<AzurePipelines.Stage> stages = new List<AzurePipelines.Stage>();
@@ -275,7 +275,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                     }
                     if (stageJson["jobs"] != null)
                     {
-                        stage.jobs = ExtractAzurePipelinesJobsV2(stageJson["jobs"]);
+                        stage.jobs = ExtractAzurePipelinesJobsV2(stageJson["jobs"], strategyYaml);
                     }
                     stages.Add(stage);
                 }
@@ -362,7 +362,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
             }
         }
 
-        public AzurePipelines.Job[] ExtractAzurePipelinesJobsV2(JToken jobsJson)
+        public AzurePipelines.Job[] ExtractAzurePipelinesJobsV2(JToken jobsJson, string strategyYaml)
         {
             AzurePipelines.Job[] jobs = new AzurePipelines.Job[jobsJson.Count()];
             if (jobsJson != null)
@@ -386,6 +386,34 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                     if (jobJson["pool"] != null)
                     {
                         job.pool = ProcessPoolV2(jobJson["pool"].ToString());
+                    }
+                    if (jobJson["strategy"] != null)
+                    {
+                        AzurePipelines.Strategy strategy = null;
+                        try
+                        {
+                            //Most often, the pool will be in this structure
+                            strategy = GenericObjectSerialization.DeserializeYaml<AzurePipelines.Strategy>(jobJson["strategy"].ToString());
+                        }
+                        catch (Exception ex)
+                        {
+                            Debug.WriteLine($"DeserializeYaml<AzurePipelines.Strategy>(jobJson[\"strategy\"].ToString()) swallowed an exception: " + ex.Message);
+                        }
+                        job.strategy = strategy;
+                    }
+                    else if (strategyYaml != null)
+                    {
+                        AzurePipelines.Strategy strategy = null;
+                        try
+                        {
+                            //Most often, the pool will be in this structure
+                            strategy = GenericObjectSerialization.DeserializeYaml<AzurePipelines.Strategy>(strategyYaml);
+                        }
+                        catch (Exception ex)
+                        {
+                            Debug.WriteLine($"DeserializeYaml<AzurePipelines.Strategy>(strategyYaml) swallowed an exception: " + ex.Message);
+                        }
+                        job.strategy = strategy;
                     }
                     if (jobJson["dependsOn"] != null)
                     {
@@ -469,6 +497,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                 {
                     JobProcessing jobProcessing = new JobProcessing(_verbose);
                     gitHubJobs.Add(job.job, jobProcessing.ProcessJob(job, resources));
+                    MatrixVariableName = jobProcessing.MatrixVariableName;
                 }
                 return gitHubJobs;
             }
@@ -486,16 +515,14 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                 pool = ProcessPoolV2(poolYaml);
             }
             AzurePipelines.Strategy strategy = null;
-            if (strategyYaml != null)
+            try
             {
-                try
-                {
-                    strategy = GenericObjectSerialization.DeserializeYaml<AzurePipelines.Strategy>(strategyYaml);
-                }
-                catch (Exception ex)
-                {
-                    Debug.WriteLine($"DeserializeYaml<AzurePipelines.Strategy>(strategyYaml) swallowed an exception: " + ex.Message);
-                }
+                //Most often, the pool will be in this structure
+                strategy = GenericObjectSerialization.DeserializeYaml<AzurePipelines.Strategy>(strategyYaml);
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"DeserializeYaml<AzurePipelines.Strategy>(strategyYaml) swallowed an exception: " + ex.Message);
             }
             AzurePipelines.Step[] steps = null;
             if (stepsYaml != null)
