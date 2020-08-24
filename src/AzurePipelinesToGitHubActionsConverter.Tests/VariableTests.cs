@@ -32,7 +32,7 @@ jobs:
             Conversion conversion = new Conversion();
 
             //Act
-            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubActionV2(input);
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(input);
 
             //Assert
             string expected = @"
@@ -79,7 +79,7 @@ jobs:
             Conversion conversion = new Conversion();
 
             //Act
-            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubActionV2(input);
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(input);
 
             //Assert
             string expected = @"
@@ -116,7 +116,7 @@ variables:
             Conversion conversion = new Conversion();
 
             //Act
-            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubActionV2(input);
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(input);
 
             //Assert
             string expected = @"
@@ -143,7 +143,7 @@ variables:
             Conversion conversion = new Conversion();
 
             //Act
-            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubActionV2(input);
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(input);
 
             //Assert
             string expected = @"
@@ -169,7 +169,7 @@ variables:
             Conversion conversion = new Conversion();
 
             //Act
-            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubActionV2(input);
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(input);
 
             //Assert
             string expected = @"
@@ -214,7 +214,7 @@ variables:
             Conversion conversion = new Conversion();
 
             //Act
-            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubActionV2(input);
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(input);
 
             //Assert
             string expected = @"
@@ -250,7 +250,7 @@ variables:
             Conversion conversion = new Conversion();
 
             //Act
-            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubActionV2(input);
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(input);
 
             //Assert
             string expected = @"
@@ -279,7 +279,7 @@ variables:
             Conversion conversion = new Conversion();
 
             //Act
-            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubActionV2(input);
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(input);
 
             //Assert
             string expected = @"
@@ -306,7 +306,7 @@ env:
             Conversion conversion = new Conversion();
 
             //Act
-            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubActionV2(input);
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(input);
 
             //Assert
             string expected = @"
@@ -339,7 +339,7 @@ variables:
             Conversion conversion = new Conversion();
 
             //Act
-            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubActionV2(input);
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(input);
 
             //Assert
             string expected = @"

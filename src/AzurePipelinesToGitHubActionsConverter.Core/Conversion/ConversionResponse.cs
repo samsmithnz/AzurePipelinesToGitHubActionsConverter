@@ -7,5 +7,6 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
         public string pipelinesYaml { get; set; }
         public string actionsYaml { get; set; }
         public List<string> comments { get; set; }
+        public bool v2ConversionSuccessful { get; set; }
     }
 }

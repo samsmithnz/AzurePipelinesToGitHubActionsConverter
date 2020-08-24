@@ -185,6 +185,43 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
 
         }
 
+        public static string CleanYamlBeforeDeserializationV2(string yaml)
+        {
+            if (yaml == null)
+            {
+                return yaml;
+            }
+            string processedYaml = yaml;
+
+            //Process conditional insertions/ variables
+            if (processedYaml.IndexOf("{{#if") >= 0 || processedYaml.IndexOf("{{ #if") >= 0 ||
+                processedYaml.IndexOf("${{if") >= 0 || processedYaml.IndexOf("${{ if") >= 0)
+            {
+                StringBuilder sb = new StringBuilder();
+                foreach (string line in processedYaml.Split(System.Environment.NewLine))
+                {
+                    if (line.IndexOf("{{#if") >= 0 || line.IndexOf("{{ #if") >= 0 ||
+                        line.IndexOf("${{if") >= 0 || line.IndexOf("${{ if") >= 0)
+                    {
+                        //don't add line, remove
+                    }
+                    else if (line.IndexOf("{{/if") >= 0) //ending if 
+                    {
+                        //don't add line, remove
+                    }
+                    else
+                    {
+                        sb.Append(line);
+                        sb.Append(System.Environment.NewLine);
+                    }
+                }
+                processedYaml = sb.ToString();
+            }
+
+            return processedYaml;
+
+        }
+
 
         public static string ProcessAndCleanElement(string yaml, string searchString, string newLineName)
         {
@@ -284,7 +321,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
             else
             {
                 return yaml;
-            }           
+            }
         }
 
         public static string ConvertMessageToYamlComment(string message)

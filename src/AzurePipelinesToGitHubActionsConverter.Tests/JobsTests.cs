@@ -26,7 +26,7 @@ jobs:
 ";
 
             //Act
-            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubActionV2(yaml);
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(yaml);
 
             //Assert
             string expected = @"
@@ -64,7 +64,7 @@ jobs:
 ";
 
             //Act
-            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubActionV2(yaml);
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(yaml);
 
             //Assert
             string expected = @"
@@ -114,7 +114,7 @@ jobs:
 ";
 
             //Act
-            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubActionV2(yaml);
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(yaml);
 
             //Assert
             string expected = @"
@@ -165,7 +165,7 @@ jobs:
 ";
 
             //Act
-            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubActionV2(yaml);
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(yaml);
 
             //Assert
             string expected = @"
@@ -212,7 +212,7 @@ jobs:
 ";
 
             //Act
-            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubActionV2(yaml);
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(yaml);
 
             //Assert
             string expected = @"
@@ -258,7 +258,7 @@ jobs:
 ";
 
             //Act
-            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubActionV2(yaml);
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(yaml);
 
             //Assert
             string expected = @"
