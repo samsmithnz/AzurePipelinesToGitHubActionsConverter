@@ -14,7 +14,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.AzurePipelines
         //      vmImage: $(vmImage)
         //    steps:
         public string stage { get; set; }
-        public string displayName { get; set; }
+        public string displayName { get; set; } //This variable is not needed in actions
         //Add dependsOn processing for stages
         public string[] dependsOn { get; set; }
         public string condition { get; set; }

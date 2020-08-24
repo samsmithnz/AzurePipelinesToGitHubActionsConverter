@@ -76,7 +76,6 @@ steps:
 
             //Assert
             Assert.AreEqual(1, gitHubOutput.comments.Count);
-            Assert.IsTrue(gitHubOutput.actionsYaml.IndexOf("This step does not have a conversion path yet") == -1);
         }    
         
         [TestMethod]
@@ -118,7 +117,6 @@ steps:
 
             //Assert
             Assert.AreEqual(1, gitHubOutput.comments.Count);
-            Assert.IsTrue(gitHubOutput.actionsYaml.IndexOf("This step does not have a conversion path yet") == -1);
         }  
         
         [TestMethod]

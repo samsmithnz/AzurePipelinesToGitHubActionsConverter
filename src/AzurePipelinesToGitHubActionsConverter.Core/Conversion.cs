@@ -106,7 +106,6 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                 }
                 gitHubActions.env = gp.ProcessParametersAndVariablesV3(parametersYaml, variablesYaml);
 
-                //No Jobs/Jobs/Stages
                 string resourcesYaml = null;
                 if (json["resources"] != null)
                 {
@@ -118,6 +117,11 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                     if (json["resources"]["repositories"] != null)
                     {
                         gitHubActions.messages.Add("TODO: Resource repositories conversion not yet done: https://github.com/samsmithnz/AzurePipelinesToGitHubActionsConverter/issues/8");
+                    }
+                    //Container
+                    if (json["resources"]["containers"] != null)
+                    {
+                        gitHubActions.messages.Add("TODO: Container conversion not yet done, we need help - our container skills are woeful: https://github.com/samsmithnz/AzurePipelinesToGitHubActionsConverter/issues/39");
                     }
                 }
                 //process the pool before stages/jobs/stepsS
@@ -156,10 +160,16 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                     }
                     AzurePipelines.Job[] pipelineJobs = gp.ProcessJobFromPipelineRootV3(poolYaml, strategyYaml, stepsYaml);
                     gitHubActions.jobs = gp.ProcessJobsV3(pipelineJobs, gp.ExtractResourcesV3(resourcesYaml));
-
+                }
+                if (gitHubActions.jobs != null && gitHubActions.jobs.Count == 0)
+                {
+                    gitHubActions.messages.Add("Note that although having no jobs is valid YAML, it is not a valid GitHub Action.");
                 }
 
 
+                //Load in all variables. Duplicates are ok, they are processed the same
+                variableList.AddRange(ConversionUtility.SearchForVariables(yaml));
+                variableList.AddRange(gp.SearchForVariablesV3(gitHubActions));
 
                 //Create the GitHub YAML and apply some adjustments
                 if (gitHubActions != null)

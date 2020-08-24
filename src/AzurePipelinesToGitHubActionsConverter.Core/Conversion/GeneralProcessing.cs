@@ -970,6 +970,32 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
             return processedVariables;
         }
 
+        public List<string> SearchForVariablesV3(GitHubActionsRoot gitHubActions)
+        {
+            List<string> variables = new List<string>();
+            if (gitHubActions.env != null)
+            {
+                foreach (KeyValuePair<string, string> env in gitHubActions.env)
+                {
+                    variables.Add(env.Key);
+                }
+            }
+            if (gitHubActions.jobs != null)
+            {
+                foreach (KeyValuePair<string, GitHubActions.Job> job in gitHubActions.jobs)
+                {
+                    if (job.Value.env != null)
+                    {
+                        foreach (KeyValuePair<string, string> env in job.Value.env)
+                        {
+                            variables.Add(env.Key);
+                        }
+                    }
+                }
+            }
+            return variables;
+        }
+
 
         //process the steps
         public GitHubActions.Step[] ProcessSteps(AzurePipelines.Step[] steps, bool addCheckoutStep = true)
