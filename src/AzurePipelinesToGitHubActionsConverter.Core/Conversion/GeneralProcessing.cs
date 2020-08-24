@@ -4,6 +4,7 @@ using AzurePipelinesToGitHubActionsConverter.Core.GitHubActions;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 
@@ -322,7 +323,14 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                             for (int i = 0; i < stage.jobs.Length; i++)
                             {
                                 jobs[jobIndex] = stage.jobs[i];
-                                jobs[jobIndex].variables = stage.variables;
+                                foreach (KeyValuePair<string, string> stageVariable in stage.variables)
+                                {
+                                    //Add the stage variable if it doesn't already exist
+                                    if (jobs[jobIndex].variables.ContainsKey(stageVariable.Key) == false)
+                                    {
+                                        jobs[jobIndex].variables.Add(stageVariable.Key, stageVariable.Value);
+                                    }
+                                }
                                 //TODO: this is duplicate code to PipelineProcessing, line 206. Need to refactor
                                 //Get the job name
                                 string jobName = stage.jobs[i].job;
@@ -862,7 +870,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
             }
         }
 
-        public Container ProcessContainer(Resources resources)
+        public GitHubActions.Container ProcessContainer(Resources resources)
         {
             //FROM
             //resources:
@@ -890,7 +898,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
 
             if (resources != null && resources.containers != null && resources.containers.Length > 0)
             {
-                Container container = new Container
+                GitHubActions.Container container = new GitHubActions.Container
                 {
                     //All containers have at least the image name
                     image = resources.containers[0].image

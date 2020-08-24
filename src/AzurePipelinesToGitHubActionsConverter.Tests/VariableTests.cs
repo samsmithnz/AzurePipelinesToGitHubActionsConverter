@@ -54,7 +54,7 @@ jobs:
       run: dotnet build WebApplication1/WebApplication1.Service/WebApplication1.Service.csproj --configuration ${{ env.buildConfiguration }}";
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
-            //Assert.AreEqual(true, gitHubOutput.v2ConversionSuccessful);
+            Assert.AreEqual(true, gitHubOutput.v2ConversionSuccessful);
         }
 
         [TestMethod]
@@ -104,7 +104,7 @@ jobs:
 
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
-            //Assert.AreEqual(true, gitHubOutput.v2ConversionSuccessful);
+            Assert.AreEqual(true, gitHubOutput.v2ConversionSuccessful);
         }
 
         [TestMethod]
@@ -127,7 +127,7 @@ env:
   platform: x64";
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
-            //Assert.AreEqual(true, gitHubOutput.v2ConversionSuccessful);
+            Assert.AreEqual(true, gitHubOutput.v2ConversionSuccessful);
         }
 
 
@@ -156,7 +156,7 @@ env:
   group: myVariablegroup";
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
-            //Assert.AreEqual(true, gitHubOutput.v2ConversionSuccessful);
+            Assert.AreEqual(true, gitHubOutput.v2ConversionSuccessful);
         }
 
         [TestMethod]
@@ -187,7 +187,7 @@ env:
   myVariable2: myValue2";
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
-            //Assert.AreEqual(true, gitHubOutput.v2ConversionSuccessful);
+            Assert.AreEqual(true, gitHubOutput.v2ConversionSuccessful);
         }
 
         [TestMethod]
@@ -238,7 +238,7 @@ env:
   group: myVariablegroup";
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
-            //Assert.AreEqual(true, gitHubOutput.v2ConversionSuccessful);
+            Assert.AreEqual(true, gitHubOutput.v2ConversionSuccessful);
         } 
         
         [TestMethod]
@@ -266,7 +266,7 @@ env:
 ";
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
-            //Assert.AreEqual(true, gitHubOutput.v2ConversionSuccessful);
+            Assert.AreEqual(true, gitHubOutput.v2ConversionSuccessful);
         }
 
 
@@ -295,7 +295,7 @@ env:
   k8sNamespaceForPR: inconditionalstatement";
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
-            //Assert.AreEqual(true, gitHubOutput.v2ConversionSuccessful);
+            Assert.AreEqual(true, gitHubOutput.v2ConversionSuccessful);
         }
 
 
@@ -324,7 +324,7 @@ env:
   prLC: 003";
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
-            //Assert.AreEqual(true, gitHubOutput.v2ConversionSuccessful);
+            Assert.AreEqual(true, gitHubOutput.v2ConversionSuccessful);
         }
 
         //This test doesn't work with V1
@@ -364,7 +364,7 @@ env:
 ";
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
-            //Assert.AreEqual(true, gitHubOutput.v2ConversionSuccessful);
+            Assert.AreEqual(true, gitHubOutput.v2ConversionSuccessful);
         }
 
     }

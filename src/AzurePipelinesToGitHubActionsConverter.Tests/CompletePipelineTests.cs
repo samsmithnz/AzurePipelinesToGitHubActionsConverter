@@ -76,7 +76,7 @@ jobs:
 
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
-            //Assert.AreEqual(true, gitHubOutput.v2ConversionSuccessful);
+            Assert.AreEqual(true, gitHubOutput.v2ConversionSuccessful);
         }
 
         //Check that the results include the Setup Java step
@@ -133,7 +133,7 @@ jobs:
 
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
-            //Assert.AreEqual(true, gitHubOutput.v2ConversionSuccessful);
+            Assert.AreEqual(true, gitHubOutput.v2ConversionSuccessful);
         }
 
         //Test that the result includes the setup Java step
@@ -184,7 +184,7 @@ jobs:
 
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
-            //Assert.AreEqual(true, gitHubOutput.v2ConversionSuccessful);
+            Assert.AreEqual(true, gitHubOutput.v2ConversionSuccessful);
         }
 
         [TestMethod]
@@ -251,7 +251,7 @@ jobs:
 
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
-            //Assert.AreEqual(true, gitHubOutput.v2ConversionSuccessful);
+            Assert.AreEqual(true, gitHubOutput.v2ConversionSuccessful);
         }
 
         [TestMethod]
@@ -344,7 +344,7 @@ jobs:
 
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
-            //Assert.AreEqual(true, gitHubOutput.v2ConversionSuccessful);
+            Assert.AreEqual(true, gitHubOutput.v2ConversionSuccessful);
         }
 
         //Check that the results include the setup java step
@@ -397,7 +397,7 @@ jobs:
 
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
-            //Assert.AreEqual(true, gitHubOutput.v2ConversionSuccessful);
+            Assert.AreEqual(true, gitHubOutput.v2ConversionSuccessful);
         }
 
         //Check that the results include the setup Node step
@@ -452,7 +452,7 @@ jobs:
 
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
-            //Assert.AreEqual(true, gitHubOutput.v2ConversionSuccessful);
+            Assert.AreEqual(true, gitHubOutput.v2ConversionSuccessful);
         }
 
         [TestMethod]
@@ -548,7 +548,7 @@ jobs:
 
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
-            //Assert.AreEqual(true, gitHubOutput.v2ConversionSuccessful);
+            Assert.AreEqual(true, gitHubOutput.v2ConversionSuccessful);
         }
 
         //Check that the results include the setup Python step
@@ -616,7 +616,7 @@ jobs:
 
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
-            //Assert.AreEqual(true, gitHubOutput.v2ConversionSuccessful);
+            Assert.AreEqual(true, gitHubOutput.v2ConversionSuccessful);
         }
 
 
@@ -659,7 +659,7 @@ jobs:
 
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
-            //Assert.AreEqual(true, gitHubOutput.v2ConversionSuccessful);
+            Assert.AreEqual(true, gitHubOutput.v2ConversionSuccessful);
         }
 
         //Test that the result includes the setup Ruby step
@@ -705,7 +705,7 @@ jobs:
 
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
-            //Assert.AreEqual(true, gitHubOutput.v2ConversionSuccessful);
+            Assert.AreEqual(true, gitHubOutput.v2ConversionSuccessful);
         }
 
         [TestMethod]
@@ -754,7 +754,7 @@ jobs:
 
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
-            //Assert.AreEqual(true, gitHubOutput.v2ConversionSuccessful);
+            Assert.AreEqual(true, gitHubOutput.v2ConversionSuccessful);
         }
 
         [TestMethod]
@@ -836,7 +836,7 @@ jobs:
 
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
-            //Assert.AreEqual(true, gitHubOutput.v2ConversionSuccessful);
+            Assert.AreEqual(true, gitHubOutput.v2ConversionSuccessful);
         }
 
         [TestMethod]
@@ -906,7 +906,7 @@ jobs:
 
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
-            //Assert.AreEqual(true, gitHubOutput.v2ConversionSuccessful);
+            Assert.AreEqual(true, gitHubOutput.v2ConversionSuccessful);
         }
 
         [TestMethod]
@@ -980,7 +980,7 @@ jobs:
 
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
-            //Assert.AreEqual(true, gitHubOutput.v2ConversionSuccessful);
+            Assert.AreEqual(true, gitHubOutput.v2ConversionSuccessful);
         }
 
         [TestMethod]
@@ -1066,7 +1066,7 @@ jobs:
 
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
-            //Assert.AreEqual(true, gitHubOutput.v2ConversionSuccessful);
+            Assert.AreEqual(true, gitHubOutput.v2ConversionSuccessful);
         }
 
 
@@ -1230,7 +1230,7 @@ jobs:
 
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
-            //Assert.AreEqual(true, gitHubOutput.v2ConversionSuccessful);
+            Assert.AreEqual(true, gitHubOutput.v2ConversionSuccessful);
         }
 
         [TestMethod]
@@ -1321,7 +1321,7 @@ jobs:
 
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
-            //Assert.AreEqual(true, gitHubOutput.v2ConversionSuccessful);
+            Assert.AreEqual(true, gitHubOutput.v2ConversionSuccessful);
         }
 
         [TestMethod]
@@ -1522,7 +1522,7 @@ jobs:
 
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
-            //Assert.AreEqual(true, gitHubOutput.v2ConversionSuccessful);
+            Assert.AreEqual(true, gitHubOutput.v2ConversionSuccessful);
         }
 
         [TestMethod]
@@ -1575,7 +1575,7 @@ jobs:
 
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
-            //Assert.AreEqual(true, gitHubOutput.v2ConversionSuccessful);
+            Assert.AreEqual(true, gitHubOutput.v2ConversionSuccessful);
         }
 
 
@@ -2139,7 +2139,7 @@ jobs:
 
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
-            //Assert.AreEqual(true, gitHubOutput.v2ConversionSuccessful);
+            Assert.AreEqual(true, gitHubOutput.v2ConversionSuccessful);
         }
 
     }
