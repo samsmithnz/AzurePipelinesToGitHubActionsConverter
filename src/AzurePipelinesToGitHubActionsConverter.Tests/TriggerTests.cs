@@ -29,6 +29,7 @@ on:
 "; 
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+            //Assert.AreEqual(true, gitHubOutput.v2ConversionSuccessful);
         }
 
         //This test doesn't work with V1
@@ -57,6 +58,7 @@ on:
 ";
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+            //Assert.AreEqual(true, gitHubOutput.v2ConversionSuccessful);
         }
 
         [TestMethod]
@@ -83,6 +85,7 @@ on:
 ";
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+            //Assert.AreEqual(true, gitHubOutput.v2ConversionSuccessful);
         }
 
         [TestMethod]
@@ -123,6 +126,7 @@ on:
 ";
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+            //Assert.AreEqual(true, gitHubOutput.v2ConversionSuccessful);
         }
 
         [TestMethod]
@@ -162,6 +166,7 @@ pr:
 ";
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+            //Assert.AreEqual(true, gitHubOutput.v2ConversionSuccessful);
         }
 
         [TestMethod]
@@ -200,6 +205,7 @@ trigger:
 ";
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+            //Assert.AreEqual(true, gitHubOutput.v2ConversionSuccessful);
         }
 
         [TestMethod]
@@ -239,6 +245,7 @@ on:
 ";
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+            //Assert.AreEqual(true, gitHubOutput.v2ConversionSuccessful);
         }
 
         [TestMethod]
@@ -291,6 +298,7 @@ on:
 ";
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+            //Assert.AreEqual(true, gitHubOutput.v2ConversionSuccessful);
         }
 
         [TestMethod]
@@ -314,6 +322,7 @@ on:
 ";
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+            //Assert.AreEqual(true, gitHubOutput.v2ConversionSuccessful);
         }
 
         [TestMethod]
@@ -337,6 +346,7 @@ on:
 ";
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+            //Assert.AreEqual(true, gitHubOutput.v2ConversionSuccessful);
         }
 
         [TestMethod]
@@ -362,6 +372,7 @@ on:
 ";
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+            //Assert.AreEqual(true, gitHubOutput.v2ConversionSuccessful);
         }
 
         [TestMethod]
@@ -390,118 +401,7 @@ on:
 ";
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+            //Assert.AreEqual(true, gitHubOutput.v2ConversionSuccessful);
         }
-
-
-//        [TestMethod]
-//        public void TriggerConversionSimpleStringTest()
-//        {
-//            //Arrange
-//            string input = @"
-//trigger:
-//- master
-//";
-//            Conversion conversion = new Conversion();
-
-//            //Act
-//            string result = conversion.ProcessYAMLTest(input);
-
-//            //Assert
-//            string expected = @"
-//trigger:
-//- master
-//";
-//            //            string expected = @"
-//            //trigger:
-//            //  branches:
-//            //    include:
-//            //    - master
-//            //";
-//            Assert.AreEqual(expected.Trim(), result.Trim());
-//        }
-
-//        [TestMethod]
-//        public void TriggerConversionComplexStringTest()
-//        {
-//            //Arrange
-//            string input = @"
-//trigger:
-//  batch: true
-//  branches:
-//    include:
-//    - features/*
-//    exclude:
-//    - features/experimental/*
-//  paths:
-//    include:
-//    - README.md
-//  tags:
-//    include:
-//    - v1             
-//    - v1.*";
-//            Conversion conversion = new Conversion();
-
-//            //Act
-//            string result = conversion.ProcessYAMLTest(input);
-
-//            //Assert
-//            string expected = @"
-//trigger:
-//  batch: true
-//  branches:
-//    include:
-//    - features/*
-//    exclude:
-//    - features/experimental/*
-//  paths:
-//    include:
-//    - README.md
-//  tags:
-//    include:
-//    - v1             
-//    - v1.*"; 
-//            Assert.AreEqual(expected.Trim(), result.Trim());
-
-//        }
-
-//        [TestMethod]
-//        public void TriggerConversionComplex2StringTest()
-//        {
-//            //Arrange
-//            string input = @"
-//trigger:
-//- master
-
-//pool:
-//  vmImage: 'ubuntu-latest'
-
-//steps:
-//- task: UseRubyVersion@0
-//  inputs:
-//    versionSpec: '>= 2.5'
-//- script: ruby HelloWorld.rb
-//";
-//            Conversion conversion = new Conversion();
-
-//            //Act
-//            Dictionary<string, string> results = conversion.GetYamlElements(input);
-
-//            //Assert
-//            string expected = @"
-//trigger:
-//- master
-
-//pool:
-//  vmImage: 'ubuntu-latest'
-
-//steps:
-//- task: UseRubyVersion@0
-//  inputs:
-//    versionSpec: '>= 2.5'
-//- script: ruby HelloWorld.rb
-//"; 
-//            //Assert.AreEqual(expected.Trim(), result.Trim());
-
-//        }
     }
 }

@@ -21,6 +21,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             //Assert
             string expected = "name: test ci pipelines";
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+            //Assert.AreEqual(true, gitHubOutput.v2ConversionSuccessful);
         }
 
         [TestMethod]
@@ -36,6 +37,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             //Assert
             string expected = "";
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+            //Assert.AreEqual(true, gitHubOutput.v2ConversionSuccessful);
         }
 
         [TestMethod]
@@ -51,24 +53,8 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             //Assert
             string expected = "";
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
-        }
-
-        [TestMethod]
-        public void GitHubActionYamlToGenericObjectTest()
-        {
-            //Arrange
-            string yaml = @"
-on:
-  schedule:
-  - cron: ""0 0 * * *""
-";
-
-            //Act
-            object yamlObject = GenericObjectSerialization.DeserializeYaml<object>(yaml);
-
-            //Assert
-            Assert.AreNotEqual(null, yamlObject);
-        }
+            //Assert.AreEqual(true, gitHubOutput.v2ConversionSuccessful);
+        }     
 
     }
 }

@@ -22,6 +22,188 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
         }
 
         /// <summary>
+        /// Convert an entire Azure DevOps Pipeline to a GitHub Actions 
+        /// </summary>
+        /// <param name="yaml">Yaml to convert</param>
+        /// <returns>Converion object, with original yaml, processed yaml, comments on the conversion, and which conversion method was used</returns>
+        public ConversionResponse ConvertAzurePipelineToGitHubAction(string yaml)
+        {
+            ConversionResponse conversionResponse = null;
+
+            try
+            {
+                conversionResponse = ConvertAzurePipelineToGitHubActionV2(yaml);
+            }
+            catch (Exception ex2)
+            {
+                Debug.WriteLine("Conversion V2 failed. Trying V1: " + ex2.Message);
+                try
+                {
+                    conversionResponse = ConvertAzurePipelineToGitHubActionV1(yaml);
+                }
+                catch (Exception ex1)
+                {
+                    Debug.WriteLine("Conversion V1 failed. Trying V2: " + ex1.Message);
+                }
+            }
+
+            return conversionResponse;
+        }
+
+        /// <summary>
+        /// V1 plan:
+        /// 1. get the yaml
+        /// 2. try to serialize it on a few common combinations
+        /// 3. deserialize the entire doc into azure pipelines sub-objects
+        /// 4. Process the azure pipelines objects into a github action
+        /// </summary>
+        /// <param name="yaml"></param>
+        /// <returns></returns>
+        private ConversionResponse ConvertAzurePipelineToGitHubActionV1(string yaml)
+        {
+            string gitHubYaml;
+            List<string> variableList = new List<string>();
+            List<string> stepComments = new List<string>();
+            GitHubActionsRoot gitHubActions = null;
+
+            //Run some processing to convert simple pools and demands to the complex editions, to avoid adding to the combinations below.
+            //Also clean and remove variables with reserved words that get into trouble during deserialization. HACK alert... :(
+            string processedInput = ConversionUtility.CleanYamlBeforeDeserialization(yaml);
+
+            //Start the main deserialization methods
+            bool success = false;
+            if (success == false)
+            {
+                var azurePipelineWithSimpleTriggerAndSimpleVariables = AzurePipelinesSerialization<string[], Dictionary<string, string>>.DeserializeSimpleTriggerAndSimpleVariables(processedInput);
+                if (azurePipelineWithSimpleTriggerAndSimpleVariables != null)
+                {
+                    success = true;
+                    var processing = new PipelineProcessing<string[], Dictionary<string, string>>(_verbose);
+                    gitHubActions = processing.ProcessPipeline(azurePipelineWithSimpleTriggerAndSimpleVariables, azurePipelineWithSimpleTriggerAndSimpleVariables.trigger, null, azurePipelineWithSimpleTriggerAndSimpleVariables.variables, null);
+                    if (processing.MatrixVariableName != null)
+                    {
+                        _matrixVariableName = processing.MatrixVariableName;
+                    }
+                    variableList.AddRange(processing.VariableList);
+                }
+            }
+
+            if (success == false)
+            {
+                var azurePipelineWithSimpleTriggerAndComplexVariables = AzurePipelinesSerialization<string[], AzurePipelines.Variable[]>.DeserializeSimpleTriggerAndComplexVariables(processedInput);
+                if (azurePipelineWithSimpleTriggerAndComplexVariables != null)
+                {
+                    success = true;
+                    var processing = new PipelineProcessing<string[], AzurePipelines.Variable[]>(_verbose);
+                    gitHubActions = processing.ProcessPipeline(azurePipelineWithSimpleTriggerAndComplexVariables, azurePipelineWithSimpleTriggerAndComplexVariables.trigger, null, null, azurePipelineWithSimpleTriggerAndComplexVariables.variables);
+                    if (processing.MatrixVariableName != null)
+                    {
+                        _matrixVariableName = processing.MatrixVariableName;
+                    }
+                    variableList.AddRange(processing.VariableList);
+                }
+            }
+
+            if (success == false)
+            {
+                var azurePipelineWithComplexTriggerAndSimpleVariables = AzurePipelinesSerialization<AzurePipelines.Trigger, Dictionary<string, string>>.DeserializeComplexTriggerAndSimpleVariables(processedInput);
+                if (azurePipelineWithComplexTriggerAndSimpleVariables != null)
+                {
+                    success = true;
+                    var processing = new PipelineProcessing<AzurePipelines.Trigger, Dictionary<string, string>>(_verbose);
+                    gitHubActions = processing.ProcessPipeline(azurePipelineWithComplexTriggerAndSimpleVariables, null, azurePipelineWithComplexTriggerAndSimpleVariables.trigger, azurePipelineWithComplexTriggerAndSimpleVariables.variables, null);
+                    if (processing.MatrixVariableName != null)
+                    {
+                        _matrixVariableName = processing.MatrixVariableName;
+                    }
+                    variableList.AddRange(processing.VariableList);
+                }
+            }
+
+            if (success == false)
+            {
+                var azurePipelineWithComplexTriggerAndComplexVariables = AzurePipelinesSerialization<AzurePipelines.Trigger, AzurePipelines.Variable[]>.DeserializeComplexTriggerAndComplexVariables(processedInput);
+                if (azurePipelineWithComplexTriggerAndComplexVariables != null)
+                {
+                    success = true;
+                    var processing = new PipelineProcessing<AzurePipelines.Trigger, AzurePipelines.Variable[]>(_verbose);
+                    gitHubActions = processing.ProcessPipeline(azurePipelineWithComplexTriggerAndComplexVariables, null, azurePipelineWithComplexTriggerAndComplexVariables.trigger, null, azurePipelineWithComplexTriggerAndComplexVariables.variables);
+                    if (processing.MatrixVariableName != null)
+                    {
+                        _matrixVariableName = processing.MatrixVariableName;
+                    }
+                    variableList.AddRange(processing.VariableList);
+                }
+            }
+            if (success == false && string.IsNullOrEmpty(processedInput?.Trim()) == false)
+            {
+                throw new NotSupportedException("All deserialisation methods failed... oops! Please create a GitHub issue so we can fix this");
+            }
+
+            //Search for any other variables. Duplicates are ok, they are processed the same
+            variableList.AddRange(ConversionUtility.SearchForVariables(processedInput));
+
+            //Create the GitHub YAML and apply some adjustments
+            if (gitHubActions != null)
+            {
+                gitHubYaml = GitHubActionsSerialization.Serialize(gitHubActions, variableList, _matrixVariableName);
+            }
+            else
+            {
+                gitHubYaml = "";
+            }
+
+            //Load failed task comments for processing
+            if (gitHubActions != null)
+            {
+                //Add any header messages
+                if (gitHubActions.messages != null)
+                {
+                    foreach (string message in gitHubActions.messages)
+                    {
+                        stepComments.Add(ConversionUtility.ConvertMessageToYamlComment(message));
+                    }
+                }
+                if (gitHubActions.jobs != null)
+                {
+                    //Add each individual step comments
+                    foreach (KeyValuePair<string, GitHubActions.Job> job in gitHubActions.jobs)
+                    {
+                        if (job.Value.steps != null)
+                        {
+                            if (job.Value.job_message != null)
+                            {
+                                stepComments.Add(ConversionUtility.ConvertMessageToYamlComment(job.Value.job_message));
+                            }
+                            foreach (GitHubActions.Step step in job.Value.steps)
+                            {
+                                if (step != null && string.IsNullOrEmpty(step.step_message) == false)
+                                {
+                                    stepComments.Add(ConversionUtility.ConvertMessageToYamlComment(step.step_message));
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            //Append all of the comments to the top of the file
+            foreach (string item in stepComments)
+            {
+                gitHubYaml = item + System.Environment.NewLine + gitHubYaml;
+            }
+
+            //Return the final conversion result, with the original (pipeline) yaml, processed (actions) yaml, and any comments
+            return new ConversionResponse
+            {
+                pipelinesYaml = yaml,
+                actionsYaml = gitHubYaml,
+                comments = stepComments,
+                v2ConversionSuccessful = false
+            };
+        }
+
+        /// <summary>
         /// V2 plan:
         /// 1. get the yaml, converting it to a json document
         /// 2. break the json into pieces
@@ -32,7 +214,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
         /// <param name="yaml"></param>
         /// <returns></returns>
 
-        public ConversionResponse ConvertAzurePipelineToGitHubActionV2(string yaml)
+        private ConversionResponse ConvertAzurePipelineToGitHubActionV2(string yaml)
         {
             string gitHubYaml = "";
             List<string> variableList = new List<string>();
@@ -229,177 +411,9 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
             {
                 pipelinesYaml = yaml,
                 actionsYaml = gitHubYaml,
-                comments = stepComments
+                comments = stepComments,
+                v2ConversionSuccessful = true
             };
-        }
-
-        /// <summary>
-        /// Convert an entire Azure DevOps Pipeline to a GitHub Actions 
-        /// </summary>
-        /// <param name="yaml">Yaml to convert</param>
-        /// <returns>Converion object, with original yaml, processed yaml, and comments on the conversion</returns>
-        public ConversionResponse ConvertAzurePipelineToGitHubAction(string yaml)
-        {
-            string gitHubYaml = null;
-            List<string> variableList = new List<string>();
-            List<string> stepComments = new List<string>();
-            GitHubActionsRoot gitHubActions = null;
-            bool v2ConversionSuccessful =false;
-            ConversionResponse conversionResponse = null;
-
-            try
-            {
-                conversionResponse = ConvertAzurePipelineToGitHubActionV2(yaml);
-                v2ConversionSuccessful = true;
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine("Conversion V2 failed. Trying V1: " + ex.Message);
-                v2ConversionSuccessful = false;
-            }
-
-            if (v2ConversionSuccessful == false)
-            {
-                //Run some processing to convert simple pools and demands to the complex editions, to avoid adding to the combinations below.
-                //Also clean and remove variables with reserved words that get into trouble during deserialization. HACK alert... :(
-                string processedInput = ConversionUtility.CleanYamlBeforeDeserialization(yaml);
-
-                //Start the main deserialization methods
-                bool success = false;
-                if (success == false)
-                {
-                    var azurePipelineWithSimpleTriggerAndSimpleVariables = AzurePipelinesSerialization<string[], Dictionary<string, string>>.DeserializeSimpleTriggerAndSimpleVariables(processedInput);
-                    if (azurePipelineWithSimpleTriggerAndSimpleVariables != null)
-                    {
-                        success = true;
-                        var processing = new PipelineProcessing<string[], Dictionary<string, string>>(_verbose);
-                        gitHubActions = processing.ProcessPipeline(azurePipelineWithSimpleTriggerAndSimpleVariables, azurePipelineWithSimpleTriggerAndSimpleVariables.trigger, null, azurePipelineWithSimpleTriggerAndSimpleVariables.variables, null);
-                        if (processing.MatrixVariableName != null)
-                        {
-                            _matrixVariableName = processing.MatrixVariableName;
-                        }
-                        variableList.AddRange(processing.VariableList);
-                    }
-                }
-
-                if (success == false)
-                {
-                    var azurePipelineWithSimpleTriggerAndComplexVariables = AzurePipelinesSerialization<string[], AzurePipelines.Variable[]>.DeserializeSimpleTriggerAndComplexVariables(processedInput);
-                    if (azurePipelineWithSimpleTriggerAndComplexVariables != null)
-                    {
-                        success = true;
-                        var processing = new PipelineProcessing<string[], AzurePipelines.Variable[]>(_verbose);
-                        gitHubActions = processing.ProcessPipeline(azurePipelineWithSimpleTriggerAndComplexVariables, azurePipelineWithSimpleTriggerAndComplexVariables.trigger, null, null, azurePipelineWithSimpleTriggerAndComplexVariables.variables);
-                        if (processing.MatrixVariableName != null)
-                        {
-                            _matrixVariableName = processing.MatrixVariableName;
-                        }
-                        variableList.AddRange(processing.VariableList);
-                    }
-                }
-
-                if (success == false)
-                {
-                    var azurePipelineWithComplexTriggerAndSimpleVariables = AzurePipelinesSerialization<AzurePipelines.Trigger, Dictionary<string, string>>.DeserializeComplexTriggerAndSimpleVariables(processedInput);
-                    if (azurePipelineWithComplexTriggerAndSimpleVariables != null)
-                    {
-                        success = true;
-                        var processing = new PipelineProcessing<AzurePipelines.Trigger, Dictionary<string, string>>(_verbose);
-                        gitHubActions = processing.ProcessPipeline(azurePipelineWithComplexTriggerAndSimpleVariables, null, azurePipelineWithComplexTriggerAndSimpleVariables.trigger, azurePipelineWithComplexTriggerAndSimpleVariables.variables, null);
-                        if (processing.MatrixVariableName != null)
-                        {
-                            _matrixVariableName = processing.MatrixVariableName;
-                        }
-                        variableList.AddRange(processing.VariableList);
-                    }
-                }
-
-                if (success == false)
-                {
-                    var azurePipelineWithComplexTriggerAndComplexVariables = AzurePipelinesSerialization<AzurePipelines.Trigger, AzurePipelines.Variable[]>.DeserializeComplexTriggerAndComplexVariables(processedInput);
-                    if (azurePipelineWithComplexTriggerAndComplexVariables != null)
-                    {
-                        success = true;
-                        var processing = new PipelineProcessing<AzurePipelines.Trigger, AzurePipelines.Variable[]>(_verbose);
-                        gitHubActions = processing.ProcessPipeline(azurePipelineWithComplexTriggerAndComplexVariables, null, azurePipelineWithComplexTriggerAndComplexVariables.trigger, null, azurePipelineWithComplexTriggerAndComplexVariables.variables);
-                        if (processing.MatrixVariableName != null)
-                        {
-                            _matrixVariableName = processing.MatrixVariableName;
-                        }
-                        variableList.AddRange(processing.VariableList);
-                    }
-                }
-                if (success == false && string.IsNullOrEmpty(processedInput?.Trim()) == false)
-                {
-                    throw new NotSupportedException("All deserialisation methods failed... oops! Please create a GitHub issue so we can fix this");
-                }
-
-                //Search for any other variables. Duplicates are ok, they are processed the same
-                variableList.AddRange(ConversionUtility.SearchForVariables(processedInput));
-
-                //Create the GitHub YAML and apply some adjustments
-                if (gitHubActions != null)
-                {
-                    gitHubYaml = GitHubActionsSerialization.Serialize(gitHubActions, variableList, _matrixVariableName);
-                }
-                else
-                {
-                    gitHubYaml = "";
-                }
-
-                //Load failed task comments for processing
-                if (gitHubActions != null)
-                {
-                    //Add any header messages
-                    if (gitHubActions.messages != null)
-                    {
-                        foreach (string message in gitHubActions.messages)
-                        {
-                            stepComments.Add(ConversionUtility.ConvertMessageToYamlComment(message));
-                        }
-                    }
-                    if (gitHubActions.jobs != null)
-                    {
-                        //Add each individual step comments
-                        foreach (KeyValuePair<string, GitHubActions.Job> job in gitHubActions.jobs)
-                        {
-                            if (job.Value.steps != null)
-                            {
-                                if (job.Value.job_message != null)
-                                {
-                                    stepComments.Add(ConversionUtility.ConvertMessageToYamlComment(job.Value.job_message));
-                                }
-                                foreach (GitHubActions.Step step in job.Value.steps)
-                                {
-                                    if (step != null && string.IsNullOrEmpty(step.step_message) == false)
-                                    {
-                                        stepComments.Add(ConversionUtility.ConvertMessageToYamlComment(step.step_message));
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-
-                //Append all of the comments to the top of the file
-                foreach (string item in stepComments)
-                {
-                    gitHubYaml = item + System.Environment.NewLine + gitHubYaml;
-                }
-            }
-
-            //Return the final conversion result, with the original (pipeline) yaml, processed (actions) yaml, and any comments
-            if (conversionResponse == null)
-            {
-                conversionResponse = new ConversionResponse
-                {
-                    pipelinesYaml = yaml,
-                    actionsYaml = gitHubYaml,
-                    comments = stepComments,
-                    v2ConversionSuccessful = v2ConversionSuccessful
-                };
-            }
-            return conversionResponse;
         }
 
         /// <summary>
