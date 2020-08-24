@@ -1,13 +1,9 @@
 ﻿using AzurePipelinesToGitHubActionsConverter.Core.Conversion.Serialization;
 using AzurePipelinesToGitHubActionsConverter.Core.GitHubActions;
-using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Dynamic;
-using System.IO;
-using YamlDotNet.Serialization;
 
 namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
 {

@@ -432,6 +432,11 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                             job.timeoutInMinutes = timeOut;
                         }
                     }
+                    if (jobJson["continueOnError"] != null)
+                    {
+                        bool.TryParse(jobJson["continueOnError"].ToString(), out bool continueOnError);
+                        job.continueOnError = continueOnError;
+                    }
                     if (jobJson["variables"] != null)
                     {
                         job.variables = ProcessParametersAndVariablesV2(null, jobJson["variables"].ToString());
