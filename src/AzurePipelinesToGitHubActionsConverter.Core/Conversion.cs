@@ -26,22 +26,22 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
         {
             ConversionResponse conversionResponse = null;
 
-            try
-            {
+            //try
+            //{
                 conversionResponse = ConvertAzurePipelineToGitHubActionV2(yaml);
-            }
-            catch (Exception ex2)
-            {
-                Debug.WriteLine("Conversion V2 failed. Trying V1: " + ex2.Message);
-                try
-                {
-                    conversionResponse = ConvertAzurePipelineToGitHubActionV1(yaml);
-                }
-                catch (Exception ex1)
-                {
-                    Debug.WriteLine("Conversion V1 failed. Trying V2: " + ex1.Message);
-                }
-            }
+            //}
+            //catch (Exception ex2)
+            //{
+            //    Debug.WriteLine("Conversion V2 failed. Trying V1: " + ex2.Message);
+            //    try
+            //    {
+            //        conversionResponse = ConvertAzurePipelineToGitHubActionV1(yaml);
+            //    }
+            //    catch (Exception ex1)
+            //    {
+            //        Debug.WriteLine("Conversion V1 failed. Trying V2: " + ex1.Message);
+            //    }
+            //}
 
             return conversionResponse;
         }
@@ -289,16 +289,16 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                 if (json["resources"] != null)
                 {
                     resourcesYaml = json["resources"].ToString();
-                    if (json["resources"]["pipelines"] != null)
+                    if (resourcesYaml.IndexOf("\"pipelines\"") >= 0)
                     {
                         gitHubActions.messages.Add("TODO: Resource pipelines conversion not yet done: https://github.com/samsmithnz/AzurePipelinesToGitHubActionsConverter/issues/8");
                     }
-                    if (json["resources"]["repositories"] != null)
+                    if (resourcesYaml.IndexOf("\"repositories\"") >= 0)
                     {
                         gitHubActions.messages.Add("TODO: Resource repositories conversion not yet done: https://github.com/samsmithnz/AzurePipelinesToGitHubActionsConverter/issues/8");
                     }
                     //Container
-                    if (json["resources"]["containers"] != null)
+                    if (resourcesYaml.IndexOf("\"containers\"") >= 0)
                     {
                         gitHubActions.messages.Add("TODO: Container conversion not yet done, we need help - our container skills are woeful: https://github.com/samsmithnz/AzurePipelinesToGitHubActionsConverter/issues/39");
                     }

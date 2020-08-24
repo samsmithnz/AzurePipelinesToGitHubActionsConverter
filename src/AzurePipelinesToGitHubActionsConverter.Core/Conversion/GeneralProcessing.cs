@@ -323,12 +323,19 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                             for (int i = 0; i < stage.jobs.Length; i++)
                             {
                                 jobs[jobIndex] = stage.jobs[i];
-                                foreach (KeyValuePair<string, string> stageVariable in stage.variables)
+                                if (stage.variables != null)
                                 {
-                                    //Add the stage variable if it doesn't already exist
-                                    if (jobs[jobIndex].variables.ContainsKey(stageVariable.Key) == false)
+                                    if (jobs[jobIndex].variables==null)
                                     {
-                                        jobs[jobIndex].variables.Add(stageVariable.Key, stageVariable.Value);
+                                        jobs[jobIndex].variables = new Dictionary<string, string>();
+                                    }
+                                    foreach (KeyValuePair<string, string> stageVariable in stage.variables)
+                                    {
+                                        //Add the stage variable if it doesn't already exist
+                                        if (jobs[jobIndex].variables.ContainsKey(stageVariable.Key) == false)
+                                        {
+                                            jobs[jobIndex].variables.Add(stageVariable.Key, stageVariable.Value);
+                                        }
                                     }
                                 }
                                 //TODO: this is duplicate code to PipelineProcessing, line 206. Need to refactor
@@ -432,6 +439,10 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                     {
                         job.condition = ProcessCondition(jobJson["condition"].ToString());
                     }
+                    if (jobJson["template"] != null)
+                    {
+                        job.template = jobJson["template"].ToString();
+                    }
                     if (jobJson["timeoutInMinutes"] != null)
                     {
                         int.TryParse(jobJson["timeoutInMinutes"].ToString(), out int timeOut);
@@ -515,11 +526,22 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
             if (jobs != null)
             {
                 Dictionary<string, GitHubActions.Job> gitHubJobs = new Dictionary<string, GitHubActions.Job>();
+                int i = 0;
                 foreach (AzurePipelines.Job job in jobs)
                 {
                     JobProcessing jobProcessing = new JobProcessing(_verbose);
-                    gitHubJobs.Add(job.job, jobProcessing.ProcessJob(job, resources));
+                    string jobName = job.job;
+                    if (jobName == null && job.deployment != null)
+                    {
+                        jobName = job.deployment;
+                    }
+                    else if (jobName == null && job.template != null)
+                    {
+                        jobName = "job_" + (i + 1).ToString() + "_template";
+                    }
+                    gitHubJobs.Add(jobName, jobProcessing.ProcessJob(job, resources));
                     MatrixVariableName = jobProcessing.MatrixVariableName;
+                    i++;
                 }
                 return gitHubJobs;
             }

@@ -198,20 +198,34 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                 processedYaml.IndexOf("${{if") >= 0 || processedYaml.IndexOf("${{ if") >= 0)
             {
                 StringBuilder sb = new StringBuilder();
+                int spacePrefixCount = 0;
                 foreach (string line in processedYaml.Split(System.Environment.NewLine))
                 {
                     if (line.IndexOf("{{#if") >= 0 || line.IndexOf("{{ #if") >= 0 ||
                         line.IndexOf("${{if") >= 0 || line.IndexOf("${{ if") >= 0)
                     {
-                        //don't add line, remove
+                        //don't add line, we want to remove it, but track the spaces
+                        spacePrefixCount = ConversionUtility.CountSpacesBeforeText(line);
                     }
                     else if (line.IndexOf("{{/if") >= 0) //ending if 
                     {
                         //don't add line, remove
+                        spacePrefixCount = 0;
                     }
                     else
                     {
-                        sb.Append(line);
+                        //TODO: DANGER WILL ROBINSON - DANGER 
+                        //This is meant for variables, but may affect much more than it should
+                        int currentLinespaceFrefixCount = ConversionUtility.CountSpacesBeforeText(line);
+                        if (spacePrefixCount > 0 && (currentLinespaceFrefixCount - 2) == spacePrefixCount)
+                        {
+                            sb.Append(GenerateSpaces(spacePrefixCount));
+                            sb.Append(line.Trim());
+                        }
+                        else
+                        {
+                            sb.Append(line);
+                        }
                         sb.Append(System.Environment.NewLine);
                     }
                 }
