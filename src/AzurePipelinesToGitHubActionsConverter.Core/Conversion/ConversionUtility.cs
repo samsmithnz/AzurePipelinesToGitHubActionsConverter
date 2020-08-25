@@ -1,22 +1,12 @@
 ﻿using AzurePipelinesToGitHubActionsConverter.Core.Extensions;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Text.RegularExpressions;
 
 namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
 {
     public static class ConversionUtility
     {
-        public static void WriteLine(string message, bool verbose)
-        {
-            if (verbose == true)
-            {
-                Console.WriteLine(message);
-            }
-        }
-
         public static string GenerateSpaces(int number)
         {
             return new String(' ', number);
@@ -245,7 +235,6 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
 
         }
 
-
         public static string ProcessAndCleanElement(string yaml, string searchString, string newLineName)
         {
             if (string.IsNullOrEmpty(yaml))
@@ -294,43 +283,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                 }
             }
             return newYaml.ToString();
-            //return ConversionUtility.RemoveFirstLine(newYaml.ToString().Trim());
         }
-
-        //// Some elements have a simple, same line string, we need to make into a list
-        //// for example "trigger:none", becomes "trigger:\n\r- none"
-        //public static string ProcessNoneYamlElement(string yaml, string noneSearchString)
-        //{
-        //    if (yaml != null && yaml.Replace(" ", "").ToLower().IndexOf(noneSearchString) >= 0)
-        //    {
-        //        StringBuilder newYaml = new StringBuilder();
-        //        foreach (string line in yaml.Split(Environment.NewLine))
-        //        {
-        //            if (line.Replace(" ", "").ToLower().IndexOf(noneSearchString) >= 0)
-        //            {
-        //                //Get the count of whitespaces in front of the variable
-        //                int prefixSpaceCount = CountSpacesBeforeText(line);
-
-        //                newYaml.Append(line.Replace("none", ""));
-        //                newYaml.Append(System.Environment.NewLine);
-
-        //                newYaml.Append(GenerateSpaces(prefixSpaceCount));
-        //                newYaml.Append("- none");
-        //                newYaml.Append(System.Environment.NewLine);
-        //            }
-        //            else
-        //            {
-        //                newYaml.Append(line);
-        //                newYaml.Append(System.Environment.NewLine);
-        //            }
-        //        }
-        //        return newYaml.ToString();
-        //    }
-        //    else
-        //    {
-        //        return yaml;
-        //    }
-        //}
 
         // Some elements have a simple, same line string, we need to make into a list
         // for example "trigger:none", becomes "trigger:\n\r- none"
@@ -394,121 +347,6 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
             return input;
         }
 
-        //public static string JobsPreProcessing(string input)
-        //{
-        //    return input;
-        //}
-
-        public static List<string> SearchForVariables(string input)
-        {
-            List<string> variableList = new List<string>();
-
-            if (input != null)
-            {
-                string[] stepLines = input.Split(System.Environment.NewLine);
-                foreach (string line in stepLines)
-                {
-                    List<string> variableResults = FindPipelineVariablesInString(line);
-                    variableResults.AddRange(FindPipelineParametersInString(line));
-                    if (variableResults.Count > 0)
-                    {
-                        variableList.AddRange(variableResults);
-                    }
-                }
-            }
-
-            return variableList;
-        }
-
-        private static List<string> FindPipelineVariablesInString(string text)
-        {
-            //Used https://stackoverflow.com/questions/378415/how-do-i-extract-text-that-lies-between-parentheses-round-brackets
-            //With the addition of the \$ search to capture strings like: "$(variable)"
-            //\$\(           # $ char and escaped parenthesis, means "starts with a '$(' character"
-            //    (          # Parentheses in a regex mean "put (capture) the stuff 
-            //               #     in between into the Groups array" 
-            //       [^)]    # Any character that is not a ')' character
-            //       *       # Zero or more occurrences of the aforementioned "non ')' char"
-            //    )          # Close the capturing group
-            //\)             # "Ends with a ')' character"  
-            MatchCollection results = Regex.Matches(text, @"\$\(([^)]*)\)");
-            List<string> list = results.Cast<Match>().Select(match => match.Value).ToList();
-
-            for (int i = 0; i < list.Count; i++)
-            {
-                string item = list[i];
-
-                //Remove leading "$(" and trailing ")"
-                if (list[i].Length > 3)
-                {
-                    list[i] = list[i].Substring(0, item.Length - 1);
-                    list[i] = list[i].Remove(0, 2);
-                }
-            }
-
-            return list;
-        }
-
-        private static List<string> FindPipelineParametersInString(string text)
-        {
-            //Used https://stackoverflow.com/questions/378415/how-do-i-extract-text-that-lies-between-parentheses-round-brackets
-            //With the addition of the \$ search to capture strings like: "$(variable)"
-            //\$\(           # $ char and escaped parenthesis, means "starts with a '$(' character"
-            //    (          # Parentheses in a regex mean "put (capture) the stuff 
-            //               #     in between into the Groups array" 
-            //       [^)]    # Any character that is not a ')' character
-            //       *       # Zero or more occurrences of the aforementioned "non ')' char"
-            //    )          # Close the capturing group
-            //\)             # "Ends with a ')' character"  
-            MatchCollection results = Regex.Matches(text, @"\$\{\{([^}}]*)\}\}");
-            List<string> list = results.Cast<Match>().Select(match => match.Value).ToList();
-
-            for (int i = 0; i < list.Count; i++)
-            {
-                string item = list[i];
-
-                //Remove leading "${{" and trailing "}}"
-                if (list[i].Length > 5)
-                {
-                    list[i] = list[i].Substring(0, item.Length - 2);
-                    list[i] = list[i].Remove(0, 3);
-                }
-            }
-
-            return list;
-        }
-
-        //public static string RemoveCommentsFromYaml(string yaml)
-        //{
-        //    if (yaml == null)
-        //    {
-        //        return yaml;
-        //    }
-        //    string processedYaml = yaml;
-
-        //    //Part 1: remove full line comments. sometimes the yaml converter can't handle these - depending on where the # appears on the line (sometimes it's the first character, other times the first character after whitespace
-        //    if (processedYaml.IndexOf("#") >= 0)
-        //    {
-        //        StringBuilder sb = new StringBuilder();
-        //        foreach (string line in processedYaml.Split(System.Environment.NewLine))
-        //        {
-        //            //Remove the comment if it's the a full line (after removing the preceeding white space)
-        //            if (line.TrimStart().IndexOf("#") == 0)
-        //            {
-        //                //don't add line, remove
-        //                Console.WriteLine(line);
-        //            }
-        //            else
-        //            {
-        //                sb.Append(line);
-        //                sb.Append(System.Environment.NewLine);
-        //            }
-        //        }
-        //        processedYaml = sb.ToString();
-        //    }
-        //    return processedYaml;
-        //}
-
         //Remove the first line in a string
         public static string RemoveFirstLine(string input)
         {
@@ -532,6 +370,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
             return sb.ToString();
         }
 
+        //TODO: Should be in Job processing?
         public static string GenerateJobName(AzurePipelines.Job job, int currentIndex)
         {
             //Get the job name
@@ -549,6 +388,14 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                 jobName = "job" + currentIndex.ToString();
             }
             return jobName;
+        }
+
+        public static void WriteLine(string message, bool verbose)
+        {
+            if (verbose == true)
+            {
+                Console.WriteLine(message);
+            }
         }
     }
 }

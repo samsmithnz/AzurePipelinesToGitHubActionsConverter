@@ -52,22 +52,23 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
             }
 
             //Triggers for pushs 
+            TriggerProcessing tp = new TriggerProcessing();
             if (azurePipeline.trigger != null)
             {
                 if (complexTrigger != null)
                 {
-                    gitHubActions.on = generalProcessing.ProcessComplexTrigger(complexTrigger);
+                    gitHubActions.on = tp.ProcessComplexTrigger(complexTrigger);
                 }
                 else if (simpleTrigger != null)
                 {
-                    gitHubActions.on = generalProcessing.ProcessSimpleTrigger(simpleTrigger);
+                    gitHubActions.on = tp.ProcessSimpleTrigger(simpleTrigger);
                 }
             }
 
             //Triggers for pull requests
             if (azurePipeline.pr != null)
             {
-                GitHubActions.Trigger pr = generalProcessing.ProcessPullRequest(azurePipeline.pr);
+                GitHubActions.Trigger pr = tp.ProcessPullRequest(azurePipeline.pr);
                 if (gitHubActions.on == null)
                 {
                     gitHubActions.on = pr;
@@ -87,7 +88,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
             //schedules
             if (azurePipeline.schedules != null)
             {
-                string[] schedules = generalProcessing.ProcessSchedules(azurePipeline.schedules);
+                string[] schedules = tp.ProcessSchedules(azurePipeline.schedules);
                 if (gitHubActions.on == null)
                 {
                     gitHubActions.on = new GitHubActions.Trigger();
@@ -252,6 +253,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
             if ((azurePipeline.pool != null && azurePipeline.jobs == null) || (azurePipeline.steps != null && azurePipeline.steps.Length > 0))
             {
                 //Steps only have one job, so we just create it here
+                StepsProcessing sp = new StepsProcessing();
                 gitHubActions.jobs = new Dictionary<string, GitHubActions.Job>
                 {
                     {
@@ -262,7 +264,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                             strategy = generalProcessing.ProcessStrategy(azurePipeline.strategy),
                             container = generalProcessing.ProcessContainer(azurePipeline.resources),
                             //resources = ProcessResources(azurePipeline.resources),
-                            steps = generalProcessing.ProcessSteps(azurePipeline.steps)
+                            steps = sp.AddSupportingSteps(azurePipeline.steps)
                         }
                     }
                 };
@@ -270,23 +272,24 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
             }
 
             //Variables
+            VariablesProcessing vp = new VariablesProcessing(_verbose);
             if (azurePipeline.variables != null)
             {
                 if (complexVariables != null)
                 {
-                    gitHubActions.env = generalProcessing.ProcessComplexVariables(complexVariables);
-                    VariableList.AddRange(generalProcessing.VariableList);
+                    gitHubActions.env = vp.ProcessComplexVariables(complexVariables);
+                    VariableList.AddRange(vp.VariableList);
                 }
                 else if (simpleVariables != null)
                 {
-                    gitHubActions.env = generalProcessing.ProcessSimpleVariables(simpleVariables);
-                    VariableList.AddRange(generalProcessing.VariableList);
+                    gitHubActions.env = vp.ProcessSimpleVariables(simpleVariables);
+                    VariableList.AddRange(vp.VariableList);
                 }
             }
             else if (azurePipeline.parameters != null)
             {
                 //For now, convert the parameters to variables
-                gitHubActions.env = generalProcessing.ProcessSimpleVariables(azurePipeline.parameters);
+                gitHubActions.env = vp.ProcessSimpleVariables(azurePipeline.parameters);
             }
 
             return gitHubActions;

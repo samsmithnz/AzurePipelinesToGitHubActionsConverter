@@ -1671,7 +1671,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
         }
 
         //Safely extract the step input, if it exists
-        public string GetStepInput(AzurePipelines.Step step, string name)
+        private string GetStepInput(AzurePipelines.Step step, string name)
         {
             string input = null;
             if (step.inputs != null && name != null)
@@ -1688,6 +1688,136 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                 }
             }
             return input;
+        }
+
+        //Some pipelines need supporting steps as part of the processing. 
+        //For example, if we are deploying to Azure, we need to add an Azure Login step
+        public GitHubActions.Step[] AddSupportingSteps(AzurePipelines.Step[] steps, bool addCheckoutStep = true)
+        {
+            StepsProcessing stepsProcessing = new StepsProcessing();
+
+            GitHubActions.Step[] newSteps = null;
+            if (steps != null)
+            {
+                //Start by scanning all of the steps, to see if we need to insert additional tasks
+                int stepAdjustment = 0;
+                bool addJavaSetupStep = false;
+                bool addGradleSetupStep = false;
+                bool addAzureLoginStep = false;
+                bool addMSSetupStep = false;
+                string javaVersion = null;
+
+                //If the code needs a Checkout step, add it first
+                if (addCheckoutStep == true)
+                {
+                    stepAdjustment++; // we are inserting a step and need to start moving steps 1 place into the array
+                }
+
+                //Loop through the steps to see if we need other tasks inserted in for specific circumstances
+                foreach (AzurePipelines.Step step in steps)
+                {
+                    if (step.task != null)
+                    {
+                        switch (step.task.ToUpper()) //Set to upper case to handle case sensitivity comparisons e.g. NPM hangles Npm, NPM, or npm. 
+                        {
+                            //If we have an Java based step, we will need to add a Java setup step
+                            case "ANT@1":
+                            case "MAVEN@3":
+                                if (addJavaSetupStep == false)
+                                {
+                                    addJavaSetupStep = true;
+                                    stepAdjustment++;
+                                    javaVersion = stepsProcessing.GetStepInput(step, "jdkVersionOption");
+                                }
+                                break;
+
+                            //Needs a the Java step and an additional Gradle step
+                            case "GRADLE@2":
+
+                                if (addJavaSetupStep == false)
+                                {
+                                    addJavaSetupStep = true;
+                                    stepAdjustment++;
+                                    //Create the java step, as it doesn't exist
+                                    javaVersion = "1.8";
+                                }
+                                if (addGradleSetupStep == false)
+                                {
+                                    addGradleSetupStep = true;
+                                    stepAdjustment++;
+                                }
+                                break;
+
+                            //If we have an Azure step, we will need to add a Azure login step
+                            case "AZUREAPPSERVICEMANAGE@0":
+                            case "AZURERESOURCEGROUPDEPLOYMENT@2":
+                            case "AZURERMWEBAPPDEPLOYMENT@3":
+                                if (addAzureLoginStep == false)
+                                {
+                                    addAzureLoginStep = true;
+                                    stepAdjustment++;
+                                }
+                                break;
+
+                            case "VSBUILD@1":
+                                if (addMSSetupStep == false)
+                                {
+                                    addMSSetupStep = true;
+                                    stepAdjustment++;
+                                }
+                                break;
+                        }
+                    }
+                }
+
+                //Re-size the newSteps array with adjustments as needed
+                newSteps = new GitHubActions.Step[steps.Length + stepAdjustment];
+
+                int adjustmentsUsed = 0;
+
+                //Add the steps array
+                if (addCheckoutStep == true)
+                {
+                    //Add the check out step to get the code
+                    newSteps[adjustmentsUsed] = stepsProcessing.CreateCheckoutStep();
+                    adjustmentsUsed++;
+                }
+                if (addJavaSetupStep == true)
+                {
+                    //Add the JavaSetup step to the code
+                    if (javaVersion != null)
+                    {
+                        newSteps[adjustmentsUsed] = stepsProcessing.CreateSetupJavaStep(javaVersion);
+                        adjustmentsUsed++;
+                    }
+                }
+                if (addGradleSetupStep == true)
+                {
+                    //Add the Gradle setup step to the code
+                    newSteps[adjustmentsUsed] = stepsProcessing.CreateSetupGradleStep();
+                    adjustmentsUsed++;
+                }
+                if (addAzureLoginStep == true)
+                {
+                    //Add the Azure login step to the code
+                    newSteps[adjustmentsUsed] = stepsProcessing.CreateAzureLoginStep();
+                    adjustmentsUsed++;
+                }
+                if (addMSSetupStep == true)
+                {
+                    //Add the Azure login step to the code
+                    newSteps[adjustmentsUsed] = stepsProcessing.CreateMSBuildSetupStep();
+                    //adjustmentsUsed++;
+                }
+
+                //Translate the other steps
+                for (int i = stepAdjustment; i < steps.Length + stepAdjustment; i++)
+                {
+                    newSteps[i] = stepsProcessing.ProcessStep(steps[i - stepAdjustment]);
+                }
+            }
+
+            return newSteps;
         }
     }
 }
