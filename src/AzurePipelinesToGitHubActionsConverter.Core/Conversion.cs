@@ -24,23 +24,19 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
         /// <returns>Converion object, with original yaml, processed yaml, comments on the conversion, and which conversion method was used</returns>
         public ConversionResponse ConvertAzurePipelineToGitHubAction(string yaml)
         {
-            ConversionResponse conversionResponse = null;
+            ConversionResponse conversionResponse;
 
             try
             {
+                //Try version 2 first
                 conversionResponse = ConvertAzurePipelineToGitHubActionV2(yaml);
             }
             catch (Exception ex2)
             {
                 Debug.WriteLine("Conversion V2 failed. Trying V1: " + ex2.Message);
-                try
-                {
-                    conversionResponse = ConvertAzurePipelineToGitHubActionV1(yaml);
-                }
-                catch (Exception ex1)
-                {
-                    Debug.WriteLine("Conversion V1 failed. Trying V2: " + ex1.Message);
-                }
+                //If Version 2 failed, try version 1
+                conversionResponse = ConvertAzurePipelineToGitHubActionV1(yaml);
+                //if V1 fails, let's throw an exception
             }
 
             return conversionResponse;

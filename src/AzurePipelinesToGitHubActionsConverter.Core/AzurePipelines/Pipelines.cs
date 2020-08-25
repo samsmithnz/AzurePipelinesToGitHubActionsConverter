@@ -14,7 +14,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.AzurePipelines
     //    branches:  
     //      include: [string] # branches to consider the trigger events, optional; defaults to all branches.
     //      exclude: [string] # branches to discard the trigger events, optional; defaults to none. 
-    //TODO: Currently not doing any conversions on this
+    //TODO: There is currently no conversion path for pipelines
     public class Pipelines
     {
         public string pipeline { get; set; }

@@ -7,7 +7,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.AzurePipelines
         //workspace:
         //  clean: outputs | resources | all # what to clean up before the job runs
 
-        //TODO: Work out the equivalent conversion for clean in GitHub Actions
+        //TODO: There is currently no conversion path for clean
         public string clean { get; set; }
     }
 }

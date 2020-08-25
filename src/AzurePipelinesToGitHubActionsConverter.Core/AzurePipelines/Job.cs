@@ -42,7 +42,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.AzurePipelines
         public Pool pool { get; set; }
         public Dictionary<string, string> variables { get; set; }
         public Step[] steps { get; set; }
-        //TODO: Add code for services
+        //TODO: There is currently no conversion path for services
         public Dictionary<string, string> services { get; set; }
         public string template { get; set; }
         public Dictionary<string, string> parameters { get; set; }

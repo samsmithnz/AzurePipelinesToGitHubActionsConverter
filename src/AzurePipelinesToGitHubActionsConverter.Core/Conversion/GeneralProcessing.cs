@@ -4,7 +4,6 @@ using AzurePipelinesToGitHubActionsConverter.Core.GitHubActions;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 
@@ -390,21 +389,8 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                                 {
                                     jobs[jobIndex].condition = stage.condition;
                                 }
-                                //TODO: this is duplicate code to PipelineProcessing, line 206. Need to refactor
                                 //Get the job name
-                                string jobName = stage.jobs[i].job;
-                                if (jobName == null && stage.jobs[i].deployment != null)
-                                {
-                                    jobName = stage.jobs[i].deployment;
-                                }
-                                if (jobName == null && stage.jobs[i].template != null)
-                                {
-                                    jobName = "Template";
-                                }
-                                if (string.IsNullOrEmpty(jobName) == true)
-                                {
-                                    jobName = "job" + jobIndex.ToString();
-                                }
+                                string jobName = ConversionUtility.GenerateJobName(stage.jobs[i], jobIndex);
                                 //Rename the job, using the stage name as prefix, so that we keep the job names unique
                                 jobs[jobIndex].job = stage.stage + "_Stage_" + jobName;
                                 jobIndex++;
@@ -435,7 +421,6 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
             AzurePipelines.Job[] jobs = new AzurePipelines.Job[jobsJson.Count()];
             if (jobsJson != null)
             {
-                string json = jobsJson.ToString();
                 int i = 0;
                 foreach (JToken jobJson in jobsJson)
                 {
@@ -458,33 +443,11 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                     }
                     if (jobJson["strategy"] != null)
                     {
-                        //TODO: Refactor into function
-                        AzurePipelines.Strategy strategy = null;
-                        try
-                        {
-                            //Most often, the pool will be in this structure
-                            strategy = GenericObjectSerialization.DeserializeYaml<AzurePipelines.Strategy>(jobJson["strategy"].ToString());
-                        }
-                        catch (Exception ex)
-                        {
-                            Debug.WriteLine($"DeserializeYaml<AzurePipelines.Strategy>(jobJson[\"strategy\"].ToString()) swallowed an exception: " + ex.Message);
-                        }
-                        job.strategy = strategy;
+                        job.strategy = ProcessStrategyV2(jobJson["strategy"].ToString());
                     }
                     else if (strategyYaml != null)
                     {
-                        //TODO: Refactor into function
-                        AzurePipelines.Strategy strategy = null;
-                        try
-                        {
-                            //Most often, the pool will be in this structure
-                            strategy = GenericObjectSerialization.DeserializeYaml<AzurePipelines.Strategy>(strategyYaml);
-                        }
-                        catch (Exception ex)
-                        {
-                            Debug.WriteLine($"DeserializeYaml<AzurePipelines.Strategy>(strategyYaml) swallowed an exception: " + ex.Message);
-                        }
-                        job.strategy = strategy;
+                        job.strategy = ProcessStrategyV2(strategyYaml);
                     }
                     if (jobJson["dependsOn"] != null)
                     {
@@ -552,6 +515,24 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                 catch (Exception ex)
                 {
                     Debug.WriteLine($"DeserializeYaml<Resources>(resourcesYaml) swallowed an exception: " + ex.Message);
+                }
+            }
+            return null;
+        }
+
+        public AzurePipelines.Strategy ProcessStrategyV2(string strategyYaml)
+        {
+            if (strategyYaml != null)
+            {
+                try
+                {
+                    //Most often, the pool will be in this structure
+                    AzurePipelines.Strategy strategy = GenericObjectSerialization.DeserializeYaml<AzurePipelines.Strategy>(strategyYaml);
+                    return strategy;
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"DeserializeYaml<AzurePipelines.Strategy>(strategyYaml) swallowed an exception: " + ex.Message);
                 }
             }
             return null;
@@ -911,7 +892,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                 }
                 if (strategy.runOnce != null)
                 {
-                    //TODO: Process other strategies
+                    //TODO: There is currently no conversion path for other strategies
                     ConversionUtility.WriteLine("TODO: " + strategy.runOnce, _verbose);
                 }
                 return processedStrategy;

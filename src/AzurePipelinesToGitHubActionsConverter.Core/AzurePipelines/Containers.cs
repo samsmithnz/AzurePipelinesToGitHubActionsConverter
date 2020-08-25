@@ -14,7 +14,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.AzurePipelines
     //  volumes: [ string ] # volumes to mount on the container
     public class Containers
     {
-        //TODO: add code to process containers
+        //TODO: There is currently no conversion path for containers
         public string container { get; set; }
         public string image { get; set; }
         public string options { get; set; }

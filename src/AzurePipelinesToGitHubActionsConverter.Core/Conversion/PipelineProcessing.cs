@@ -100,7 +100,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
             {
                 //Note: Containers is in the jobs - this note should be removed once pipeliens and repositories is moved too
 
-                //TODO: Add code for pipelines
+                //TODO: There is currently no conversion path for pipelines
                 if (azurePipeline.resources.pipelines != null)
                 {
                     gitHubActions.messages.Add("TODO: Resource pipelines conversion not yet done: https://github.com/samsmithnz/AzurePipelinesToGitHubActionsConverter/issues/8");
@@ -141,7 +141,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                     }
                 }
 
-                //TODO: Add code for repositories
+                //TODO: There is currently no conversion path for repositories
                 if (azurePipeline.resources.repositories != null)
                 {
                     gitHubActions.messages.Add("TODO: Resource repositories conversion not yet done: https://github.com/samsmithnz/AzurePipelinesToGitHubActionsConverter/issues/8");
@@ -203,19 +203,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                         for (int i = 0; i < stage.jobs.Length; i++)
                         {
                             //Get the job name
-                            string jobName = stage.jobs[j].job;
-                            if (jobName == null && stage.jobs[i].deployment != null)
-                            {
-                                jobName = stage.jobs[i].deployment;
-                            }
-                            if (jobName == null && stage.jobs[j].template != null)
-                            {
-                                jobName = "Template";
-                            }
-                            if (jobName == null)
-                            {
-                                jobName = "job" + currentIndex.ToString();
-                            }
+                            string jobName = ConversionUtility.GenerateJobName(stage.jobs[i], currentIndex);
                             //Rename the job, using the stage name as prefix, so that we keep the job names unique
                             stage.jobs[j].job = stage.stage + "_Stage_" + jobName;
                             Console.WriteLine("This variable is not needed in actions: " + stage.displayName);

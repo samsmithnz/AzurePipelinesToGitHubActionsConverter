@@ -214,7 +214,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                     }
                     else
                     {
-                        //TODO: DANGER WILL ROBINSON - DANGER 
+                        //DANGER WILL ROBINSON - DANGER 
                         //This is meant for variables, but may affect much more than it should
                         int currentLinespaceFrefixCount = ConversionUtility.CountSpacesBeforeText(line);
                         if (spacePrefixCount > 0 && spacePrefixCount == (currentLinespaceFrefixCount - 2))
@@ -530,6 +530,25 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
             }
 
             return sb.ToString();
+        }
+
+        public static string GenerateJobName(AzurePipelines.Job job, int currentIndex)
+        {
+            //Get the job name
+            string jobName = job.job;
+            if (jobName == null && job.deployment != null)
+            {
+                jobName = job.deployment;
+            }
+            if (jobName == null && job.template != null)
+            {
+                jobName = "Template";
+            }
+            if (string.IsNullOrEmpty(jobName) == true)
+            {
+                jobName = "job" + currentIndex.ToString();
+            }
+            return jobName;
         }
     }
 }

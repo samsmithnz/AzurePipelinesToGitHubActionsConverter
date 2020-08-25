@@ -55,7 +55,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.AzurePipelines
         public Stage[] stages { get; set; }
         public Job[] jobs { get; set; }
         public Step[] steps { get; set; }
-        //TODO: Add code for services
+        //TODO: There is currently no conversion path for services
         public Dictionary<string, string> services { get; set; }        
     }
 }

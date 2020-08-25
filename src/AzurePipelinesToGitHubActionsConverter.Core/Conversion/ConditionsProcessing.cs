@@ -55,7 +55,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
             return processedCondition;
         }
 
-        //TODO: Move to a more generic place and apply to the entire pipeline, not just conditions
+        //TODO: Add more variables. Note that this format (variables['name']) is conditions specific.
         private static string ProcessVariables(string condition)
         {
             if (condition.IndexOf("variables['Build.SourceBranch']") >= 0)
@@ -151,7 +151,6 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                 }
                 else if (ch == ')')
                 {
-                    //TODO: Possible Future enhancement: you may want to check if close ']' has corresponding open '('
                     // i.e. stack has values: if (!brackets.Any()) throw ...
                     int openBracket = brackets.Pop();
 
