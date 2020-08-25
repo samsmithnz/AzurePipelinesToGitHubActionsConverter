@@ -370,7 +370,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
             return sb.ToString();
         }
 
-        //TODO: Should be in Job processing?
+        //Used by jobs and stages
         public static string GenerateJobName(AzurePipelines.Job job, int currentIndex)
         {
             //Get the job name
