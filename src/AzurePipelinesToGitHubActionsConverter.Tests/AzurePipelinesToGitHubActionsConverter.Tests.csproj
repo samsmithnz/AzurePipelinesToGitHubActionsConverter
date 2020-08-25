@@ -84,19 +84,19 @@
     <None Update="yamlFiles\jekyll-container.yml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="filesNotCurrentlyWorking\maven-webapp-to-linux-on-azure.yml">
+    <None Update="yamlFiles\maven-webapp-to-linux-on-azure.yml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="yamlFiles\maven.yml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="filesNotCurrentlyWorking\node.js-express-webapp-to-linux-on-azure.yml">
+    <None Update="yamlFiles\node.js-express-webapp-to-linux-on-azure.yml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="filesNotCurrentlyWorking\node.js-functionapp-to-linux-on-azure.yml">
+    <None Update="yamlFiles\node.js-functionapp-to-linux-on-azure.yml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="filesNotCurrentlyWorking\node.js-react-webapp-to-linux-on-azure.yml">
+    <None Update="yamlFiles\node.js-react-webapp-to-linux-on-azure.yml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="yamlFiles\node.js-with-angular.yml">
@@ -120,7 +120,7 @@
     <None Update="yamlFiles\node.js.yml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="filesNotCurrentlyWorking\php-webapp-to-linux-on-azure.yml">
+    <None Update="yamlFiles\php-webapp-to-linux-on-azure.yml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="yamlFiles\php.yml">
@@ -138,7 +138,7 @@
     <None Update="yamlFiles\python-package.yml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="filesNotCurrentlyWorking\python-to-linux-webapp-on-azure.yml">
+    <None Update="yamlFiles\python-to-linux-webapp-on-azure.yml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="yamlFiles\ruby.yml">
