@@ -155,7 +155,7 @@ jobs:
 ";
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
-            //Assert.AreEqual(true, gitHubOutput.v2ConversionSuccessful);
+            Assert.AreEqual(true, gitHubOutput.v2ConversionSuccessful);
         }
 
         //Test that stages translate to jobs correctly.
@@ -253,7 +253,7 @@ jobs:
 
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
-            //Assert.AreEqual(true, gitHubOutput.v2ConversionSuccessful);
+            Assert.AreEqual(true, gitHubOutput.v2ConversionSuccessful);
         }
 
         //Test that stages translate to jobs correctly.
@@ -279,7 +279,7 @@ jobs: {}
 
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
-            //Assert.AreEqual(true, gitHubOutput.v2ConversionSuccessful);
+            Assert.AreEqual(true, gitHubOutput.v2ConversionSuccessful);
         }
 
 
@@ -327,7 +327,7 @@ jobs:
 ";
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
-            //Assert.AreEqual(true, gitHubOutput.v2ConversionSuccessful);
+            Assert.AreEqual(true, gitHubOutput.v2ConversionSuccessful);
         }
 
         [TestMethod]
@@ -378,7 +378,7 @@ jobs:
 
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
-            //Assert.AreEqual(true, gitHubOutput.v2ConversionSuccessful);
+            Assert.AreEqual(true, gitHubOutput.v2ConversionSuccessful);
         }
 
         [TestMethod]
@@ -427,7 +427,7 @@ jobs:
 
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
-            //Assert.AreEqual(true, gitHubOutput.v2ConversionSuccessful);
+            Assert.AreEqual(true, gitHubOutput.v2ConversionSuccessful);
         }
 
 
@@ -471,7 +471,7 @@ jobs:
 
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
-            //Assert.AreEqual(true, gitHubOutput.v2ConversionSuccessful);
+            Assert.AreEqual(true, gitHubOutput.v2ConversionSuccessful);
         }
 
 
@@ -518,7 +518,7 @@ jobs:
 
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
-            //Assert.AreEqual(true, gitHubOutput.v2ConversionSuccessful);
+            Assert.AreEqual(true, gitHubOutput.v2ConversionSuccessful);
         }
 
     }

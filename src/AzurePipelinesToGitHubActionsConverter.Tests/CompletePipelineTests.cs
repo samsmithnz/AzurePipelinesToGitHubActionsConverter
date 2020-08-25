@@ -76,7 +76,7 @@ jobs:
 
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
-            //Assert.AreEqual(true, gitHubOutput.v2ConversionSuccessful);
+            Assert.AreEqual(true, gitHubOutput.v2ConversionSuccessful);
         }
 
         //Check that the results include the Setup Java step
@@ -133,7 +133,7 @@ jobs:
 
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
-            //Assert.AreEqual(true, gitHubOutput.v2ConversionSuccessful);
+            Assert.AreEqual(true, gitHubOutput.v2ConversionSuccessful);
         }
 
         //Test that the result includes the setup Java step
@@ -184,7 +184,7 @@ jobs:
 
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
-            //Assert.AreEqual(true, gitHubOutput.v2ConversionSuccessful);
+            Assert.AreEqual(true, gitHubOutput.v2ConversionSuccessful);
         }
 
         [TestMethod]
@@ -251,7 +251,7 @@ jobs:
 
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
-            //Assert.AreEqual(true, gitHubOutput.v2ConversionSuccessful);
+            Assert.AreEqual(true, gitHubOutput.v2ConversionSuccessful);
         }
 
         [TestMethod]
@@ -344,7 +344,7 @@ jobs:
 
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
-            //Assert.AreEqual(true, gitHubOutput.v2ConversionSuccessful);
+            Assert.AreEqual(true, gitHubOutput.v2ConversionSuccessful);
         }
 
         //Check that the results include the setup java step
@@ -397,7 +397,7 @@ jobs:
 
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
-            //Assert.AreEqual(true, gitHubOutput.v2ConversionSuccessful);
+            Assert.AreEqual(true, gitHubOutput.v2ConversionSuccessful);
         }
 
         //Check that the results include the setup Node step
@@ -452,7 +452,7 @@ jobs:
 
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
-            //Assert.AreEqual(true, gitHubOutput.v2ConversionSuccessful);
+            Assert.AreEqual(true, gitHubOutput.v2ConversionSuccessful);
         }
 
         [TestMethod]
@@ -548,7 +548,7 @@ jobs:
 
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
-            //Assert.AreEqual(true, gitHubOutput.v2ConversionSuccessful);
+            Assert.AreEqual(true, gitHubOutput.v2ConversionSuccessful);
         }
 
         //Check that the results include the setup Python step
@@ -616,7 +616,7 @@ jobs:
 
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
-            //Assert.AreEqual(true, gitHubOutput.v2ConversionSuccessful);
+            Assert.AreEqual(true, gitHubOutput.v2ConversionSuccessful);
         }
 
 
@@ -659,7 +659,7 @@ jobs:
 
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
-            //Assert.AreEqual(true, gitHubOutput.v2ConversionSuccessful);
+            Assert.AreEqual(true, gitHubOutput.v2ConversionSuccessful);
         }
 
         //Test that the result includes the setup Ruby step
@@ -705,7 +705,7 @@ jobs:
 
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
-            //Assert.AreEqual(true, gitHubOutput.v2ConversionSuccessful);
+            Assert.AreEqual(true, gitHubOutput.v2ConversionSuccessful);
         }
 
         [TestMethod]
@@ -754,7 +754,7 @@ jobs:
 
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
-            //Assert.AreEqual(true, gitHubOutput.v2ConversionSuccessful);
+            Assert.AreEqual(true, gitHubOutput.v2ConversionSuccessful);
         }
 
         [TestMethod]
@@ -836,7 +836,7 @@ jobs:
 
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
-            //Assert.AreEqual(true, gitHubOutput.v2ConversionSuccessful);
+            Assert.AreEqual(true, gitHubOutput.v2ConversionSuccessful);
         }
 
         [TestMethod]
@@ -906,7 +906,7 @@ jobs:
 
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
-            //Assert.AreEqual(true, gitHubOutput.v2ConversionSuccessful);
+            Assert.AreEqual(true, gitHubOutput.v2ConversionSuccessful);
         }
 
         [TestMethod]
@@ -980,7 +980,7 @@ jobs:
 
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
-            //Assert.AreEqual(true, gitHubOutput.v2ConversionSuccessful);
+            Assert.AreEqual(true, gitHubOutput.v2ConversionSuccessful);
         }
 
         [TestMethod]
@@ -1066,7 +1066,7 @@ jobs:
 
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
-            //Assert.AreEqual(true, gitHubOutput.v2ConversionSuccessful);
+            Assert.AreEqual(true, gitHubOutput.v2ConversionSuccessful);
         }
 
 
@@ -1230,7 +1230,7 @@ jobs:
 
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
-            //Assert.AreEqual(true, gitHubOutput.v2ConversionSuccessful);
+            Assert.AreEqual(true, gitHubOutput.v2ConversionSuccessful);
         }
 
         [TestMethod]
@@ -1321,9 +1321,10 @@ jobs:
 
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
-            //Assert.AreEqual(true, gitHubOutput.v2ConversionSuccessful);
+            Assert.AreEqual(true, gitHubOutput.v2ConversionSuccessful);
         }
 
+        //This test doesn't work with V1
         [TestMethod]
         public void SSDeploymentPipelineTest()
         {
@@ -1460,8 +1461,8 @@ env:
   ASPNETCOREEnvironmentSetting: Development
   captureStartErrors: true
   cognitiveServicesSubscriptionKey: ${{ env.cognitiveServicesSubscriptionKey }}
-  environment2: ${{ env.prUC }}
-  environment2Lowercase: ${{ env.prLC }}
+  environment: ${{ env.prUC }}
+  environmentLowercase: ${{ env.prLC }}
   databaseLoginName: ${{ env.databaseLoginNameDev }}
   databaseLoginPassword: ${{ env.databaseLoginPasswordDev }}
   databaseServerName: myapp-${{ env.prLC }}-eu-sqlserver
@@ -1522,7 +1523,7 @@ jobs:
 
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
-            //Assert.AreEqual(true, gitHubOutput.v2ConversionSuccessful);
+            Assert.AreEqual(true, gitHubOutput.v2ConversionSuccessful);
         }
 
         [TestMethod]
@@ -1575,7 +1576,7 @@ jobs:
 
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
-            //Assert.AreEqual(true, gitHubOutput.v2ConversionSuccessful);
+            Assert.AreEqual(true, gitHubOutput.v2ConversionSuccessful);
         }
 
 
@@ -2015,7 +2016,10 @@ jobs:
     - name: Run Integration Test
       run: |
         ./build.ps1 -Tasks test -CodeCoverageThreshold 0 -PesterScript @(
+            # Run the integration tests in a specific group order.
+            # Group 1
             'tests/Integration/DSC_SqlSetup.Integration.Tests.ps1'
+            # Group 2
             'tests/Integration/DSC_SqlAgentAlert.Integration.Tests.ps1'
             'tests/Integration/DSC_SqlServerNetwork.Integration.Tests.ps1'
             'tests/Integration/DSC_SqlLogin.Integration.Tests.ps1'
@@ -2028,15 +2032,19 @@ jobs:
             'tests/Integration/DSC_SqlAgentOperator.Integration.Tests.ps1'
             'tests/Integration/DSC_SqlServiceAccount.Integration.Tests.ps1'
             'tests/Integration/DSC_SqlAgentFailsafe.Integration.Tests.ps1'
+            # Group 3
             'tests/Integration/DSC_SqlRole.Integration.Tests.ps1'
             'tests/Integration/DSC_SqlRS.Integration.Tests.ps1'
             'tests/Integration/DSC_SqlDatabaseUser.Integration.Tests.ps1'
             'tests/Integration/DSC_SqlReplication.Integration.Tests.ps1'
+            # Group 4
             'tests/Integration/DSC_SqlScript.Integration.Tests.ps1'
             'tests/Integration/DSC_SqlDatabasePermission.Integration.Tests.ps1'
+            # Group 5
             'tests/Integration/DSC_SqlSecureConnection.Integration.Tests.ps1'
             'tests/Integration/DSC_SqlScriptQuery.Integration.Tests.ps1'
             'tests/Integration/DSC_SqlProtocol.Integration.Tests.ps1'
+            # Group 6 (tests makes changes that could make SQL Server to loose connectivity)
             'tests/Integration/DSC_SqlProtocolTcpIp.Integration.Tests.ps1'
             'tests/Integration/DSC_SqlDatabaseObjectPermission.Integration.Tests.ps1'
         )
@@ -2063,7 +2071,10 @@ jobs:
     - name: Run Integration Test
       run: |
         ./build.ps1 -Tasks test -CodeCoverageThreshold 0 -PesterScript @(
+            # Run the integration tests in a specific group order.
+            # Group 1
             'tests/Integration/DSC_SqlSetup.Integration.Tests.ps1'
+            # Group 2
             'tests/Integration/DSC_SqlAgentAlert.Integration.Tests.ps1'
             'tests/Integration/DSC_SqlLogin.Integration.Tests.ps1'
             'tests/Integration/DSC_SqlEndpoint.Integration.Tests.ps1'
@@ -2075,15 +2086,19 @@ jobs:
             'tests/Integration/DSC_SqlAgentOperator.Integration.Tests.ps1'
             'tests/Integration/DSC_SqlServiceAccount.Integration.Tests.ps1'
             'tests/Integration/DSC_SqlAgentFailsafe.Integration.Tests.ps1'
+            # Group 3
             'tests/Integration/DSC_SqlRole.Integration.Tests.ps1'
             'tests/Integration/DSC_SqlRS.Integration.Tests.ps1'
             'tests/Integration/DSC_SqlDatabaseUser.Integration.Tests.ps1'
             'tests/Integration/DSC_SqlReplication.Integration.Tests.ps1'
+            # Group 4
             'tests/Integration/DSC_SqlScript.Integration.Tests.ps1'
             'tests/Integration/DSC_SqlDatabasePermission.Integration.Tests.ps1'
+            # Group 5
             'tests/Integration/DSC_SqlSecureConnection.Integration.Tests.ps1'
             'tests/Integration/DSC_SqlScriptQuery.Integration.Tests.ps1'
             'tests/Integration/DSC_SqlProtocol.Integration.Tests.ps1'
+            # Group 6 (tests makes changes that could make SQL Server to loose connectivity)
             'tests/Integration/DSC_SqlProtocolTcpIp.Integration.Tests.ps1'
             'tests/Integration/DSC_SqlDatabaseObjectPermission.Integration.Tests.ps1'
         )
@@ -2139,7 +2154,7 @@ jobs:
 
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
-            //Assert.AreEqual(true, gitHubOutput.v2ConversionSuccessful);
+            Assert.AreEqual(true, gitHubOutput.v2ConversionSuccessful);
         }
 
     }

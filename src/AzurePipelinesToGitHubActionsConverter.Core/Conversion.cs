@@ -26,22 +26,22 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
         {
             ConversionResponse conversionResponse = null;
 
-            //try
-            //{
-            conversionResponse = ConvertAzurePipelineToGitHubActionV2(yaml);
-            //}
-            //catch (Exception ex2)
-            //{
-            //    Debug.WriteLine("Conversion V2 failed. Trying V1: " + ex2.Message);
-            //    try
-            //    {
-            //      conversionResponse = ConvertAzurePipelineToGitHubActionV1(yaml);
-            //    }
-            //    catch (Exception ex1)
-            //    {
-            //        Debug.WriteLine("Conversion V1 failed. Trying V2: " + ex1.Message);
-            //    }
-            //}
+            try
+            {
+                conversionResponse = ConvertAzurePipelineToGitHubActionV2(yaml);
+            }
+            catch (Exception ex2)
+            {
+                Debug.WriteLine("Conversion V2 failed. Trying V1: " + ex2.Message);
+                try
+                {
+                    conversionResponse = ConvertAzurePipelineToGitHubActionV1(yaml);
+                }
+                catch (Exception ex1)
+                {
+                    Debug.WriteLine("Conversion V1 failed. Trying V2: " + ex1.Message);
+                }
+            }
 
             return conversionResponse;
         }

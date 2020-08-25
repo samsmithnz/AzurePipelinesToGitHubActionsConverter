@@ -401,7 +401,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                                 {
                                     jobName = "Template";
                                 }
-                                if (jobName == null)
+                                if (string.IsNullOrEmpty(jobName) == true)
                                 {
                                     jobName = "job" + jobIndex.ToString();
                                 }
