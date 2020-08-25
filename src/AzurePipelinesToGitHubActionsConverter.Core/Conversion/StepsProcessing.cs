@@ -35,6 +35,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                     case "AZURERMWEBAPPDEPLOYMENT@3":
                     case "AZUREWEBAPPCONTAINER@1":
                     case "AZURERMWEBAPPDEPLOYMENT@4":
+                    case "AZUREWEBAPP@1":
                         gitHubStep = CreateAzureWebAppDeploymentStep(step);
                         break;
                     case "CMDLINE@2":

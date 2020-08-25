@@ -360,6 +360,35 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
         }
 
         [TestMethod]
+        public void AzureWebAppIndividualStepTest()
+        {
+            //Arrange
+            Conversion conversion = new Conversion();
+            string yaml = @"
+- task: AzureWebApp@1
+  displayName: 'Deploy Azure Web App- app1'
+  inputs:
+    azureSubscription: $(azureServiceConnectionId)
+    appName: $(webAppName)
+    package: $(build.artifactstagingdirectory)/drop/MyProject.Web.zip
+";
+
+            //Act
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineTaskToGitHubActionTask(yaml);
+
+            //Assert
+            string expected = @"
+- name: Deploy Azure Web App- app1
+  uses: Azure/webapps-deploy@v2
+  with:
+    app-name: ${{ env.webAppName }}
+    package: ${GITHUB_WORKSPACE}/drop/MyProject.Web.zip
+";
+            expected = UtilityTests.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+        }
+
+        [TestMethod]
         public void PublishPipelineArtifactsIndividualStepTest()
         {
             //Arrange

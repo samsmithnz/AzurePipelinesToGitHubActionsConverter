@@ -346,28 +346,6 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
             return input;
         }
 
-        //Remove the first line in a string
-        public static string RemoveFirstLine(string input)
-        {
-            if (input == null)
-            {
-                return null;
-            }
-            input = input.Trim();
-
-            StringBuilder sb = new StringBuilder();
-            string[] lines = input.Split(Environment.NewLine);
-            for (int i = 0; i < lines.Length; i++)
-            {
-                if (i > 0)
-                {
-                    sb.Append(lines[i]);
-                    sb.Append(Environment.NewLine);
-                }
-            }
-
-            return sb.ToString();
-        }
 
         //Used by jobs and stages
         public static string GenerateJobName(AzurePipelines.Job job, int currentIndex)
