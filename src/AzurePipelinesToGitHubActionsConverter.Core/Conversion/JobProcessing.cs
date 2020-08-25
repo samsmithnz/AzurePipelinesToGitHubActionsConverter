@@ -19,7 +19,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
             {
                 name = job.displayName,
                 needs = job.dependsOn,
-                _if = generalProcessing.ProcessCondition(job.condition),
+                _if = ConditionsProcessing.TranslateConditions(job.condition),
                 runs_on = generalProcessing.ProcessPool(job.pool),
                 strategy = generalProcessing.ProcessStrategy(job.strategy),
                 container = generalProcessing.ProcessContainer(resources),

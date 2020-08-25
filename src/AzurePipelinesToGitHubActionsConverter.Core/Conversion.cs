@@ -28,14 +28,14 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
 
             //try
             //{
-                conversionResponse = ConvertAzurePipelineToGitHubActionV2(yaml);
+            conversionResponse = ConvertAzurePipelineToGitHubActionV2(yaml);
             //}
             //catch (Exception ex2)
             //{
             //    Debug.WriteLine("Conversion V2 failed. Trying V1: " + ex2.Message);
             //    try
             //    {
-            //        conversionResponse = ConvertAzurePipelineToGitHubActionV1(yaml);
+            //      conversionResponse = ConvertAzurePipelineToGitHubActionV1(yaml);
             //    }
             //    catch (Exception ex1)
             //    {
@@ -300,7 +300,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                     //Container
                     if (resourcesYaml.IndexOf("\"containers\"") >= 0)
                     {
-                        gitHubActions.messages.Add("TODO: Container conversion not yet done, we need help - our container skills are woeful: https://github.com/samsmithnz/AzurePipelinesToGitHubActionsConverter/issues/39");
+                        gitHubActions.messages.Add("TODO: Container conversion not yet done, we need help!: https://github.com/samsmithnz/AzurePipelinesToGitHubActionsConverter/issues/39");
                     }
                 }
                 //Strategy

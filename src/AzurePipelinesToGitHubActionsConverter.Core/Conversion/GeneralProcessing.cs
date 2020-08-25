@@ -95,6 +95,75 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
             return dependsOn;
         }
 
+        public AzurePipelines.Environment ProcessEnvironmentV2(string environmentYaml)
+        {
+            AzurePipelines.Environment environment = null;
+            if (environmentYaml != null)
+            {
+                try
+                {
+                    environment = GenericObjectSerialization.DeserializeYaml<AzurePipelines.Environment>(environmentYaml);
+                }
+                catch (Exception ex1)
+                {
+                    Debug.WriteLine($"DeserializeYaml<AzurePipelines.Environment>(environmentYaml) swallowed an exception: " + ex1.Message);
+
+                    try
+                    {
+                        //when the environment is just a simple string, e.g.  //environment: environmentName.resourceName
+                        string simpleEnvironment = GenericObjectSerialization.DeserializeYaml<string>(environmentYaml);
+                        environment = new AzurePipelines.Environment
+                        {
+                            name = simpleEnvironment
+                        };
+                    }
+                    catch (Exception ex2)
+                    {
+                        JObject json = JSONSerialization.DeserializeStringToObject(environmentYaml);
+                        if (json["tags"].Type.ToString() == "String")
+                        {
+                            string name = null;
+                            if (json["name"] != null)
+                            {
+                                name = json["name"].ToString();
+                            }
+                            string resourceName = null;
+                            if (json["resourceName"] != null)
+                            {
+                                name = json["resourceName"].ToString();
+                            }
+                            string resourceId = null;
+                            if (json["resourceId"] != null)
+                            {
+                                name = json["resourceId"].ToString();
+                            }
+                            string resourceType = null;
+                            if (json["resourceType"] != null)
+                            {
+                                name = json["resourceType"].ToString();
+                            }
+                            environment = new AzurePipelines.Environment
+                            {
+                                name = name,
+                                resourceName = resourceName,
+                                resourceId = resourceId,
+                                resourceType = resourceType
+                            };
+                            //Move the single string demands to an array
+                            environment.tags = new string[1];
+                            environment.tags[0] = json["tags"].ToString();
+                        }
+                        else
+                        {
+                            Debug.WriteLine($"Manual deserialization with demands string swallowed an exception: " + ex2.Message);
+                        }
+                    }
+                }
+            }
+
+            return environment;
+        }
+
         public GitHubActions.Trigger ProcessPullRequestV2(string pullRequestYaml)
         {
             AzurePipelines.Trigger trigger = null;
@@ -268,7 +337,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                     }
                     if (stageJson["condition"] != null)
                     {
-                        stage.condition = ProcessCondition(stageJson["condition"].ToString());
+                        stage.condition = stageJson["condition"].ToString();
                     }
                     if (stageJson["variables"] != null)
                     {
@@ -282,27 +351,6 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                 }
 
                 //process the jobs
-
-                //for (int i = 0; i < stagesYamlElements.Count; i++)
-                //{
-                //    KeyValuePair<string, string> stageYaml = stagesYamlElements[i];
-                //    if (stageYaml.Key.IndexOf("stage:") >= 0)
-                //    {
-                //        try
-                //        {
-                //            AzurePipelines.Stage stage = GenericObjectSerialization.DeserializeYaml<AzurePipelines.Stage>(stageYaml.Value);
-                //            stages.Add(stage);
-                //        }
-                //        catch (Exception ex)
-                //        {
-                //            Debug.WriteLine($"DeserializeYaml<AzurePipelines.Stage>(stageYaml.Value) swallowed an exception: " + ex.Message);
-                //            //jobs = GenericObjectSerialization.DeserializeYaml<Dictionary<string, GitHubActions.Job>>(jobYaml);
-                //        }
-                //    }
-                //    //else if (stagesYaml.Key.Ind)
-                //}
-                //As the dependsOn for a stage can be string or string[], we need to convert the string to string[] for a consistent deserialization
-
                 if (stages != null)
                 {
                     int jobCount = 0;
@@ -325,7 +373,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                                 jobs[jobIndex] = stage.jobs[i];
                                 if (stage.variables != null)
                                 {
-                                    if (jobs[jobIndex].variables==null)
+                                    if (jobs[jobIndex].variables == null)
                                     {
                                         jobs[jobIndex].variables = new Dictionary<string, string>();
                                     }
@@ -337,6 +385,10 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                                             jobs[jobIndex].variables.Add(stageVariable.Key, stageVariable.Value);
                                         }
                                     }
+                                }
+                                if (stage.condition != null)
+                                {
+                                    jobs[jobIndex].condition = stage.condition;
                                 }
                                 //TODO: this is duplicate code to PipelineProcessing, line 206. Need to refactor
                                 //Get the job name
@@ -383,6 +435,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
             AzurePipelines.Job[] jobs = new AzurePipelines.Job[jobsJson.Count()];
             if (jobsJson != null)
             {
+                string json = jobsJson.ToString();
                 int i = 0;
                 foreach (JToken jobJson in jobsJson)
                 {
@@ -405,6 +458,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                     }
                     if (jobJson["strategy"] != null)
                     {
+                        //TODO: Refactor into function
                         AzurePipelines.Strategy strategy = null;
                         try
                         {
@@ -419,6 +473,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                     }
                     else if (strategyYaml != null)
                     {
+                        //TODO: Refactor into function
                         AzurePipelines.Strategy strategy = null;
                         try
                         {
@@ -437,11 +492,15 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                     }
                     if (jobJson["condition"] != null)
                     {
-                        job.condition = ProcessCondition(jobJson["condition"].ToString());
+                        job.condition = ConditionsProcessing.TranslateConditions(jobJson["condition"].ToString());
                     }
                     if (jobJson["template"] != null)
                     {
                         job.template = jobJson["template"].ToString();
+                    }
+                    if (jobJson["environment"] != null)
+                    {
+                        job.environment = ProcessEnvironmentV2(jobJson["environment"].ToString());
                     }
                     if (jobJson["timeoutInMinutes"] != null)
                     {
@@ -476,32 +535,9 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                     jobs[i] = job;
                     i++;
                 }
-                //try
-                //{
-                //    jobs = GenericObjectSerialization.DeserializeYaml<AzurePipelines.Job[]>(jobYaml);
-                //}
-                //catch (Exception ex)
-                //{
-                //    Debug.WriteLine($"DeserializeYaml<Dictionary<string, string>>(parametersYaml) swallowed an exception: " + ex.Message);
-                //    //jobs = GenericObjectSerialization.DeserializeYaml<Dictionary<string, GitHubActions.Job>>(jobYaml);
-                //}
             }
 
             return jobs;
-            //if (jobs != null)
-            //{
-            //    Dictionary<string, GitHubActions.Job> gitHubJobs = new Dictionary<string, GitHubActions.Job>();
-            //    foreach (AzurePipelines.Job job in jobs)
-            //    {
-            //        JobProcessing jobProcessing = new JobProcessing(_verbose);
-            //        gitHubJobs.Add(job.job, jobProcessing.ProcessJob(job, null));
-            //    }
-            //    return gitHubJobs;
-            //}
-            //else
-            //{
-            //    return null;
-            //}
         }
 
         public Resources ExtractResourcesV2(string resourcesYaml)
@@ -811,12 +847,6 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                 }
             }
             return newPool;
-        }
-
-        //process the conditions
-        public string ProcessCondition(string condition)
-        {
-            return ConditionsProcessing.TranslateConditions(condition);
         }
 
         //process the strategy matrix

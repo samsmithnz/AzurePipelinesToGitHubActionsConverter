@@ -164,7 +164,7 @@ jobs:
     displayName: Deploy job
     environment: Dev
     pool:
-      vmImage: windows-latest     
+      vmImage: windows-latest
     strategy:
       runOnce:
         deploy:

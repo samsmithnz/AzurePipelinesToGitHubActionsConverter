@@ -217,10 +217,19 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                         //TODO: DANGER WILL ROBINSON - DANGER 
                         //This is meant for variables, but may affect much more than it should
                         int currentLinespaceFrefixCount = ConversionUtility.CountSpacesBeforeText(line);
-                        if (spacePrefixCount > 0 && (currentLinespaceFrefixCount - 2) == spacePrefixCount)
+                        if (spacePrefixCount > 0 && spacePrefixCount == (currentLinespaceFrefixCount - 2))
                         {
+                            //Correct the location. For example:
+                            //    var1: value1
+                            //becomes:
+                            //  var1: value1
                             sb.Append(GenerateSpaces(spacePrefixCount));
                             sb.Append(line.Trim());
+                        }
+                        else if (spacePrefixCount > 0 && spacePrefixCount > (currentLinespaceFrefixCount - 2))
+                        {
+                            spacePrefixCount = 0;
+                            sb.Append(line);
                         }
                         else
                         {

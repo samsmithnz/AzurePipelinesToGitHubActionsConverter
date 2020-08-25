@@ -11,7 +11,6 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.AzurePipelines
     //  tags: string | [ string ] # tag names to filter the resources in the environment
     //
     //Technically can also be a simple string, but we replace that in the intial conversion
-    //
     //environment: environmentName.resourceName
 
     public class Environment
