@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
 {
-    public    class StagesProcessing
+    public class StagesProcessing
     {
         private readonly bool _verbose;
         public StagesProcessing(bool verbose)
@@ -16,28 +16,21 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
         {
             AzurePipelines.Job[] jobs = null;
             List<AzurePipelines.Stage> stages = new List<AzurePipelines.Stage>();
-            GeneralProcessing gp = new GeneralProcessing(_verbose);
             if (stagesJson != null)
             {
                 //for each stage
                 foreach (JToken stageJson in stagesJson)
                 {
-                    AzurePipelines.Stage stage = new AzurePipelines.Stage();
-                    if (stageJson["stage"] != null)
+                    AzurePipelines.Stage stage = new AzurePipelines.Stage
                     {
-                        stage.stage = stageJson["stage"].ToString();
-                    }
-                    if (stageJson["displayName"] != null)
-                    {
-                        stage.displayName = stageJson["displayName"].ToString();
-                    }
+                        stage = stageJson["stage"]?.ToString(),
+                        displayName = stageJson["displayName"]?.ToString(),
+                        condition = stageJson["condition"]?.ToString()
+                    };
                     if (stageJson["dependsOn"] != null)
                     {
+                        GeneralProcessing gp = new GeneralProcessing(_verbose);
                         stage.dependsOn = gp.ProcessDependsOnV2(stageJson["dependsOn"].ToString());
-                    }
-                    if (stageJson["condition"] != null)
-                    {
-                        stage.condition = stageJson["condition"].ToString();
                     }
                     if (stageJson["variables"] != null)
                     {
@@ -65,6 +58,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                     }
                     jobs = new AzurePipelines.Job[jobCount];
 
+                    //Giant nested loop ahead. Loop through stages, looking for all jobs
                     int jobIndex = 0;
                     foreach (Stage stage in stages)
                     {
@@ -103,6 +97,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                 }
             }
 
+            //Build the final list of GitHub jobs and return it
             if (jobs != null)
             {
                 Dictionary<string, GitHubActions.Job> gitHubJobs = new Dictionary<string, GitHubActions.Job>();

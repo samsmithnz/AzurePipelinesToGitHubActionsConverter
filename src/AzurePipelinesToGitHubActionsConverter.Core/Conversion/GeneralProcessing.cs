@@ -42,7 +42,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                 }
                 catch (Exception ex)
                 {
-                    Debug.WriteLine($"DeserializeYaml<string>(dependsOnYaml) swallowed an exception: " + ex.Message);
+                    ConversionUtility.WriteLine($"DeserializeYaml<string>(dependsOnYaml) swallowed an exception: " + ex.Message, _verbose);
                     dependsOn = GenericObjectSerialization.DeserializeYaml<string[]>(dependsOnYaml);
                 }
             }
@@ -62,7 +62,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                 }
                 catch (Exception ex1)
                 {
-                    Debug.WriteLine($"DeserializeYaml<AzurePipelines.Environment>(environmentYaml) swallowed an exception: " + ex1.Message);
+                    ConversionUtility.WriteLine($"DeserializeYaml<AzurePipelines.Environment>(environmentYaml) swallowed an exception: " + ex1.Message, _verbose);
 
                     try
                     {
@@ -111,7 +111,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                         }
                         else
                         {
-                            Debug.WriteLine($"Manual deserialization with demands string swallowed an exception: " + ex2.Message);
+                            ConversionUtility.WriteLine($"Manual deserialization with demands string swallowed an exception: " + ex2.Message, _verbose);
                         }
                     }
                 }
@@ -131,7 +131,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                 }
                 catch (Exception ex)
                 {
-                    Debug.WriteLine($"DeserializeYaml<Resources>(resourcesYaml) swallowed an exception: " + ex.Message);
+                    ConversionUtility.WriteLine($"DeserializeYaml<Resources>(resourcesYaml) swallowed an exception: " + ex.Message, _verbose);
                 }
             }
             return null;
@@ -149,7 +149,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                 }
                 catch (Exception ex)
                 {
-                    Debug.WriteLine($"DeserializeYaml<AzurePipelines.Strategy>(strategyYaml) swallowed an exception: " + ex.Message);
+                    ConversionUtility.WriteLine($"DeserializeYaml<AzurePipelines.Strategy>(strategyYaml) swallowed an exception: " + ex.Message, _verbose);
                 }
             }
             return null;
@@ -186,7 +186,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                 }
                 catch (Exception ex)
                 {
-                    Debug.WriteLine($"DeserializeYaml<Pool>(poolYaml) swallowed an exception: " + ex.Message);
+                    ConversionUtility.WriteLine($"DeserializeYaml<Pool>(poolYaml) swallowed an exception: " + ex.Message, _verbose);
                     //If it's a simple pool string, and has no json in it, assign it to the name
                     if (poolYaml.IndexOf("{") < 0)
                     {
@@ -227,7 +227,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                         }
                         else
                         {
-                            Debug.WriteLine($"Manual deserialization with demands string swallowed an exception: " + ex.Message);
+                            ConversionUtility.WriteLine($"Manual deserialization with demands string swallowed an exception: " + ex.Message, _verbose);
                         }
                     }
                 }

@@ -60,18 +60,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
             {
                 newJob.job_message += "Note: Azure DevOps job environment does not have an equivalent in GitHub Actions yet";
             }
-            //if (job.pool != null && job.pool.demands != null)
-            //{
-            //    newJob.job_message += "Note: GitHub Actions does not have a 'demands' command on 'runs-on' yet";
-            //}
-            //if (newJob._if != null)
-            //{
-            //    if (newJob.job_message != null)
-            //    {
-            //        newJob.job_message += System.Environment.NewLine;
-            //    }
-            //}
-            if (job.continueOnError)
+            if (job.continueOnError == true)
             {
                 newJob.continue_on_error = job.continueOnError;
             }
@@ -119,19 +108,13 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                 int i = 0;
                 foreach (JToken jobJson in jobsJson)
                 {
-                    AzurePipelines.Job job = new AzurePipelines.Job();
-                    if (jobJson["job"] != null)
+                    AzurePipelines.Job job = new AzurePipelines.Job
                     {
-                        job.job = jobJson["job"].ToString();
-                    }
-                    if (jobJson["deployment"] != null)
-                    {
-                        job.deployment = jobJson["deployment"].ToString();
-                    }
-                    if (jobJson["displayName"] != null)
-                    {
-                        job.displayName = jobJson["displayName"].ToString();
-                    }
+                        job = jobJson["job"]?.ToString(),
+                        deployment = jobJson["deployment"]?.ToString(),
+                        displayName = jobJson["displayName"]?.ToString(),
+                        template = jobJson["template"]?.ToString()
+                    };
                     if (jobJson["pool"] != null)
                     {
                         job.pool = gp.ProcessPoolV2(jobJson["pool"].ToString());
@@ -151,10 +134,6 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                     if (jobJson["condition"] != null)
                     {
                         job.condition = ConditionsProcessing.TranslateConditions(jobJson["condition"].ToString());
-                    }
-                    if (jobJson["template"] != null)
-                    {
-                        job.template = jobJson["template"].ToString();
                     }
                     if (jobJson["environment"] != null)
                     {
@@ -180,15 +159,13 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                     }
                     if (jobJson["steps"] != null)
                     {
-                        //job.steps = ProcessStepsV2(jobJson["steps"]);
                         try
                         {
                             job.steps = GenericObjectSerialization.DeserializeYaml<AzurePipelines.Step[]>(jobJson["steps"].ToString());
                         }
                         catch (Exception ex)
                         {
-                            Debug.WriteLine($"DeserializeYaml<AzurePipelines.Step[]>(jobJson[\"steps\"].ToString() swallowed an exception: " + ex.Message);
-                            //jobs = GenericObjectSerialization.DeserializeYaml<Dictionary<string, GitHubActions.Job>>(jobYaml);
+                            ConversionUtility.WriteLine($"DeserializeYaml<AzurePipelines.Step[]>(jobJson[\"steps\"].ToString() swallowed an exception: " + ex.Message, _verbose);
                         }
                     }
                     jobs[i] = job;
@@ -201,10 +178,10 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
 
         public AzurePipelines.Job[] ProcessJobFromPipelineRootV2(string poolYaml, string strategyYaml, string stepsYaml)
         {
-            GeneralProcessing gp = new GeneralProcessing(_verbose);
             Pool pool = null;
             if (poolYaml != null)
             {
+                GeneralProcessing gp = new GeneralProcessing(_verbose);
                 pool = gp.ProcessPoolV2(poolYaml);
             }
             AzurePipelines.Strategy strategy = null;
@@ -215,7 +192,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"DeserializeYaml<AzurePipelines.Strategy>(strategyYaml) swallowed an exception: " + ex.Message);
+                ConversionUtility.WriteLine($"DeserializeYaml<AzurePipelines.Strategy>(strategyYaml) swallowed an exception: " + ex.Message, _verbose);
             }
             AzurePipelines.Step[] steps = null;
             if (stepsYaml != null)
@@ -226,7 +203,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                 }
                 catch (Exception ex)
                 {
-                    Debug.WriteLine($"DeserializeYaml<AzurePipelines.Step[]>(stepsYaml) swallowed an exception: " + ex.Message);
+                    ConversionUtility.WriteLine($"DeserializeYaml<AzurePipelines.Step[]>(stepsYaml) swallowed an exception: " + ex.Message, _verbose);
                 }
             }
 

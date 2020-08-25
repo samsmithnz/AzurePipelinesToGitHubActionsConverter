@@ -36,8 +36,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                     //Remove the comment if it's the a full line (after removing the preceeding white space)
                     if (line.TrimStart().IndexOf("#") == 0)
                     {
-                        //don't add line, remove
-                        Console.WriteLine(line);
+                        //don't add the line back to the stringbuilder, (effectively removing it)
                     }
                     else
                     {

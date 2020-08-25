@@ -24,7 +24,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion.Serialization
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"{nameof(DeserializeSimpleTriggerAndSimpleVariables)} swallowed an exception: " + ex.Message);
+                ConversionUtility.WriteLine($"{nameof(DeserializeSimpleTriggerAndSimpleVariables)} swallowed an exception: " + ex.Message, true);
                 //Do nothing
             }
             return azurePipeline;
@@ -45,7 +45,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion.Serialization
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"{nameof(DeserializeSimpleTriggerAndComplexVariables)} swallowed an exception: " + ex.Message);
+                ConversionUtility.WriteLine($"{nameof(DeserializeSimpleTriggerAndComplexVariables)} swallowed an exception: " + ex.Message, true);
                 //Do nothing
             }
             return azurePipeline;
@@ -66,7 +66,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion.Serialization
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"{nameof(DeserializeComplexTriggerAndSimpleVariables)} swallowed an exception: " + ex.Message);
+                ConversionUtility.WriteLine($"{nameof(DeserializeComplexTriggerAndSimpleVariables)} swallowed an exception: " + ex.Message, true);
                 //Do nothing
             }
             return azurePipeline;
@@ -129,7 +129,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion.Serialization
                         else if (scanningForVariables == true)
                         {
                             //While scanning for variables, get the indent level. It should be (variablesIndentLevel + 2), if it's more than that, we have a variable insert.
-                            Debug.WriteLine("Scanning for vars: " + line);
+                            ConversionUtility.WriteLine("Scanning for vars: " + line, true);
                             int lineIndentLevel = ConversionUtility.CountSpacesBeforeText(line);
                             if ((variablesIndentLevel - (lineIndentLevel - 2)) == 0)
                             {

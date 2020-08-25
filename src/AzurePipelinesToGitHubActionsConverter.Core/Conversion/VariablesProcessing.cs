@@ -20,6 +20,21 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
             VariableList = new List<string>();
         }
 
+        //process all (simple) variables
+        public Dictionary<string, string> ProcessSimpleVariables(Dictionary<string, string> variables)
+        {
+            if (variables != null)
+            {
+                //update variables from the $(variableName) format to ${{variableName}} format, by piping them into a list for replacement later.
+                foreach (string item in variables.Keys)
+                {
+                    VariableList.Add(item);
+                }
+            }
+
+            return variables;
+        }
+
         //process all (complex) variables
         public Dictionary<string, string> ProcessComplexVariables(AzurePipelines.Variable[] variables)
         {
@@ -58,47 +73,6 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
             return processedVariables;
         }
 
-        public List<string> SearchForVariablesV2(GitHubActionsRoot gitHubActions)
-        {
-            List<string> variables = new List<string>();
-            if (gitHubActions.env != null)
-            {
-                foreach (KeyValuePair<string, string> env in gitHubActions.env)
-                {
-                    variables.Add(env.Key);
-                }
-            }
-            if (gitHubActions.jobs != null)
-            {
-                foreach (KeyValuePair<string, GitHubActions.Job> job in gitHubActions.jobs)
-                {
-                    if (job.Value.env != null)
-                    {
-                        foreach (KeyValuePair<string, string> env in job.Value.env)
-                        {
-                            variables.Add(env.Key);
-                        }
-                    }
-                }
-            }
-            return variables;
-        }
-
-        //process all (simple) variables
-        public Dictionary<string, string> ProcessSimpleVariables(Dictionary<string, string> variables)
-        {
-            if (variables != null)
-            {
-                //update variables from the $(variableName) format to ${{variableName}} format, by piping them into a list for replacement later.
-                foreach (string item in variables.Keys)
-                {
-                    VariableList.Add(item);
-                }
-            }
-
-            return variables;
-        }
-
         public Dictionary<string, string> ProcessComplexVariablesV2(List<AzurePipelines.Variable> variables)
         {
             Dictionary<string, string> processedVariables = new Dictionary<string, string>();
@@ -116,7 +90,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                     //groups
                     if (variables[i].group != null)
                     {
-                        if (!processedVariables.ContainsKey("group"))
+                        if (processedVariables.ContainsKey("group") == false)
                         {
                             processedVariables.Add("group", variables[i].group);
                         }
@@ -135,6 +109,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
             }
             return processedVariables;
         }
+     
 
         public Dictionary<string, string> ProcessParametersAndVariablesV2(string parametersYaml, string variablesYaml)
         {
@@ -156,7 +131,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                 }
                 catch (Exception ex)
                 {
-                    Debug.WriteLine($"DeserializeYaml<Dictionary<string, string>>(parametersYaml) swallowed an exception: " + ex.Message);
+                    ConversionUtility.WriteLine($"DeserializeYaml<Dictionary<string, string>>(parametersYaml) swallowed an exception: " + ex.Message, _verbose);
                     parameters = GenericObjectSerialization.DeserializeYaml<List<Variable>>(parametersYaml);
                 }
             }
@@ -179,7 +154,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                 }
                 catch (Exception ex)
                 {
-                    Debug.WriteLine($"DeserializeYaml<Dictionary<string, string>>(variablesYaml) swallowed an exception: " + ex.Message);
+                    ConversionUtility.WriteLine($"DeserializeYaml<Dictionary<string, string>>(variablesYaml) swallowed an exception: " + ex.Message, _verbose);
                     parameters = GenericObjectSerialization.DeserializeYaml<List<Variable>>(variablesYaml);
                 }
             }
@@ -231,6 +206,33 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
             }
 
             return variableList;
+        }
+
+        //Search GitHub object for all environment variables
+        public List<string> SearchForVariablesV2(GitHubActionsRoot gitHubActions)
+        {
+            List<string> variables = new List<string>();
+            if (gitHubActions.env != null)
+            {
+                foreach (KeyValuePair<string, string> env in gitHubActions.env)
+                {
+                    variables.Add(env.Key);
+                }
+            }
+            if (gitHubActions.jobs != null)
+            {
+                foreach (KeyValuePair<string, GitHubActions.Job> job in gitHubActions.jobs)
+                {
+                    if (job.Value.env != null)
+                    {
+                        foreach (KeyValuePair<string, string> env in job.Value.env)
+                        {
+                            variables.Add(env.Key);
+                        }
+                    }
+                }
+            }
+            return variables;
         }
 
         private List<string> FindPipelineVariablesInString(string text)
