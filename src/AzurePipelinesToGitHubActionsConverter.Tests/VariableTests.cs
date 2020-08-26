@@ -385,7 +385,6 @@ parameters: # defaults for any parameters that aren't specified
     default: Dev
   - name: pool
     type: string
-    default: Dev
 variables: 
   - name: plainVar2
     value: ok2
@@ -397,7 +396,7 @@ variables:
     value: dev2
     readonly: false
   - name: pool2
-    value: dev2
+    value: """"
     readonly: false
 ";
 
@@ -412,11 +411,11 @@ env:
   plainVar: ok
   environment: Dev
   strategy: Dev
-  pool: Dev
+  pool: ''
   plainVar2: ok2
   environment2: dev2
   strategy2: dev2
-  pool2: dev2
+  pool2: ''
 ";
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);

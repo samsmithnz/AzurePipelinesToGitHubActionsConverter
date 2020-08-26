@@ -1,5 +1,6 @@
 ﻿using AzurePipelinesToGitHubActionsConverter.Core.Extensions;
 using System;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 
@@ -371,7 +372,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
         {
             if (verbose == true)
             {
-                Console.WriteLine(message);
+                Debug.WriteLine(message);
             }
         }
     }

@@ -118,8 +118,12 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                 for (int i = 0; i < parameter.Count; i++)
                 {
                     //name/value pairs
-                    if (parameter[i].name != null && parameter[i].@default != null)
+                    if (parameter[i].name != null )
                     {
+                        if (parameter[i].@default == null)
+                        {
+                            parameter[i].@default = "";
+                        }
                         processedVariables.Add(parameter[i].name, parameter[i].@default);
                         VariableList.Add(parameter[i].name);
                     }
