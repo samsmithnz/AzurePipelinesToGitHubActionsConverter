@@ -291,7 +291,10 @@ jobs: {}
 stages:
 - stage: Deploy
   variables:
-    prId: '00B'
+    ${{ if ne(variables['Build.SourceBranchName'], 'master') }}:
+      prId: '00A'
+    ${{ if eq(variables['Build.SourceBranchName'], 'master') }}:
+      prId: '00B'
     prUC: '002'
     prLC: '003'
   jobs:

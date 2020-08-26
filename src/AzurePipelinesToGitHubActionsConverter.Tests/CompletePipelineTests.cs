@@ -1121,9 +1121,8 @@ stages:
   jobs:
     - deployment: 
       variables:
-        Art: ""Server=.;Database=Art;Trusted_Connection=True;""
-        #- name: Art
-        #  value: ""Server=.;Database=Art;Trusted_Connection=True;""
+        - name: Art
+          value: ""Server=.;Database=Art;Trusted_Connection=True;""
         
       environment: 
         name: windows-server

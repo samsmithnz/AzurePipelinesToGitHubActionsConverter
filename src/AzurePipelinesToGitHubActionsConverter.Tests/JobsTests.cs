@@ -89,7 +89,7 @@ jobs:
 
         //This test doesn't work with V1
         [TestMethod]
-        public void ComplexVariablesJobTest()
+        public void ComplexVariablesWithComplexDependsOnJobTest()
         {
             //Arrange
             Conversion conversion = new Conversion();
@@ -99,7 +99,8 @@ jobs:
     displayName: 'Build job'
     pool:
         vmImage: 'windows-latest'
-
+    dependsOn: 
+    - AnotherJob
     variables:
     - group: Active Login   # Contains codesigningCertPassword: Password for code signing cert
     - name: sourceArtifactName
@@ -124,6 +125,8 @@ jobs:
   Build:
     name: Build job
     runs-on: windows-latest
+    needs:
+    - AnotherJob
     env:
       group: Active Login
       sourceArtifactName: nuget-windows
