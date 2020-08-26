@@ -17,5 +17,6 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.AzurePipelines
         //TODO: There is currently no conversion path for groups and templates
         public string group { get; set; }
         public string template { get; set; }
+        public bool @readonly { get; set; }
     }
 }

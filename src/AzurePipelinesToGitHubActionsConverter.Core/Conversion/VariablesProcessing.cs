@@ -105,34 +105,52 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                         processedVariables.Add("template", variables[i].template);
                     }
                 }
-
             }
             return processedVariables;
         }
-     
+
+        public Dictionary<string, string> ProcessComplexParametersV2(List<AzurePipelines.Parameter> parameter)
+        {
+            Dictionary<string, string> processedVariables = new Dictionary<string, string>();
+            if (parameter != null)
+            {
+                //update variables from the $(variableName) format to ${{variableName}} format, by piping them into a list for replacement later.
+                for (int i = 0; i < parameter.Count; i++)
+                {
+                    //name/value pairs
+                    if (parameter[i].name != null && parameter[i].@default != null)
+                    {
+                        processedVariables.Add(parameter[i].name, parameter[i].@default);
+                        VariableList.Add(parameter[i].name);
+                    }
+                }
+            }
+            return processedVariables;
+        }
+
 
         public Dictionary<string, string> ProcessParametersAndVariablesV2(string parametersYaml, string variablesYaml)
         {
-            List<Variable> parameters = null;
+            List<Parameter> parameters = null;
             if (parametersYaml != null)
             {
                 try
                 {
                     Dictionary<string, string> simpleParameters = GenericObjectSerialization.DeserializeYaml<Dictionary<string, string>>(parametersYaml);
-                    parameters = new List<Variable>();
+                    parameters = new List<Parameter>();
                     foreach (KeyValuePair<string, string> item in simpleParameters)
                     {
-                        parameters.Add(new Variable
+                        parameters.Add(new Parameter
                         {
                             name = item.Key,
-                            value = item.Value
+                            @default = item.Value
                         });
                     }
                 }
                 catch (Exception ex)
                 {
                     ConversionUtility.WriteLine($"DeserializeYaml<Dictionary<string, string>>(parametersYaml) swallowed an exception: " + ex.Message, _verbose);
-                    parameters = GenericObjectSerialization.DeserializeYaml<List<Variable>>(parametersYaml);
+                    parameters = GenericObjectSerialization.DeserializeYaml<List<Parameter>>(parametersYaml);
                 }
             }
 
@@ -155,12 +173,12 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                 catch (Exception ex)
                 {
                     ConversionUtility.WriteLine($"DeserializeYaml<Dictionary<string, string>>(variablesYaml) swallowed an exception: " + ex.Message, _verbose);
-                    parameters = GenericObjectSerialization.DeserializeYaml<List<Variable>>(variablesYaml);
+                    variables = GenericObjectSerialization.DeserializeYaml<List<Variable>>(variablesYaml);
                 }
             }
 
             Dictionary<string, string> env = new Dictionary<string, string>();
-            Dictionary<string, string> processedParameters = ProcessComplexVariablesV2(parameters);
+            Dictionary<string, string> processedParameters = ProcessComplexParametersV2(parameters);
             Dictionary<string, string> processedVariables = ProcessComplexVariablesV2(variables);
             foreach (KeyValuePair<string, string> item in processedParameters)
             {
