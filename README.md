@@ -155,7 +155,7 @@ jobs:
 ```
 
 #### **RunOnce deployment strategy and deployment jobs**
-The strategy and deployment job is consolidated to a job, with the strategy removed as there is no GitHub equivalent
+The strategy and deployment job is consolidated to a job, with the strategy removed, as there is no GitHub equivalent
 
 ###### Azure Pipelines YAML
 ```YAML
@@ -164,7 +164,7 @@ jobs:
     displayName: Deploy job
     environment: Dev
     pool:
-      vmImage: windows-latest     
+      vmImage: windows-latest
     strategy:
       runOnce:
         deploy:
@@ -206,14 +206,11 @@ jobs:
     - uses: actions/checkout@v1
 ```
 
-#### **Some variables combinations**
-In particular, variable groups with the name/value syntax inside of stages or jobs. We are looking for ways to handle this better.
-
 #### **Conditions**
-Conditions are processing with about 95% accuracy. There are some system variables that still need conversions, but we've tried to handle the most popular combinations. 
+Conditions are processing with about 98% accuracy. There are some system variables that still need conversions, but we've tried to handle the most popular combinations. 
 
 ## Architecture
-The core functionality is contained in a .NET Standard 2.1 class, "AzurePipelinesToGitHubActionsConverter.Core".
+The core functionality is contained in a .NET Standard 2.0 class, "AzurePipelinesToGitHubActionsConverter.Core".
 - In the [conversion object](https://github.com/samsmithnz/AzurePipelinesToGitHubActionsConverter/blob/master/AzurePipelinesToGitHubActionsConverter/AzurePipelinesToGitHubActionsConverter.Core/Conversion.cs), is a public call, "ConvertAzurePipelineToGitHubAction", to convert Azure DevOps yaml to GitHub Actions yaml: 
 - In the same conversion object is a call to convert individual tasks/steps: "ConvertAzurePinelineTaskToGitHubActionTask"
 - The [GitHubActionsSerialization object](https://github.com/samsmithnz/AzurePipelinesToGitHubActionsConverter/blob/master/AzurePipelinesToGitHubActionsConverter/AzurePipelinesToGitHubActionsConverter.Core/GitHubActionsSerialization.cs) has calls to serialize and deserialize GitHub actions 

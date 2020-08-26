@@ -4,7 +4,7 @@ using System;
 
 namespace AzurePipelinesToGitHubActionsConverter.Tests
 {
-    //TODO: Docker is very much in progress.
+    //TODO: Docker is still in progress.
     [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
     [TestClass]
     public class StepsDockerTests

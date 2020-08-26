@@ -54,6 +54,7 @@ jobs:
       run: dotnet build WebApplication1/WebApplication1.Service/WebApplication1.Service.csproj --configuration ${{ env.buildConfiguration }}";
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+            Assert.AreEqual(true, gitHubOutput.v2ConversionSuccessful);
         }
 
         [TestMethod]
@@ -103,6 +104,7 @@ jobs:
 
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+            Assert.AreEqual(true, gitHubOutput.v2ConversionSuccessful);
         }
 
         [TestMethod]
@@ -125,6 +127,7 @@ env:
   platform: x64";
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+            Assert.AreEqual(true, gitHubOutput.v2ConversionSuccessful);
         }
 
 
@@ -153,6 +156,7 @@ env:
   group: myVariablegroup";
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+            Assert.AreEqual(true, gitHubOutput.v2ConversionSuccessful);
         }
 
         [TestMethod]
@@ -183,6 +187,7 @@ env:
   myVariable2: myValue2";
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+            Assert.AreEqual(true, gitHubOutput.v2ConversionSuccessful);
         }
 
         [TestMethod]
@@ -233,6 +238,7 @@ env:
   group: myVariablegroup";
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+            Assert.AreEqual(true, gitHubOutput.v2ConversionSuccessful);
         } 
         
         [TestMethod]
@@ -260,6 +266,7 @@ env:
 ";
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+            Assert.AreEqual(true, gitHubOutput.v2ConversionSuccessful);
         }
 
 
@@ -288,6 +295,7 @@ env:
   k8sNamespaceForPR: inconditionalstatement";
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+            Assert.AreEqual(true, gitHubOutput.v2ConversionSuccessful);
         }
 
 
@@ -316,8 +324,10 @@ env:
   prLC: 003";
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+            Assert.AreEqual(true, gitHubOutput.v2ConversionSuccessful);
         }
 
+        //This test doesn't work with V1
         [TestMethod]
         public void ParametersReservedWordTest()
         {
@@ -328,6 +338,11 @@ parameters: # defaults for any parameters that aren't specified
   environment: 'Dev'
   strategy: Dev
   pool: 'Dev'
+variables: 
+  plainVar2: 'ok2'
+  environment2: 'Dev2'
+  strategy2: Dev2
+  pool2: 'Dev2'  
 ";
 
             Conversion conversion = new Conversion();
@@ -339,12 +354,72 @@ parameters: # defaults for any parameters that aren't specified
             string expected = @"
 env:
   plainVar: ok
-  environment2: Dev
-  strategy2: Dev
-  pool2: Dev
+  environment: Dev
+  strategy: Dev
+  pool: Dev
+  plainVar2: ok2
+  environment2: Dev2
+  strategy2: Dev2
+  pool2: Dev2
 ";
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+            Assert.AreEqual(true, gitHubOutput.v2ConversionSuccessful);
+        }
+
+        //This test doesn't work with V1
+        [TestMethod]
+        public void ParametersAndVariablesComplexTest()
+        {
+            //Arrange
+            string input = @"
+parameters: # defaults for any parameters that aren't specified
+  - name: plainVar
+    type: string
+    default: ok
+  - name: environment
+    type: string
+    default: Dev
+  - name: strategy
+    type: string
+    default: Dev
+  - name: pool
+    type: string
+variables: 
+  - name: plainVar2
+    value: ok2
+    readonly: true
+  - name: environment2
+    value: dev2
+    readonly: true
+  - name: strategy2
+    value: dev2
+    readonly: false
+  - name: pool2
+    value: """"
+    readonly: false
+";
+
+            Conversion conversion = new Conversion();
+
+            //Act
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(input);
+
+            //Assert
+            string expected = @"
+env:
+  plainVar: ok
+  environment: Dev
+  strategy: Dev
+  pool: ''
+  plainVar2: ok2
+  environment2: dev2
+  strategy2: dev2
+  pool2: ''
+";
+            expected = UtilityTests.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+            Assert.AreEqual(true, gitHubOutput.v2ConversionSuccessful);
         }
 
     }

@@ -8,175 +8,285 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
     public class JobsTests
     {
 
-        //Check that when using stages, the jobs are created as expected, with Azure logins and checkouts where needed.
         [TestMethod]
         public void SimpleJobTest()
         {
             //Arrange
             Conversion conversion = new Conversion();
             string yaml = @"
-job: Build
-displayName: 'Build job'
-pool:
-  vmImage: 'windows-latest'
-steps:
-- task: CmdLine@2
-  inputs:
-    script: echo your commands here 
+jobs:
+- job: Build
+  displayName: 'Build job'
+  pool:
+    vmImage: 'windows-latest'
+  steps:
+  - task: CmdLine@2
+    inputs:
+      script: echo your commands here 
 ";
 
             //Act
-            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineJobToGitHubActionJob(yaml);
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(yaml);
 
             //Assert
             string expected = @"
-name: Build job
-runs-on: windows-latest
-steps:
-- uses: actions/checkout@v2
-- run: echo your commands here
-  shell: cmd
+jobs:
+  Build:
+    name: Build job
+    runs-on: windows-latest
+    steps:
+    - uses: actions/checkout@v2
+    - run: echo your commands here
+      shell: cmd
 ";
 
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+            Assert.AreEqual(true, gitHubOutput.v2ConversionSuccessful);
         }
 
-        //Check that when using stages, the jobs are created as expected, with Azure logins and checkouts where needed.
         [TestMethod]
-        public void BuildJobTest()
+        public void SimpleVariablesJobTest()
         {
             //Arrange
             Conversion conversion = new Conversion();
             string yaml = @"
-  job: Build
+jobs:
+- job: Build
   displayName: 'Build job'
   pool:
     vmImage: windows-latest
+  variables:
+    Variable1: 'new variable'
   steps:
-  - task: DotNetCoreCLI@2
-    displayName: 'Publish dotnet core projects'
+  - task: CmdLine@2
     inputs:
-      command: publish
-      publishWebProjects: false
-      projects: |
-       FeatureFlags/FeatureFlags.Service/FeatureFlags.Service.csproj
-       FeatureFlags/FeatureFlags.Web/FeatureFlags.Web.csproj
-      arguments: '--configuration $(buildConfiguration) --output $(build.artifactstagingdirectory) -p:Version=$(buildNumber)'
-      zipAfterPublish: true
-
-   # Publish the artifacts
-  - task: PublishBuildArtifacts@1
-    displayName: 'Publish Artifact'
-    inputs:
-      PathtoPublish: '$(build.artifactstagingdirectory)'
+      script: echo your commands here $(Variable1)
 ";
 
             //Act
-            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineJobToGitHubActionJob(yaml);
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(yaml);
 
             //Assert
             string expected = @"
-name: Build job
-runs-on: windows-latest
-steps:
-- uses: actions/checkout@v2
-- name: Publish dotnet core projects
-  run: dotnet publish FeatureFlags/FeatureFlags.Service/FeatureFlags.Service.csprojFeatureFlags/FeatureFlags.Web/FeatureFlags.Web.csproj --configuration ${{ env.buildConfiguration }} --output ${GITHUB_WORKSPACE} -p:Version=${{ env.buildNumber }}
-- name: Publish Artifact
-  uses: actions/upload-artifact@v2
-  with:
-    path: ${GITHUB_WORKSPACE}
+jobs:
+  Build:
+    name: Build job
+    runs-on: windows-latest
+    env:
+      Variable1: new variable
+    steps:
+    - uses: actions/checkout@v2
+    - run: echo your commands here ${{ env.Variable1 }}
+      shell: cmd
 ";
 
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+            Assert.AreEqual(true, gitHubOutput.v2ConversionSuccessful);
         }
 
-        //Check that when using stages, the jobs are created as expected, with Azure logins and checkouts where needed.
+
+        //This test doesn't work with V1
         [TestMethod]
-        public void DeployJobTest()
+        public void ComplexVariablesWithComplexDependsOnJobTest()
         {
             //Arrange
             Conversion conversion = new Conversion();
             string yaml = @"
-    job: Deploy
-    displayName: 'Deploy job'
-    continueOnError: true
+  jobs:
+  - job: Build
+    displayName: 'Build job'
     pool:
-      vmImage: windows-latest   
+        vmImage: 'windows-latest'
+    dependsOn: 
+    - AnotherJob
     variables:
-      AppSettings.Environment: 'data'
-      ArmTemplateResourceGroupLocation: 'eu'
-      ResourceGroupName: 'MyProjectFeatureFlags'
-      WebsiteName: 'featureflags-data-eu-web'
-      WebServiceName: 'featureflags-data-eu-service'
+    - group: Active Login   # Contains codesigningCertPassword: Password for code signing cert
+    - name: sourceArtifactName
+      value: 'nuget-windows'
+    - name: targetArtifactName
+      value: 'nuget-windows-signed'
+    - name: pathToNugetPackages
+      value: '**/*.nupkg'
+
     steps:
-    - task: DownloadBuildArtifacts@0
-      displayName: 'Download the build artifacts'
+    - task: CmdLine@2
       inputs:
-        buildType: 'current'
-        downloadType: 'single'
-        artifactName: 'drop'
-        downloadPath: '$(build.artifactstagingdirectory)'
-    - task: AzureRmWebAppDeployment@3
-      displayName: 'Azure App Service Deploy: web service'
-      inputs:
-        azureSubscription: 'Connection to Azure Portal'
-        WebAppName: $(WebServiceName)
-        DeployToSlotFlag: true
-        ResourceGroupName: $(ResourceGroupName)
-        SlotName: 'staging'
-        Package: '$(build.artifactstagingdirectory)/drop/FeatureFlags.Service.zip'
-        TakeAppOfflineFlag: true
-        JSONFiles: '**/appsettings.json'
-    - task: AzureAppServiceManage@0
-      displayName: 'Swap Slots: web service'
-      inputs:
-        azureSubscription: 'Connection to Azure Portal'
-        WebAppName: $(WebServiceName)
-        ResourceGroupName: $(ResourceGroupName)
-        SourceSlot: 'staging'
+        script: echo your commands here 
 ";
 
             //Act
-            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineJobToGitHubActionJob(yaml);
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(yaml);
 
             //Assert
             string expected = @"
-name: Deploy job
-runs-on: windows-latest
-env:
-  AppSettings.Environment: data
-  ArmTemplateResourceGroupLocation: eu
-  ResourceGroupName: MyProjectFeatureFlags
-  WebsiteName: featureflags-data-eu-web
-  WebServiceName: featureflags-data-eu-service
-continue-on-error: true
-steps:
-- uses: actions/checkout@v2
-- # ""Note: 'AZURE_SP' secret is required to be setup and added into GitHub Secrets: https://help.github.com/en/actions/automating-your-workflow-with-github-actions/creating-and-using-encrypted-secrets""
-  name: Azure Login
-  uses: azure/login@v1
-  with:
-    creds: ${{ secrets.AZURE_SP }}
-- name: Download the build artifacts
-  uses: actions/download-artifact@v1.0.0
-  with:
-    name: drop
-- name: 'Azure App Service Deploy: web service'
-  uses: Azure/webapps-deploy@v2
-  with:
-    app-name: ${{ env.WebServiceName }}
-    package: ${GITHUB_WORKSPACE}/drop/FeatureFlags.Service.zip
-    slot-name: staging
-- name: 'Swap Slots: web service'
-  uses: Azure/cli@v1.0.0
-  with:
-    inlineScript: az webapp deployment slot swap --resource-group ${{ env.ResourceGroupName }} --name ${{ env.WebServiceName }} --slot staging --target-slot production
+jobs:
+  Build:
+    name: Build job
+    runs-on: windows-latest
+    needs:
+    - AnotherJob
+    env:
+      group: Active Login
+      sourceArtifactName: nuget-windows
+      targetArtifactName: nuget-windows-signed
+      pathToNugetPackages: '**/*.nupkg'
+    steps:
+    - uses: actions/checkout@v2
+    - run: echo your commands here
+      shell: cmd
 ";
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+            Assert.AreEqual(true, gitHubOutput.v2ConversionSuccessful);
+        }
+
+        //This test doesn't work with V1
+        [TestMethod]
+        public void ComplexVariablesWithSimpleDependsOnJobTest()
+        {
+            //Arrange
+            Conversion conversion = new Conversion();
+            string yaml = @"
+  jobs:
+  - job: Build
+    displayName: 'Build job'
+    pool:
+        vmImage: 'windows-latest'
+    dependsOn: AnotherJob
+    variables:
+    - group: Active Login   # Contains codesigningCertPassword: Password for code signing cert
+    - name: sourceArtifactName
+      value: 'nuget-windows'
+    - name: targetArtifactName
+      value: 'nuget-windows-signed'
+    - name: pathToNugetPackages
+      value: '**/*.nupkg'
+
+    steps:
+    - task: CmdLine@2
+      inputs:
+        script: echo your commands here 
+";
+
+            //Act
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(yaml);
+
+            //Assert
+            string expected = @"
+jobs:
+  Build:
+    name: Build job
+    runs-on: windows-latest
+    needs:
+    - AnotherJob
+    env:
+      group: Active Login
+      sourceArtifactName: nuget-windows
+      targetArtifactName: nuget-windows-signed
+      pathToNugetPackages: '**/*.nupkg'
+    steps:
+    - uses: actions/checkout@v2
+    - run: echo your commands here
+      shell: cmd
+";
+            expected = UtilityTests.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+            Assert.AreEqual(true, gitHubOutput.v2ConversionSuccessful);
+        }
+
+
+
+       [TestMethod]
+        public void SimpleVariablesWithSimpleDependsOnJobTest()
+        {
+            //Arrange
+            Conversion conversion = new Conversion();
+            string yaml = @"
+jobs:
+- job: Build
+  displayName: 'Build job'
+  pool:
+    vmImage: windows-latest
+  dependsOn: AnotherJob
+  variables:
+    Variable1: 'new variable'
+  steps:
+  - task: CmdLine@2
+    inputs:
+      script: echo your commands here $(Variable1)
+";
+
+            //Act
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(yaml);
+
+            //Assert
+            string expected = @"
+jobs:
+  Build:
+    name: Build job
+    runs-on: windows-latest
+    needs:
+    - AnotherJob
+    env:
+      Variable1: new variable
+    steps:
+    - uses: actions/checkout@v2
+    - run: echo your commands here ${{ env.Variable1 }}
+      shell: cmd
+";
+
+            expected = UtilityTests.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+            Assert.AreEqual(true, gitHubOutput.v2ConversionSuccessful);
+        }
+
+
+
+       [TestMethod]
+        public void SimpleVariablesWithComplexDependsOnJobTest()
+        {
+            //Arrange
+            Conversion conversion = new Conversion();
+            string yaml = @"
+jobs:
+- job: Build
+  displayName: 'Build job'
+  pool:
+    vmImage: windows-latest
+  dependsOn: 
+  - AnotherJob
+  variables:
+    Variable1: 'new variable'
+  steps:
+  - task: CmdLine@2
+    inputs:
+      script: echo your commands here $(Variable1)
+";
+
+            //Act
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(yaml);
+
+            //Assert
+            string expected = @"
+jobs:
+  Build:
+    name: Build job
+    runs-on: windows-latest
+    needs:
+    - AnotherJob
+    env:
+      Variable1: new variable
+    steps:
+    - uses: actions/checkout@v2
+    - run: echo your commands here ${{ env.Variable1 }}
+      shell: cmd
+";
+
+            expected = UtilityTests.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+            Assert.AreEqual(true, gitHubOutput.v2ConversionSuccessful);
         }
 
     }

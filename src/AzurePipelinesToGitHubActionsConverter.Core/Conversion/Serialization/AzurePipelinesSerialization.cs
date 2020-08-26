@@ -3,7 +3,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Text;
 
 namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion.Serialization
@@ -23,9 +22,9 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion.Serialization
                 yaml = CleanYamlBeforeDeserialization(yaml);
                 azurePipeline = GenericObjectSerialization.DeserializeYaml<AzurePipelinesRoot<string[], Dictionary<string, string>>>(yaml);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                Debug.WriteLine($"{nameof(DeserializeSimpleTriggerAndSimpleVariables)} swallowed an exception, to be reviewed...");
+                ConversionUtility.WriteLine($"{nameof(DeserializeSimpleTriggerAndSimpleVariables)} swallowed an exception: " + ex.Message, true);
                 //Do nothing
             }
             return azurePipeline;
@@ -44,9 +43,9 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion.Serialization
                 yaml = CleanYamlBeforeDeserialization(yaml);
                 azurePipeline = GenericObjectSerialization.DeserializeYaml<AzurePipelinesRoot<string[], AzurePipelines.Variable[]>>(yaml);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                Debug.WriteLine($"{nameof(DeserializeSimpleTriggerAndComplexVariables)} swallowed an exception, to be reviewed...");
+                ConversionUtility.WriteLine($"{nameof(DeserializeSimpleTriggerAndComplexVariables)} swallowed an exception: " + ex.Message, true);
                 //Do nothing
             }
             return azurePipeline;
@@ -65,9 +64,9 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion.Serialization
                 yaml = CleanYamlBeforeDeserialization(yaml);
                 azurePipeline = GenericObjectSerialization.DeserializeYaml<AzurePipelinesRoot<AzurePipelines.Trigger, Dictionary<string, string>>>(yaml);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                Debug.WriteLine($"{nameof(DeserializeComplexTriggerAndSimpleVariables)} swallowed an exception, to be reviewed...");
+                ConversionUtility.WriteLine($"{nameof(DeserializeComplexTriggerAndSimpleVariables)} swallowed an exception: " + ex.Message, true);
                 //Do nothing
             }
             return azurePipeline;
@@ -80,15 +79,15 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion.Serialization
         /// <returns>Azure DevOps Pipeline with complex trigger and complex variables</returns>
         public static AzurePipelinesRoot<AzurePipelines.Trigger, AzurePipelines.Variable[]> DeserializeComplexTriggerAndComplexVariables(string yaml)
         {
-            //DANGER WILL ROBINSON - DANGER
+            //DANGER WILL ROBINSON - DANGER 
             //Unlike the other deserializers, we need to leave this last error handler off - so that errors can be returned to the client, where as the others can fail so that they can try the next deserializer method.
-            AzurePipelinesRoot<AzurePipelines.Trigger, AzurePipelines.Variable[]> azurePipeline = null;
+            AzurePipelinesRoot<AzurePipelines.Trigger, AzurePipelines.Variable[]> azurePipeline;
             //try
             //{
             yaml = CleanYamlBeforeDeserialization(yaml);
             azurePipeline = GenericObjectSerialization.DeserializeYaml<AzurePipelinesRoot<AzurePipelines.Trigger, AzurePipelines.Variable[]>>(yaml);
             //}
-            //catch (Exception)
+            //catch (Exception ex)
             //{
             //    //Do nothing
             //}
@@ -125,13 +124,13 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion.Serialization
                         {
                             //Start tracking variables and record the variables indent level
                             scanningForVariables = true;
-                            variablesIndentLevel = line.TakeWhile(Char.IsWhiteSpace).Count(); // https://stackoverflow.com/questions/20411812/count-the-spaces-at-start-of-a-string
+                            variablesIndentLevel = ConversionUtility.CountSpacesBeforeText(line);
                         }
                         else if (scanningForVariables == true)
                         {
                             //While scanning for variables, get the indent level. It should be (variablesIndentLevel + 2), if it's more than that, we have a variable insert.
-                            Debug.WriteLine("Scanning for vars: " + line);
-                            int lineIndentLevel = line.TakeWhile(Char.IsWhiteSpace).Count();
+                            ConversionUtility.WriteLine("Scanning for vars: " + line, true);
+                            int lineIndentLevel = ConversionUtility.CountSpacesBeforeText(line);
                             if ((variablesIndentLevel - (lineIndentLevel - 2)) == 0)
                             {
                                 //If the line starts with a conditional insertation, then comment it out

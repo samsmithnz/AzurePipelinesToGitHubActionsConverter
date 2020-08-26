@@ -1,25 +1,23 @@
 ﻿using AzurePipelinesToGitHubActionsConverter.Core.Extensions;
 using System;
-using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
-using System.Text.RegularExpressions;
 
 namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
 {
     public static class ConversionUtility
     {
-        public static void WriteLine(string message, bool verbose)
-        {
-            if (verbose == true)
-            {
-                Console.WriteLine(message);
-            }
-        }
-
         public static string GenerateSpaces(int number)
         {
             return new String(' ', number);
+        }
+
+        // https://stackoverflow.com/questions/20411812/count-the-spaces-at-start-of-a-string
+        public static int CountSpacesBeforeText(string input)
+        {
+            input = input.Replace(Environment.NewLine, "");
+            return input.TakeWhile(char.IsWhiteSpace).Count();
         }
 
         public static string CleanYamlBeforeDeserialization(string yaml)
@@ -39,8 +37,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                     //Remove the comment if it's the a full line (after removing the preceeding white space)
                     if (line.TrimStart().IndexOf("#") == 0)
                     {
-                        //don't add line, remove
-                        Console.WriteLine(line);
+                        //don't add the line back to the stringbuilder, (effectively removing it)
                     }
                     else
                     {
@@ -73,7 +70,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                     }
                     else if (variablePrefixSpaceCount >= 0)
                     {
-                        if (variablePrefixSpaceCount + 2 == line.TakeWhile(char.IsWhiteSpace).Count())
+                        if ((variablePrefixSpaceCount + 2) == line.TakeWhile(char.IsWhiteSpace).Count())
                         {
                             if (line.IndexOf("environment", StringComparison.OrdinalIgnoreCase) >= 0)
                             {
@@ -117,7 +114,9 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
             //Process the trigger 
             if (processedYaml.ToLower().IndexOf("trigger:", StringComparison.OrdinalIgnoreCase) >= 0)
             {
+                //Convert a (really) simple string trigger to a string[] trigger
                 processedYaml = ProcessAndCleanElement(processedYaml, "trigger:", "- ");
+                //Convert a simple string[] trigger to a complex Trigger 
             }
             //Process the pool 
             if (processedYaml.ToLower().IndexOf("pool:", StringComparison.OrdinalIgnoreCase) >= 0)
@@ -176,9 +175,72 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
 
         }
 
+        public static string CleanYamlBeforeDeserializationV2(string yaml)
+        {
+            if (yaml == null)
+            {
+                return yaml;
+            }
+            string processedYaml = yaml;
+
+            //Process conditional insertions/ variables
+            if (processedYaml.IndexOf("{{#if") >= 0 || processedYaml.IndexOf("{{ #if") >= 0 ||
+                processedYaml.IndexOf("${{if") >= 0 || processedYaml.IndexOf("${{ if") >= 0)
+            {
+                StringBuilder sb = new StringBuilder();
+                int spacePrefixCount = 0;
+                foreach (string line in processedYaml.Split(System.Environment.NewLine))
+                {
+                    if (line.IndexOf("{{#if") >= 0 || line.IndexOf("{{ #if") >= 0 ||
+                        line.IndexOf("${{if") >= 0 || line.IndexOf("${{ if") >= 0)
+                    {
+                        //don't add line, we want to remove it, but track the spaces
+                        spacePrefixCount = ConversionUtility.CountSpacesBeforeText(line);
+                    }
+                    else if (line.IndexOf("{{/if") >= 0) //ending if 
+                    {
+                        //don't add line, remove
+                        spacePrefixCount = 0;
+                    }
+                    else
+                    {
+                        //DANGER WILL ROBINSON - DANGER 
+                        //This is meant for variables, but may affect much more than it should
+                        int currentLinespaceFrefixCount = ConversionUtility.CountSpacesBeforeText(line);
+                        if (spacePrefixCount > 0 && spacePrefixCount == (currentLinespaceFrefixCount - 2))
+                        {
+                            //Correct the location. For example:
+                            //    var1: value1
+                            //becomes:
+                            //  var1: value1
+                            sb.Append(GenerateSpaces(spacePrefixCount));
+                            sb.Append(line.Trim());
+                        }
+                        else if (spacePrefixCount > 0 && spacePrefixCount > (currentLinespaceFrefixCount - 2))
+                        {
+                            spacePrefixCount = 0;
+                            sb.Append(line);
+                        }
+                        else
+                        {
+                            sb.Append(line);
+                        }
+                        sb.Append(System.Environment.NewLine);
+                    }
+                }
+                processedYaml = sb.ToString();
+            }
+
+            return processedYaml;
+
+        }
 
         public static string ProcessAndCleanElement(string yaml, string searchString, string newLineName)
         {
+            if (string.IsNullOrEmpty(yaml))
+            {
+                return null;
+            }
             StringBuilder newYaml = new StringBuilder();
             //Search the YAML, line by line
             foreach (string line in yaml.Split(System.Environment.NewLine))
@@ -193,16 +255,17 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                     if (items.Length == 2 && items[1].ToString().Trim().Length > 0)
                     {
                         //Get the count of whitespaces in front of the variable
-                        int prefixSpaceCount = items[0].TakeWhile(char.IsWhiteSpace).Count();
+                        int prefixSpaceCount = CountSpacesBeforeText(items[0]);
 
                         //start building the new string, with the white space count
-                        newYaml.Append(ConversionUtility.GenerateSpaces(prefixSpaceCount));
+                        newYaml.Append(GenerateSpaces(prefixSpaceCount));
                         //Add the main keyword
                         newYaml.Append(items[0].Trim());
                         newYaml.Append(": ");
                         newYaml.Append(System.Environment.NewLine);
                         //on the new line, add the white spaces + two more spaces for the indent
-                        newYaml.Append(ConversionUtility.GenerateSpaces(prefixSpaceCount + 2)); newYaml.Append(newLineName);
+                        newYaml.Append(GenerateSpaces(prefixSpaceCount + 2));
+                        newYaml.Append(newLineName);
                         //The main value
                         newYaml.Append(items[1].Trim());
                         newYaml.Append(System.Environment.NewLine);
@@ -220,6 +283,21 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                 }
             }
             return newYaml.ToString();
+        }
+
+        // Some elements have a simple, same line string, we need to make into a list
+        // for example "trigger:none", becomes "trigger:\n\r- none"
+        // This is a lot simplier in JSON, as it's already only returning the none string.
+        public static string ProcessNoneJsonElement(string yaml)
+        {
+            if (yaml == "none")
+            {
+                return "[ none ]";
+            }
+            else
+            {
+                return yaml;
+            }
         }
 
         public static string ConvertMessageToYamlComment(string message)
@@ -269,88 +347,33 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
             return input;
         }
 
-        public static string JobsPreProcessing(string input)
+
+        //Used by jobs and stages
+        public static string GenerateJobName(AzurePipelines.Job job, int currentIndex)
         {
-            return input;
+            //Get the job name
+            string jobName = job.job;
+            if (jobName == null && job.deployment != null)
+            {
+                jobName = job.deployment;
+            }
+            if (jobName == null && job.template != null)
+            {
+                jobName = "Template";
+            }
+            if (string.IsNullOrEmpty(jobName) == true)
+            {
+                jobName = "job" + currentIndex.ToString();
+            }
+            return jobName;
         }
 
-        public static List<string> SearchForVariables(string input)
+        public static void WriteLine(string message, bool verbose)
         {
-            List<string> variableList = new List<string>();
-
-            if (input != null)
+            if (verbose == true)
             {
-                string[] stepLines = input.Split(System.Environment.NewLine);
-                foreach (string line in stepLines)
-                {
-                    List<string> variableResults = FindPipelineVariablesInString(line);
-                    variableResults.AddRange(FindPipelineParametersInString(line));
-                    if (variableResults.Count > 0)
-                    {
-                        variableList.AddRange(variableResults);
-                    }
-                }
+                Debug.WriteLine(message);
             }
-
-            return variableList;
-        }
-
-        private static List<string> FindPipelineVariablesInString(string text)
-        {
-            //Used https://stackoverflow.com/questions/378415/how-do-i-extract-text-that-lies-between-parentheses-round-brackets
-            //With the addition of the \$ search to capture strings like: "$(variable)"
-            //\$\(           # $ char and escaped parenthesis, means "starts with a '$(' character"
-            //    (          # Parentheses in a regex mean "put (capture) the stuff 
-            //               #     in between into the Groups array" 
-            //       [^)]    # Any character that is not a ')' character
-            //       *       # Zero or more occurrences of the aforementioned "non ')' char"
-            //    )          # Close the capturing group
-            //\)             # "Ends with a ')' character"  
-            MatchCollection results = Regex.Matches(text, @"\$\(([^)]*)\)");
-            List<string> list = results.Cast<Match>().Select(match => match.Value).ToList();
-
-            for (int i = 0; i < list.Count; i++)
-            {
-                string item = list[i];
-
-                //Remove leading "$(" and trailing ")"
-                if (list[i].Length > 3)
-                {
-                    list[i] = list[i].Substring(0, item.Length - 1);
-                    list[i] = list[i].Remove(0, 2);
-                }
-            }
-
-            return list;
-        }
-
-        private static List<string> FindPipelineParametersInString(string text)
-        {
-            //Used https://stackoverflow.com/questions/378415/how-do-i-extract-text-that-lies-between-parentheses-round-brackets
-            //With the addition of the \$ search to capture strings like: "$(variable)"
-            //\$\(           # $ char and escaped parenthesis, means "starts with a '$(' character"
-            //    (          # Parentheses in a regex mean "put (capture) the stuff 
-            //               #     in between into the Groups array" 
-            //       [^)]    # Any character that is not a ')' character
-            //       *       # Zero or more occurrences of the aforementioned "non ')' char"
-            //    )          # Close the capturing group
-            //\)             # "Ends with a ')' character"  
-            MatchCollection results = Regex.Matches(text, @"\$\{\{([^}}]*)\}\}");
-            List<string> list = results.Cast<Match>().Select(match => match.Value).ToList();
-
-            for (int i = 0; i < list.Count; i++)
-            {
-                string item = list[i];
-
-                //Remove leading "${{" and trailing "}}"
-                if (list[i].Length > 5)
-                {
-                    list[i] = list[i].Substring(0, item.Length - 2);
-                    list[i] = list[i].Remove(0, 3);
-                }
-            }
-
-            return list;
         }
     }
 }

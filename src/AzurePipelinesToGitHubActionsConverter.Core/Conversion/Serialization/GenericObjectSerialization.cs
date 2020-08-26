@@ -1,6 +1,4 @@
-﻿using System;
-using System.Diagnostics;
-using YamlDotNet.Serialization;
+﻿using YamlDotNet.Serialization;
 
 namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion.Serialization
 {

@@ -16,14 +16,6 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
             _verbose = verbose;
         }
 
-        void WriteLine(string message)
-        {
-            if (_verbose)
-            {
-                Console.WriteLine(message);
-            }
-        }
-
         /// <summary>
         /// Process an Azure DevOps Pipeline, converting it to a GitHub Action
         /// </summary>
@@ -39,7 +31,6 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
             GeneralProcessing generalProcessing = new GeneralProcessing(_verbose);
             GitHubActionsRoot gitHubActions = new GitHubActionsRoot();
 
-
             //Name
             if (azurePipeline.name != null)
             {
@@ -49,26 +40,27 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
             //Container
             if (azurePipeline.container != null)
             {
-                gitHubActions.messages.Add("TODO: Container conversion not yet done, we need help - our container skills are woeful: https://github.com/samsmithnz/AzurePipelinesToGitHubActionsConverter/issues/39");
+                gitHubActions.messages.Add("TODO: Container conversion not yet done, we need help!: https://github.com/samsmithnz/AzurePipelinesToGitHubActionsConverter/issues/39");
             }
 
             //Triggers for pushs 
+            TriggerProcessing tp = new TriggerProcessing(_verbose);
             if (azurePipeline.trigger != null)
             {
                 if (complexTrigger != null)
                 {
-                    gitHubActions.on = generalProcessing.ProcessComplexTrigger(complexTrigger);
+                    gitHubActions.on = tp.ProcessComplexTrigger(complexTrigger);
                 }
                 else if (simpleTrigger != null)
                 {
-                    gitHubActions.on = generalProcessing.ProcessSimpleTrigger(simpleTrigger);
+                    gitHubActions.on = tp.ProcessSimpleTrigger(simpleTrigger);
                 }
             }
 
             //Triggers for pull requests
             if (azurePipeline.pr != null)
             {
-                GitHubActions.Trigger pr = generalProcessing.ProcessPullRequest(azurePipeline.pr);
+                GitHubActions.Trigger pr = tp.ProcessPullRequest(azurePipeline.pr);
                 if (gitHubActions.on == null)
                 {
                     gitHubActions.on = pr;
@@ -79,7 +71,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                 }
             }
 
-            //Container
+            //pool/demands
             if (azurePipeline.pool != null && azurePipeline.pool.demands != null)
             {
                 gitHubActions.messages.Add("Note: GitHub Actions does not have a 'demands' command on 'runs-on' yet");
@@ -88,7 +80,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
             //schedules
             if (azurePipeline.schedules != null)
             {
-                string[] schedules = generalProcessing.ProcessSchedules(azurePipeline.schedules);
+                string[] schedules = tp.ProcessSchedules(azurePipeline.schedules);
                 if (gitHubActions.on == null)
                 {
                     gitHubActions.on = new GitHubActions.Trigger();
@@ -101,7 +93,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
             {
                 //Note: Containers is in the jobs - this note should be removed once pipeliens and repositories is moved too
 
-                //TODO: Add code for pipelines
+                //TODO: There is currently no conversion path for pipelines
                 if (azurePipeline.resources.pipelines != null)
                 {
                     gitHubActions.messages.Add("TODO: Resource pipelines conversion not yet done: https://github.com/samsmithnz/AzurePipelinesToGitHubActionsConverter/issues/8");
@@ -109,40 +101,40 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                     {
                         if (azurePipeline.resources.pipelines[0].pipeline != null)
                         {
-                            WriteLine("pipeline: " + azurePipeline.resources.pipelines[0].pipeline);
+                            ConversionUtility.WriteLine("pipeline: " + azurePipeline.resources.pipelines[0].pipeline, _verbose);
                         }
                         if (azurePipeline.resources.pipelines[0].project != null)
                         {
-                            WriteLine("project: " + azurePipeline.resources.pipelines[0].project);
+                            ConversionUtility.WriteLine("project: " + azurePipeline.resources.pipelines[0].project, _verbose);
                         }
                         if (azurePipeline.resources.pipelines[0].source != null)
                         {
-                            WriteLine("source: " + azurePipeline.resources.pipelines[0].source);
+                            ConversionUtility.WriteLine("source: " + azurePipeline.resources.pipelines[0].source, _verbose);
                         }
                         if (azurePipeline.resources.pipelines[0].branch != null)
                         {
-                            WriteLine("branch: " + azurePipeline.resources.pipelines[0].branch);
+                            ConversionUtility.WriteLine("branch: " + azurePipeline.resources.pipelines[0].branch, _verbose);
                         }
                         if (azurePipeline.resources.pipelines[0].version != null)
                         {
-                            WriteLine("version: " + azurePipeline.resources.pipelines[0].version);
+                            ConversionUtility.WriteLine("version: " + azurePipeline.resources.pipelines[0].version, _verbose);
                         }
                         if (azurePipeline.resources.pipelines[0].trigger != null)
                         {
                             if (azurePipeline.resources.pipelines[0].trigger.autoCancel)
                             {
-                                WriteLine("autoCancel: " + azurePipeline.resources.pipelines[0].trigger.autoCancel);
+                                ConversionUtility.WriteLine("autoCancel: " + azurePipeline.resources.pipelines[0].trigger.autoCancel, _verbose);
                             }
                             if (azurePipeline.resources.pipelines[0].trigger.batch)
                             {
-                                WriteLine("batch: " + azurePipeline.resources.pipelines[0].trigger.batch);
+                                ConversionUtility.WriteLine("batch: " + azurePipeline.resources.pipelines[0].trigger.batch, _verbose);
                             }
                         }
 
                     }
                 }
 
-                //TODO: Add code for repositories
+                //TODO: There is currently no conversion path for repositories
                 if (azurePipeline.resources.repositories != null)
                 {
                     gitHubActions.messages.Add("TODO: Resource repositories conversion not yet done: https://github.com/samsmithnz/AzurePipelinesToGitHubActionsConverter/issues/8");
@@ -151,31 +143,31 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                     {
                         if (azurePipeline.resources.repositories[0].repository != null)
                         {
-                            WriteLine("repository: " + azurePipeline.resources.repositories[0].repository);
+                            ConversionUtility.WriteLine("repository: " + azurePipeline.resources.repositories[0].repository, _verbose);
                         }
                         if (azurePipeline.resources.repositories[0].type != null)
                         {
-                            WriteLine("type: " + azurePipeline.resources.repositories[0].type);
+                            ConversionUtility.WriteLine("type: " + azurePipeline.resources.repositories[0].type, _verbose);
                         }
                         if (azurePipeline.resources.repositories[0].name != null)
                         {
-                            WriteLine("name: " + azurePipeline.resources.repositories[0].name);
+                            ConversionUtility.WriteLine("name: " + azurePipeline.resources.repositories[0].name, _verbose);
                         }
                         if (azurePipeline.resources.repositories[0]._ref != null)
                         {
-                            WriteLine("ref: " + azurePipeline.resources.repositories[0]._ref);
+                            ConversionUtility.WriteLine("ref: " + azurePipeline.resources.repositories[0]._ref, _verbose);
                         }
                         if (azurePipeline.resources.repositories[0].endpoint != null)
                         {
-                            WriteLine("endpoint: " + azurePipeline.resources.repositories[0].endpoint);
+                            ConversionUtility.WriteLine("endpoint: " + azurePipeline.resources.repositories[0].endpoint, _verbose);
                         }
                         if (azurePipeline.resources.repositories[0].connection != null)
                         {
-                            WriteLine("connection: " + azurePipeline.resources.repositories[0].connection);
+                            ConversionUtility.WriteLine("connection: " + azurePipeline.resources.repositories[0].connection, _verbose);
                         }
                         if (azurePipeline.resources.repositories[0].source != null)
                         {
-                            WriteLine("source: " + azurePipeline.resources.repositories[0].source);
+                            ConversionUtility.WriteLine("source: " + azurePipeline.resources.repositories[0].source, _verbose);
                         }
                     }
                 }
@@ -204,22 +196,10 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                         for (int i = 0; i < stage.jobs.Length; i++)
                         {
                             //Get the job name
-                            string jobName = stage.jobs[j].job;
-                            if (jobName == null && stage.jobs[i].deployment != null)
-                            {
-                                jobName = stage.jobs[i].deployment;
-                            }
-                            if (jobName == null && stage.jobs[j].template != null)
-                            {
-                                jobName = "Template";
-                            }
-                            if (jobName == null)
-                            {
-                                jobName = "job" + currentIndex.ToString();
-                            }
+                            string jobName = ConversionUtility.GenerateJobName(stage.jobs[i], currentIndex);
                             //Rename the job, using the stage name as prefix, so that we keep the job names unique
                             stage.jobs[j].job = stage.stage + "_Stage_" + jobName;
-                            Console.WriteLine("This variable is not needed in actions: " + stage.displayName);
+                            ConversionUtility.WriteLine("This variable is not needed in actions: " + stage.displayName, _verbose);
                             azurePipeline.jobs[currentIndex] = stage.jobs[j];
                             azurePipeline.jobs[currentIndex].condition = stage.condition;
                             //Move over the variables, the stage variables will need to be applied to each job
@@ -265,6 +245,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
             if ((azurePipeline.pool != null && azurePipeline.jobs == null) || (azurePipeline.steps != null && azurePipeline.steps.Length > 0))
             {
                 //Steps only have one job, so we just create it here
+                StepsProcessing sp = new StepsProcessing();
                 gitHubActions.jobs = new Dictionary<string, GitHubActions.Job>
                 {
                     {
@@ -275,7 +256,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                             strategy = generalProcessing.ProcessStrategy(azurePipeline.strategy),
                             container = generalProcessing.ProcessContainer(azurePipeline.resources),
                             //resources = ProcessResources(azurePipeline.resources),
-                            steps = generalProcessing.ProcessSteps(azurePipeline.steps)
+                            steps = sp.AddSupportingSteps(azurePipeline.steps)
                         }
                     }
                 };
@@ -283,23 +264,24 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
             }
 
             //Variables
+            VariablesProcessing vp = new VariablesProcessing(_verbose);
             if (azurePipeline.variables != null)
             {
                 if (complexVariables != null)
                 {
-                    gitHubActions.env = generalProcessing.ProcessComplexVariables(complexVariables);
-                    VariableList.AddRange(generalProcessing.VariableList);
+                    gitHubActions.env = vp.ProcessComplexVariables(complexVariables);
+                    VariableList.AddRange(vp.VariableList);
                 }
                 else if (simpleVariables != null)
                 {
-                    gitHubActions.env = generalProcessing.ProcessSimpleVariables(simpleVariables);
-                    VariableList.AddRange(generalProcessing.VariableList);
+                    gitHubActions.env = vp.ProcessSimpleVariables(simpleVariables);
+                    VariableList.AddRange(vp.VariableList);
                 }
             }
             else if (azurePipeline.parameters != null)
             {
                 //For now, convert the parameters to variables
-                gitHubActions.env = generalProcessing.ProcessSimpleVariables(azurePipeline.parameters);
+                gitHubActions.env = vp.ProcessSimpleVariables(azurePipeline.parameters);
             }
 
             return gitHubActions;

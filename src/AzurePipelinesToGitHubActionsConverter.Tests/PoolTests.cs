@@ -39,6 +39,7 @@ jobs:
     runs-on: ubuntu-latest";
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+            Assert.AreEqual(true, gitHubOutput.v2ConversionSuccessful);
         }
 
         [TestMethod]
@@ -81,6 +82,7 @@ jobs:
     runs-on: windows-latest";
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+            Assert.AreEqual(true, gitHubOutput.v2ConversionSuccessful);
         }
 
         [TestMethod]
@@ -101,10 +103,11 @@ jobs:
     runs-on: windows-latest";
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+            Assert.AreEqual(true, gitHubOutput.v2ConversionSuccessful);
         }
 
         [TestMethod]
-        public void PoolNameDependsStringTest()
+        public void PoolNameDemandsStringTest()
         {
             //Arrange
             string input = @"
@@ -124,6 +127,7 @@ jobs:
     runs-on: Hosted VS2017";
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+            Assert.AreEqual(true, gitHubOutput.v2ConversionSuccessful);
         }
 
         [TestMethod]
@@ -150,6 +154,7 @@ jobs:
     runs-on: Hosted VS2017";
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+            Assert.AreEqual(true, gitHubOutput.v2ConversionSuccessful);
         }
 
         [TestMethod]
@@ -170,6 +175,7 @@ jobs:
     runs-on: Pipeline-Demo-Windows";
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+            Assert.AreEqual(true, gitHubOutput.v2ConversionSuccessful);
         }     
         
         [TestMethod]
@@ -200,6 +206,7 @@ jobs:
     runs-on: Pipeline-Demo-Windows";
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+            Assert.AreEqual(true, gitHubOutput.v2ConversionSuccessful);
         }
 
     }

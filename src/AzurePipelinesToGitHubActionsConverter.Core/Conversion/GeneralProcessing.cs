@@ -1,141 +1,160 @@
 ﻿using AzurePipelinesToGitHubActionsConverter.Core.AzurePipelines;
-using AzurePipelinesToGitHubActionsConverter.Core.GitHubActions;
+using AzurePipelinesToGitHubActionsConverter.Core.Conversion.Serialization;
+using Newtonsoft.Json.Linq;
+using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 
 namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
 {
     public class GeneralProcessing
     {
-        public List<string> VariableList;
         public string MatrixVariableName;
         private readonly bool _verbose;
         public GeneralProcessing(bool verbose)
         {
-            VariableList = new List<string>();
             _verbose = verbose;
         }
 
-        //Process a simple trigger, e.g. "Trigger: [master, develop]"
-        public GitHubActions.Trigger ProcessSimpleTrigger(string[] trigger)
+        public string ProcessNameV2(string nameYaml)
         {
-            AzurePipelines.Trigger newTrigger = new AzurePipelines.Trigger
+            if (nameYaml != null)
             {
-                branches = new IncludeExclude
-                {
-                    include = trigger
-                }
-            };
-            return ProcessComplexTrigger(newTrigger);
+                return nameYaml.Replace("name:", "").Replace(System.Environment.NewLine, "").Trim();
+            }
+            else
+            {
+                return null;
+            }
         }
 
-        //Process a complex trigger, using the Trigger object
-        public GitHubActions.Trigger ProcessComplexTrigger(AzurePipelines.Trigger trigger)
+        public string[] ProcessDependsOnV2(string dependsOnYaml)
         {
-            //Note: as of 18-Oct, you receive an error if you try to post both a "branches" and a "ignore-branches", or a "paths and a ignore-paths". You can only have one or the other...
-            TriggerDetail push = new TriggerDetail();
-            //process branches
-            if (trigger.branches != null)
+            string[] dependsOn = null;
+            if (dependsOnYaml != null)
             {
-                if (trigger.branches.include != null)
+                try
                 {
-                    push.branches = trigger.branches.include;
+                    string simpleDependsOn = GenericObjectSerialization.DeserializeYaml<string>(dependsOnYaml);
+                    dependsOn = new string[1];
+                    dependsOn[0] = simpleDependsOn;
                 }
-                else if (trigger.branches.exclude != null)
+                catch (Exception ex)
                 {
-                    push.branches_ignore = trigger.branches.exclude;
-                }
-            }
-            //process paths
-            if (trigger.paths != null)
-            {
-                if (trigger.paths.include != null)
-                {
-                    push.paths = trigger.paths.include;
-                }
-                if (trigger.paths.exclude != null)
-                {
-                    push.paths_ignore = trigger.paths.exclude;
-                }
-            }
-            //process tags
-            if (trigger.tags != null)
-            {
-                if (trigger.tags.include != null)
-                {
-                    push.tags = trigger.tags.include;
-                }
-                if (trigger.tags.exclude != null)
-                {
-                    push.tags_ignore = trigger.tags.exclude;
+                    ConversionUtility.WriteLine($"DeserializeYaml<string>(dependsOnYaml) swallowed an exception: " + ex.Message, _verbose);
+                    dependsOn = GenericObjectSerialization.DeserializeYaml<string[]>(dependsOnYaml);
                 }
             }
 
-            return new GitHubActions.Trigger
-            {
-                push = push
-            };
-
+            //Build the return results
+            return dependsOn;
         }
 
-        //process the pull request
-        public GitHubActions.Trigger ProcessPullRequest(AzurePipelines.Trigger pr)
+        public AzurePipelines.Environment ProcessEnvironmentV2(string environmentYaml)
         {
-            TriggerDetail pullRequest = new TriggerDetail();
-            //process branches
-            if (pr.branches != null)
+            AzurePipelines.Environment environment = null;
+            if (environmentYaml != null)
             {
-                if (pr.branches.include != null)
+                try
                 {
-                    pullRequest.branches = pr.branches.include;
+                    environment = GenericObjectSerialization.DeserializeYaml<AzurePipelines.Environment>(environmentYaml);
                 }
-                else if (pr.branches.exclude != null)
+                catch (Exception ex1)
                 {
-                    pullRequest.branches_ignore = pr.branches.exclude;
-                }
-            }
-            //process paths
-            if (pr.paths != null)
-            {
-                if (pr.paths.include != null)
-                {
-                    pullRequest.paths = pr.paths.include;
-                }
-                if (pr.paths.exclude != null)
-                {
-                    pullRequest.paths_ignore = pr.paths.exclude;
-                }
-            }
-            //process tags
-            if (pr.tags != null)
-            {
-                if (pr.tags.include != null)
-                {
-                    pullRequest.tags = pr.tags.include;
-                }
-                if (pr.tags.exclude != null)
-                {
-                    pullRequest.tags_ignore = pr.tags.exclude;
+                    ConversionUtility.WriteLine($"DeserializeYaml<AzurePipelines.Environment>(environmentYaml) swallowed an exception: " + ex1.Message, _verbose);
+
+                    try
+                    {
+                        //when the environment is just a simple string, e.g.  //environment: environmentName.resourceName
+                        string simpleEnvironment = GenericObjectSerialization.DeserializeYaml<string>(environmentYaml);
+                        environment = new AzurePipelines.Environment
+                        {
+                            name = simpleEnvironment
+                        };
+                    }
+                    catch (Exception ex2)
+                    {
+                        JObject json = JSONSerialization.DeserializeStringToObject(environmentYaml);
+                        if (json["tags"].Type.ToString() == "String")
+                        {
+                            string name = null;
+                            if (json["name"] != null)
+                            {
+                                name = json["name"].ToString();
+                            }
+                            string resourceName = null;
+                            if (json["resourceName"] != null)
+                            {
+                                name = json["resourceName"].ToString();
+                            }
+                            string resourceId = null;
+                            if (json["resourceId"] != null)
+                            {
+                                name = json["resourceId"].ToString();
+                            }
+                            string resourceType = null;
+                            if (json["resourceType"] != null)
+                            {
+                                name = json["resourceType"].ToString();
+                            }
+                            environment = new AzurePipelines.Environment
+                            {
+                                name = name,
+                                resourceName = resourceName,
+                                resourceId = resourceId,
+                                resourceType = resourceType
+                            };
+                            //Move the single string demands to an array
+                            environment.tags = new string[1];
+                            environment.tags[0] = json["tags"].ToString();
+                        }
+                        else
+                        {
+                            ConversionUtility.WriteLine($"Manual deserialization with demands string swallowed an exception: " + ex2.Message, _verbose);
+                        }
+                    }
                 }
             }
 
-            return new GitHubActions.Trigger
-            {
-                pull_request = pullRequest
-            };
+            return environment;
         }
 
-        //process the schedule
-        public string[] ProcessSchedules(AzurePipelines.Schedule[] schedules)
+        public Resources ExtractResourcesV2(string resourcesYaml)
         {
-            string[] newSchedules = new string[schedules.Length];
-            for (int i = 0; i < schedules.Length; i++)
+            if (resourcesYaml != null)
             {
-                newSchedules[i] = "cron: '" + schedules[i].cron + "'";
+                try
+                {
+                    Resources resources = GenericObjectSerialization.DeserializeYaml<Resources>(resourcesYaml);
+                    return resources;
+                }
+                catch (Exception ex)
+                {
+                    ConversionUtility.WriteLine($"DeserializeYaml<Resources>(resourcesYaml) swallowed an exception: " + ex.Message, _verbose);
+                }
             }
-
-            return newSchedules;
+            return null;
         }
+
+        public AzurePipelines.Strategy ProcessStrategyV2(string strategyYaml)
+        {
+            if (strategyYaml != null)
+            {
+                try
+                {
+                    //Most often, the pool will be in this structure
+                    AzurePipelines.Strategy strategy = GenericObjectSerialization.DeserializeYaml<AzurePipelines.Strategy>(strategyYaml);
+                    return strategy;
+                }
+                catch (Exception ex)
+                {
+                    ConversionUtility.WriteLine($"DeserializeYaml<AzurePipelines.Strategy>(strategyYaml) swallowed an exception: " + ex.Message, _verbose);
+                }
+            }
+            return null;
+        }
+   
 
         //process the build pool/agent
         public string ProcessPool(Pool pool)
@@ -155,10 +174,65 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
             return newPool;
         }
 
-        //process the conditions
-        public string ProcessCondition(string condition)
+        public Pool ProcessPoolV2(string poolYaml)
         {
-            return ConditionsProcessing.TranslateConditions(condition);
+            Pool pool = null;
+            if (poolYaml != null)
+            {
+                try
+                {
+                    //Most often, the pool will be in this structure
+                    pool = GenericObjectSerialization.DeserializeYaml<Pool>(poolYaml);
+                }
+                catch (Exception ex)
+                {
+                    ConversionUtility.WriteLine($"DeserializeYaml<Pool>(poolYaml) swallowed an exception: " + ex.Message, _verbose);
+                    //If it's a simple pool string, and has no json in it, assign it to the name
+                    if (poolYaml.IndexOf("{") < 0)
+                    {
+                        pool = new Pool
+                        {
+                            name = poolYaml
+                        };
+                    }
+                    else
+                    {
+                        //otherwise, demands is probably a string, instead of string[], let's fix it
+                        JObject json = JSONSerialization.DeserializeStringToObject(poolYaml);
+                        if (json["demands"].Type.ToString() == "String")
+                        {
+                            string name = null;
+                            if (json["name"] != null)
+                            {
+                                name = json["name"].ToString();
+                            }
+                            string vmImage = null;
+                            if (json["vmImage"] != null)
+                            {
+                                vmImage = json["vmImage"].ToString();
+                            }
+                            string demands = null;
+                            if (json["demands"] != null)
+                            {
+                                demands = json["demands"].ToString();
+                            }
+                            pool = new Pool
+                            {
+                                name = name,
+                                vmImage = vmImage
+                            };
+                            //Move the single string demands to an array
+                            pool.demands = new string[1];
+                            pool.demands[0] = demands;
+                        }
+                        else
+                        {
+                            ConversionUtility.WriteLine($"Manual deserialization with demands string swallowed an exception: " + ex.Message, _verbose);
+                        }
+                    }
+                }
+            }
+            return pool;
         }
 
         //process the strategy matrix
@@ -197,7 +271,6 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                     string[] matrix = new string[strategy.matrix.Count];
                     KeyValuePair<string, Dictionary<string, string>> matrixVariable = strategy.matrix.First();
                     MatrixVariableName = matrixVariable.Value.Keys.First();
-                    //VariableList.Add("$(" + _matrixVariableName + ")");
                     int i = 0;
                     foreach (KeyValuePair<string, Dictionary<string, string>> entry in strategy.matrix)
                     {
@@ -211,7 +284,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                 }
                 if (strategy.parallel != null)
                 {
-                    ConversionUtility.WriteLine("This variable is not needed in actions: " + strategy.parallel,_verbose);
+                    ConversionUtility.WriteLine("This variable is not needed in actions: " + strategy.parallel, _verbose);
                 }
                 if (strategy.maxParallel != null)
                 {
@@ -223,7 +296,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                 }
                 if (strategy.runOnce != null)
                 {
-                    //TODO: Process other strategies
+                    //TODO: There is currently no conversion path for other strategies
                     ConversionUtility.WriteLine("TODO: " + strategy.runOnce, _verbose);
                 }
                 return processedStrategy;
@@ -234,7 +307,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
             }
         }
 
-        public Container ProcessContainer(Resources resources)
+        public GitHubActions.Container ProcessContainer(Resources resources)
         {
             //FROM
             //resources:
@@ -262,7 +335,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
 
             if (resources != null && resources.containers != null && resources.containers.Length > 0)
             {
-                Container container = new Container
+                GitHubActions.Container container = new GitHubActions.Container
                 {
                     //All containers have at least the image name
                     image = resources.containers[0].image
@@ -292,188 +365,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                 return null;
             }
         }
+    
 
-        //process all (simple) variables
-        public Dictionary<string, string> ProcessSimpleVariables(Dictionary<string, string> variables)
-        {
-            if (variables != null)
-            {
-                //update variables from the $(variableName) format to ${{variableName}} format, by piping them into a list for replacement later.
-                foreach (string item in variables.Keys)
-                {
-                    VariableList.Add(item);
-                }
-            }
-
-            return variables;
-        }
-
-        //process all (complex) variables
-        public Dictionary<string, string> ProcessComplexVariables(AzurePipelines.Variable[] variables)
-        {
-            Dictionary<string, string> processedVariables = new Dictionary<string, string>();
-            if (variables != null)
-            {
-                //update variables from the $(variableName) format to ${{variableName}} format, by piping them into a list for replacement later.
-                for (int i = 0; i < variables.Length; i++)
-                {
-                    //name/value pairs
-                    if (variables[i].name != null && variables[i].value != null)
-                    {
-                        processedVariables.Add(variables[i].name, variables[i].value);
-                        VariableList.Add(variables[i].name);
-                    }
-                    //groups
-                    if (variables[i].group != null)
-                    {
-                        if (!processedVariables.ContainsKey("group"))
-                        {
-                            processedVariables.Add("group", variables[i].group);
-                        }
-                        else
-                        {
-                            ConversionUtility.WriteLine("group: only 1 variable group is supported at present", _verbose);
-                        }
-                    }
-                    //template
-                    if (variables[i].template != null)
-                    {
-                        processedVariables.Add("template", variables[i].template);
-                    }
-                }
-
-            }
-            return processedVariables;
-        }
-
-
-        //process the steps
-        public GitHubActions.Step[] ProcessSteps(AzurePipelines.Step[] steps, bool addCheckoutStep = true)
-        {
-            StepsProcessing stepsProcessing = new StepsProcessing();
-
-            GitHubActions.Step[] newSteps = null;
-            if (steps != null)
-            {
-                //Start by scanning all of the steps, to see if we need to insert additional tasks
-                int stepAdjustment = 0;
-                bool addJavaSetupStep = false;
-                bool addGradleSetupStep = false;
-                bool addAzureLoginStep = false;
-                bool addMSSetupStep = false;
-                string javaVersion = null;
-
-                //If the code needs a Checkout step, add it first
-                if (addCheckoutStep == true)
-                {
-                    stepAdjustment++; // we are inserting a step and need to start moving steps 1 place into the array
-                }
-
-                //Loop through the steps to see if we need other tasks inserted in for specific circumstances
-                foreach (AzurePipelines.Step step in steps)
-                {
-                    if (step.task != null)
-                    {
-                        switch (step.task.ToUpper()) //Set to upper case to handle case sensitivity comparisons e.g. NPM hangles Npm, NPM, or npm. 
-                        {
-                            //If we have an Java based step, we will need to add a Java setup step
-                            case "ANT@1":
-                            case "MAVEN@3":
-                                if (addJavaSetupStep == false)
-                                {
-                                    addJavaSetupStep = true;
-                                    stepAdjustment++;
-                                    javaVersion = stepsProcessing.GetStepInput(step, "jdkVersionOption");
-                                }
-                                break;
-
-                            //Needs a the Java step and an additional Gradle step
-                            case "GRADLE@2":
-
-                                if (addJavaSetupStep == false)
-                                {
-                                    addJavaSetupStep = true;
-                                    stepAdjustment++;
-                                    //Create the java step, as it doesn't exist
-                                    javaVersion = "1.8";
-                                }
-                                if (addGradleSetupStep == false)
-                                {
-                                    addGradleSetupStep = true;
-                                    stepAdjustment++;
-                                }
-                                break;
-
-                            //If we have an Azure step, we will need to add a Azure login step
-                            case "AZUREAPPSERVICEMANAGE@0":
-                            case "AZURERESOURCEGROUPDEPLOYMENT@2":
-                            case "AZURERMWEBAPPDEPLOYMENT@3":
-                                if (addAzureLoginStep == false)
-                                {
-                                    addAzureLoginStep = true;
-                                    stepAdjustment++;
-                                }
-                                break;
-
-                            case "VSBUILD@1":
-                                if (addMSSetupStep == false)
-                                {
-                                    addMSSetupStep = true;
-                                    stepAdjustment++;
-                                }
-                                break;
-                        }
-                    }
-                }
-
-                //Re-size the newSteps array with adjustments as needed
-                newSteps = new GitHubActions.Step[steps.Length + stepAdjustment];
-
-                int adjustmentsUsed = 0;
-
-                //Add the steps array
-                if (addCheckoutStep == true)
-                {
-                    //Add the check out step to get the code
-                    newSteps[adjustmentsUsed] = stepsProcessing.CreateCheckoutStep();
-                    adjustmentsUsed++;
-                }
-                if (addJavaSetupStep == true)
-                {
-                    //Add the JavaSetup step to the code
-                    if (javaVersion != null)
-                    {
-                        newSteps[adjustmentsUsed] = stepsProcessing.CreateSetupJavaStep(javaVersion);
-                        adjustmentsUsed++;
-                    }
-                }
-                if (addGradleSetupStep == true)
-                {
-                    //Add the Gradle setup step to the code
-                    newSteps[adjustmentsUsed] = stepsProcessing.CreateSetupGradleStep();
-                    adjustmentsUsed++;
-                }
-                if (addAzureLoginStep == true)
-                {
-                    //Add the Azure login step to the code
-                    newSteps[adjustmentsUsed] = stepsProcessing.CreateAzureLoginStep();
-                    adjustmentsUsed++;
-                }
-                if (addMSSetupStep == true)
-                {
-                    //Add the Azure login step to the code
-                    newSteps[adjustmentsUsed] = stepsProcessing.CreateMSBuildSetupStep();
-                    //adjustmentsUsed++;
-                }
-
-                //Translate the other steps
-                for (int i = stepAdjustment; i < steps.Length + stepAdjustment; i++)
-                {
-                    newSteps[i] = stepsProcessing.ProcessStep(steps[i - stepAdjustment]);
-                }
-            }
-
-            return newSteps;
-        }
     }
 }

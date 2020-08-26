@@ -69,5 +69,23 @@ jobs:
             Assert.AreNotEqual(null, gitHubJob.steps);
             Assert.AreEqual(2, gitHubJob.steps.Length);
         }
+
+
+        [TestMethod]
+        public void GitHubActionYamlToGenericObjectTest()
+        {
+            //Arrange
+            string yaml = @"
+on:
+  schedule:
+  - cron: ""0 0 * * *""
+";
+
+            //Act
+            object yamlObject = GenericObjectSerialization.DeserializeYaml<object>(yaml);
+
+            //Assert
+            Assert.AreNotEqual(null, yamlObject);
+        }
     }
 }

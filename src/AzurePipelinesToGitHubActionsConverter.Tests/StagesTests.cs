@@ -155,6 +155,7 @@ jobs:
 ";
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+            Assert.AreEqual(true, gitHubOutput.v2ConversionSuccessful);
         }
 
         //Test that stages translate to jobs correctly.
@@ -252,6 +253,7 @@ jobs:
 
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+            Assert.AreEqual(true, gitHubOutput.v2ConversionSuccessful);
         }
 
         //Test that stages translate to jobs correctly.
@@ -277,6 +279,7 @@ jobs: {}
 
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+            Assert.AreEqual(true, gitHubOutput.v2ConversionSuccessful);
         }
 
 
@@ -288,7 +291,10 @@ jobs: {}
 stages:
 - stage: Deploy
   variables:
-    prId: '00B'
+    ${{ if ne(variables['Build.SourceBranchName'], 'master') }}:
+      prId: '00A'
+    ${{ if eq(variables['Build.SourceBranchName'], 'master') }}:
+      prId: '00B'
     prUC: '002'
     prLC: '003'
   jobs:
@@ -324,6 +330,7 @@ jobs:
 ";
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+            Assert.AreEqual(true, gitHubOutput.v2ConversionSuccessful);
         }
 
         [TestMethod]
@@ -374,11 +381,61 @@ jobs:
 
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+            Assert.AreEqual(true, gitHubOutput.v2ConversionSuccessful);
+        }
+
+        [TestMethod]
+        public void StagingGenericPipelineTest()
+        {
+            //Arrange
+            Conversion conversion = new Conversion();
+            string yaml = @"
+stages:
+- stage: Deploy
+  variables:
+    ${{ if ne(variables['Build.SourceBranchName'], 'master') }}:
+      prId: '000'
+    var1: ""value1""
+    var2: ""value2""
+  jobs:
+  - job: Build1
+    displayName: 'Build1 job'
+    pool:
+      vmImage: windows-latest
+    steps:
+    - task: PowerShell@2
+      inputs:
+        targetType: 'inline'
+        script: Write-Host ""Hello world 1!""
+";
+
+            //Act
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(yaml);
+
+            //Assert
+            string expected = @"
+jobs:
+  Deploy_Stage_Build1:
+    name: Build1 job
+    runs-on: windows-latest
+    env:
+      prId: 000
+      var1: value1
+      var2: value2
+    steps:
+    - uses: actions/checkout@v2
+    - run: Write-Host ""Hello world 1!""
+      shell: powershell
+";
+
+            expected = UtilityTests.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+            Assert.AreEqual(true, gitHubOutput.v2ConversionSuccessful);
         }
 
 
         [TestMethod]
-        public void StagingSingleDependsOnPipelineTest()
+        public void StagingSimpleDependsOnPipelineTest()
         {
             //Arrange
             Conversion conversion = new Conversion();
@@ -417,11 +474,12 @@ jobs:
 
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+            Assert.AreEqual(true, gitHubOutput.v2ConversionSuccessful);
         }
 
 
         [TestMethod]
-        public void StagingMultipleDependsOnPipelineTest()
+        public void StagingComplexDependsOnPipelineTest()
         {
             //Arrange
             Conversion conversion = new Conversion();
@@ -463,6 +521,7 @@ jobs:
 
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+            Assert.AreEqual(true, gitHubOutput.v2ConversionSuccessful);
         }
 
     }

@@ -78,6 +78,7 @@ jobs:
 
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+            Assert.AreEqual(true, gitHubOutput.v2ConversionSuccessful);
         }
 
         [TestMethod]
@@ -90,7 +91,7 @@ jobs:
     displayName: Deploy job
     environment: Dev
     pool:
-      vmImage: windows-latest     
+      vmImage: windows-latest
     strategy:
       runOnce:
         deploy:
@@ -120,6 +121,7 @@ jobs:
       shell: powershell";
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+            Assert.AreEqual(true, gitHubOutput.v2ConversionSuccessful);
         }
 
         [TestMethod]
@@ -132,10 +134,12 @@ jobs:
     displayName: Deploy job
     environment: 
       name: windows-server
+      resourceName: rName
+      resourceId: rId
       resourceType: VirtualMachine
       tags: web
     pool:
-      vmImage: windows-latest     
+      vmImage: windows-latest
     strategy:
       runOnce:
         deploy:
@@ -165,6 +169,7 @@ jobs:
       shell: powershell";
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+            Assert.AreEqual(true, gitHubOutput.v2ConversionSuccessful);
         }
     }
 }

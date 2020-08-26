@@ -201,6 +201,22 @@ startsWith(variables['Build.SourceBranch'], 'refs/tags/')
         }
 
         [TestMethod]
+        public void AndEqualAndNotEqualComplexTest()
+        {
+            //Arrange
+            string text = @"
+and(succeeded(), eq(variables['Build.Reason'], 'PullRequest'), ne(variables['System.PullRequest.PullRequestId'], 'Null'))
+";
+
+            //Act
+            string result = ConditionsProcessing.TranslateConditions(text);
+
+            //Assert
+            string expected = "and(success(),eq(variables['Build.Reason'], 'PullRequest'),ne(variables['System.PullRequest.PullRequestId'], 'Null'))";
+            Assert.AreEqual(expected, result);
+        }
+
+        [TestMethod]
         public void NestedBracketsStringTest()
         {
             //Arrange
