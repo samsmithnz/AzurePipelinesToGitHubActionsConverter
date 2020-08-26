@@ -1541,7 +1541,6 @@ stages:
   - job: ""Job""
     workspace:
       clean: all
-
     pool:
       name: PoolName
     steps:

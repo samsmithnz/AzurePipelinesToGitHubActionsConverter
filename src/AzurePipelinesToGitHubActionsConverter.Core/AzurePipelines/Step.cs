@@ -79,7 +79,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.AzurePipelines
                 _powershell = value;
             }
         }
-        //public string checkout { get; set; }
+        public string checkout { get; set; }
         public string task { get; set; }
         public string template { get; set; }
         public string publish { get; set; }
