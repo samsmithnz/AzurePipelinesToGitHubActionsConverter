@@ -2155,5 +2155,103 @@ jobs:
             Assert.AreEqual(true, gitHubOutput.v2ConversionSuccessful);
         }
 
+//        //Test that the result includes the setup Java step
+//        [TestMethod]
+//        public void DeployKubernatesClusterPipelineTest()
+//        {
+//            //Arrange
+//            Conversion conversion = new Conversion();
+//            string yaml = @"
+//# Deploy to Azure Kubernetes Service
+//# Build and push image to Azure Container Registry; Deploy to Azure Kubernetes Service
+//# https://docs.microsoft.com/azure/devops/pipelines/languages/docker
+
+//trigger:
+//- master
+
+//stages:
+
+//- stage: Deploy
+//  displayName: Deploy stage
+//  dependsOn: Build
+//  jobs:
+//{{#if reviewApp}}
+//  - deployment: DeployPullRequest
+//    displayName: Deploy Pull request
+//    condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/pull/'))
+//    pool:
+//      vmImage: $(vmImageName)
+      
+//    environment: '{{ k8sResource.EnvironmentReference.Name }}.$(k8sNamespaceForPR)'
+//    strategy:
+//      runOnce:
+//        deploy:
+//          steps:
+//          - reviewApp: {{ k8sResource.Name }}
+
+//          - task: Kubernetes@1
+//            displayName: 'Create a new namespace for the pull request'
+//            inputs:
+//              command: apply
+//              useConfigurationFile: true
+//              inline: '{ ""kind"": ""Namespace"", ""apiVersion"": ""v1"", ""metadata"": { ""name"": ""$(k8sNamespaceForPR)"" }}'
+
+//          - task: KubernetesManifest@0
+//            displayName: Create imagePullSecret
+//            inputs:
+//              action: createSecret
+//              secretName: $(imagePullSecret)
+//              namespace: $(k8sNamespaceForPR)
+//              dockerRegistryEndpoint: $(dockerRegistryServiceConnection)
+          
+//          - task: KubernetesManifest@0
+//            displayName: Deploy to the new namespace in the Kubernetes cluster
+//            inputs:
+//              action: deploy
+//              namespace: $(k8sNamespaceForPR)
+//              manifests: |
+//                $(Pipeline.Workspace)/manifests/deployment.yml
+//                $(Pipeline.Workspace)/manifests/service.yml
+//              imagePullSecrets: |
+//                $(imagePullSecret)
+//              containers: |
+//                $(containerRegistry)/$(imageRepository):$(tag)
+          
+//          - task: Kubernetes@1
+//            name: get
+//            displayName: 'Get services in the new namespace'
+//            continueOnError: true
+//            inputs:
+//              command: get
+//              namespace: $(k8sNamespaceForPR)
+//              arguments: svc
+//              outputFormat: jsonpath='http://{.items[0].status.loadBalancer.ingress[0].ip}:{.items[0].spec.ports[0].port}'
+              
+//          # Getting the IP of the deployed service and writing it to a variable for posing comment
+//          - script: |
+//              url=""$(get.KubectlOutput)""
+//              message=""Your review app has been deployed""
+//              if [ ! -z ""$url"" -a ""$url"" != ""http://:"" ] 
+//              then
+//                message=""${message} and is available at $url.<br><br>[Learn More](https://aka.ms/testwithreviewapps) about how to test and provide feedback for the app.""
+//              fi
+//              echo ""##vso[task.setvariable variable=GITHUB_COMMENT]$message""
+//{{/if}}
+
+//";
+
+//            //Act
+//            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(yaml);
+
+//            //Assert
+//            string expected = @"
+
+//";
+
+//            expected = UtilityTests.TrimNewLines(expected);
+//            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+//            Assert.AreEqual(true, gitHubOutput.v2ConversionSuccessful);
+//        }
+
     }
 }
