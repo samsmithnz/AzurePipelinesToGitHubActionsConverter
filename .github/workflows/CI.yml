@@ -17,6 +17,8 @@ jobs:
     - name: Custom script to create a unique application version number for this build
       run: src/BuildVersion.ps1 -ProjectFile "src/AzurePipelinesToGitHubActionsConverter.Core/AzurePipelinesToGitHubActionsConverter.Core.csproj"
       shell: pwsh
+    - run: Write-Host "current build version: ${{env.buildVersion}}"
+      shell: pwsh
     - name: Build with dotnet
       run: dotnet build src/AzurePipelinesToGitHubActionsConverter.Core/AzurePipelinesToGitHubActionsConverter.Core.csproj --configuration Release
     - name: Test with dotnet
@@ -25,6 +27,7 @@ jobs:
       run: dotnet pack src/AzurePipelinesToGitHubActionsConverter.Core/AzurePipelinesToGitHubActionsConverter.Core.csproj --configuration Release /p:PackageVersion=${{env.buildVersion}}
     - name: Upload nuget package back to GitHub
       uses: actions/upload-artifact@master
+      if: ${{ env.buildVersion != '0.0.0.0' }}
       with:
         name: nugetPackage
         path: src/AzurePipelinesToGitHubActionsConverter.Core/bin/Release      
