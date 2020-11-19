@@ -14,21 +14,8 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
             _verbose = verbose;
         }
 
-        //Process a simple trigger, e.g. "Trigger: [master, develop]"
-        public GitHubActions.Trigger ProcessSimpleTrigger(string[] trigger)
-        {
-            AzurePipelines.Trigger newTrigger = new AzurePipelines.Trigger
-            {
-                branches = new IncludeExclude
-                {
-                    include = trigger
-                }
-            };
-            return ProcessComplexTrigger(newTrigger);
-        }
-
         //Process a complex trigger, using the Trigger object
-        public GitHubActions.Trigger ProcessComplexTrigger(AzurePipelines.Trigger trigger)
+        private GitHubActions.Trigger ProcessComplexTrigger(AzurePipelines.Trigger trigger)
         {
             if (trigger == null)
             {
