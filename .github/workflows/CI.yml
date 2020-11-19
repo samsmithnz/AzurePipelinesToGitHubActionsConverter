@@ -14,7 +14,8 @@ jobs:
         os: [windows-latest] #ubuntu-latest, 
     env:
       buildVersion: 0.0.0.0 #The initial build version, calculated and updated in the script below
-      buildVersion2: 0.0.0.0
+      buildVersion2: 0.0.0.0 #weird
+      taskEnabled: "false"
     steps:
     - uses: actions/checkout@v1
     - name: Custom script to create a unique application version number for this build
@@ -24,14 +25,17 @@ jobs:
         echo ${{env.buildVersion}}
         echo ${{env.buildVersion2}}
     - name: Build with dotnet
+      if: ${{ env.taskEnabled == 'true' }}
       run: dotnet build src/AzurePipelinesToGitHubActionsConverter.Core/AzurePipelinesToGitHubActionsConverter.Core.csproj --configuration Release
     - name: Test with dotnet
+      if: ${{ env.taskEnabled == 'true' }}
       run: dotnet test src/AzurePipelinesToGitHubActionsConverter.Tests/AzurePipelinesToGitHubActionsConverter.Tests.csproj --configuration Release
     - name: Pack with dotnet
+      if: ${{ env.taskEnabled == 'true' }}
       run: dotnet pack src/AzurePipelinesToGitHubActionsConverter.Core/AzurePipelinesToGitHubActionsConverter.Core.csproj --configuration Release /p:PackageVersion=${{env.buildVersion}}
     - name: Upload nuget package back to GitHub
       uses: actions/upload-artifact@master
-      if: ${{ env.buildVersion != '0.0.0.0' }}
+      if: ${{ env.taskEnabled == 'true' }}
       with:
         name: nugetPackage
         path: src/AzurePipelinesToGitHubActionsConverter.Core/bin/Release      
