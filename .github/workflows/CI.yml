@@ -52,6 +52,9 @@ jobs:
         #Write-Host "Writing final version $finalBuildVersion back to Github variable"
         #echo "::set-env name=buildVersion::$finalBuildVersion"
         echo "buildVersion=$finalBuildVersion" >> $GITHUB_ENV
+    - name: Set variable test
+      run: |
+        echo "buildVersion2=1.2.3.4" >> $GITHUB_ENV
     - name: Test variables
       run: |
         echo ${{env.buildVersion}}
