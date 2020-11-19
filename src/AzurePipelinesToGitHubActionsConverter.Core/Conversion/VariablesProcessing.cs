@@ -34,45 +34,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
 
             return variables;
         }
-
-        //process all (complex) variables
-        public Dictionary<string, string> ProcessComplexVariables(AzurePipelines.Variable[] variables)
-        {
-            Dictionary<string, string> processedVariables = new Dictionary<string, string>();
-            if (variables != null)
-            {
-                //update variables from the $(variableName) format to ${{variableName}} format, by piping them into a list for replacement later.
-                for (int i = 0; i < variables.Length; i++)
-                {
-                    //name/value pairs
-                    if (variables[i].name != null && variables[i].value != null)
-                    {
-                        processedVariables.Add(variables[i].name, variables[i].value);
-                        VariableList.Add(variables[i].name);
-                    }
-                    //groups
-                    if (variables[i].group != null)
-                    {
-                        if (!processedVariables.ContainsKey("group"))
-                        {
-                            processedVariables.Add("group", variables[i].group);
-                        }
-                        else
-                        {
-                            ConversionUtility.WriteLine("group: only 1 variable group is supported at present", _verbose);
-                        }
-                    }
-                    //template
-                    if (variables[i].template != null)
-                    {
-                        processedVariables.Add("template", variables[i].template);
-                    }
-                }
-
-            }
-            return processedVariables;
-        }
-
+    
         public Dictionary<string, string> ProcessComplexVariablesV2(List<AzurePipelines.Variable> variables)
         {
             Dictionary<string, string> processedVariables = new Dictionary<string, string>();

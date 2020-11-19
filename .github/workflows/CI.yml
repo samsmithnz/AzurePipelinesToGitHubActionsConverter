@@ -1,19 +1,22 @@
 name: 'CI/ CD'
 
-on: [push, pull_request]
+on: 
+  push:
+    branches: [master]
+  pull_request:
+    
 
 jobs:
   build:
-    runs-on: ${{matrix.os}}
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest]
+        os: [windows-latest, ubuntu-latest]
+    runs-on: ${{matrix.os}}
     env:
       buildVersion: 0.0.0.0 #The initial build version, calculated and updated in the script below
+      ACTIONS_ALLOW_UNSECURE_COMMANDS: true #Allow us to set an environment variable in the PowerShell script to set the package version (technically deprecated)
     steps:
     - uses: actions/checkout@v1
-    - name: Test Animal serialization with dotnet
-      run: dotnet test src/AnimalsSerialization.Tests/AnimalsSerialization.Tests.csproj --configuration Release
     - name: Custom script to create a unique application version number for this build
       run: src/BuildVersion.ps1 -ProjectFile "src/AzurePipelinesToGitHubActionsConverter.Core/AzurePipelinesToGitHubActionsConverter.Core.csproj"
       shell: pwsh
@@ -32,8 +35,7 @@ jobs:
   NuGetPush:
     runs-on: ubuntu-latest
     needs: build
-    if: github.ref == 'refs/heads/master'
-      
+    if: github.ref == 'refs/heads/master'      
     steps:
     - name: Download nuget package artifact
       uses: actions/download-artifact@v1.0.0
