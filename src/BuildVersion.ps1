@@ -32,3 +32,4 @@ Write-Host "Final build number: $finalBuildVersion"
 #Write-Host "Writing final version $finalBuildVersion back to Github variable"
 echo "::set-env name=buildVersion::$finalBuildVersion"
 #echo "buildVersion=$finalBuildVersion" >> $GITHUB_ENV
+
