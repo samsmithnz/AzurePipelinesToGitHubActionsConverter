@@ -10,6 +10,8 @@ jobs:
         os: [ubuntu-latest, windows-latest]
     env:
       buildVersion: 0.0.0.0 #The initial build version, calculated and updated in the script below
+      buildVersion1: 1
+      buildVersion2: 2
     steps:
     - uses: actions/checkout@v1
     - name: Test Animal serialization with dotnet
@@ -22,7 +24,7 @@ jobs:
         echo "buildVersion2=2.0.0.0" >> $GITHUB_ENV
         echo ${{env.buildVersion}}
         echo ${{env.buildVersion1}}
-        echo ${{buildVersion2}}
+        echo ${{env.buildVersion2}}
       shell: pwsh
     - run: Write-Host ${{env.buildVersion}}
       shell: pwsh
