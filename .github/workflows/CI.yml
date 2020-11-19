@@ -17,8 +17,6 @@ jobs:
     steps:
     #TODO: Fix this
     - uses: actions/checkout@v1
-    - name: Test Animal serialization with dotnet
-      run: dotnet test src/AnimalsSerialization.Tests/AnimalsSerialization.Tests.csproj --configuration Release
     - name: Custom script to create a unique application version number for this build
       run: src/BuildVersion.ps1 -ProjectFile "src/AzurePipelinesToGitHubActionsConverter.Core/AzurePipelinesToGitHubActionsConverter.Core.csproj"
     - run: echo ${{env.buildVersion}}
