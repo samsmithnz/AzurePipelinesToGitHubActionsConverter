@@ -17,7 +17,9 @@ jobs:
     - name: Custom script to create a unique application version number for this build
       run: src/BuildVersion.ps1 -ProjectFile "src/AzurePipelinesToGitHubActionsConverter.Core/AzurePipelinesToGitHubActionsConverter.Core.csproj"
       shell: pwsh
-    - run: echo "env.buildVersion='a.b.c'" >> $GITHUB_ENV
+    - run: |
+        echo "env.buildVersion=a.b.c" >> $GITHUB_ENV
+        echo ${{env.buildVersion}}
       shell: pwsh
     - run: Write-Host ${{env.buildVersion}}
       shell: pwsh
