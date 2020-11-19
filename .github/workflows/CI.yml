@@ -3,6 +3,8 @@ name: 'CI/ CD'
 on: 
   push:
     branches: [master]
+  pull_request:
+    
 
 jobs:
   build:
