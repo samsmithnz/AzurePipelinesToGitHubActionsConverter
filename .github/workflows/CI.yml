@@ -8,18 +8,18 @@ on:
 
 jobs:
   build:
-    runs-on: ${{matrix.os}}
     strategy:
       matrix:
-        os: [windows-latest] #ubuntu-latest, 
+        os: [windows-latest, ubuntu-latest]
+    runs-on: ${{matrix.os}}
     env:
       buildVersion: 0.0.0.0 #The initial build version, calculated and updated in the script below
+      ACTIONS_ALLOW_UNSECURE_COMMANDS: true
     steps:
-    #TODO: Fix this
     - uses: actions/checkout@v1
     - name: Custom script to create a unique application version number for this build
       run: src/BuildVersion.ps1 -ProjectFile "src/AzurePipelinesToGitHubActionsConverter.Core/AzurePipelinesToGitHubActionsConverter.Core.csproj"
-    - run: echo ${{env.buildVersion}}
+      shell: pwsh
     - name: Build with dotnet
       run: dotnet build src/AzurePipelinesToGitHubActionsConverter.Core/AzurePipelinesToGitHubActionsConverter.Core.csproj --configuration Release
     - name: Test with dotnet
@@ -28,7 +28,6 @@ jobs:
       run: dotnet pack src/AzurePipelinesToGitHubActionsConverter.Core/AzurePipelinesToGitHubActionsConverter.Core.csproj --configuration Release /p:PackageVersion=${{env.buildVersion}}
     - name: Upload nuget package back to GitHub
       uses: actions/upload-artifact@master
-      if: ${{ env.buildVersion != '0.0.0.0' }}
       with:
         name: nugetPackage
         path: src/AzurePipelinesToGitHubActionsConverter.Core/bin/Release      
@@ -36,8 +35,7 @@ jobs:
   NuGetPush:
     runs-on: ubuntu-latest
     needs: build
-    if: github.ref == 'refs/heads/master'
-      
+    if: github.ref == 'refs/heads/master'      
     steps:
     - name: Download nuget package artifact
       uses: actions/download-artifact@v1.0.0
