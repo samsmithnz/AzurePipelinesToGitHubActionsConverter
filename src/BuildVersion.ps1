@@ -1,6 +1,6 @@
 param
 (
-	[string] $ProjectFile
+    [string] $ProjectFile
 )
 
 Write-Host "Generating Build Number"
