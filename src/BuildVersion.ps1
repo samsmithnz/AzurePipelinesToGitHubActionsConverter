@@ -30,5 +30,5 @@ $finalBuildVersion = "$($splitVersion[0]).$($splitVersion[1]).$($splitVersion[2]
 Write-Host "Final build number: $finalBuildVersion" 
 #Writing final version number back to Github variable
 #Write-Host "Writing final version $finalBuildVersion back to Github variable"
-#echo "::set-env name=buildVersion::$finalBuildVersion"
-echo "buildVersion=$finalBuildVersion" >> $GITHUB_ENV
+echo "::set-env name=buildVersion::$finalBuildVersion"
+#echo "buildVersion=$finalBuildVersion" >> $GITHUB_ENV
