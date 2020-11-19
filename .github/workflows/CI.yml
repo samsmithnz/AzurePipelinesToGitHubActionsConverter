@@ -22,7 +22,7 @@ jobs:
         echo "buildVersion2=2.0.0.0" >> $GITHUB_ENV
         echo ${{env.buildVersion}}
         echo ${{env.buildVersion1}}
-        echo ${{env.buildVersion2}}
+        echo ${{buildVersion2}}
       shell: pwsh
     - run: Write-Host ${{env.buildVersion}}
       shell: pwsh
