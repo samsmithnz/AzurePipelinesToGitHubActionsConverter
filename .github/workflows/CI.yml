@@ -11,7 +11,7 @@ jobs:
     runs-on: ${{matrix.os}}
     strategy:
       matrix:
-        os: [ubuntu-latest] #windows-latest, 
+        os: [windows-latest] #ubuntu-latest, 
     env:
       buildVersion: 0.0.0.0 #The initial build version, calculated and updated in the script below
       buildVersion2: 0.0.0.0 #weird
@@ -50,8 +50,8 @@ jobs:
         Write-Host "Final build number: $finalBuildVersion" 
         #Writing final version number back to Github variable
         #Write-Host "Writing final version $finalBuildVersion back to Github variable"
-        #echo "::set-env name=buildVersion::$finalBuildVersion"
-        echo "buildVersion=$finalBuildVersion" >> $GITHUB_ENV
+        echo "::set-env name=buildVersion::$finalBuildVersion"
+        #echo "buildVersion=$finalBuildVersion" >> $GITHUB_ENV
     - name: Set variable test
       run: |
         echo "buildVersion2=1.2.3.4" >> $GITHUB_ENV
