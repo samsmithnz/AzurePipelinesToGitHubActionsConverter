@@ -44,6 +44,7 @@ jobs:
         #Write-Host "Writing final version $finalBuildVersion back to Github variable"
         #echo "::set-env name=buildVersion::$finalBuildVersion"
         echo "buildVersion=$finalBuildVersion" >> $GITHUB_ENV
+      shell: pwsh
     - name: Build with dotnet
       run: dotnet build src/AzurePipelinesToGitHubActionsConverter.Core/AzurePipelinesToGitHubActionsConverter.Core.csproj --configuration Release
     - name: Test with dotnet
