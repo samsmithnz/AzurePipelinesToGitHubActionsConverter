@@ -14,12 +14,15 @@ jobs:
         os: [windows-latest] #ubuntu-latest, 
     env:
       buildVersion: 0.0.0.0 #The initial build version, calculated and updated in the script below
+      buildVersion2: 0.0.0.0
     steps:
-    #TODO: Fix this
     - uses: actions/checkout@v1
     - name: Custom script to create a unique application version number for this build
       run: src/BuildVersion.ps1 -ProjectFile "src/AzurePipelinesToGitHubActionsConverter.Core/AzurePipelinesToGitHubActionsConverter.Core.csproj"
-    - run: echo ${{env.buildVersion}}
+    - name: Test variables
+      run: |
+        echo ${{env.buildVersion}}
+        echo ${{env.buildVersion2}}
     - name: Build with dotnet
       run: dotnet build src/AzurePipelinesToGitHubActionsConverter.Core/AzurePipelinesToGitHubActionsConverter.Core.csproj --configuration Release
     - name: Test with dotnet
