@@ -1,10 +1,10 @@
 ﻿using AzurePipelinesToGitHubActionsConverter.Core.AzurePipelines;
-using AzurePipelinesToGitHubActionsConverter.Core.Conversion.Serialization;
+using AzurePipelinesToGitHubActionsConverter.Core.Serialization;
 using AzurePipelinesToGitHubActionsConverter.Core.GitHubActions;
 using System;
 using System.Diagnostics;
 
-namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
+namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversion
 {
     public class TriggerProcessing
     {
@@ -74,7 +74,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
             {
                 try
                 {
-                    string[] simpleTrigger = GenericObjectSerialization.DeserializeYaml<string[]>(triggerYaml);
+                    string[] simpleTrigger = YamlSerialization.DeserializeYaml<string[]>(triggerYaml);
                     trigger = new AzurePipelines.Trigger
                     {
                         branches = new IncludeExclude
@@ -86,7 +86,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                 catch (Exception ex)
                 {
                     ConversionUtility.WriteLine($"DeserializeYaml<string[]>(triggerYaml) swallowed an exception: " + ex.Message, _verbose);
-                    trigger = GenericObjectSerialization.DeserializeYaml<AzurePipelines.Trigger>(triggerYaml);
+                    trigger = YamlSerialization.DeserializeYaml<AzurePipelines.Trigger>(triggerYaml);
                 }
             }
 
@@ -165,7 +165,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
             {
                 try
                 {
-                    string[] simpleTrigger = GenericObjectSerialization.DeserializeYaml<string[]>(pullRequestYaml);
+                    string[] simpleTrigger = YamlSerialization.DeserializeYaml<string[]>(pullRequestYaml);
                     trigger = new AzurePipelines.Trigger
                     {
                         branches = new IncludeExclude
@@ -177,7 +177,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                 catch (Exception ex)
                 {
                     ConversionUtility.WriteLine($"DeserializeYaml<string[]>(pullRequestYaml) swallowed an exception: " + ex.Message, _verbose);
-                    trigger = GenericObjectSerialization.DeserializeYaml<AzurePipelines.Trigger>(pullRequestYaml);
+                    trigger = YamlSerialization.DeserializeYaml<AzurePipelines.Trigger>(pullRequestYaml);
                 }
             }
 
@@ -221,7 +221,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
             {
                 try
                 {
-                    schedules = GenericObjectSerialization.DeserializeYaml<Schedule[]>(schedulesYaml);
+                    schedules = YamlSerialization.DeserializeYaml<Schedule[]>(schedulesYaml);
                 }
                 catch (Exception ex)
                 {

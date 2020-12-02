@@ -3,9 +3,9 @@ using Newtonsoft.Json.Linq;
 using System.IO;
 using YamlDotNet.Serialization;
 
-namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion.Serialization
+namespace AzurePipelinesToGitHubActionsConverter.Core.Serialization
 {
-    public static class JSONSerialization
+    public static class JsonSerialization
     {
         public static JObject DeserializeStringToObject(string yaml)
         {

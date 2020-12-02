@@ -1,12 +1,12 @@
 ﻿using AzurePipelinesToGitHubActionsConverter.Core.AzurePipelines;
-using AzurePipelinesToGitHubActionsConverter.Core.Conversion.Serialization;
+using AzurePipelinesToGitHubActionsConverter.Core.Serialization;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 
-namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
+namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversion
 {
     public class JobProcessing
     {
@@ -161,7 +161,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                     {
                         try
                         {
-                            job.steps = GenericObjectSerialization.DeserializeYaml<AzurePipelines.Step[]>(jobJson["steps"].ToString());
+                            job.steps = YamlSerialization.DeserializeYaml<AzurePipelines.Step[]>(jobJson["steps"].ToString());
                         }
                         catch (Exception ex)
                         {
@@ -188,7 +188,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
             try
             {
                 //Most often, the pool will be in this structure
-                strategy = GenericObjectSerialization.DeserializeYaml<AzurePipelines.Strategy>(strategyYaml);
+                strategy = YamlSerialization.DeserializeYaml<AzurePipelines.Strategy>(strategyYaml);
             }
             catch (Exception ex)
             {
@@ -199,7 +199,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
             {
                 try
                 {
-                    steps = GenericObjectSerialization.DeserializeYaml<AzurePipelines.Step[]>(stepsYaml);
+                    steps = YamlSerialization.DeserializeYaml<AzurePipelines.Step[]>(stepsYaml);
                 }
                 catch (Exception ex)
                 {

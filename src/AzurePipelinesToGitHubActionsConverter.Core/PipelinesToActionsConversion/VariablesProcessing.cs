@@ -1,5 +1,5 @@
 ﻿using AzurePipelinesToGitHubActionsConverter.Core.AzurePipelines;
-using AzurePipelinesToGitHubActionsConverter.Core.Conversion.Serialization;
+using AzurePipelinesToGitHubActionsConverter.Core.Serialization;
 using AzurePipelinesToGitHubActionsConverter.Core.Extensions;
 using AzurePipelinesToGitHubActionsConverter.Core.GitHubActions;
 using System;
@@ -8,7 +8,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text.RegularExpressions;
 
-namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
+namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversion
 {
     public class VariablesProcessing
     {
@@ -102,7 +102,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
             {
                 try
                 {
-                    Dictionary<string, string> simpleParameters = GenericObjectSerialization.DeserializeYaml<Dictionary<string, string>>(parametersYaml);
+                    Dictionary<string, string> simpleParameters = YamlSerialization.DeserializeYaml<Dictionary<string, string>>(parametersYaml);
                     parameters = new List<Parameter>();
                     foreach (KeyValuePair<string, string> item in simpleParameters)
                     {
@@ -116,7 +116,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                 catch (Exception ex)
                 {
                     ConversionUtility.WriteLine($"DeserializeYaml<Dictionary<string, string>>(parametersYaml) swallowed an exception: " + ex.Message, _verbose);
-                    parameters = GenericObjectSerialization.DeserializeYaml<List<Parameter>>(parametersYaml);
+                    parameters = YamlSerialization.DeserializeYaml<List<Parameter>>(parametersYaml);
                 }
             }
 
@@ -125,7 +125,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
             {
                 try
                 {
-                    Dictionary<string, string> simpleVariables = GenericObjectSerialization.DeserializeYaml<Dictionary<string, string>>(variablesYaml);
+                    Dictionary<string, string> simpleVariables = YamlSerialization.DeserializeYaml<Dictionary<string, string>>(variablesYaml);
                     variables = new List<Variable>();
                     foreach (KeyValuePair<string, string> item in simpleVariables)
                     {
@@ -139,7 +139,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                 catch (Exception ex)
                 {
                     ConversionUtility.WriteLine($"DeserializeYaml<Dictionary<string, string>>(variablesYaml) swallowed an exception: " + ex.Message, _verbose);
-                    variables = GenericObjectSerialization.DeserializeYaml<List<Variable>>(variablesYaml);
+                    variables = YamlSerialization.DeserializeYaml<List<Variable>>(variablesYaml);
                 }
             }
 

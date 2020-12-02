@@ -2,7 +2,7 @@
 using Newtonsoft.Json.Linq;
 using System.Collections.Generic;
 
-namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
+namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversion
 {
     public class StagesProcessing
     {
