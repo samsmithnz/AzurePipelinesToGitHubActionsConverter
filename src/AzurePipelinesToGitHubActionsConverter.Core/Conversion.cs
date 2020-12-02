@@ -3,8 +3,9 @@ using AzurePipelinesToGitHubActionsConverter.Core.Serialization;
 using AzurePipelinesToGitHubActionsConverter.Core.GitHubActions;
 using Newtonsoft.Json.Linq;
 using System.Collections.Generic;
+using AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversion;
 
-namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversion
+namespace AzurePipelinesToGitHubActionsConverter.Core
 {
     public class Conversion
     {

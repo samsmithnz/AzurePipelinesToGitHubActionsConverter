@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversion
+namespace AzurePipelinesToGitHubActionsConverter.Core
 {
     public class ConversionResponse
     {
