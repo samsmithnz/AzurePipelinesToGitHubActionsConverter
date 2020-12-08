@@ -1,8 +1,8 @@
 ﻿using YamlDotNet.Serialization;
 
-namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion.Serialization
+namespace AzurePipelinesToGitHubActionsConverter.Core.Serialization
 {
-    public static class GenericObjectSerialization
+    public static class YamlSerialization
     {
         //Read in a YAML file and convert it to a T object
         public static T DeserializeYaml<T>(string yaml)

@@ -1,10 +1,11 @@
 ﻿using AzurePipelinesToGitHubActionsConverter.Core.AzurePipelines;
-using AzurePipelinesToGitHubActionsConverter.Core.Conversion.Serialization;
+using AzurePipelinesToGitHubActionsConverter.Core.Serialization;
 using AzurePipelinesToGitHubActionsConverter.Core.GitHubActions;
 using Newtonsoft.Json.Linq;
 using System.Collections.Generic;
+using AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversion;
 
-namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
+namespace AzurePipelinesToGitHubActionsConverter.Core
 {
     public class Conversion
     {
@@ -49,7 +50,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
             {
                 //Clean up the YAML to remove conditional insert statements
                 string processedYaml = ConversionUtility.CleanYamlBeforeDeserializationV2(yaml);
-                json = JSONSerialization.DeserializeStringToObject(processedYaml);
+                json = JsonSerialization.DeserializeStringToObject(processedYaml);
             }
 
             //Build up the GitHub object piece by piece
@@ -240,7 +241,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
             GitHubActions.Step gitHubActionStep = new GitHubActions.Step();
 
             //Process the YAML for the individual job
-            AzurePipelines.Job azurePipelinesJob = GenericObjectSerialization.DeserializeYaml<AzurePipelines.Job>(processedInput);
+            AzurePipelines.Job azurePipelinesJob = YamlSerialization.DeserializeYaml<AzurePipelines.Job>(processedInput);
             if (azurePipelinesJob != null && azurePipelinesJob.steps != null && azurePipelinesJob.steps.Length > 0)
             {
                 //As we needed to create an entire (but minimal) pipelines job, we need to now extract the step for processing

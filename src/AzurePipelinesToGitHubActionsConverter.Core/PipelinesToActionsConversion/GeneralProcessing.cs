@@ -1,12 +1,11 @@
 ﻿using AzurePipelinesToGitHubActionsConverter.Core.AzurePipelines;
-using AzurePipelinesToGitHubActionsConverter.Core.Conversion.Serialization;
+using AzurePipelinesToGitHubActionsConverter.Core.Serialization;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 
-namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
+namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversion
 {
     public class GeneralProcessing
     {
@@ -36,14 +35,14 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
             {
                 try
                 {
-                    string simpleDependsOn = GenericObjectSerialization.DeserializeYaml<string>(dependsOnYaml);
+                    string simpleDependsOn = YamlSerialization.DeserializeYaml<string>(dependsOnYaml);
                     dependsOn = new string[1];
                     dependsOn[0] = simpleDependsOn;
                 }
                 catch (Exception ex)
                 {
                     ConversionUtility.WriteLine($"DeserializeYaml<string>(dependsOnYaml) swallowed an exception: " + ex.Message, _verbose);
-                    dependsOn = GenericObjectSerialization.DeserializeYaml<string[]>(dependsOnYaml);
+                    dependsOn = YamlSerialization.DeserializeYaml<string[]>(dependsOnYaml);
                 }
             }
 
@@ -58,7 +57,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
             {
                 try
                 {
-                    environment = GenericObjectSerialization.DeserializeYaml<AzurePipelines.Environment>(environmentYaml);
+                    environment = YamlSerialization.DeserializeYaml<AzurePipelines.Environment>(environmentYaml);
                 }
                 catch (Exception ex1)
                 {
@@ -67,7 +66,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                     try
                     {
                         //when the environment is just a simple string, e.g.  //environment: environmentName.resourceName
-                        string simpleEnvironment = GenericObjectSerialization.DeserializeYaml<string>(environmentYaml);
+                        string simpleEnvironment = YamlSerialization.DeserializeYaml<string>(environmentYaml);
                         environment = new AzurePipelines.Environment
                         {
                             name = simpleEnvironment
@@ -75,7 +74,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                     }
                     catch (Exception ex2)
                     {
-                        JObject json = JSONSerialization.DeserializeStringToObject(environmentYaml);
+                        JObject json = JsonSerialization.DeserializeStringToObject(environmentYaml);
                         if (json["tags"].Type.ToString() == "String")
                         {
                             string name = null;
@@ -109,10 +108,10 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                             environment.tags = new string[1];
                             environment.tags[0] = json["tags"].ToString();
                         }
-                        else
-                        {
-                            ConversionUtility.WriteLine($"Manual deserialization with demands string swallowed an exception: " + ex2.Message, _verbose);
-                        }
+                        //else
+                        //{
+                        //    ConversionUtility.WriteLine($"Manual deserialization with demands string swallowed an exception: " + ex2.Message, _verbose);
+                        //}
                     }
                 }
             }
@@ -126,7 +125,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
             {
                 try
                 {
-                    Resources resources = GenericObjectSerialization.DeserializeYaml<Resources>(resourcesYaml);
+                    Resources resources = YamlSerialization.DeserializeYaml<Resources>(resourcesYaml);
                     return resources;
                 }
                 catch (Exception ex)
@@ -144,7 +143,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                 try
                 {
                     //Most often, the pool will be in this structure
-                    AzurePipelines.Strategy strategy = GenericObjectSerialization.DeserializeYaml<AzurePipelines.Strategy>(strategyYaml);
+                    AzurePipelines.Strategy strategy = YamlSerialization.DeserializeYaml<AzurePipelines.Strategy>(strategyYaml);
                     return strategy;
                 }
                 catch (Exception ex)
@@ -182,7 +181,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                 try
                 {
                     //Most often, the pool will be in this structure
-                    pool = GenericObjectSerialization.DeserializeYaml<Pool>(poolYaml);
+                    pool = YamlSerialization.DeserializeYaml<Pool>(poolYaml);
                 }
                 catch (Exception ex)
                 {
@@ -198,7 +197,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                     else
                     {
                         //otherwise, demands is probably a string, instead of string[], let's fix it
-                        JObject json = JSONSerialization.DeserializeStringToObject(poolYaml);
+                        JObject json = JsonSerialization.DeserializeStringToObject(poolYaml);
                         if (json["demands"].Type.ToString() == "String")
                         {
                             string name = null;
@@ -225,10 +224,10 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
                             pool.demands = new string[1];
                             pool.demands[0] = demands;
                         }
-                        else
-                        {
-                            ConversionUtility.WriteLine($"Manual deserialization with demands string swallowed an exception: " + ex.Message, _verbose);
-                        }
+                        //else
+                        //{
+                        //    ConversionUtility.WriteLine($"Manual deserialization with demands string swallowed an exception: " + ex.Message, _verbose);
+                        //}
                     }
                 }
             }

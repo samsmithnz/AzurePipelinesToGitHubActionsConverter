@@ -1,4 +1,4 @@
-﻿using AzurePipelinesToGitHubActionsConverter.Core.Conversion.Serialization;
+﻿using AzurePipelinesToGitHubActionsConverter.Core.Serialization;
 using AzurePipelinesToGitHubActionsConverter.Core.GitHubActions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
@@ -82,7 +82,7 @@ on:
 ";
 
             //Act
-            object yamlObject = GenericObjectSerialization.DeserializeYaml<object>(yaml);
+            object yamlObject = YamlSerialization.DeserializeYaml<object>(yaml);
 
             //Assert
             Assert.AreNotEqual(null, yamlObject);

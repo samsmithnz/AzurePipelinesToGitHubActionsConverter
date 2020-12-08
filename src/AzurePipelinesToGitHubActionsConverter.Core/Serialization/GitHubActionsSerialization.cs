@@ -1,11 +1,12 @@
 ﻿using AzurePipelinesToGitHubActionsConverter.Core.Extensions;
 using AzurePipelinesToGitHubActionsConverter.Core.GitHubActions;
+using AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversion;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
 
-namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion.Serialization
+namespace AzurePipelinesToGitHubActionsConverter.Core.Serialization
 {
     public static class GitHubActionsSerialization
     {
@@ -16,7 +17,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion.Serialization
 
         public static string Serialize(GitHubActionsRoot gitHubActions, List<string> variableList = null, string matrixVariableName = null)
         {
-            string yaml = GenericObjectSerialization.SerializeYaml<GitHubActionsRoot>(gitHubActions);
+            string yaml = YamlSerialization.SerializeYaml<GitHubActionsRoot>(gitHubActions);
 
             yaml = ProcessGitHubActionYAML(yaml, variableList, matrixVariableName);
 
@@ -25,7 +26,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion.Serialization
 
         public static string SerializeJob(GitHubActions.Job gitHubActionJob, List<string> variableList = null)
         {
-            string yaml = GenericObjectSerialization.SerializeYaml<GitHubActions.Job>(gitHubActionJob);
+            string yaml = YamlSerialization.SerializeYaml<GitHubActions.Job>(gitHubActionJob);
 
             yaml = ProcessGitHubActionYAML(yaml, variableList);
             yaml = StepsPostProcessing(yaml);
@@ -95,7 +96,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion.Serialization
             yaml = yaml.Replace("continue-on-error", "continue_on_error");
             yaml = yaml.Replace("timeout-minutes", "timeout_minutes");
 
-            return GenericObjectSerialization.DeserializeYaml<GitHubActionsRoot>(yaml);
+            return YamlSerialization.DeserializeYaml<GitHubActionsRoot>(yaml);
         }
 
         private static string PrepareYamlPropertiesForGitHubSerialization(string yaml)

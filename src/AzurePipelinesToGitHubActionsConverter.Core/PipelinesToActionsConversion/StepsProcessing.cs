@@ -1,10 +1,10 @@
 ﻿using AzurePipelinesToGitHubActionsConverter.Core.AzurePipelines;
-using AzurePipelinesToGitHubActionsConverter.Core.Conversion.Serialization;
+using AzurePipelinesToGitHubActionsConverter.Core.Serialization;
 using AzurePipelinesToGitHubActionsConverter.Core.Extensions;
 using System.Collections.Generic;
 using System.Text;
 
-namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
+namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversion
 {
     public class StepsProcessing
     {
@@ -120,7 +120,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Conversion
 
                     default:
                         gitHubStep = CreateScriptStep("powershell", step);
-                        string newYaml = GenericObjectSerialization.SerializeYaml<AzurePipelines.Step>(step);
+                        string newYaml = YamlSerialization.SerializeYaml<AzurePipelines.Step>(step);
                         string[] newYamlSplit = newYaml.Split(System.Environment.NewLine);
                         StringBuilder yamlBuilder = new StringBuilder();
                         for (int i = 0; i < newYamlSplit.Length; i++)

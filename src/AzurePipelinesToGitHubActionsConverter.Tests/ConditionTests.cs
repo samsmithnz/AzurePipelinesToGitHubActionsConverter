@@ -1,4 +1,4 @@
-using AzurePipelinesToGitHubActionsConverter.Core.Conversion;
+using AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversion;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Collections.Generic;
 
