@@ -108,10 +108,10 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                             environment.tags = new string[1];
                             environment.tags[0] = json["tags"].ToString();
                         }
-                        else
-                        {
-                            ConversionUtility.WriteLine($"Manual deserialization with demands string swallowed an exception: " + ex2.Message, _verbose);
-                        }
+                        //else
+                        //{
+                        //    ConversionUtility.WriteLine($"Manual deserialization with demands string swallowed an exception: " + ex2.Message, _verbose);
+                        //}
                     }
                 }
             }
@@ -224,10 +224,10 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                             pool.demands = new string[1];
                             pool.demands[0] = demands;
                         }
-                        else
-                        {
-                            ConversionUtility.WriteLine($"Manual deserialization with demands string swallowed an exception: " + ex.Message, _verbose);
-                        }
+                        //else
+                        //{
+                        //    ConversionUtility.WriteLine($"Manual deserialization with demands string swallowed an exception: " + ex.Message, _verbose);
+                        //}
                     }
                 }
             }
