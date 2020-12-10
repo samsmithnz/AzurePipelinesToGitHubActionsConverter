@@ -219,11 +219,16 @@ stages:
     pool:
       vmImage: 'ubuntu-latest'
       demands: npm
-
     jobs:
       - job: BuildApi
         displayName: Build API
-
+        steps:
+          - script: npm ci --cache $(NPM_CACHE_FOLDER)
+            displayName: 'Install npm dependencies'
+      - job: BuildApi2
+        displayName: Build API
+        pool:
+          vmImage: 'windows-latest'
         steps:
           - script: npm ci --cache $(NPM_CACHE_FOLDER)
             displayName: 'Install npm dependencies'
@@ -239,6 +244,13 @@ jobs:
   Build_Stage_BuildApi:
     name: Build API
     runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Install npm dependencies
+      run: npm ci --cache ${{ env.NPM_CACHE_FOLDER }}
+  Build_Stage_BuildApi2:
+    name: Build API
+    runs-on: windows-latest
     steps:
     - uses: actions/checkout@v2
     - name: Install npm dependencies
