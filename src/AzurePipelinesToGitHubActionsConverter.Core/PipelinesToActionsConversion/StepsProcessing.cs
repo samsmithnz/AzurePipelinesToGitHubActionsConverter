@@ -41,6 +41,9 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                     case "CMDLINE@2":
                         gitHubStep = CreateScriptStep("cmd", step);
                         break;
+                    case "CACHE@2":
+                        gitHubStep = CreateCacheStep(step);
+                        break;
                     case "COPYFILES@2":
                         gitHubStep = CreateCopyFilesStep(step);
                         break;
@@ -337,6 +340,47 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
         //    //    name: serviceapp
         //    return gitHubStep;
         //}
+
+        //https://github.com/actions/cache
+        private GitHubActions.Step CreateCacheStep(AzurePipelines.Step step)
+        {
+            //From:
+            //- task: Cache@2
+            //  displayName: Cache multiple paths
+            //  inputs:
+            //    key: 'npm | "$(Agent.OS)" | package-lock.json'
+            //    restoreKeys: |
+            //      npm | "$(Agent.OS)"
+            //      npm
+            //    path: $(NPM_CACHE_FOLDER)
+
+            //To:
+            //- name: Cache multiple paths
+            //  uses: actions/cache@v2
+            //  with:
+            //    key: 'npm | "${{ runner.os }}" | package-lock.json'
+            //    restoreKeys: |
+            //      npm | "${{ runner.os }}"
+            //      npm
+            //    path: ${{ env.NPM_CACHE_FOLDER }}
+
+            string key = GetStepInput(step, "key");
+            string restoreKeys = GetStepInput(step, "restoreKeys");
+            string path = GetStepInput(step, "path");
+
+            GitHubActions.Step gitHubStep = new GitHubActions.Step
+            {
+                uses = "actions/cache@v2",
+                with = new Dictionary<string, string>
+                {
+                    { "key", key },
+                    { "restoreKeys", restoreKeys },
+                    { "path", path }
+                }
+            };
+
+            return gitHubStep;
+        }
 
         private GitHubActions.Step CreateCopyFilesStep(AzurePipelines.Step step)
         {
