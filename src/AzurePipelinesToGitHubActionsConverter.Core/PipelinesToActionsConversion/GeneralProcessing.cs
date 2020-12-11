@@ -85,17 +85,17 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                             string resourceName = null;
                             if (json["resourceName"] != null)
                             {
-                                name = json["resourceName"].ToString();
+                                resourceName = json["resourceName"].ToString();
                             }
                             string resourceId = null;
                             if (json["resourceId"] != null)
                             {
-                                name = json["resourceId"].ToString();
+                                resourceId = json["resourceId"].ToString();
                             }
                             string resourceType = null;
                             if (json["resourceType"] != null)
                             {
-                                name = json["resourceType"].ToString();
+                                resourceType = json["resourceType"].ToString();
                             }
                             environment = new AzurePipelines.Environment
                             {

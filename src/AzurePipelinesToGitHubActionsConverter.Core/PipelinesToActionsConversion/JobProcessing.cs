@@ -33,6 +33,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                 container = generalProcessing.ProcessContainer(resources),
                 env = vp.ProcessSimpleVariables(job.variables),
                 timeout_minutes = job.timeoutInMinutes,
+                environment = ProcessJobEnvironment(job.environment),
                 steps = sp.AddSupportingSteps(job.steps)
             };
             MatrixVariableName = generalProcessing.MatrixVariableName;
@@ -55,10 +56,6 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                 newJob.steps = sp.AddSupportingSteps(job.strategy?.runOnce?.deploy?.steps, false);
                 //TODO: There is currently no conversion path for templates
                 newJob.job_message += "Note: Azure DevOps strategy>runOnce>deploy does not have an equivalent in GitHub Actions yet";
-            }
-            if (job.environment != null)
-            {
-                newJob.job_message += "Note: Azure DevOps job environment does not have an equivalent in GitHub Actions yet";
             }
             if (job.continueOnError == true)
             {
@@ -225,6 +222,15 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
             {
                 return null;
             }
+        }
+
+        private GitHubActions.Environment ProcessJobEnvironment(AzurePipelines.Environment environment)
+        {
+            GitHubActions.Environment newEnvironment = new GitHubActions.Environment
+            {
+                name = environment.name
+            };
+            return newEnvironment;
         }
 
     }
