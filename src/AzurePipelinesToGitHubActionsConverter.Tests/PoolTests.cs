@@ -207,6 +207,59 @@ jobs:
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
             
         }
+        
+        [TestMethod]
+        public void PoolInStageTest()
+        {
+            //Arrange
+            string input = @"
+stages:
+  - stage: Build
+    displayName: Build
+    pool:
+      vmImage: 'ubuntu-latest'
+      demands: npm
+    jobs:
+      - job: BuildApi
+        displayName: Build API
+        steps:
+          - script: npm ci --cache $(NPM_CACHE_FOLDER)
+            displayName: 'Install npm dependencies'
+      - job: BuildApi2
+        displayName: Build API
+        pool:
+          vmImage: 'windows-latest'
+        steps:
+          - script: npm ci --cache $(NPM_CACHE_FOLDER)
+            displayName: 'Install npm dependencies'
+";
+            Conversion conversion = new Conversion();
+
+            //Act
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(input);
+
+            //Assert
+            string expected = @"
+jobs:
+  Build_Stage_BuildApi:
+    name: Build API
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Install npm dependencies
+      run: npm ci --cache ${{ env.NPM_CACHE_FOLDER }}
+  Build_Stage_BuildApi2:
+    name: Build API
+    runs-on: windows-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Install npm dependencies
+      run: npm ci --cache ${{ env.NPM_CACHE_FOLDER }}
+";
+            expected = UtilityTests.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+            
+        }
 
     }
 }

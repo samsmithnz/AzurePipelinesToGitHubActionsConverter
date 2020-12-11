@@ -123,6 +123,40 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
         }
 
         [TestMethod]
+        public void CacheIndividualStepTest()
+        {
+            //Arrange
+            Conversion conversion = new Conversion();
+            string yaml = @"
+- task: Cache@2
+  displayName: Cache npm dependencies
+  inputs:
+    key: 'npm | ""$(Agent.OS)"" | package-lock.json'
+    restoreKeys: |
+      npm | ""$(Agent.OS)""
+      npm
+    path: $(NPM_CACHE_FOLDER)
+";
+
+            //Act
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineTaskToGitHubActionTask(yaml);
+
+            //Assert
+            string expected = @"
+- name: Cache npm dependencies
+  uses: actions/cache@v2
+  with:
+    key: npm | ""${{ runner.OS }}"" | package-lock.json
+    restore-keys: 
+      npm | ""${{ runner.OS }}""
+      npm
+    path: ${{ env.NPM_CACHE_FOLDER }}
+";
+            expected = UtilityTests.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+        }
+
+        [TestMethod]
         public void CopyIndividualStepTest()
         {
             //Arrange

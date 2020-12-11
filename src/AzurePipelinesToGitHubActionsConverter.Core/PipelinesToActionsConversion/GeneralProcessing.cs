@@ -74,6 +74,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                     }
                     catch (Exception ex2)
                     {
+                        ConversionUtility.WriteLine($"Exception! " + ex2.Message, _verbose);
                         JObject json = JsonSerialization.DeserializeStringToObject(environmentYaml);
                         if (json["tags"].Type.ToString() == "String")
                         {
