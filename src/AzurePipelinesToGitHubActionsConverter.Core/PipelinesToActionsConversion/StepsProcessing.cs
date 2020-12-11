@@ -354,12 +354,13 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
             //      npm
             //    path: $(NPM_CACHE_FOLDER)
 
+            //https://github.com/actions/cache
             //To:
             //- name: Cache multiple paths
             //  uses: actions/cache@v2
             //  with:
             //    key: 'npm | "${{ runner.os }}" | package-lock.json'
-            //    restoreKeys: |
+            //    restore-keys: |
             //      npm | "${{ runner.os }}"
             //      npm
             //    path: ${{ env.NPM_CACHE_FOLDER }}
@@ -374,7 +375,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                 with = new Dictionary<string, string>
                 {
                     { "key", key },
-                    { "restoreKeys", restoreKeys },
+                    { "restore-keys", restoreKeys },
                     { "path", path }
                 }
             };

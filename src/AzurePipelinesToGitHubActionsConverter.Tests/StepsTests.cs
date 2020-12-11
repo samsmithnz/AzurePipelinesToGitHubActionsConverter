@@ -147,7 +147,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
   uses: actions/cache@v2
   with:
     key: npm | ""${{ env.Agent.OS }}"" | package-lock.json
-    restoreKeys: 
+    restore-keys: 
       npm | ""${{ env.Agent.OS }}""
       npm
     path: ${{ env.NPM_CACHE_FOLDER }}
