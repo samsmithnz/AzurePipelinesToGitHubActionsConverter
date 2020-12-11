@@ -10,6 +10,6 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.GitHubActions
     public class Environment
     {
         public string name { get; set; }
-        public string url { get; set; }
+        //public string url { get; set; }
     }
 }

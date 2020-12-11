@@ -20,6 +20,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             //Assert
             string expected = "name: test ci pipelines";
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+            Assert.AreEqual(input, gitHubOutput.pipelinesYaml);
             
         }
 

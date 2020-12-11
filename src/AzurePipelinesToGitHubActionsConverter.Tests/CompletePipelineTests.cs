@@ -747,7 +747,7 @@ jobs:
     - # 'Note: This is a third party action: https://github.com/marketplace/actions/create-zip-file'
       uses: montudor/action-zip@v0.1.0
       with:
-        args: zip -qq -r  ${{ env.build.sourcesDirectory }}
+        args: zip -qq -r  ${GITHUB_WORKSPACE}
     - uses: actions/upload-artifact@v2
 ";
 
@@ -2135,7 +2135,7 @@ jobs:
         name: ${{ env.testArtifactName }}
     - # 'Note: Error! This step does not have a conversion path yet: PublishCodeCoverageResults@1'
       name: Publish Azure Code Coverage
-      run: 'Write-Host Note: Error! This step does not have a conversion path yet: PublishCodeCoverageResults@1 #task: PublishCodeCoverageResults@1#displayName: Publish Azure Code Coverage#condition: succeededOrFailed()#inputs:#  codecoveragetool: JaCoCo#  summaryfilelocation: ${{ env.buildFolderName }}/${{ env.testResultFolderName }}/JaCoCo_coverage.xml#  pathtosources: ${{ env.Build.SourcesDirectory }}/${{ env.buildFolderName }}/${{ env.dscBuildVariable.RepositoryName }}'
+      run: 'Write-Host Note: Error! This step does not have a conversion path yet: PublishCodeCoverageResults@1 #task: PublishCodeCoverageResults@1#displayName: Publish Azure Code Coverage#condition: succeededOrFailed()#inputs:#  codecoveragetool: JaCoCo#  summaryfilelocation: ${{ env.buildFolderName }}/${{ env.testResultFolderName }}/JaCoCo_coverage.xml#  pathtosources: ${GITHUB_WORKSPACE}/${{ env.buildFolderName }}/${{ env.dscBuildVariable.RepositoryName }}'
       shell: powershell
       if: ne(${{ job.status }}, 'cancelled')
     - name: Upload to Codecov.io

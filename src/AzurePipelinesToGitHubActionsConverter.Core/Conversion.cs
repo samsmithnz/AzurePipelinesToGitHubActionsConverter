@@ -176,10 +176,6 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                 {
                     gitHubYaml = GitHubActionsSerialization.Serialize(gitHubActions, variableList, _matrixVariableName);
                 }
-                else
-                {
-                    gitHubYaml = "";
-                }
 
                 //Load failed task comments for processing
                 //Add any header messages

@@ -22,10 +22,6 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
 
         public static string CleanYamlBeforeDeserializationV2(string yaml)
         {
-            if (yaml == null)
-            {
-                return yaml;
-            }
             string processedYaml = yaml;
 
             //Process conditional insertions/ variables

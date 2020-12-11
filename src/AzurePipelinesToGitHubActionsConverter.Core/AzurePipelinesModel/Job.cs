@@ -37,7 +37,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.AzurePipelines
         public bool continueOnError { get; set; }
         public Pool pool { get; set; }
         public Workspace workspace { get; set; }
-        public Container container { get; set; }
+        public Containers container { get; set; }
         [DefaultValue(0)]
         public int timeoutInMinutes { get; set; } = 0;
         [DefaultValue(1)]
