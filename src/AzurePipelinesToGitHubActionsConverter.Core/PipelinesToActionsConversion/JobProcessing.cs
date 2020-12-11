@@ -226,11 +226,18 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
 
         private GitHubActions.Environment ProcessJobEnvironment(AzurePipelines.Environment environment)
         {
-            GitHubActions.Environment newEnvironment = new GitHubActions.Environment
+            if (environment != null)
             {
-                name = environment.name
-            };
-            return newEnvironment;
+                GitHubActions.Environment newEnvironment = new GitHubActions.Environment
+                {
+                    name = environment.name
+                };
+                return newEnvironment;
+            }
+            else
+            {
+                return null;
+            }
         }
 
     }

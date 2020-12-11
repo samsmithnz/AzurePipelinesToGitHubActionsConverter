@@ -1181,7 +1181,7 @@ stages:
 #Note: Error! This step does not have a conversion path yet: IISWebAppDeploymentOnMachineGroup@0
 #Note: Error! This step does not have a conversion path yet: IISWebAppManagementOnMachineGroup@0
 #Note: Error! This step does not have a conversion path yet: DownloadPipelineArtifact@2
-#Note: Azure DevOps strategy>runOnce>deploy does not have an equivalent in GitHub Actions yetNote: Azure DevOps job environment does not have an equivalent in GitHub Actions yet
+#Note: Azure DevOps strategy>runOnce>deploy does not have an equivalent in GitHub Actions yet
 #Note: This is a third party action: https://github.com/warrenbuckley/Setup-Nuget
 on:
   push:
@@ -1206,7 +1206,9 @@ jobs:
       with:
         path: ${{ env.build.artifactStagingDirectory }}
   Deploy_Stage_job1:
-    # 'Note: Azure DevOps strategy>runOnce>deploy does not have an equivalent in GitHub Actions yetNote: Azure DevOps job environment does not have an equivalent in GitHub Actions yet'
+    # 'Note: Azure DevOps strategy>runOnce>deploy does not have an equivalent in GitHub Actions yet'
+    environment:
+      name: windows-server
     env:
       Art: Server=.;Database=Art;Trusted_Connection=True;
     steps:
@@ -1447,9 +1449,9 @@ jobs:
 
             //Assert
             string expected = @"
-#Note: Azure DevOps strategy>runOnce>deploy does not have an equivalent in GitHub Actions yetNote: Azure DevOps job environment does not have an equivalent in GitHub Actions yet
-#Note: Azure DevOps strategy>runOnce>deploy does not have an equivalent in GitHub Actions yetNote: Azure DevOps job environment does not have an equivalent in GitHub Actions yet
-#Note: Azure DevOps strategy>runOnce>deploy does not have an equivalent in GitHub Actions yetNote: Azure DevOps job environment does not have an equivalent in GitHub Actions yet
+#Note: Azure DevOps strategy>runOnce>deploy does not have an equivalent in GitHub Actions yet
+#Note: Azure DevOps strategy>runOnce>deploy does not have an equivalent in GitHub Actions yet
+#Note: Azure DevOps strategy>runOnce>deploy does not have an equivalent in GitHub Actions yet
 env:
   applicationInsightsApiKey: ${{ env.ApplicationInsights--APIKeyDev }}
   applicationInsightsApplicationId: ${{ env.ApplicationInsights--ApplicationIdDev }}
@@ -1488,30 +1490,36 @@ env:
   websiteUrl: https://myapp-${{ env.prLC }}-eu-web.azurewebsites.net/
 jobs:
   DeployTests1:
-    # 'Note: Azure DevOps strategy>runOnce>deploy does not have an equivalent in GitHub Actions yetNote: Azure DevOps job environment does not have an equivalent in GitHub Actions yet'
+    # 'Note: Azure DevOps strategy>runOnce>deploy does not have an equivalent in GitHub Actions yet'
     name: Deploy functional tests to ${{ env.environment }} job
     runs-on: ${{ env.vmImage }}
+    environment:
+      name: ${{ env.environment }}
     steps:
     - name: Download the build artifacts
       uses: actions/download-artifact@v1.0.0
       with:
         name: drop
   DeployTests2:
-    # 'Note: Azure DevOps strategy>runOnce>deploy does not have an equivalent in GitHub Actions yetNote: Azure DevOps job environment does not have an equivalent in GitHub Actions yet'
+    # 'Note: Azure DevOps strategy>runOnce>deploy does not have an equivalent in GitHub Actions yet'
     name: Deploy functional tests to ${{ env.environment }} job
     runs-on: ${{ env.vmImage }}
+    environment:
+      name: ${{ env.environment }}
     steps:
     - name: Download the build artifacts
       uses: actions/download-artifact@v1.0.0
       with:
         name: drop
   DeployTests3:
-    # 'Note: Azure DevOps strategy>runOnce>deploy does not have an equivalent in GitHub Actions yetNote: Azure DevOps job environment does not have an equivalent in GitHub Actions yet'
+    # 'Note: Azure DevOps strategy>runOnce>deploy does not have an equivalent in GitHub Actions yet'
     name: Deploy functional tests to ${{ env.environment }} job
     runs-on: ${{ env.vmImage }}
     needs:
     - DeployTests1
     - DeployTests2
+    environment:
+      name: ${{ env.environment }}
     steps:
     - name: Download the build artifacts
       uses: actions/download-artifact@v1.0.0
