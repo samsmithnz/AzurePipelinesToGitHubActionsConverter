@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Text.RegularExpressions;
+﻿using System.Text.RegularExpressions;
 
 namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversion
 {
@@ -10,10 +7,11 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
 
         public static string ProcessSystemVariables(string input)
         {
+            //TODO: Make the processing work for both conditions and environment variables. Can it be the same variable? Or do I need a branch to decide if there should be GitHub.Ref and GITHUB_REF
+            //TODO: Add more variables.
+
             //Conditions
-            //TODO: Move this into a generic class for processing system variables.
-            //TODO: Convert this to a case insenstive search and replace.
-            //TODO: Add more variables. Note that this format (variables['name']) is conditions specific.
+            //TODO: Note that this format (variables['name']) is conditions specific.
             if (input.IndexOf("variables['Build.SourceBranch']") >= 0)
             {
                 input = Replace(input, "variables['Build.SourceBranch']", "github.ref");
@@ -24,8 +22,6 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
             }
 
             //System variables
-            //TODO: Move this into a generic place for processing system variables and expand
-            //TODO: Convert this to a case insenstive search and replace.
             input = Replace(input, "$(Build.ArtifactStagingDirectory)", "${GITHUB_WORKSPACE}");
             //input = Replace(input, "$(build.artifactstagingdirectory)", "${GITHUB_WORKSPACE}");
             input = Replace(input, "$(Build.SourcesDirectory)", "${GITHUB_WORKSPACE}");
