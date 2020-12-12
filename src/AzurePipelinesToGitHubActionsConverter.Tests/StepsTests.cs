@@ -183,6 +183,32 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
         }
 
+        [TestMethod]
+        public void Copy2IndividualStepTest()
+        {
+            //Arrange
+            Conversion conversion = new Conversion();
+            string yaml = @"
+- task: CopyFiles@2
+  displayName: Copy production build to artifact stage
+  inputs:
+    SourceFolder: '$(Build.SourcesDirectory)'
+    Contents: dist/**
+    TargetFolder: '$(Build.ArtifactStagingDirectory)'
+";
+
+            //Act
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineTaskToGitHubActionTask(yaml);
+
+            //Assert
+            string expected = @"
+- name: Copy production build to artifact stage
+  run: Copy '${GITHUB_WORKSPACE}/dist/**' '${GITHUB_WORKSPACE}'
+  shell: powershell";
+            expected = UtilityTests.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+        }
+
 
         [TestMethod]
         public void UseDotNetIndividualStepTest()
