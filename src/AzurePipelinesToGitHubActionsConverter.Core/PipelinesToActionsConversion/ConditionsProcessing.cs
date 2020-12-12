@@ -55,6 +55,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
             return processedCondition;
         }
 
+        //TODO: Move this into a generic class for processing system variables.
         //TODO: Add more variables. Note that this format (variables['name']) is conditions specific.
         private static string ProcessVariables(string condition)
         {

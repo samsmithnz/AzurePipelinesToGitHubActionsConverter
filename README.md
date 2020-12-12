@@ -8,6 +8,21 @@ A project to create a conversion tool to make migrations between Azure Pipelines
 There is a website that consumes this module at: https://pipelinestoactions.azurewebsites.net/.  
 You can also use the [NuGet package](https://www.nuget.org/packages/AzurePipelinesToGitHubActionsConverter.Core/)
 
+## System Variables
+This is our current table of how we are translating [Azure DevOps](https://docs.microsoft.com/en-us/azure/devops/pipelines/build/variables?view=azure-devops&tabs=yaml) system variables, to [GitHub Environment variables](https://docs.github.com/en/free-pro-team@latest/actions/reference/environment-variables#default-environment-variables).
+| Azure Pipelines | GitHub Actions |
+| -- | -- |
+| Build.ArtifactStagingDirectory | GITHUB_WORKSPACE | 
+| Build.BuildId | GITHUB_RUN_ID |
+| Build.BuildNumber | GITHUB_RUN_NUMBER |
+<!-- | Build.Reason |  |-->
+| Build.SourceBranch | GITHUB_REF |
+| Build.SourceBranchName | GITHUB_REF |
+| Build.SourcesDirectory | GITHUB_WORKSPACE |
+| Build.StagingDirectory | GITHUB_WORKSPACE |
+| System.DefaultWorkingDirectory | GITHUB_WORKSPACE |
+| Agent.OS | runner.OS |
+
 ## Example: 
 The Azure Pipelines YAML to build a dotnet application on ubuntu:
 ```YAML
@@ -101,11 +116,7 @@ public Pool pool { get; set; }
 ```
 5. Yaml is wack. The white spaces can destroy you, as the errors returned are often not helpful at all. Take lots of breaks. In the end YAML is worth it - I promise!
 
-## System Variables
-This is our current table of how we are translating [Azure DevOps](https://docs.microsoft.com/en-us/azure/devops/pipelines/build/variables?view=azure-devops&tabs=yaml) system variables, to [GitHub Environment variables](https://docs.github.com/en/free-pro-team@latest/actions/reference/environment-variables#default-environment-variables).
-| Azure Pipelines | GitHub Actions |
-| -- | -- |
-| Build.ArtifactStagingDirectory | GITHUB_WORKSPACE | 
+
 
 ## Current limitations
 There are a number of Azure Pipeline features that don't currently match up well with a GitHub feature, and hence, these migrate with a change in functionality (e.g. parameters become variables and stages become jobs), or not at all (e.g. deployment strategies/environments). As/if these features are added to Actions, we will build in the conversions
