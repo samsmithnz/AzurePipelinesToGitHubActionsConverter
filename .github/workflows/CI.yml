@@ -18,9 +18,12 @@ jobs:
       ACTIONS_ALLOW_UNSECURE_COMMANDS: true #Allow us to set an environment variable in the PowerShell script to set the package version (technically deprecated)
     steps:
     - uses: actions/checkout@v1
-    #- uses: actions/setup-dotnet@v1
-    #  with:
-    #    dotnet-version: ${{matrix.dotnet-version}}
+    - uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: '3.1.x' #${{matrix.dotnet-version}}
+    - uses: actions/setup-dotnet@v1	
+      with:	
+        dotnet-version: '5.x'
     - name: Custom script to create a unique application version number for this build
       run: src/BuildVersion.ps1 -ProjectFile "src/AzurePipelinesToGitHubActionsConverter.Core/AzurePipelinesToGitHubActionsConverter.Core.csproj"
       shell: pwsh
