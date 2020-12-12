@@ -102,7 +102,11 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Serialization
         private static string PrepareYamlPropertiesForGitHubSerialization(string yaml)
         {
             //Fix system variables
+            yaml = yaml.Replace("$(Build.ArtifactStagingDirectory)", "${GITHUB_WORKSPACE}");
             yaml = yaml.Replace("$(build.artifactstagingdirectory)", "${GITHUB_WORKSPACE}");
+            yaml = yaml.Replace("$(Build.SourcesDirectory)", "${GITHUB_WORKSPACE}");
+            yaml = yaml.Replace("$(build.sourcesDirectory)", "${GITHUB_WORKSPACE}");
+            yaml = yaml.Replace("$(build.sourcesdirectory)", "${GITHUB_WORKSPACE}");
             yaml = yaml.Replace("$(Agent.OS)", "${{ runner.OS }}");
 
             //Fix some variables that we can't use for property names because the "-" character is not allowed in c# properties, or it's a reserved word (e.g. if)
