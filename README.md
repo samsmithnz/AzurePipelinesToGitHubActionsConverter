@@ -20,7 +20,7 @@ This is our current table of how we are translating [Azure DevOps](https://docs.
 | Build.SourcesDirectory | github.workspace |
 | Build.StagingDirectory | github.workspace |
 | System.DefaultWorkingDirectory | github.workspace |
-| Agent.OS | runner.OS |
+| Agent.OS | runner.os |
 <!-- | Build.SourceBranchName |  |-->
 <!-- | Build.Reason |  |-->
 
