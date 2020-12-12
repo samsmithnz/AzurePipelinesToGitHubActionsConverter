@@ -1201,10 +1201,10 @@ jobs:
       uses: warrenbuckley/Setup-Nuget@v1
     - run: nuget  ${{ env.solution }}
       shell: powershell
-    - run: msbuild '${{ env.solution }}' /p:configuration='${{ env.buildConfiguration }}' /p:platform='${{ env.buildPlatform }}' /p:DeployOnBuild=true /p:WebPublishMethod=Package /p:PackageAsSingleFile=true /p:SkipInvalidConfigurations=true /p:PackageLocation=""${{ env.build.artifactStagingDirectory }}""
+    - run: msbuild '${{ env.solution }}' /p:configuration='${{ env.buildConfiguration }}' /p:platform='${{ env.buildPlatform }}' /p:DeployOnBuild=true /p:WebPublishMethod=Package /p:PackageAsSingleFile=true /p:SkipInvalidConfigurations=true /p:PackageLocation=""${GITHUB_WORKSPACE}""
     - uses: actions/upload-artifact@v2
       with:
-        path: ${{ env.build.artifactStagingDirectory }}
+        path: ${GITHUB_WORKSPACE}
   Deploy_Stage_job1:
     # 'Note: Azure DevOps strategy>runOnce>deploy does not have an equivalent in GitHub Actions yetNote: Azure DevOps job environment does not have an equivalent in GitHub Actions yet'
     env:
