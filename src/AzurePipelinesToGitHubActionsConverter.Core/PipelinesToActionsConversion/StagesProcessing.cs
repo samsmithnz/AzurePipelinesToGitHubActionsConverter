@@ -42,6 +42,19 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                         JobProcessing jp = new JobProcessing(_verbose);
                         stage.jobs = jp.ExtractAzurePipelinesJobsV2(stageJson["jobs"], strategyYaml);
                     }
+                    if (stageJson["pool"] != null && stage.jobs != null)
+                    {
+                        GeneralProcessing gp = new GeneralProcessing(_verbose);
+                        stage.pool = gp.ProcessPoolV2(stageJson["pool"].ToString());
+                        foreach (Job item in stage.jobs)
+                        {
+                            //Only update the job pool if it hasn't already been set by the job
+                            if (item.pool == null)
+                            {
+                                item.pool = stage.pool;
+                            }
+                        }
+                    }
                     stages.Add(stage);
                 }
 
