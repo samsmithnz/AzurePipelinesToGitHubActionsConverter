@@ -14,20 +14,26 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
             //TODO: Note that this format (variables['name']) is conditions specific.
             if (input.IndexOf("variables['Build.SourceBranch']") >= 0)
             {
+                //Create a rule to look for the entire branch path (e.g. "refs/heads/feature-branch-1"). If this is the default branch, it will just be ""
                 input = Replace(input, "variables['Build.SourceBranch']", "github.ref");
             }
             else if (input.IndexOf("eq(variables['Build.SourceBranchName']") >= 0)
             {
+                //Create a rule to look for the branch name (e.g. "feature-branch-1" from "refs/heads/feature-branch-1"). If this is the default branch, it will just be ""
                 input = Replace(input, "eq(variables['Build.SourceBranchName']", "endsWith(github.ref");
             }
 
             //System variables
-            input = Replace(input, "$(Build.ArtifactStagingDirectory)", "${GITHUB_WORKSPACE}");
-            //input = Replace(input, "$(build.artifactstagingdirectory)", "${GITHUB_WORKSPACE}");
-            input = Replace(input, "$(Build.SourcesDirectory)", "${GITHUB_WORKSPACE}");
-            //input = Replace(input, "$(build.sourcesDirectory)", "${GITHUB_WORKSPACE}");
-            //input = Replace(input, "$(build.sourcesdirectory)", "${GITHUB_WORKSPACE}");
-            input = Replace(input, "$(Agent.OS)", "${{ runner.OS }}");
+            input = Replace(input, "$(Build.ArtifactStagingDirectory)", "${{ github.workspace }}");
+            input = Replace(input, "$(Build.BuildId)", "${{ github.run_id }}");
+            input = Replace(input, "$(Build.BuildNumber)", "${{ github.run_number }}");
+            input = Replace(input, "$(Build.SourceBranch)", "${{ github.ref }}");
+            input = Replace(input, "$(Build.Repository.Name)", "${{ github.repository }}");
+            // input = Replace(input, "$(Build.SourceBranchName)", "${{ github.ref }}");
+            input = Replace(input, "$(Build.SourcesDirectory)", "${{ github.workspace }}");
+            input = Replace(input, "$(Build.StagingDirectory)", "${{ github.workspace }}");
+            input = Replace(input, "$(System.DefaultWorkingDirectory)", "${{ github.workspace }}");
+            input = Replace(input, "$(Agent.OS)", "${{ runner.os }}");
 
             return input;
         }

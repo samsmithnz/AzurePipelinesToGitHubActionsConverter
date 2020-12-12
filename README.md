@@ -12,15 +12,16 @@ You can also use the [NuGet package](https://www.nuget.org/packages/AzurePipelin
 This is our current table of how we are translating [Azure DevOps](https://docs.microsoft.com/en-us/azure/devops/pipelines/build/variables?view=azure-devops&tabs=yaml) system variables, to [GitHub Environment variables](https://docs.github.com/en/free-pro-team@latest/actions/reference/environment-variables#default-environment-variables).
 | Azure Pipelines | GitHub Actions |
 | -- | -- |
-| Build.ArtifactStagingDirectory | GITHUB_WORKSPACE | 
-| Build.BuildId | GITHUB_RUN_ID |
-| Build.BuildNumber | GITHUB_RUN_NUMBER |
-| Build.SourceBranch | GITHUB_REF |
-| Build.SourceBranchName | GITHUB_REF |
-| Build.SourcesDirectory | GITHUB_WORKSPACE |
-| Build.StagingDirectory | GITHUB_WORKSPACE |
-| System.DefaultWorkingDirectory | GITHUB_WORKSPACE |
+| Build.ArtifactStagingDirectory | github.workspace | 
+| Build.BuildId | github.run_id |
+| Build.BuildNumber | github.run_number |
+| Build.SourceBranch | github.ref |
+| Build.Repository.Name | github.repository |
+| Build.SourcesDirectory | github.workspace |
+| Build.StagingDirectory | github.workspace |
+| System.DefaultWorkingDirectory | github.workspace |
 | Agent.OS | runner.OS |
+<!-- | Build.SourceBranchName |  |-->
 <!-- | Build.Reason |  |-->
 
 ## Example: 

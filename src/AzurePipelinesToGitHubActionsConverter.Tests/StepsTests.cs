@@ -146,9 +146,9 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
 - name: Cache npm dependencies
   uses: actions/cache@v2
   with:
-    key: npm | ""${{ runner.OS }}"" | package-lock.json
+    key: npm | ""${{ runner.os }}"" | package-lock.json
     restore-keys: 
-      npm | ""${{ runner.OS }}""
+      npm | ""${{ runner.os }}""
       npm
     path: ${{ env.NPM_CACHE_FOLDER }}
 ";
@@ -175,8 +175,8 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
 
             //Assert
             string expected = @"
-- name: 'Copy environment ARM template files to: ${GITHUB_WORKSPACE}'
-  run: Copy '${{ env.system.defaultworkingdirectory }}\FeatureFlags\FeatureFlags.ARMTemplates/**\*' '${GITHUB_WORKSPACE}\ARMTemplates'
+- name: 'Copy environment ARM template files to: ${{ github.workspace }}'
+  run: Copy '${{ github.workspace }}\FeatureFlags\FeatureFlags.ARMTemplates/**\*' '${{ github.workspace }}\ARMTemplates'
   shell: powershell
 ";
             expected = UtilityTests.TrimNewLines(expected);
@@ -416,7 +416,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
   uses: Azure/webapps-deploy@v2
   with:
     app-name: ${{ env.webAppName }}
-    package: ${GITHUB_WORKSPACE}/drop/MyProject.Web.zip
+    package: ${{ github.workspace }}/drop/MyProject.Web.zip
 ";
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
@@ -478,7 +478,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
   uses: Azure/webapps-deploy@v2
   with:
     app-name: ${{ env.WebsiteName }}
-    package: ${GITHUB_WORKSPACE}/drop/MyProject.Web.zip
+    package: ${{ github.workspace }}/drop/MyProject.Web.zip
     slot-name: staging
 ";
             expected = UtilityTests.TrimNewLines(expected);
@@ -617,7 +617,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             //Assert
             string expected = @"
 - name: Publish
-  run: dotnet publish MyProject/MyProject.Models/MyProject.Models.csproj --configuration ${{ env.BuildConfiguration }} --output ${GITHUB_WORKSPACE}
+  run: dotnet publish MyProject/MyProject.Models/MyProject.Models.csproj --configuration ${{ env.BuildConfiguration }} --output ${{ github.workspace }}
 ";
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
@@ -731,7 +731,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
   run: |
     $vsTestConsoleExe = ""C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\Common7\IDE\Extensions\TestPlatform\vstest.console.exe""
     $targetTestDll = ""**\MyProject.FunctionalTests\MyProject.FunctionalTests.dll""
-    $testRunSettings = ""/Settings:`""${GITHUB_WORKSPACE}/drop/FunctionalTests/MyProject.FunctionalTests/test.runsettings`"" ""
+    $testRunSettings = ""/Settings:`""${{ github.workspace }}/drop/FunctionalTests/MyProject.FunctionalTests/test.runsettings`"" ""
     $parameters = "" -- ServiceUrl=""https://${{ env.WebServiceName }}-staging.azurewebsites.net/"" WebsiteUrl=""https://${{ env.WebsiteName }}-staging.azurewebsites.net/"" TestEnvironment=""${{ env.AppSettings.Environment }}"" TestEnvironment2=""${{ env.AppSettings.Environment }}"" ""
     #Note that the `"" is an escape character to quote strings, and the `& is needed to start the command
     $command = ""`& `""$vsTestConsoleExe`"" `""$targetTestDll`"" $testRunSettings $parameters ""
@@ -809,7 +809,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
   with:
     server-name: ${{ env.databaseServerName }}.database.windows.net
     connection-string: ${{ secrets.AZURE_SQL_CONNECTION_STRING }}
-    dacpac-package: ${GITHUB_WORKSPACE}/drop/MyDatabase.dacpac
+    dacpac-package: ${{ github.workspace }}/drop/MyDatabase.dacpac
     arguments: /p:BlockOnPossibleDataLoss=true";
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
@@ -869,7 +869,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
 - name: Deploy ARM Template to resource group
   uses: Azure/cli@v1.0.0
   with:
-    inlineScript: az deployment group create --resource-group ${{ env.ResourceGroupName }} --template-file ${GITHUB_WORKSPACE}/drop/ARMTemplates/azuredeploy.json --parameters  ${GITHUB_WORKSPACE}/drop/ARMTemplates/azuredeploy.parameters.json -environment ${{ env.AppSettings.Environment }} -locationShort ${{ env.ArmTemplateResourceGroupLocation }}
+    inlineScript: az deployment group create --resource-group ${{ env.ResourceGroupName }} --template-file ${{ github.workspace }}/drop/ARMTemplates/azuredeploy.json --parameters  ${{ github.workspace }}/drop/ARMTemplates/azuredeploy.parameters.json -environment ${{ env.AppSettings.Environment }} -locationShort ${{ env.ArmTemplateResourceGroupLocation }}
 ";
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
@@ -974,7 +974,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
 
             //Assert
             string expected = @"
-- run: msbuild '${{ env.solution }}' /p:configuration='${{ env.buildConfiguration }}' /p:platform='${{ env.buildPlatform }}' /p:DeployOnBuild=true /p:WebPublishMethod=Package /p:PackageAsSingleFile=true /p:SkipInvalidConfigurations=true /p:DesktopBuildPackageLocation=""${GITHUB_WORKSPACE}\WebApp.zip"" /p:DeployIisAppPath=""Default Web Site""";
+- run: msbuild '${{ env.solution }}' /p:configuration='${{ env.buildConfiguration }}' /p:platform='${{ env.buildPlatform }}' /p:DeployOnBuild=true /p:WebPublishMethod=Package /p:PackageAsSingleFile=true /p:SkipInvalidConfigurations=true /p:DesktopBuildPackageLocation=""${{ github.workspace }}\WebApp.zip"" /p:DeployIisAppPath=""Default Web Site""";
 
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
