@@ -11,7 +11,7 @@ jobs:
     strategy:
       matrix:
         os: [windows-latest, ubuntu-latest]
-        dotnet-version: ['3.1.x', '5.x']
+        dotnet-version: ['3.1.x', '5.0.x']
     runs-on: ${{matrix.os}}
     env:
       buildVersion: 0.0.0.0 #The initial build version, calculated and updated in the script below
