@@ -1,13 +1,16 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFrameworks>netcoreapp3.1;net5.0</TargetFrameworks>
     <Version>0.12.1.0</Version>
-    <Deterministic>false</Deterministic>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/samsmithnz/AzurePipelinesToGitHubActionsConverter</PackageProjectUrl>
     <PackageDescription>A conversion tool to migrate from Azure Pipelines YAML to GitHub Actions YAML</PackageDescription>
     <PackageTags>yaml;serialization;github;github actions;azure devops;azure pipelines</PackageTags>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
   </PropertyGroup>
 
   <ItemGroup>
