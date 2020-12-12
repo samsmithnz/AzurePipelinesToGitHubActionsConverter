@@ -15,13 +15,13 @@ This is our current table of how we are translating [Azure DevOps](https://docs.
 | Build.ArtifactStagingDirectory | GITHUB_WORKSPACE | 
 | Build.BuildId | GITHUB_RUN_ID |
 | Build.BuildNumber | GITHUB_RUN_NUMBER |
-<!-- | Build.Reason |  |-->
 | Build.SourceBranch | GITHUB_REF |
 | Build.SourceBranchName | GITHUB_REF |
 | Build.SourcesDirectory | GITHUB_WORKSPACE |
 | Build.StagingDirectory | GITHUB_WORKSPACE |
 | System.DefaultWorkingDirectory | GITHUB_WORKSPACE |
 | Agent.OS | runner.OS |
+<!-- | Build.Reason |  |-->
 
 ## Example: 
 The Azure Pipelines YAML to build a dotnet application on ubuntu:

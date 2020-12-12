@@ -185,6 +185,21 @@ and(succeeded(),or(succeeded(),succeeded()))";
         }
 
         [TestMethod]
+        public void AndUpperCaseOrConditionTest()
+        {
+            //Arrange
+            string text = @"
+and(succeeded(),OR(succeeded(),succeeded()))";
+
+            //Act
+            string result = ConditionsProcessing.TranslateConditions(text);
+
+            //Assert
+            string expected = "and(success(),OR(success(),success()))";
+            Assert.AreEqual(expected, result);
+        }
+
+        [TestMethod]
         public void StartsWithBranchTest()
         {
             //Arrange
