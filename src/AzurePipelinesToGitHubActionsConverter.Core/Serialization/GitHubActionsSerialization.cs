@@ -102,6 +102,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Serialization
         private static string PrepareYamlPropertiesForGitHubSerialization(string yaml)
         {
             //TODO: Move this into a generic place for processing system variables and expand
+            //TODO: Convert this to a case insenstive search and replace.
             //Fix system variables
             yaml = yaml.Replace("$(Build.ArtifactStagingDirectory)", "${GITHUB_WORKSPACE}");
             yaml = yaml.Replace("$(build.artifactstagingdirectory)", "${GITHUB_WORKSPACE}");
