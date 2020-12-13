@@ -27,14 +27,20 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                     case "AZUREAPPSERVICEMANAGE@0":
                         gitHubStep = CreateAzureAppServiceManageStep(step);
                         break;
+                    case "AZURECLI@2":
+                        gitHubStep = CreateAzureCLIStep(step);
+                        break;
+                    case "AZUREPOWERSHELL@4":
+                        gitHubStep = CreateAzurePowershellStep(step);
+                        break;
                     case "AZURERESOURCEGROUPDEPLOYMENT@2":
                         gitHubStep = CreateAzureManageResourcesStep(step);
                         break;
                     case "AZUREFUNCTIONAPP@1":
                     case "AZUREFUNCTIONAPPCONTAINER@1":
                     case "AZURERMWEBAPPDEPLOYMENT@3":
-                    case "AZUREWEBAPPCONTAINER@1":
                     case "AZURERMWEBAPPDEPLOYMENT@4":
+                    case "AZUREWEBAPPCONTAINER@1":
                     case "AZUREWEBAPP@1":
                         gitHubStep = CreateAzureWebAppDeploymentStep(step);
                         break;
@@ -1511,7 +1517,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
             }
             //TODO: Add other properties for az webapp deployment
 
-            string script = "az webapp deployment slot swap --resource-group " + resourceGroup +
+            string inlineScript = "az webapp deployment slot swap --resource-group " + resourceGroup +
                 " --name " + webAppName +
                 " --slot " + sourceSlot +
                 " --target-slot " + targetSlot + "";
@@ -1521,9 +1527,142 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                 uses = "Azure/cli@v1.0.0",
                 with = new Dictionary<string, string>
                 {
-                    { "inlineScript", script}
+                    { "inlineScript", inlineScript}
                 }
             };
+
+            return gitHubStep;
+        }
+
+        private GitHubActions.Step CreateAzureCLIStep(AzurePipelines.Step step)
+        {
+            //From: https://docs.microsoft.com/en-us/azure/devops/pipelines/tasks/deploy/azure-cli?view=azure-devops
+            //- task: AzureCLI@2
+            //  displayName: Azure CLI
+            //  inputs:
+            //    azureSubscription: <Name of the Azure Resource Manager service connection>
+            //    scriptType: ps
+            //    scriptLocation: inlineScript
+            //    inlineScript: |
+            //      az --version
+            //      az account show
+
+            //To: https://github.com/Azure/CLI
+            //- name: Azure CLI script
+            //  uses: azure/CLI@v1
+            //  with:
+            //    azcliversion: 2.0.72
+            //    inlineScript: |
+            //      az account show
+            //      az storage -h
+
+            //string azureSubscription = GetStepInput(step, "azuresubscription");
+            //string scriptType = GetStepInput(step, "scripttype");
+            string arguments = GetStepInput(step, "arguments");
+            string scriptPath = GetStepInput(step, "scriptPath");
+            string inlineScript = GetStepInput(step, "inlinescript");
+            if (scriptPath != null)
+            {
+                inlineScript = scriptPath;
+                if (arguments != null)
+                {
+                    inlineScript += " " + arguments;
+                }
+            }
+
+            GitHubActions.Step gitHubStep = new GitHubActions.Step
+            {
+                uses = "azure/cli@v1.0.0",
+                with = new Dictionary<string, string>
+                {
+                    { "inlineScript", inlineScript },
+                    { "azcliversion", "latest" }
+                }
+            };
+
+            return gitHubStep;
+        }
+
+        private GitHubActions.Step CreateAzurePowershellStep(AzurePipelines.Step step)
+        {
+
+            //From: https://docs.microsoft.com/en-us/azure/devops/pipelines/tasks/deploy/azure-powershell?view=azure-devops
+            //# Run a PowerShell script within an Azure environment
+            //- task: AzurePowerShell@4
+            //  inputs:
+            //    #azureSubscription: Required. Name of Azure Resource Manager service connection
+            //    #scriptType: 'FilePath' # Optional. Options: filePath, inlineScript
+            //    #scriptPath: # Optional
+            //    #inline: '# You can write your Azure PowerShell scripts inline here. # You can also pass predefined and custom variables to this script using arguments' # Optional
+            //    #scriptArguments: # Optional
+            //    #errorActionPreference: 'stop' # Optional. Options: stop, continue, silentlyContinue
+            //    #failOnStandardError: false # Optional
+            //    #azurePowerShellVersion: 'OtherVersion' # Required. Options: latestVersion, otherVersion
+            //    #preferredAzurePowerShellVersion: # Required when azurePowerShellVersion == OtherVersion
+
+            //To: https://github.com/Azure/PowerShell
+            //- name: Run Azure PowerShell script
+            //  uses: azure/powershell@v1
+            //  with:
+            //    inlineScript: |
+            //      Get-AzVM -ResourceGroupName "ResourceGroup11"
+            //    azPSVersion: '3.1.0'
+
+            //string azureSubscription = GetStepInput(step, "azuresubscription");
+            //string scriptType = GetStepInput(step, "scripttype");
+            string scriptArguments = GetStepInput(step, "scriptArguments");
+            string scriptPath = GetStepInput(step, "scriptPath");
+            string inlineScript = GetStepInput(step, "inlinescript");
+            string azurePowerShellVersion = GetStepInput(step, "azurePowerShellVersion");
+            string preferredAzurePowerShellVersion = GetStepInput(step, "preferredAzurePowerShellVersion");
+            string targetAzurePs = GetStepInput(step, "TargetAzurePs");
+            string customTargetAzurePs = GetStepInput(step, "CustomTargetAzurePs");
+            string errorActionPreference = GetStepInput(step, "errorActionPreference");
+            string failOnStandardError = GetStepInput(step, "failOnStandardError");
+            //This task still doesn't support the scriptpath, so we assign it to the inlinescript
+            if (scriptPath != null)
+            {
+                inlineScript = scriptPath;
+                if (scriptArguments != null)
+                {
+                    inlineScript += " " + scriptArguments;
+                }
+            }
+            string azPSVersion = "latest";
+            if (azurePowerShellVersion == "otherVersion")
+            {
+                //There are a couple aliases for power shell version in this task
+                if (preferredAzurePowerShellVersion != null)
+                {
+                    azPSVersion = preferredAzurePowerShellVersion;
+                }
+                else if (targetAzurePs != null)
+                {
+                    azPSVersion = targetAzurePs;
+                }
+                else if (customTargetAzurePs != null)
+                {
+                    azPSVersion = customTargetAzurePs;
+                }
+            }
+
+            GitHubActions.Step gitHubStep = new GitHubActions.Step
+            {
+                uses = "azure/powershell@v1",
+                with = new Dictionary<string, string>
+                {
+                    { "inlineScript", inlineScript},
+                    { "azPSVersion", azPSVersion}
+                }
+            };
+            if (errorActionPreference != null)
+            {
+                gitHubStep.with.Add("errorActionPreference", errorActionPreference);
+            }
+            if (failOnStandardError != null)
+            {
+                gitHubStep.with.Add("failOnStandardError", failOnStandardError);
+            }
 
             return gitHubStep;
         }
@@ -1795,9 +1934,16 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                                 break;
 
                             //If we have an Azure step, we will need to add a Azure login step
+                            case "AZURECLI@2":
+                            case "AZUREPOWERSHELL@4":
                             case "AZUREAPPSERVICEMANAGE@0":
                             case "AZURERESOURCEGROUPDEPLOYMENT@2":
+                            case "AZUREFUNCTIONAPP@1":
+                            case "AZUREFUNCTIONAPPCONTAINER@1":
                             case "AZURERMWEBAPPDEPLOYMENT@3":
+                            case "AZURERMWEBAPPDEPLOYMENT@4":
+                            case "AZUREWEBAPPCONTAINER@1":
+                            case "AZUREWEBAPP@1":
                                 if (addAzureLoginStep == false)
                                 {
                                     addAzureLoginStep = true;

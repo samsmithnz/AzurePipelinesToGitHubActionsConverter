@@ -367,6 +367,67 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
         }
 
         [TestMethod]
+        public void AzureCLIIndividualStepTest()
+        {
+            //Arrange
+            Conversion conversion = new Conversion();
+            string yaml = @"
+- task: AzureCLI@2
+  displayName: 'Deploy infrastructure with ARM templates'
+  inputs:
+    azureSubscription: 'Service Connection to Azure Portal'
+    scriptType: ps
+    scriptPath: $(build.artifactstagingdirectory)\drop\EnvironmentARMTemplate\PowerShell\DeployInfrastructureCore.ps1
+    arguments: -ResourceGroupName ""$(ResourceGroupName)"" 
+  enabled: true
+";
+
+            //Act
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineTaskToGitHubActionTask(yaml);
+
+            //Assert
+            string expected = @"
+- name: Deploy infrastructure with ARM templates
+  uses: azure/cli@v1.0.0
+  with:
+    inlineScript: ${{ github.workspace }}\drop\EnvironmentARMTemplate\PowerShell\DeployInfrastructureCore.ps1 -ResourceGroupName ""${{ env.ResourceGroupName }}""
+    azcliversion: latest
+";
+            expected = UtilityTests.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+        }
+
+        [TestMethod]
+        public void AzurePowershellIndividualStepTest()
+        {
+            //Arrange
+            Conversion conversion = new Conversion();
+            string yaml = @"
+- task: AzurePowerShell@4 
+  displayName: 'Run Azure PowerShell' 
+  inputs:
+    azureSubscription: 'Service Connection to Azure Portal'
+    ScriptPath: '$(build.artifactstagingdirectory)/drop/EnvironmentARMTemplate/PowerShell/Cleanup.ps1'
+    ScriptArguments: '-ResourceGroupName ""$(ResourceGroupName)""'
+    azurePowerShellVersion: LatestVersion
+";
+
+            //Act
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineTaskToGitHubActionTask(yaml);
+
+            //Assert
+            string expected = @"
+- name: Run Azure PowerShell
+  uses: azure/powershell@v1
+  with:
+    inlineScript: ${{ github.workspace }}/drop/EnvironmentARMTemplate/PowerShell/Cleanup.ps1 -ResourceGroupName ""${{ env.ResourceGroupName }}""
+    azPSVersion: latest
+";
+            expected = UtilityTests.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+        }
+
+        [TestMethod]
         public void AzureWebAppDeploymentIndividualStepTest()
         {
             //Arrange
