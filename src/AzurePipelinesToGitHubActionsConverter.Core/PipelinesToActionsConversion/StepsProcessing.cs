@@ -115,6 +115,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                         gitHubStep = CreateUseRubyStep(step);
                         break;
                     case "VSBUILD@1":
+                    case "MSBUILD@1":
                         gitHubStep = CreateMSBuildStep(step);
                         break;
                     case "VSTEST@2":
@@ -680,6 +681,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
             string webappName = GetStepInput(step, "webappname");
             string appName = GetStepInput(step, "appName");
             string package = GetStepInput(step, "package");
+            string packageForLinux = GetStepInput(step, "packageForLinux");
             string slotName = GetStepInput(step, "slotname");
             string imageName = GetStepInput(step, "imageName");
 
@@ -700,6 +702,10 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
             if (package != null)
             {
                 gitHubStep.with.Add("package", package);
+            }
+            else if (packageForLinux != null)
+            {
+                gitHubStep.with.Add("package", packageForLinux);
             }
             if (slotName != null)
             {
@@ -879,6 +885,25 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
             //    createLogFile: false # Optional
             //    logFileVerbosity: 'normal' # Optional. Options: quiet, minimal, normal, detailed, diagnostic
 
+            //# Build with MSBuild
+            //- task: MSBuild@1
+            //  inputs:
+            //    #solution: '**/*.sln' 
+            //    #msbuildLocationMethod: 'version' # Optional. Options: version, location
+            //    #msbuildVersion: 'latest' # Optional. Options: latest, 16.0, 15.0, 14.0, 12.0, 4.0
+            //    #msbuildArchitecture: 'x86' # Optional. Options: x86, x64
+            //    #msbuildLocation: # Optional
+            //    #platform: # Optional
+            //    #configuration: # Optional
+            //    #msbuildArguments: # Optional
+            //    #clean: false # Optional
+            //    #maximumCpuCount: false # Optional
+            //    #restoreNugetPackages: false # Optional
+            //    #logProjectEvents: false # Optional
+            //    #createLogFile: false # Optional
+            //    #logFileVerbosity: 'normal' # Optional. Options: quiet, minimal, normal, detailed, diagnostic
+
+
             //Going to:
             //- run: msbuild MySolution.sln /p:configuration=release
 
@@ -886,6 +911,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
             string platform = GetStepInput(step, "platform");
             string configuration = GetStepInput(step, "configuration");
             string msbuildArgs = GetStepInput(step, "msbuildArgs");
+            string msbuildArguments = GetStepInput(step, "msbuildArguments");
             string run = "msbuild '" + solution + "'";
             if (configuration != null)
             {
@@ -895,9 +921,13 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
             {
                 run += " /p:platform='" + platform + "'";
             }
-            if (msbuildArgs != null)
+            if (msbuildArgs != null) //VSBuild@1
             {
                 run += " " + msbuildArgs;
+            }
+            else if (msbuildArguments != null) //MSBUILD@1
+            {
+                run += " " + msbuildArguments;
             }
             step.script = run;
 
