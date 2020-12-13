@@ -11,7 +11,6 @@ jobs:
     strategy:
       matrix:
         os: [windows-latest, ubuntu-latest]
-        #dotnet-version: ['3.1.x', '5.0.x']
     runs-on: ${{matrix.os}}
     env:
       buildVersion: 0.0.0.0 #The initial build version, calculated and updated in the script below
@@ -20,7 +19,7 @@ jobs:
     - uses: actions/checkout@v1
     - uses: actions/setup-dotnet@v1
       with:
-        dotnet-version: '3.1.x' #${{matrix.dotnet-version}}
+        dotnet-version: '3.1.x'
     - uses: actions/setup-dotnet@v1	
       with:	
         dotnet-version: '5.0.x'
