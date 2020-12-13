@@ -8,6 +8,60 @@ A project to create a conversion tool to make migrations between Azure Pipelines
 There is a website that consumes this module at: https://pipelinestoactions.azurewebsites.net/.  
 You can also use the [NuGet package](https://www.nuget.org/packages/AzurePipelinesToGitHubActionsConverter.Core/)
 
+## System Variables
+This is our current table of how we are translating [Azure DevOps](https://docs.microsoft.com/en-us/azure/devops/pipelines/build/variables?view=azure-devops&tabs=yaml) system variables, to [GitHub Environment variables](https://docs.github.com/en/free-pro-team@latest/actions/reference/environment-variables#default-environment-variables).
+| Azure Pipelines | GitHub Actions |
+| -- | -- |
+| Build.ArtifactStagingDirectory | github.workspace | 
+| Build.BuildId | github.run_id |
+| Build.BuildNumber | github.run_number |
+| Build.SourceBranch | github.ref |
+| Build.Repository.Name | github.repository |
+| Build.SourcesDirectory | github.workspace |
+| Build.StagingDirectory | github.workspace |
+| System.DefaultWorkingDirectory | github.workspace |
+| Agent.OS | runner.os |
+<!-- | Build.SourceBranchName |  |-->
+<!-- | Build.Reason |  |-->
+
+## Example: 
+The Azure Pipelines YAML to build a dotnet application on ubuntu:
+```YAML
+trigger:
+- master
+variables:
+  buildConfiguration: Release
+jobs:
+- job: Build
+  displayName: Build job
+  pool: 
+    vmImage: ubuntu-latest
+  variables:
+    myJobVariable: data
+  steps: 
+  - script: dotnet build WebApplication1/WebApplication1.Service/WebApplication1.Service.csproj --configuration $(buildConfiguration) 
+    displayName: dotnet build $(myJobVariable)
+```
+In GitHub Actions:
+```YAML
+on: 
+  push:
+    branches:
+    - master
+env:
+  buildConfiguration: Release
+jobs:
+  Build:
+    name: Build job
+    runs-on: ubuntu-latest
+    env:
+      myJobVariable: data
+    steps:
+    - uses: actions/checkout@v1
+    - name: dotnet build ${{ env.myJobVariable }}
+      run: dotnet build WebApplication1/WebApplication1.Service/WebApplication1.Service.csproj --configuration ${{ env.buildConfiguration }}";
+```
+
 ## Current builds running
 The table below shows current, functioning YML files that run on a regular schedule to regression test the YAML produced
 | Language | Azure Pipelines | GitHub Actions |
@@ -62,6 +116,8 @@ public string displayName { get; set; }
 public Pool pool { get; set; }
 ```
 5. Yaml is wack. The white spaces can destroy you, as the errors returned are often not helpful at all. Take lots of breaks. In the end YAML is worth it - I promise!
+
+
 
 ## Current limitations
 There are a number of Azure Pipeline features that don't currently match up well with a GitHub feature, and hence, these migrate with a change in functionality (e.g. parameters become variables and stages become jobs), or not at all (e.g. deployment strategies/environments). As/if these features are added to Actions, we will build in the conversions
@@ -222,43 +278,7 @@ Current projects consuming this:
 - There is a website in [another GitHub project](https://github.com/samsmithnz/AzurePipelinesToGitHubActionsConverterWeb) where you can test this interactively, at: https://pipelinestoactions.azurewebsites.net/ 
 - Alex, (who has made many contributions here), has created a classic Azure Pipelines to Azure Pipelines/GitHub Actions YAML converter: [yamlizer](https://github.com/f2calv/yamlizr)
 
-## Example: 
-The Azure Pipelines YAML to build a dotnet application on ubuntu:
-```YAML
-trigger:
-- master
-variables:
-  buildConfiguration: Release
-jobs:
-- job: Build
-  displayName: Build job
-  pool: 
-    vmImage: ubuntu-latest
-  variables:
-    myJobVariable: data
-  steps: 
-  - script: dotnet build WebApplication1/WebApplication1.Service/WebApplication1.Service.csproj --configuration $(buildConfiguration) 
-    displayName: dotnet build $(myJobVariable)
-```
-In GitHub Actions:
-```YAML
-on: 
-  push:
-    branches:
-    - master
-env:
-  buildConfiguration: Release
-jobs:
-  Build:
-    name: Build job
-    runs-on: ubuntu-latest
-    env:
-      myJobVariable: data
-    steps:
-    - uses: actions/checkout@v1
-    - name: dotnet build ${{ env.myJobVariable }}
-      run: dotnet build WebApplication1/WebApplication1.Service/WebApplication1.Service.csproj --configuration ${{ env.buildConfiguration }}";
-```
+
 ## References
 Made with help from https://github.com/aaubry/YamlDotNet and https://en.wikipedia.org/wiki/YAML.
 - Azure Pipelines YAML docs: https://docs.microsoft.com/en-us/azure/devops/pipelines/yaml-schema?view=azure-devops&tabs=schema
