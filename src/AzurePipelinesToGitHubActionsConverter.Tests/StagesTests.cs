@@ -114,11 +114,11 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: Publish dotnet core projects
-      run: dotnet publish FeatureFlags/FeatureFlags.Service/FeatureFlags.Service.csprojFeatureFlags/FeatureFlags.Web/FeatureFlags.Web.csproj --configuration ${{ env.buildConfiguration }} --output ${GITHUB_WORKSPACE} -p:Version=${{ env.buildNumber }}
+      run: dotnet publish FeatureFlags/FeatureFlags.Service/FeatureFlags.Service.csprojFeatureFlags/FeatureFlags.Web/FeatureFlags.Web.csproj --configuration ${{ env.buildConfiguration }} --output ${{ github.workspace }} -p:Version=${{ env.buildNumber }}
     - name: Publish Artifact
       uses: actions/upload-artifact@v2
       with:
-        path: ${GITHUB_WORKSPACE}
+        path: ${{ github.workspace }}
   Deploy_Stage_Deploy:
     name: Deploy job
     runs-on: ${{ env.vmImage }}
@@ -145,7 +145,7 @@ jobs:
       uses: Azure/webapps-deploy@v2
       with:
         app-name: ${{ env.WebServiceName }}
-        package: ${GITHUB_WORKSPACE}/drop/FeatureFlags.Service.zip
+        package: ${{ github.workspace }}/drop/FeatureFlags.Service.zip
         slot-name: staging
     - name: 'Swap Slots: web service'
       uses: Azure/cli@v1.0.0

@@ -50,29 +50,14 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
             processedCondition += ProcessCondition(conditionKeyWord, contents);
 
             //Translate any system variables
-            processedCondition = ProcessVariables(processedCondition);
+            processedCondition = SystemVariableProcessing.ProcessSystemVariables(processedCondition);
 
             return processedCondition;
         }
 
-        //TODO: Add more variables. Note that this format (variables['name']) is conditions specific.
-        private static string ProcessVariables(string condition)
-        {
-            if (condition.IndexOf("variables['Build.SourceBranch']") >= 0)
-            {
-                condition = condition.Replace("variables['Build.SourceBranch']", "github.ref");
-            }
-            else if (condition.IndexOf("eq(variables['Build.SourceBranchName']") >= 0)
-            {
-                condition = condition.Replace("eq(variables['Build.SourceBranchName']", "endsWith(github.ref");
-            }
-
-            return condition;
-        }
-
         private static string ProcessCondition(string condition, string contents)
         {
-            switch (condition.Trim())
+            switch (condition.ToLower().Trim())
             {
                 //Job/step status check functions: 
                 //Azure DevOps: https://docs.microsoft.com/en-us/azure/devops/pipelines/process/expressions?view=azure-devops#job-status-functions
@@ -84,7 +69,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                     return "failure(" + contents + ")";
                 case "succeeded":
                     return "success(" + contents + ")";
-                case "succeededOrFailed": //Essentially the same as "always", but not cancelled
+                case "succeededorfailed": //Essentially the same as "always", but not cancelled
                     return "ne(${{ job.status }}, 'cancelled')";
 
                 //Functions: 
@@ -101,13 +86,13 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                 case "or": //or
                 case "contains": //contains( search, item )
                 case "coalesce": //coalesce
-                case "containsValue": //containsValue
-                case "endsWith": //endsWith
+                case "containsvalue": //containsValue
+                case "endswith": //endsWith
                 case "format": //format
                 case "in": //in
                 case "join": //join
                 case "notin": //notin
-                case "startsWith": //startsWith
+                case "startswith": //startsWith
                 case "xor": //xor
                 case "counter": //counter
                     return condition + "(" + contents + ")";

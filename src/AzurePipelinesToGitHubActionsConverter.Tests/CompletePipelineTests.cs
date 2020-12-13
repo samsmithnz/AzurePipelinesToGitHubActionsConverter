@@ -70,12 +70,12 @@ jobs:
     - name: Deploy ARM Template to resource group
       uses: Azure/cli@v1.0.0
       with:
-        inlineScript: az deployment group create --resource-group ${{ env.ResourceGroupName }} --template-file ${GITHUB_WORKSPACE}/drop/ARMTemplates/azuredeploy.json --parameters  ${GITHUB_WORKSPACE}/drop/ARMTemplates/azuredeploy.parameters.json -environment ${{ env.AppSettings.Environment }} -locationShort ${{ env.ArmTemplateResourceGroupLocation }}
+        inlineScript: az deployment group create --resource-group ${{ env.ResourceGroupName }} --template-file ${{ github.workspace }}/drop/ARMTemplates/azuredeploy.json --parameters  ${{ github.workspace }}/drop/ARMTemplates/azuredeploy.parameters.json -environment ${{ env.AppSettings.Environment }} -locationShort ${{ env.ArmTemplateResourceGroupLocation }}
 ";
 
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
-            
+
         }
 
         //Check that the results include the Setup Java step
@@ -132,7 +132,7 @@ jobs:
 
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
-            
+
         }
 
         //Test that the result includes the setup Java step
@@ -183,7 +183,7 @@ jobs:
 
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
-            
+
         }
 
         [TestMethod]
@@ -250,7 +250,7 @@ jobs:
 
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
-            
+
         }
 
         [TestMethod]
@@ -313,8 +313,8 @@ on:
 env:
   GOBIN: ${{ env.GOPATH }}/bin
   GOROOT: /usr/local/go1.11
-  GOPATH: ${{ env.system.defaultWorkingDirectory }}/gopath
-  modulePath: ${{ env.GOPATH }}/src/github.com/${{ env.build.repository.name }}
+  GOPATH: ${{ github.workspace }}/gopath
+  modulePath: ${{ env.GOPATH }}/src/github.com/${{ github.repository }}
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -343,7 +343,7 @@ jobs:
 
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
-            
+
         }
 
         //Check that the results include the setup java step
@@ -396,7 +396,7 @@ jobs:
 
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
-            
+
         }
 
         //Check that the results include the setup Node step
@@ -451,7 +451,7 @@ jobs:
 
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
-            
+
         }
 
         [TestMethod]
@@ -525,7 +525,7 @@ on:
 env:
   BuildConfiguration: Release
   BuildPlatform: Any CPU
-  BuildVersion: 1.1.${{ env.Build.BuildId }}
+  BuildVersion: 1.1.${{ github.run_id }}
 jobs:
   build:
     runs-on: windows-latest
@@ -536,18 +536,18 @@ jobs:
     - name: Build
       run: dotnet MyProject/MyProject.Models/MyProject.Models.csproj --configuration ${{ env.BuildConfiguration }}
     - name: Publish
-      run: dotnet publish MyProject/MyProject.Models/MyProject.Models.csproj --configuration ${{ env.BuildConfiguration }} --output ${GITHUB_WORKSPACE}
+      run: dotnet publish MyProject/MyProject.Models/MyProject.Models.csproj --configuration ${{ env.BuildConfiguration }} --output ${{ github.workspace }}
     - name: dotnet pack
       run: dotnet pack MyProject/MyProject.Models/MyProject.Models.csproj
     - name: Publish Artifact
       uses: actions/upload-artifact@v2
       with:
-        path: ${GITHUB_WORKSPACE}
+        path: ${{ github.workspace }}
 ";
 
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
-            
+
         }
 
         //Check that the results include the setup Python step
@@ -615,7 +615,7 @@ jobs:
 
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
-            
+
         }
 
 
@@ -658,7 +658,7 @@ jobs:
 
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
-            
+
         }
 
         //Test that the result includes the setup Ruby step
@@ -704,7 +704,7 @@ jobs:
 
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
-            
+
         }
 
         [TestMethod]
@@ -747,13 +747,13 @@ jobs:
     - # 'Note: This is a third party action: https://github.com/marketplace/actions/create-zip-file'
       uses: montudor/action-zip@v0.1.0
       with:
-        args: zip -qq -r  ${{ env.build.sourcesDirectory }}
+        args: zip -qq -r  ${{ github.workspace }}
     - uses: actions/upload-artifact@v2
 ";
 
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
-            
+
         }
 
         [TestMethod]
@@ -835,7 +835,7 @@ jobs:
 
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
-            
+
         }
 
         [TestMethod]
@@ -905,7 +905,7 @@ jobs:
 
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
-            
+
         }
 
         [TestMethod]
@@ -979,7 +979,7 @@ jobs:
 
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
-            
+
         }
 
         [TestMethod]
@@ -1065,7 +1065,7 @@ jobs:
 
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
-            
+
         }
 
 
@@ -1201,10 +1201,10 @@ jobs:
       uses: warrenbuckley/Setup-Nuget@v1
     - run: nuget  ${{ env.solution }}
       shell: powershell
-    - run: msbuild '${{ env.solution }}' /p:configuration='${{ env.buildConfiguration }}' /p:platform='${{ env.buildPlatform }}' /p:DeployOnBuild=true /p:WebPublishMethod=Package /p:PackageAsSingleFile=true /p:SkipInvalidConfigurations=true /p:PackageLocation=""${{ env.build.artifactStagingDirectory }}""
+    - run: msbuild '${{ env.solution }}' /p:configuration='${{ env.buildConfiguration }}' /p:platform='${{ env.buildPlatform }}' /p:DeployOnBuild=true /p:WebPublishMethod=Package /p:PackageAsSingleFile=true /p:SkipInvalidConfigurations=true /p:PackageLocation=""${{ github.workspace }}""
     - uses: actions/upload-artifact@v2
       with:
-        path: ${{ env.build.artifactStagingDirectory }}
+        path: ${{ github.workspace }}
   Deploy_Stage_job1:
     # 'Note: Azure DevOps strategy>runOnce>deploy does not have an equivalent in GitHub Actions yetNote: Azure DevOps job environment does not have an equivalent in GitHub Actions yet'
     env:
@@ -1228,7 +1228,7 @@ jobs:
 
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
-            
+
         }
 
         [TestMethod]
@@ -1319,7 +1319,7 @@ jobs:
 
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
-            
+
         }
 
         //This test doesn't work with V1
@@ -1521,7 +1521,7 @@ jobs:
 
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
-            
+
         }
 
         [TestMethod]
@@ -1573,7 +1573,7 @@ jobs:
 
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
-            
+
         }
 
 
@@ -2127,7 +2127,7 @@ jobs:
         name: ${{ env.testArtifactName }}
     - # 'Note: Error! This step does not have a conversion path yet: PublishCodeCoverageResults@1'
       name: Publish Azure Code Coverage
-      run: 'Write-Host Note: Error! This step does not have a conversion path yet: PublishCodeCoverageResults@1 #task: PublishCodeCoverageResults@1#displayName: Publish Azure Code Coverage#condition: succeededOrFailed()#inputs:#  codecoveragetool: JaCoCo#  summaryfilelocation: ${{ env.buildFolderName }}/${{ env.testResultFolderName }}/JaCoCo_coverage.xml#  pathtosources: ${{ env.Build.SourcesDirectory }}/${{ env.buildFolderName }}/${{ env.dscBuildVariable.RepositoryName }}'
+      run: 'Write-Host Note: Error! This step does not have a conversion path yet: PublishCodeCoverageResults@1 #task: PublishCodeCoverageResults@1#displayName: Publish Azure Code Coverage#condition: succeededOrFailed()#inputs:#  codecoveragetool: JaCoCo#  summaryfilelocation: ${{ env.buildFolderName }}/${{ env.testResultFolderName }}/JaCoCo_coverage.xml#  pathtosources: ${{ github.workspace }}/${{ env.buildFolderName }}/${{ env.dscBuildVariable.RepositoryName }}'
       shell: powershell
       if: ne(${{ job.status }}, 'cancelled')
     - name: Upload to Codecov.io
@@ -2151,7 +2151,7 @@ jobs:
 
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
-            
+
         }
 
     }
