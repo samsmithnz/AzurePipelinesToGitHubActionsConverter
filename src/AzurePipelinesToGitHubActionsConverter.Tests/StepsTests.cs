@@ -203,7 +203,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             //Assert
             string expected = @"
 - name: Copy production build to artifact stage
-  run: Copy '${GITHUB_WORKSPACE}/dist/**' '${GITHUB_WORKSPACE}'
+  run: Copy '${{ github.workspace }}/dist/**' '${{ github.workspace }}'
   shell: powershell";
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
