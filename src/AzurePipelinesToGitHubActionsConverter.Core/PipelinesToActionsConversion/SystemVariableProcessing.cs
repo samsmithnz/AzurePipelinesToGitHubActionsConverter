@@ -7,21 +7,22 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
 
         public static string ProcessSystemVariables(string input)
         {
-            //TODO: Make the processing work for both conditions and environment variables. Can it be the same variable? Or do I need a branch to decide if there should be GitHub.Ref and GITHUB_REF
-            //TODO: Add more variables.
-
             //Conditions
-            //TODO: Note that this format (variables['name']) is conditions specific.
-            if (input.IndexOf("variables['Build.SourceBranch']") >= 0)
-            {
-                //Create a rule to look for the entire branch path (e.g. "refs/heads/feature-branch-1"). If this is the default branch, it will just be ""
-                input = Replace(input, "variables['Build.SourceBranch']", "github.ref");
-            }
-            else if (input.IndexOf("eq(variables['Build.SourceBranchName']") >= 0)
-            {
-                //Create a rule to look for the branch name (e.g. "feature-branch-1" from "refs/heads/feature-branch-1"). If this is the default branch, it will just be ""
-                input = Replace(input, "eq(variables['Build.SourceBranchName']", "endsWith(github.ref");
-            }
+            //Create a rule to look for the entire branch path (e.g. "refs/heads/feature-branch-1"). If this is the default branch, it will just be ""
+            input = Replace(input, "variables['Build.SourceBranch']", "github.ref");
+            input = Replace(input, "variables['Build.ArtifactStagingDirectory']", "github.workspace");
+            input = Replace(input, "variables['Build.BuildId']", "github.run_id");
+            input = Replace(input, "variables['Build.BuildNumber']", "github.run_number");
+            input = Replace(input, "variables['Build.SourceBranch']", "github.ref");
+            input = Replace(input, "variables['Build.Repository.Name']", "github.repository");
+            // input = Replace(input, "variables['Build.SourceBranchName']", "github.ref");
+            input = Replace(input, "variables['Build.SourcesDirectory']", "github.workspace");
+            input = Replace(input, "variables['Build.StagingDirectory']", "github.workspace");
+            input = Replace(input, "variables['System.DefaultWorkingDirectory']", "github.workspace");
+            input = Replace(input, "variables['Agent.OS']", "runner.os");
+            //Create a rule to look for the branch name (e.g. "feature-branch-1" from "refs/heads/feature-branch-1"). 
+            //Note that only the left brackets need to exist, so that the other side of the equation still exists
+            input = Replace(input, "eq(variables['Build.SourceBranchName']", "endsWith(github.ref");
 
             //System variables
             input = Replace(input, "$(Build.ArtifactStagingDirectory)", "${{ github.workspace }}");
