@@ -23,7 +23,7 @@ jobs:
         dotnet-version: '3.1.x' #${{matrix.dotnet-version}}
     - uses: actions/setup-dotnet@v1	
       with:	
-        dotnet-version: '5.x'
+        dotnet-version: '5.0.x'
     - name: Custom script to create a unique application version number for this build
       run: src/BuildVersion.ps1 -ProjectFile "src/AzurePipelinesToGitHubActionsConverter.Core/AzurePipelinesToGitHubActionsConverter.Core.csproj"
       shell: pwsh
