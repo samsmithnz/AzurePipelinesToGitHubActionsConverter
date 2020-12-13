@@ -78,7 +78,6 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                         gitHubStep = CreateMavenStep(step);
                         break;
                     case "MSBUILD@1":
-                    case "VSBUILD@1":
                         gitHubStep = CreateMSBuildStep(step);
                         break;
                     case "NPM@1":
@@ -118,6 +117,9 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                         break;
                     case "USERUBYVERSION@0":
                         gitHubStep = CreateUseRubyStep(step);
+                        break;
+                    case "VSBUILD@1":
+                        gitHubStep = CreateMSBuildStep(step);
                         break;
                     case "VSTEST@2":
                         gitHubStep = CreateFunctionalTestingStep(step);
