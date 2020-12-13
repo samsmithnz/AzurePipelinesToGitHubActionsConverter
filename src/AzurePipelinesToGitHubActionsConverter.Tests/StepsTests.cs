@@ -1042,6 +1042,33 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
         }
 
         [TestMethod]
+        public void MSBuild2StepTest()
+        {
+            //Arrange
+            Conversion conversion = new Conversion();
+            string yaml = @"
+- task: MSBuild@1
+  inputs:
+    solution: '**/*.sln'
+    msbuildArchitecture: 'x86'
+    platform: 'Any CPU'
+    configuration: 'Release'
+    msbuildArguments: '/t:Publish /p:PublishUrl=""publish""'
+        ";
+
+            //Act
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineTaskToGitHubActionTask(yaml);
+
+            //Assert
+            string expected = @"
+- run: msbuild '**/*.sln' /p:configuration='Release' /p:platform='Any CPU' /t:Publish /p:PublishUrl=""publish""
+";
+
+            expected = UtilityTests.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+        }
+
+        [TestMethod]
         public void PublishTestResultsStepTest()
         {
             //Arrange

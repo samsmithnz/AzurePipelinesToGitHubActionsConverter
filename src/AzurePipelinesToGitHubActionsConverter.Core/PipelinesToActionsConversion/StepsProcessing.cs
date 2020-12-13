@@ -3,6 +3,7 @@ using AzurePipelinesToGitHubActionsConverter.Core.Serialization;
 using AzurePipelinesToGitHubActionsConverter.Core.Extensions;
 using System.Collections.Generic;
 using System.Text;
+using System;
 
 namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversion
 {
@@ -912,6 +913,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
             string configuration = GetStepInput(step, "configuration");
             string msbuildArgs = GetStepInput(step, "msbuildArgs");
             string msbuildArguments = GetStepInput(step, "msbuildArguments");
+            string msbuildArchitecture = GetStepInput(step, "msbuildArchitecture");
             string run = "msbuild '" + solution + "'";
             if (configuration != null)
             {
@@ -920,6 +922,10 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
             if (platform != null)
             {
                 run += " /p:platform='" + platform + "'";
+            }
+            else if (msbuildArguments!= null)
+            {
+                run += " /p:platform='" + msbuildArguments + "'";
             }
             if (msbuildArgs != null) //VSBuild@1
             {
