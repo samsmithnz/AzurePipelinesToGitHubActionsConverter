@@ -12,6 +12,8 @@ jobs:
       matrix:
         os: [windows-latest, ubuntu-latest]
     runs-on: ${{matrix.os}}
+    outputs: # https://stackoverflow.com/questions/59175332/using-output-from-a-previous-job-in-a-new-one-in-a-github-action
+      version: ${{ steps.gitversion.outputs.nuGetVersionV2 }}
     steps:
     - uses: actions/checkout@v2
       with:
@@ -48,6 +50,9 @@ jobs:
     needs: build
     if: github.ref == 'refs/heads/main'      
     steps:
+    - name: Display GitVersion outputs
+      run: |
+        echo "version: ${{ needs.build.outputs.version }}" 
     - name: Download nuget package artifact
       uses: actions/download-artifact@v1.0.0
       with:
@@ -61,6 +66,6 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
       with:
-        tag_name: ${{ steps.gitversion.outputs.nuGetVersionV2 }}
-        release_name: Release ${{ steps.gitversion.outputs.nuGetVersionV2 }}
+        tag_name: ${{ needs.build.outputs.version }}
+        release_name: Release ${{ needs.build.outputs.version }}
 
