@@ -32,7 +32,7 @@ jobs:
     - name: Test with dotnet
       run: dotnet test src/AzurePipelinesToGitHubActionsConverter.Tests/AzurePipelinesToGitHubActionsConverter.Tests.csproj --configuration Release
     - name: Pack with dotnet
-      run: dotnet pack src/AzurePipelinesToGitHubActionsConverter.Core/AzurePipelinesToGitHubActionsConverter.Core.csproj --configuration Release /p:PackageVersion={{ steps.gitversion.outputs.nuGetVersionV2 }}
+      run: dotnet pack src/AzurePipelinesToGitHubActionsConverter.Core/AzurePipelinesToGitHubActionsConverter.Core.csproj --configuration Release /p:PackageVersion=${{ steps.gitversion.outputs.nuGetVersionV2 }}
     - name: Upload nuget package back to GitHub
       uses: actions/upload-artifact@v2
       with:
