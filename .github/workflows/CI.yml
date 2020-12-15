@@ -12,20 +12,31 @@ jobs:
       matrix:
         os: [windows-latest, ubuntu-latest]
     runs-on: ${{matrix.os}}
-    env:
-      buildVersion: 0.0.0.0 #The initial build version, calculated and updated in the script below
-      ACTIONS_ALLOW_UNSECURE_COMMANDS: true #Allow us to set an environment variable in the PowerShell script to set the package version (technically deprecated)
     steps:
-    - uses: actions/checkout@v1
-    - name: Custom script to create a unique application version number for this build
-      run: src/BuildVersion.ps1 -ProjectFile "src/AzurePipelinesToGitHubActionsConverter.Core/AzurePipelinesToGitHubActionsConverter.Core.csproj"
-      shell: pwsh
+    - uses: actions/checkout@v2
+      with:
+        fetch-depth: 0 #fetch-depth is needed for GitVersion
+        
+    #Install and calculate the new version with GitVersion  
+    - name: Install GitVersion
+      uses: gittools/actions/gitversion/setup@v0.9.7
+      with:
+        versionSpec: '5.x'
+    - name: Determine Version
+      uses: gittools/actions/gitversion/execute@v0.9.7
+      id: gitversion # step id used as reference for output values
+    - name: Display GitVersion outputs
+      run: |
+        echo "MajorMinorPatch: ${{ steps.gitversion.outputs.majorMinorPatch }}"
+        echo "NuGetVersionV2: ${{ steps.gitversion.outputs.nuGetVersionV2 }}"
+    
+    #Test and pack the code into a NuGet package
     - name: Build with dotnet
-      run: dotnet build src/AzurePipelinesToGitHubActionsConverter.Core/AzurePipelinesToGitHubActionsConverter.Core.csproj --configuration Release
+      run: dotnet build src/AzurePipelinesToGitHubActionsConverter.Tests/AzurePipelinesToGitHubActionsConverter.Tests.csproj --configuration Release
     - name: Test with dotnet
-      run: dotnet test src/AzurePipelinesToGitHubActionsConverter.Tests/AzurePipelinesToGitHubActionsConverter.Tests.csproj --configuration Release
+      run: dotnet test src/AzurePipelinesToGitHubActionsConverter.Tests/AzurePipelinesToGitHubActionsConverter.Tests.csproj --configuration Release --no-build
     - name: Pack with dotnet
-      run: dotnet pack src/AzurePipelinesToGitHubActionsConverter.Core/AzurePipelinesToGitHubActionsConverter.Core.csproj --configuration Release /p:PackageVersion=${{env.buildVersion}}
+      run: dotnet pack src/AzurePipelinesToGitHubActionsConverter.Core/AzurePipelinesToGitHubActionsConverter.Core.csproj --configuration Release --no-build /p:PackageVersion=${{ steps.gitversion.outputs.nuGetVersionV2 }}
     - name: Upload nuget package back to GitHub
       uses: actions/upload-artifact@v2
       with:
@@ -44,3 +55,13 @@ jobs:
     - name: Publish nuget package to nuget.org
       run: dotnet nuget push nugetPackage\*.nupkg --api-key "${{ secrets.GHPackagesToken }}" --source "https://www.nuget.org/"
       shell: pwsh
+    - name: Create Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
+      with:
+        tag_name: ${{ steps.gitversion.outputs.nuGetVersionV2 }}
+        release_name: Release ${{ steps.gitversion.outputs.nuGetVersionV2 }}
+        draft: false
+        prerelease: false
