@@ -63,5 +63,4 @@ jobs:
       with:
         tag_name: ${{ steps.gitversion.outputs.nuGetVersionV2 }}
         release_name: Release ${{ steps.gitversion.outputs.nuGetVersionV2 }}
-        draft: false
-        prerelease: false
+
