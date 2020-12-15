@@ -286,4 +286,7 @@ Made with help from https://github.com/aaubry/YamlDotNet and https://en.wikipedi
 - Software installed on GitHub Action runners: https://docs.github.com/en/free-pro-team@latest/actions/reference/specifications-for-github-hosted-runners#supported-software
 
 ## Contributing
-Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
+Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change. Please use a consistent naming convention for your feature branches to identify the work done in the branch. Some suggestions for naming your feature branches:
+- features/feature-name
+- bugfix/description
+- hotfix/description
