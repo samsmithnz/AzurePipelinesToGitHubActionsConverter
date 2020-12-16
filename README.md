@@ -3,7 +3,7 @@ A project to create a conversion tool to make migrations between Azure Pipelines
 
 ![Current build](https://github.com/samsmithnz/AzurePipelinesToGitHubActionsConverter/workflows/CI/badge.svg)
 [![Latest NuGet package](https://img.shields.io/nuget/v/AzurePipelinesToGitHubActionsConverter.Core)](https://www.nuget.org/packages/AzurePipelinesToGitHubActionsConverter.Core/)
-![Current Release](https://img.shields.io/github/release/samsmithnz/AzurePipelinesToGitHubActionsConverter/all.svg
+![Current Release](https://img.shields.io/github/release/samsmithnz/AzurePipelinesToGitHubActionsConverter/all.svg)
 
 # How to use
 There is a website that consumes this module at: https://pipelinestoactions.azurewebsites.net/.  
