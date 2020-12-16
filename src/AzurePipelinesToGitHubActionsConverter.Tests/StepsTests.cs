@@ -804,6 +804,52 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
         }
 
+        [TestMethod]
+        public void GitHubReleaseIndividualStepTest()
+        {
+            //Arrange
+            Conversion conversion = new Conversion();
+            string yaml = @"
+- task: GithubRelease@0 
+  displayName: 'Create GitHub Release'      
+  inputs:
+    gitHubConnection: zenithworks
+    repositoryName: zenithworks/javaAppWithMaven
+    tagSource: manual
+    tag: $(Build.BuildNumber)   
+    title: ""Release $(Build.BuildNumber)""
+    assets: $(Build.ArtifactStagingDirectory)/*.exe
+    releaseNotes: |
+      Changes in this Release
+      - First Change
+      - Second Change
+    isDraft: false # Optional
+    isPreRelease: false # Optional
+";
+
+            //Act
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineTaskToGitHubActionTask(yaml);
+
+            //Assert
+            string expected = @"
+- name: Create GitHub Release
+  uses: actions/create-release@v1
+  env:
+    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  with:
+    tag_name: ${{ github.run_number }}
+    release_name: Release ${{ github.run_number }}
+    body: 
+      Changes in this Release
+      - First Change
+      - Second Change
+    draft: false
+    prerelease: false
+";
+            expected = UtilityTests.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+        }
+
 //        [TestMethod]
 //        public void IISWebManagementStepTest()
 //        {
