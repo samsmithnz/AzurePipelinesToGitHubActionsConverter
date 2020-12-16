@@ -2,7 +2,8 @@
 A project to create a conversion tool to make migrations between Azure Pipelines YAML and GitHub Actions YAML possible. As GitHub Actions becomes more popular, it's clear that a migration tool will be useful to move workloads to GitHub. 
 
 ![Current build](https://github.com/samsmithnz/AzurePipelinesToGitHubActionsConverter/workflows/CI/badge.svg)
-[![NuGet version](https://img.shields.io/nuget/v/AzurePipelinesToGitHubActionsConverter.Core)](https://www.nuget.org/packages/AzurePipelinesToGitHubActionsConverter.Core/)
+[![Latest NuGet package](https://img.shields.io/nuget/v/AzurePipelinesToGitHubActionsConverter.Core)](https://www.nuget.org/packages/AzurePipelinesToGitHubActionsConverter.Core/)
+![Current Release](https://img.shields.io/github/release/samsmithnz/AzurePipelinesToGitHubActionsConverter/all.svg)
 
 # How to use
 There is a website that consumes this module at: https://pipelinestoactions.azurewebsites.net/.  
@@ -286,4 +287,7 @@ Made with help from https://github.com/aaubry/YamlDotNet and https://en.wikipedi
 - Software installed on GitHub Action runners: https://docs.github.com/en/free-pro-team@latest/actions/reference/specifications-for-github-hosted-runners#supported-software
 
 ## Contributing
-Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
+Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change. Please use a consistent naming convention for your feature branches to identify the work done in the branch. Some suggestions for naming:
+- features/feature-name
+- bugfix/description
+- hotfix/description
