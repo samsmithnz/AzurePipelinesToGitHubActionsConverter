@@ -68,6 +68,9 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                     //case "DOWNLOADPIPELINEARTIFACTS@2":
                     //    gitHubStep = CreateDownloadPipelineArtifacts(step);
                     //    break;
+                    case "GITHUBRELEASE@0":
+                        gitHubStep = CreateGitHubReleaseStep(step);
+                        break;
                     case "GRADLE@2":
                         gitHubStep = CreateGradleStep(step);
                         break;
@@ -925,7 +928,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
             {
                 run += " /p:platform='" + platform + "'";
             }
-            else if (msbuildArguments!= null)
+            else if (msbuildArguments != null)
             {
                 run += " /p:platform='" + msbuildArguments + "'";
             }
@@ -1087,6 +1090,88 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                 script = "chmod +x gradlew"
             };
             GitHubActions.Step gitHubStep = CreateScriptStep("", step);
+
+            return gitHubStep;
+        }
+
+        public GitHubActions.Step CreateGitHubReleaseStep(AzurePipelines.Step step)
+        {
+            //From: https://docs.microsoft.com/en-us/azure/devops/pipelines/tasks/utility/github-release?view=azure-devops#examples
+            //# GitHub Release
+            //# Create, edit, or delete a GitHub release
+            //- task: GitHubRelease@0
+            //  inputs:
+            //    gitHubConnection: 
+            //    #repositoryName: '$(Build.Repository.Name)' 
+            //    #action: 'create' # Options: create, edit, delete
+            //    #target: '$(Build.SourceVersion)' # Required when action == Create || Action == Edit
+            //    #tagSource: 'auto' # Required when action == Create# Options: auto, manual
+            //    #tagPattern: # Optional
+            //    #tag: # Required when action == Edit || Action == Delete || TagSource == Manual
+            //    #title: # Optional
+            //    #releaseNotesSource: 'file' # Optional. Options: file, input
+            //    #releaseNotesFile: # Optional
+            //    #releaseNotes: # Optional
+            //    #assets: '$(Build.ArtifactStagingDirectory)/*' # Optional
+            //    #assetUploadMode: 'delete' # Optional. Options: delete, replace
+            //    #isDraft: false # Optional
+            //    #isPreRelease: false # Optional
+            //    #addChangeLog: true # Optional
+            //    #compareWith: 'lastFullRelease' # Required when addChangeLog == True. Options: lastFullRelease, lastRelease, lastReleaseByTag
+            //    #releaseTag: # Required when compareWith == LastReleaseByTag
+
+            //To: https://github.com/actions/create-release
+            //- name: Create Release
+            //  id: create_release
+            //  uses: actions/create-release@v1
+            //  env:
+            //    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
+            //  with:
+            //    tag_name: ${{ github.ref }}
+            //    release_name: Release ${{ github.ref }}
+            //    body: |
+            //      Changes in this Release
+            //      - First Change
+            //      - Second Change
+            //    draft: false
+            //    prerelease: false
+
+            string tag = GetStepInput(step, "tag");            
+            string title = GetStepInput(step, "title");    
+            string releaseNotes = GetStepInput(step, "releaseNotes");
+            string isDraft = GetStepInput(step, "isDraft");
+            string isPreRelease = GetStepInput(step, "isPreRelease");
+
+            GitHubActions.Step gitHubStep = new GitHubActions.Step
+            {
+                name = step.name,
+                uses = "actions/create-release@v1",
+                env = new Dictionary<string, string>
+                {
+                    {"GITHUB_TOKEN", "${{ secrets.GITHUB_TOKEN }}"}
+                },
+                with = new Dictionary<string, string>
+                {
+                    { "tag_name", tag}
+                }
+            };
+
+            if (title != null)
+            {
+                gitHubStep.with.Add("release_name", title);
+            }
+            if (releaseNotes != null)
+            {
+                gitHubStep.with.Add("body", releaseNotes);
+            }
+            if (isDraft != null)
+            {
+                gitHubStep.with.Add("draft", isDraft);
+            }
+            if (isPreRelease != null)
+            {
+                gitHubStep.with.Add("prerelease", isPreRelease);
+            }
 
             return gitHubStep;
         }
