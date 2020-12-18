@@ -918,7 +918,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
             string configuration = GetStepInput(step, "configuration");
             string msbuildArgs = GetStepInput(step, "msbuildArgs");
             string msbuildArguments = GetStepInput(step, "msbuildArguments");
-            string msbuildArchitecture = GetStepInput(step, "msbuildArchitecture");
+            //string msbuildArchitecture = GetStepInput(step, "msbuildArchitecture");
             string run = "msbuild '" + solution + "'";
             if (configuration != null)
             {
