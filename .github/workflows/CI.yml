@@ -13,7 +13,8 @@ jobs:
         os: [windows-latest, ubuntu-latest]
     runs-on: ${{matrix.os}}
     outputs: # https://stackoverflow.com/questions/59175332/using-output-from-a-previous-job-in-a-new-one-in-a-github-action
-      version: ${{ steps.gitversion.outputs.nuGetVersionV2 }}
+      Version: ${{ steps.gitversion.outputs.nuGetVersionV2 }}
+      CommitsSinceVersionSource: ${{ steps.gitversion.outputs.CommitsSinceVersionSource }}  
     steps:
     - uses: actions/checkout@v2
       with:
@@ -31,12 +32,20 @@ jobs:
       run: |
         echo "MajorMinorPatch: ${{ steps.gitversion.outputs.majorMinorPatch }}"
         echo "NuGetVersionV2: ${{ steps.gitversion.outputs.nuGetVersionV2 }}"
+        echo "CommitsSinceVersionSource: ${{ steps.gitversion.outputs.CommitsSinceVersionSource }}"
     
-    #Test and pack the code into a NuGet package
+    #Build and test code, then upload code coverage to coverall.io
     - name: Build with dotnet
       run: dotnet build src/AzurePipelinesToGitHubActionsConverter.Tests/AzurePipelinesToGitHubActionsConverter.Tests.csproj --configuration Release
     - name: Test with dotnet
-      run: dotnet test src/AzurePipelinesToGitHubActionsConverter.Tests/AzurePipelinesToGitHubActionsConverter.Tests.csproj --configuration Release --no-build
+      run: dotnet test src/AzurePipelinesToGitHubActionsConverter.Tests/AzurePipelinesToGitHubActionsConverter.Tests.csproj --configuration Release --no-build /p:CollectCoverage=true /p:CoverletOutput=TestResults/ /p:CoverletOutputFormat=lcov
+    - name: Publish coverage report to coveralls.io
+      uses: coverallsapp/github-action@master
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        path-to-lcov: src/AzurePipelinesToGitHubActionsConverter.Tests/TestResults/coverage.info 
+
+    #Pack the code into a NuGet package
     - name: Pack with dotnet
       run: dotnet pack src/AzurePipelinesToGitHubActionsConverter.Core/AzurePipelinesToGitHubActionsConverter.Core.csproj --configuration Release --no-build /p:PackageVersion=${{ steps.gitversion.outputs.nuGetVersionV2 }}
     - name: Upload nuget package back to GitHub
@@ -52,20 +61,23 @@ jobs:
     steps:
     - name: Display GitVersion outputs
       run: |
-        echo "version: ${{ needs.build.outputs.version }}" 
+        echo "Version: ${{ needs.build.outputs.Version }}" 
+        echo "CommitsSinceVersionSource: ${{ needs.build.outputs.CommitsSinceVersionSource }}" 
     - name: Download nuget package artifact
       uses: actions/download-artifact@v1.0.0
       with:
         name: nugetPackage  
     - name: Publish nuget package to nuget.org
+      if: needs.build.outputs.CommitsSinceVersionSource > 0 #Only publish a NuGet package if there has been a commit/version change
       run: dotnet nuget push nugetPackage\*.nupkg --api-key "${{ secrets.GHPackagesToken }}" --source "https://www.nuget.org/"
       shell: pwsh
     - name: Create Release
       id: create_release
       uses: actions/create-release@v1
+      if: needs.build.outputs.CommitsSinceVersionSource > 0 #Only create a release if there has been a commit/version change
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
       with:
-        tag_name: ${{ needs.build.outputs.version }}
-        release_name: Release ${{ needs.build.outputs.version }}
+        tag_name: ${{ needs.build.outputs.Version }}
+        release_name: Release ${{ needs.build.outputs.Version }}
 
