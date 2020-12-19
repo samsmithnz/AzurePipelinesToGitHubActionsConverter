@@ -64,9 +64,10 @@ jobs:
       with:
         creds: ${{ secrets.AZURE_SP }}
     - name: Download the build artifacts
-      uses: actions/download-artifact@v1.0.0
+      uses: actions/download-artifact@v2
       with:
         name: drop
+        path: ${{ github.workspace }}
     - name: Deploy ARM Template to resource group
       uses: Azure/cli@v1.0.0
       with:
@@ -1493,18 +1494,20 @@ jobs:
     runs-on: ${{ env.vmImage }}
     steps:
     - name: Download the build artifacts
-      uses: actions/download-artifact@v1.0.0
+      uses: actions/download-artifact@v2
       with:
         name: drop
+        path: ${{ github.workspace }}
   DeployTests2:
     # 'Note: Azure DevOps strategy>runOnce>deploy does not have an equivalent in GitHub Actions yetNote: Azure DevOps job environment does not have an equivalent in GitHub Actions yet'
     name: Deploy functional tests to ${{ env.environment }} job
     runs-on: ${{ env.vmImage }}
     steps:
     - name: Download the build artifacts
-      uses: actions/download-artifact@v1.0.0
+      uses: actions/download-artifact@v2
       with:
         name: drop
+        path: ${{ github.workspace }}
   DeployTests3:
     # 'Note: Azure DevOps strategy>runOnce>deploy does not have an equivalent in GitHub Actions yetNote: Azure DevOps job environment does not have an equivalent in GitHub Actions yet'
     name: Deploy functional tests to ${{ env.environment }} job
@@ -1514,9 +1517,10 @@ jobs:
     - DeployTests2
     steps:
     - name: Download the build artifacts
-      uses: actions/download-artifact@v1.0.0
+      uses: actions/download-artifact@v2
       with:
         name: drop
+        path: ${{ github.workspace }}
 ";
 
             expected = UtilityTests.TrimNewLines(expected);
@@ -1578,7 +1582,7 @@ jobs:
 
 
         [TestMethod]
-        public void JLTestPipeline()
+        public void JLPipelineTest()
         {
             //Arrange
             Conversion conversion = new Conversion();
@@ -1966,9 +1970,10 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: Download Build Artifact
-      uses: actions/download-artifact@v1.0.0
+      uses: actions/download-artifact@v2
       with:
         name: output
+        path: ${{ github.workspace }}
     - name: Run HQRM Test
       shell: powershell
     - # 'PublishTestResults@2 is a Azure DevOps specific task. There is no equivalent in GitHub Actions until there is a testing summary tab. See: https://github.community/t/publishing-test-results/16215'
@@ -1981,9 +1986,10 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: Download Build Artifact
-      uses: actions/download-artifact@v1.0.0
+      uses: actions/download-artifact@v2
       with:
         name: ${{ env.buildArtifactName }}
+        path: ${{ github.workspace }}
     - name: Run Unit Test
       shell: powershell
     - # 'PublishTestResults@2 is a Azure DevOps specific task. There is no equivalent in GitHub Actions until there is a testing summary tab. See: https://github.community/t/publishing-test-results/16215'
@@ -2004,9 +2010,10 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: Download Build Artifact
-      uses: actions/download-artifact@v1.0.0
+      uses: actions/download-artifact@v2
       with:
         name: ${{ env.buildArtifactName }}
+        path: ${{ github.workspace }}
     - name: Configure WinRM
       run: winrm quickconfig -quiet
       shell: powershell
@@ -2059,9 +2066,10 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: Download Build Artifact
-      uses: actions/download-artifact@v1.0.0
+      uses: actions/download-artifact@v2
       with:
         name: ${{ env.buildArtifactName }}
+        path: ${{ github.workspace }}
     - name: Configure WinRM
       run: winrm quickconfig -quiet
       shell: powershell
@@ -2118,13 +2126,15 @@ jobs:
         echo ""##vso[task.setvariable variable=RepositoryName;isOutput=true]$repositoryName""
       shell: pwsh
     - name: Download Build Artifact
-      uses: actions/download-artifact@v1.0.0
+      uses: actions/download-artifact@v2
       with:
         name: ${{ env.buildArtifactName }}
+        path: ${{ github.workspace }}
     - name: Download Test Artifact
-      uses: actions/download-artifact@v1.0.0
+      uses: actions/download-artifact@v2
       with:
         name: ${{ env.testArtifactName }}
+        path: ${{ github.workspace }}/${{ env.buildFolderName }}
     - # 'Note: Error! This step does not have a conversion path yet: PublishCodeCoverageResults@1'
       name: Publish Azure Code Coverage
       run: 'Write-Host Note: Error! This step does not have a conversion path yet: PublishCodeCoverageResults@1 #task: PublishCodeCoverageResults@1#displayName: Publish Azure Code Coverage#condition: succeededOrFailed()#inputs:#  codecoveragetool: JaCoCo#  summaryfilelocation: ${{ env.buildFolderName }}/${{ env.testResultFolderName }}/JaCoCo_coverage.xml#  pathtosources: ${{ github.workspace }}/${{ env.buildFolderName }}/${{ env.dscBuildVariable.RepositoryName }}'
@@ -2140,9 +2150,10 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: Download Build Artifact
-      uses: actions/download-artifact@v1.0.0
+      uses: actions/download-artifact@v2
       with:
         name: ${{ env.buildArtifactName }}
+        path: ${{ github.workspace }}
     - name: Publish Release
       shell: powershell
     - name: Send Changelog PR
