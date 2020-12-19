@@ -33,6 +33,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                 container = generalProcessing.ProcessContainer(resources),
                 env = vp.ProcessSimpleVariables(job.variables),
                 timeout_minutes = job.timeoutInMinutes,
+                environment = ProcessJobEnvironment(job.environment),
                 steps = sp.AddSupportingSteps(job.steps)
             };
             MatrixVariableName = generalProcessing.MatrixVariableName;
@@ -55,10 +56,6 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                 newJob.steps = sp.AddSupportingSteps(job.strategy?.runOnce?.deploy?.steps, false);
                 //TODO: There is currently no conversion path for templates
                 newJob.job_message += "Note: Azure DevOps strategy>runOnce>deploy does not have an equivalent in GitHub Actions yet";
-            }
-            if (job.environment != null)
-            {
-                newJob.job_message += "Note: Azure DevOps job environment does not have an equivalent in GitHub Actions yet";
             }
             if (job.continueOnError == true)
             {
@@ -157,6 +154,26 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                         VariablesProcessing vp = new VariablesProcessing(_verbose);
                         job.variables = vp.ProcessParametersAndVariablesV2(null, jobJson["variables"].ToString());
                     }
+                    //Currently no conversion path for services
+                    if (jobJson["services"] != null)
+                    {
+                        job.services = new Dictionary<string, string>();
+                    }
+                    //Currently no conversion path for parameters
+                    if (jobJson["parameters"] != null)
+                    {
+                        job.parameters = new Dictionary<string, string>();
+                    }
+                    //Currently no conversion path for container
+                    if (jobJson["container"] != null)
+                    {
+                        job.container = new Containers();
+                    }
+                    //Currently no conversion path for cancelTimeoutInMinutes
+                    if (jobJson["cancelTimeoutInMinutes"] != null)
+                    {
+                        job.cancelTimeoutInMinutes = int.Parse(jobJson["cancelTimeoutInMinutes"].ToString());
+                    }
                     if (jobJson["steps"] != null)
                     {
                         try
@@ -220,6 +237,22 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                 job.job = "build";
                 jobs[0] = job;
                 return jobs;
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        private GitHubActions.Environment ProcessJobEnvironment(AzurePipelines.Environment environment)
+        {
+            if (environment != null)
+            {
+                GitHubActions.Environment newEnvironment = new GitHubActions.Environment
+                {
+                    name = environment.name
+                };
+                return newEnvironment;
             }
             else
             {

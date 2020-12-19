@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using Environment = System.Environment;
 
 namespace AzurePipelinesToGitHubActionsConverter.Core.Serialization
 {

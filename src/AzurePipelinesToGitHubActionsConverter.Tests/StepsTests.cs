@@ -183,6 +183,32 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
         }
 
+        [TestMethod]
+        public void Copy2IndividualStepTest()
+        {
+            //Arrange
+            Conversion conversion = new Conversion();
+            string yaml = @"
+- task: CopyFiles@2
+  displayName: Copy production build to artifact stage
+  inputs:
+    SourceFolder: '$(Build.SourcesDirectory)'
+    Contents: dist/**
+    TargetFolder: '$(Build.ArtifactStagingDirectory)'
+";
+
+            //Act
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineTaskToGitHubActionTask(yaml);
+
+            //Assert
+            string expected = @"
+- name: Copy production build to artifact stage
+  run: Copy '${{ github.workspace }}/dist/**' '${{ github.workspace }}'
+  shell: powershell";
+            expected = UtilityTests.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+        }
+
 
         [TestMethod]
         public void UseDotNetIndividualStepTest()
@@ -422,6 +448,41 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
   with:
     inlineScript: ${{ github.workspace }}/drop/EnvironmentARMTemplate/PowerShell/Cleanup.ps1 -ResourceGroupName ""${{ env.ResourceGroupName }}""
     azPSVersion: latest
+";
+            expected = UtilityTests.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+        } 
+        
+        [TestMethod]
+        public void AzurePowershellWithOtherVersionIndividualStepTest()
+        {
+            //Arrange
+            Conversion conversion = new Conversion();
+            string yaml = @"
+- task: AzurePowerShell@4 
+  displayName: 'Run Azure PowerShell' 
+  inputs:
+    azureSubscription: 'Service Connection to Azure Portal'
+    ScriptPath: '$(build.artifactstagingdirectory)/drop/EnvironmentARMTemplate/PowerShell/Cleanup.ps1'
+    ScriptArguments: '-ResourceGroupName ""$(ResourceGroupName)""'
+    azurePowerShellVersion: OtherVersion
+    preferredAzurePowerShellVersion: 1.2.3
+    errorActionPreference: stop
+    FailOnStandardError: false
+";
+
+            //Act
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineTaskToGitHubActionTask(yaml);
+
+            //Assert
+            string expected = @"
+- name: Run Azure PowerShell
+  uses: azure/powershell@v1
+  with:
+    inlineScript: ${{ github.workspace }}/drop/EnvironmentARMTemplate/PowerShell/Cleanup.ps1 -ResourceGroupName ""${{ env.ResourceGroupName }}""
+    azPSVersion: 1.2.3
+    errorActionPreference: stop
+    failOnStandardError: false
 ";
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
