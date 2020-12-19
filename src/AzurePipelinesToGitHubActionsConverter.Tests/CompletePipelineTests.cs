@@ -1181,7 +1181,7 @@ stages:
             string expected = @"
 #Note: Error! This step does not have a conversion path yet: IISWebAppDeploymentOnMachineGroup@0
 #Note: Error! This step does not have a conversion path yet: IISWebAppManagementOnMachineGroup@0
-#Note: Azure DevOps strategy>runOnce>deploy does not have an equivalent in GitHub Actions yetNote: Azure DevOps job environment does not have an equivalent in GitHub Actions yet
+#Note: Azure DevOps strategy>runOnce>deploy does not have an equivalent in GitHub Actions yet
 #Note: This is a third party action: https://github.com/warrenbuckley/Setup-Nuget
 on:
   push:
