@@ -103,6 +103,13 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                                 string jobName = ConversionUtility.GenerateJobName(stage.jobs[i], jobIndex);
                                 //Rename the job, using the stage name as prefix, so that we keep the job names unique
                                 jobs[jobIndex].job = stage.stage + "_Stage_" + jobName;
+
+                                //TODO: Figure out how to do this. I think we need need to keep track of previous stages and the jobs they transform into
+                                ////Process the stage depends on
+                                //if (stage.dependsOn != null && jobs[jobIndex].dependsOn == null)
+                                //{
+                                //    jobs[jobIndex].dependsOn = stage.dependsOn;
+                                //}
                                 jobIndex++;
                             }
                         }
