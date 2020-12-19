@@ -1564,7 +1564,6 @@ stages:
 
             //Assert
             string expected = @"
-#Note: Error! This step does not have a conversion path yet: PowerShell@1
 name: PRBuild_${{ env.Year:yy }}${{ env.DayOfYear }}${{ env.Rev:.r }}
 on:
   push:
@@ -1575,9 +1574,7 @@ jobs:
     runs-on: PoolName
     steps:
     - uses: actions/checkout@v2
-    - # 'Note: Error! This step does not have a conversion path yet: PowerShell@1'
-      name: Script
-      run: 'Write-Host Note: Error! This step does not have a conversion path yet: PowerShell@1 #task: PowerShell@1#displayName: Script#inputs:#  scriptname: Script.ps1'
+    - name: Script
       shell: powershell
 ";
 
