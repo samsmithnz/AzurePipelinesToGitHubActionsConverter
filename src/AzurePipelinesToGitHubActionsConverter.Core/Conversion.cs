@@ -172,21 +172,16 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                 variableList.AddRange(vp.SearchForVariablesV2(gitHubActions));
 
                 //Create the GitHub YAML and apply some adjustments
-                if (gitHubActions != null)
-                {
-                    gitHubYaml = GitHubActionsSerialization.Serialize(gitHubActions, variableList, _matrixVariableName);
-                }
+                gitHubYaml = GitHubActionsSerialization.Serialize(gitHubActions, variableList, _matrixVariableName);
+
 
                 //Load failed task comments for processing
                 //Add any header messages
-                if (gitHubActions?.messages != null)
+                foreach (string message in gitHubActions.messages)
                 {
-                    foreach (string message in gitHubActions.messages)
-                    {
-                        stepComments.Add(ConversionUtility.ConvertMessageToYamlComment(message));
-                    }
+                    stepComments.Add(ConversionUtility.ConvertMessageToYamlComment(message));
                 }
-                if (gitHubActions?.jobs != null)
+                if (gitHubActions.jobs != null)
                 {
                     //Add each individual step comments
                     foreach (KeyValuePair<string, GitHubActions.Job> job in gitHubActions.jobs)

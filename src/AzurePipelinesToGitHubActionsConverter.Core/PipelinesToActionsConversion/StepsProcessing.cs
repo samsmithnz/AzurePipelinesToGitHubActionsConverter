@@ -1767,7 +1767,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                 }
             }
             string azPSVersion = "latest";
-            if (azurePowerShellVersion == "otherVersion")
+            if (azurePowerShellVersion.ToLower() == "otherversion")
             {
                 //There are a couple aliases for power shell version in this task
                 if (preferredAzurePowerShellVersion != null)

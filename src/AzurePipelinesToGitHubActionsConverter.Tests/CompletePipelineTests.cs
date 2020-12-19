@@ -465,6 +465,7 @@ resources:
 - repo: self
   containers:
   - container: test123
+  - endpoint: endpointA
 
 trigger:
 - master
