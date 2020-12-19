@@ -65,9 +65,9 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                     case "DOWNLOADBUILDARTIFACTS@0":
                         gitHubStep = CreateDownloadBuildArtifacts(step);
                         break;
-                    //case "DOWNLOADPIPELINEARTIFACTS@2":
-                    //    gitHubStep = CreateDownloadPipelineArtifacts(step);
-                    //    break;
+                    case "DOWNLOADPIPELINEARTIFACT@2":
+                        gitHubStep = CreateDownloadPipelineArtifacts(step);
+                        break;
                     case "GITHUBRELEASE@0":
                         gitHubStep = CreateGitHubReleaseStep(step);
                         break;
@@ -285,17 +285,6 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
 
         private GitHubActions.Step CreateDownloadBuildArtifacts(AzurePipelines.Step step)
         {
-            string artifactName = GetStepInput(step, "artifactname");
-
-            GitHubActions.Step gitHubStep = new GitHubActions.Step
-            {
-                uses = "actions/download-artifact@v1.0.0",
-                with = new Dictionary<string, string>
-                {
-                    { "name", artifactName }
-                }
-            };
-
             //From: 
             //- task: DownloadBuildArtifacts@0
             //  displayName: 'Download the build artifacts'
@@ -310,49 +299,75 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
             //  uses: actions/download-artifact@v1.0.0
             //  with:
             //    name: serviceapp
+
+            string downloadType = GetStepInput(step, "downloadType");
+            string artifactName = GetStepInput(step, "artifactname");
+            string downloadPath = GetStepInput(step, "downloadPath");
+
+            GitHubActions.Step gitHubStep = new GitHubActions.Step
+            {
+                uses = "actions/download-artifact@v2",
+                with = new Dictionary<string, string>()
+            };
+            if (downloadType.ToLower() == "single")
+            {
+                gitHubStep.with.Add("name", artifactName);
+            }
+            if (downloadPath != null)
+            {
+                gitHubStep.with.Add("path", downloadPath);
+            }
+
             return gitHubStep;
         }
 
-        //private GitHubActions.Step CreateDownloadPipelineArtifacts(AzurePipelines.Step step)
-        //{
-        //    string artifactName = GetStepInput(step, "artifact");
+        private GitHubActions.Step CreateDownloadPipelineArtifacts(AzurePipelines.Step step)
+        {
 
-        ////buildtype: current#  
-        ////artifactname: WebDeploy#  
-        ////targetpath: ${{ env.Pipeline.Workspace }}
+            //From: 
+            //- task: DownloadPipelineArtifact@2
+            //  inputs:
+            //    #source: 'current' # Options: current, specific
+            //    #project: # Required when source == Specific
+            //    #pipeline: # Required when source == Specific
+            //    #preferTriggeringPipeline: false # Optional
+            //    #runVersion: 'latest' # Required when source == Specific# Options: latest, latestFromBranch, specific
+            //    #runBranch: 'refs/heads/master' # Required when source == Specific && RunVersion == LatestFromBranch
+            //    #runId: # Required when source == Specific && RunVersion == Specific
+            //    #tags: # Optional
+            //    #artifact: # Optional
+            //    #patterns: '**' # Optional
+            //    #path: '$(Pipeline.Workspace)' 
+
+            //To:
+            //- name: Download serviceapp artifact
+            //  uses: actions/download-artifact@v1.0.0
+            //  with:
+            //    name: serviceapp
 
 
-        //    GitHubActions.Step gitHubStep = new GitHubActions.Step
-        //    {
-        //        uses = "actions/download-artifact@v1.0.0",
-        //        with = new Dictionary<string, string>
-        //        {
-        //            { "name", artifactName }
-        //        }
-        //    };
+            string artifactName = GetStepInput(step, "artifact");
+            string path = GetStepInput(step, "path");
 
-        //    //From: 
-        //    //- task: DownloadPipelineArtifact@2
-        //    //  inputs:
-        //    //    #source: 'current' # Options: current, specific
-        //    //    #project: # Required when source == Specific
-        //    //    #pipeline: # Required when source == Specific
-        //    //    #preferTriggeringPipeline: false # Optional
-        //    //    #runVersion: 'latest' # Required when source == Specific# Options: latest, latestFromBranch, specific
-        //    //    #runBranch: 'refs/heads/master' # Required when source == Specific && RunVersion == LatestFromBranch
-        //    //    #runId: # Required when source == Specific && RunVersion == Specific
-        //    //    #tags: # Optional
-        //    //    #artifact: # Optional
-        //    //    #patterns: '**' # Optional
-        //    //    #path: '$(Pipeline.Workspace)' 
+            //buildtype: current#  
+            //artifactname: WebDeploy#  
+            //targetpath: ${{ env.Pipeline.Workspace }}
 
-        //    //To:
-        //    //- name: Download serviceapp artifact
-        //    //  uses: actions/download-artifact@v1.0.0
-        //    //  with:
-        //    //    name: serviceapp
-        //    return gitHubStep;
-        //}
+            GitHubActions.Step gitHubStep = new GitHubActions.Step
+            {
+                uses = "actions/download-artifact@v2",
+                with = new Dictionary<string, string>()
+            };
+            if (artifactName != null)
+            {
+                gitHubStep.with.Add("name", artifactName);
+            }
+            if (path != null)
+            {
+                gitHubStep.with.Add("path", path);
+            }
+            return gitHubStep;
+        }
 
         //https://github.com/actions/cache
         private GitHubActions.Step CreateCacheStep(AzurePipelines.Step step)
@@ -1136,8 +1151,8 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
             //    draft: false
             //    prerelease: false
 
-            string tag = GetStepInput(step, "tag");            
-            string title = GetStepInput(step, "title");    
+            string tag = GetStepInput(step, "tag");
+            string title = GetStepInput(step, "title");
             string releaseNotes = GetStepInput(step, "releaseNotes");
             string isDraft = GetStepInput(step, "isDraft");
             string isPreRelease = GetStepInput(step, "isPreRelease");

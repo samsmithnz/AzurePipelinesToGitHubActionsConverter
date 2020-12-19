@@ -547,6 +547,62 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
         }
 
         [TestMethod]
+        public void DownloadBuildArtifactsIndividualStepTest()
+        {
+            //Arrange
+            Conversion conversion = new Conversion();
+            string yaml = @"
+          - task: DownloadBuildArtifacts@0
+            displayName: 'Download Build Artifact'
+            inputs:
+              buildType: 'current'
+              downloadType: 'single'
+              artifactName: $(buildArtifactName)
+              downloadPath: '$(Build.SourcesDirectory)'
+";
+
+            //Act
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineTaskToGitHubActionTask(yaml);
+
+            //Assert
+            string expected = @"
+- name: Download Build Artifact
+  uses: actions/download-artifact@v2
+  with:
+    name: ${{ env.buildArtifactName }}
+    path: ${{ github.workspace }}
+";
+            expected = UtilityTests.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+        }
+
+        [TestMethod]
+        public void DownloadPipelineArtifactsIndividualStepTest()
+        {
+            //Arrange
+            Conversion conversion = new Conversion();
+            string yaml = @"
+- task: DownloadPipelineArtifact@2
+  inputs:
+    artifact: 'WebApp'
+    path: $(Build.SourcesDirectory)/bin
+";
+
+            //Act
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineTaskToGitHubActionTask(yaml);
+
+            //Assert
+            string expected = @"
+- uses: actions/download-artifact@v2
+  with:
+    name: WebApp
+    path: ${{ github.workspace }}/bin
+";
+            expected = UtilityTests.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+        }
+
+        [TestMethod]
         public void DeployAzureWebAppContainerIndividualStepTest()
         {
             //Arrange

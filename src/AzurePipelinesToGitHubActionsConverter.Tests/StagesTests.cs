@@ -138,9 +138,10 @@ jobs:
       with:
         creds: ${{ secrets.AZURE_SP }}
     - name: Download the build artifacts
-      uses: actions/download-artifact@v1.0.0
+      uses: actions/download-artifact@v2
       with:
         name: drop
+        path: ${{ github.workspace }}
     - name: 'Azure App Service Deploy: web service'
       uses: Azure/webapps-deploy@v2
       with:
