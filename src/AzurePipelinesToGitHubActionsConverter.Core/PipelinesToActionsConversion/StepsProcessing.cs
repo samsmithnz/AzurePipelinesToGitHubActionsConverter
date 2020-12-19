@@ -95,6 +95,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                     case "NUGETTOOLINSTALLER@1":
                         gitHubStep = CreateNuGetToolInstallerStep();
                         break;
+                    case "POWERSHELL@1":
                     case "POWERSHELL@2":
                         gitHubStep = CreateScriptStep("powershell", step);
                         break;
