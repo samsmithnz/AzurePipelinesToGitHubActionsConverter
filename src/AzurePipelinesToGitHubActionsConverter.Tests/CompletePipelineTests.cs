@@ -1181,7 +1181,6 @@ stages:
             string expected = @"
 #Note: Error! This step does not have a conversion path yet: IISWebAppDeploymentOnMachineGroup@0
 #Note: Error! This step does not have a conversion path yet: IISWebAppManagementOnMachineGroup@0
-#Note: Error! This step does not have a conversion path yet: DownloadPipelineArtifact@2
 #Note: Azure DevOps strategy>runOnce>deploy does not have an equivalent in GitHub Actions yetNote: Azure DevOps job environment does not have an equivalent in GitHub Actions yet
 #Note: This is a third party action: https://github.com/warrenbuckley/Setup-Nuget
 on:
@@ -1211,9 +1210,7 @@ jobs:
     env:
       Art: Server=.;Database=Art;Trusted_Connection=True;
     steps:
-    - # 'Note: Error! This step does not have a conversion path yet: DownloadPipelineArtifact@2'
-      run: 'Write-Host Note: Error! This step does not have a conversion path yet: DownloadPipelineArtifact@2 #task: DownloadPipelineArtifact@2#inputs:#  buildtype: current#  artifactname: WebDeploy#  targetpath: ${{ env.Pipeline.Workspace }}'
-      shell: powershell
+    - uses: actions/download-artifact@v2
     - run: |
         echo Write your commands here
 
