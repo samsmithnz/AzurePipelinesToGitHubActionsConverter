@@ -21,7 +21,6 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             string expected = "name: test ci pipelines";
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
             Assert.AreEqual(input, gitHubOutput.pipelinesYaml);
-            
         }
 
         [TestMethod]
@@ -37,7 +36,6 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             //Assert
             string expected = "";
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
-            
         }
 
         [TestMethod]
@@ -53,8 +51,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             //Assert
             string expected = "";
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
-            
-        }     
+        }
 
     }
 }

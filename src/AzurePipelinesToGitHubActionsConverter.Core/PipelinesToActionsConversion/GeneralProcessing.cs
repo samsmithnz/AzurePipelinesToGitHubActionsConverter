@@ -3,6 +3,7 @@ using AzurePipelinesToGitHubActionsConverter.Core.Serialization;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 
 namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversion
@@ -358,6 +359,17 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                 {
                     container.options = resources.containers[0].options;
                 }
+
+                //Couple properties not used yet
+                if (resources.containers[0].container != null)
+                {
+                    Debug.WriteLine("container property not used: " + resources.containers[0].container);
+                }
+                if (resources.containers[0].endpoint != null)
+                {
+                    Debug.WriteLine("endpoint property not used: " + resources.containers[0].endpoint);
+                }
+
                 return container;
             }
             else

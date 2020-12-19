@@ -75,7 +75,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
             return processedYaml;
 
         }
-      
+
         // Some elements have a simple, same line string, we need to make into a list
         // for example "trigger:none", becomes "trigger:\n\r- none"
         // This is a lot simplier in JSON, as it's already only returning the none string.
@@ -105,7 +105,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
         public static string StepsPreProcessing(string input)
         {
             //If the step isn't wrapped in a "steps:" node, we need to add this, so we can process the step
-            if (input.Trim().StartsWith("steps:") == false)
+            if (input.Trim().StartsWith("steps:") == false && input.Trim().Length > 0)
             {
                 //we need to add steps, before we do, we need to see if the task needs an indent
                 string[] stepLines = input.Split(System.Environment.NewLine);
