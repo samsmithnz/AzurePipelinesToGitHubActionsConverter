@@ -17,7 +17,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
         //Process a complex trigger, using the Trigger object
         private GitHubActions.Trigger ProcessComplexTrigger(AzurePipelines.Trigger trigger)
         {
-            //Note: as of 18-Oct-2020, you receive an error if you try to post both a "branches" and a "ignore-branches", or a "paths and a ignore-paths". You can only have one or the other.
+            //Note: as of ~18-Oct-2020, GitHub Actions was updated, and you now you receive an error if you try to use both a "branches" and a "ignore-branches", or a "paths and a ignore-paths". You can only have one or the other.
             TriggerDetail push = new TriggerDetail();
             if (trigger != null)
             {
@@ -57,6 +57,14 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                         push.tags_ignore = trigger.tags.exclude;
                     }
                 }
+            }
+            if (trigger.batch != null)
+            {
+                ConversionUtility.WriteLine($"This trigger contains a batch property, that Actions does not currently have a conversion path for", _verbose);
+            }
+            if (trigger.autoCancel != null)
+            {
+                ConversionUtility.WriteLine($"This trigger contains a autoCancel property, that Actions does not currently have a conversion path for", _verbose);
             }
 
             return new GitHubActions.Trigger
@@ -179,7 +187,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
             //Build the return results
             return new GitHubActions.Trigger
             {
-                pull_request = pr?.pull_request
+                pull_request = pr.pull_request
             };
 
         }

@@ -736,7 +736,7 @@ steps:
 
             //Assert
             string expected = @"
-#Note: This is a third party action: https://github.com/marketplace/actions/create-zip-file
+#Note: This is a third party action and currently only supports Linux: https://github.com/marketplace/actions/create-zip-file
 on:
   push:
     branches:
@@ -746,7 +746,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
-    - # 'Note: This is a third party action: https://github.com/marketplace/actions/create-zip-file'
+    - # 'Note: This is a third party action and currently only supports Linux: https://github.com/marketplace/actions/create-zip-file'
       uses: montudor/action-zip@v0.1.0
       with:
         args: zip -qq -r  ${{ github.workspace }}
@@ -1323,7 +1323,7 @@ jobs:
 
         }
 
-        //This test doesn't work with V1
+        
         [TestMethod]
         public void SSDeploymentPipelineTest()
         {
@@ -1564,7 +1564,6 @@ stages:
 
             //Assert
             string expected = @"
-#Note: Error! This step does not have a conversion path yet: PowerShell@1
 name: PRBuild_${{ env.Year:yy }}${{ env.DayOfYear }}${{ env.Rev:.r }}
 on:
   push:
@@ -1575,9 +1574,7 @@ jobs:
     runs-on: PoolName
     steps:
     - uses: actions/checkout@v2
-    - # 'Note: Error! This step does not have a conversion path yet: PowerShell@1'
-      name: Script
-      run: 'Write-Host Note: Error! This step does not have a conversion path yet: PowerShell@1 #task: PowerShell@1#displayName: Script#inputs:#  scriptname: Script.ps1'
+    - name: Script
       shell: powershell
 ";
 
@@ -1965,6 +1962,8 @@ jobs:
       shell: powershell
     - name: Build & Package Module
       shell: powershell
+      env:
+        ModuleVersion: ${{ env.gitVersion.NuGetVersionV2 }}
     - name: Publish Build Artifact
       uses: actions/upload-artifact@v2
       with:
@@ -2162,8 +2161,13 @@ jobs:
         path: ${{ github.workspace }}
     - name: Publish Release
       shell: powershell
+      env:
+        GitHubToken: ${{ env.GitHubToken }}
+        GalleryApiToken: ${{ env.GalleryApiToken }}
     - name: Send Changelog PR
       shell: powershell
+      env:
+        GitHubToken: ${{ env.GitHubToken }}
 ";
 
             expected = UtilityTests.TrimNewLines(expected);

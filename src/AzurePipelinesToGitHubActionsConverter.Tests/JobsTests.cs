@@ -87,7 +87,7 @@ jobs:
         }
 
 
-        //This test doesn't work with V1
+        
         [TestMethod]
         public void ComplexVariablesWithComplexDependsOnJobTest()
         {
@@ -142,7 +142,7 @@ jobs:
             
         }
 
-        //This test doesn't work with V1
+        
         [TestMethod]
         public void ComplexVariablesWithSimpleDependsOnJobTest()
         {
