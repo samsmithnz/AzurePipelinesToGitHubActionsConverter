@@ -75,37 +75,30 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                     }
                     catch (Exception ex2)
                     {
-                        ConversionUtility.WriteLine($"Exception! " + ex2.Message, _verbose);
+                        ConversionUtility.WriteLine($"Deserializing (simple) environment failed. Let's try a complex deserialization with JSON. Error: " + ex2.Message, _verbose);
                         JObject json = JsonSerialization.DeserializeStringToObject(environmentYaml);
+                        if (json["name"] != null)
+                        {
+                            environment = new AzurePipelines.Environment();
+                            environment.name = json["name"].ToString();
+                        }
+                        if (json["resourceName"] != null)
+                        {
+                            environment.resourceName = json["resourceName"].ToString();
+                            ConversionUtility.WriteLine($"No conversion for resourceName at this time: " + environment.resourceName, _verbose);
+                        }
+                        if (json["resourceId"] != null)
+                        {
+                            environment.resourceId = json["resourceId"].ToString();
+                            ConversionUtility.WriteLine($"No conversion for resourceId at this time: " + environment.resourceId, _verbose);
+                        }
+                        if (json["resourceType"] != null)
+                        {
+                            environment.resourceType = json["resourceType"].ToString();
+                            ConversionUtility.WriteLine($"No conversion for resourceType at this time: " + environment.resourceType, _verbose);
+                        }
                         if (json["tags"].Type.ToString() == "String")
                         {
-                            string name = null;
-                            if (json["name"] != null)
-                            {
-                                name = json["name"].ToString();
-                            }
-                            string resourceName = null;
-                            if (json["resourceName"] != null)
-                            {
-                                resourceName = json["resourceName"].ToString();
-                            }
-                            string resourceId = null;
-                            if (json["resourceId"] != null)
-                            {
-                                resourceId = json["resourceId"].ToString();
-                            }
-                            string resourceType = null;
-                            if (json["resourceType"] != null)
-                            {
-                                resourceType = json["resourceType"].ToString();
-                            }
-                            environment = new AzurePipelines.Environment
-                            {
-                                name = name,
-                                resourceName = resourceName,
-                                resourceId = resourceId,
-                                resourceType = resourceType
-                            };
                             //Move the single string demands to an array
                             environment.tags = new string[1];
                             environment.tags[0] = json["tags"].ToString();
@@ -155,7 +148,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
             }
             return null;
         }
-   
+
 
         //process the build pool/agent
         public string ProcessPool(Pool pool)
@@ -377,7 +370,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                 return null;
             }
         }
-    
+
 
     }
 }
