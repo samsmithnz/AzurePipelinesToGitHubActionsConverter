@@ -1,7 +1,6 @@
 <Project>
 
   <PropertyGroup>
-    <RootNamespace>CasCap</RootNamespace>
     <LangVersion>9.0</LangVersion>
     <!--nullable we enable on a per project basis-->
     <!--<Nullable>enable</Nullable>-->
@@ -10,13 +9,5 @@
   <PropertyGroup>
     <Author>samsmithnz</Author>
   </PropertyGroup>
-
-  <PropertyGroup Condition="'$(GITHUB_ACTIONS)' == 'true'">
-    <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
-  </PropertyGroup>
-
-  <ItemGroup>
-    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All"/>
-  </ItemGroup>
 
  </Project>
