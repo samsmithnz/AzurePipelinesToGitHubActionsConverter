@@ -38,8 +38,8 @@ jobs:
     - uses: actions/setup-dotnet@v1
       with:
         dotnet-version: '3.1.x'
-    - uses: actions/setup-dotnet@v1	
-      with:	
+    - uses: actions/setup-dotnet@v1
+      with:
         dotnet-version: '5.0.x'
     - name: Build with dotnet
       run: dotnet build src/AzurePipelinesToGitHubActionsConverter.Tests/AzurePipelinesToGitHubActionsConverter.Tests.csproj --configuration Release /p:AssemblyVersion=${{ steps.gitversion.outputs.majorMinorPatch }} /p:Version=${{ steps.gitversion.outputs.majorMinorPatch }}
