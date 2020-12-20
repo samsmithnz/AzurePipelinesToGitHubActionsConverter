@@ -237,8 +237,31 @@ env:
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
             
-        } 
-        
+        }
+
+        [TestMethod]
+        public void ComplexVariablesWithTwoVariableGroupsTest()
+        {
+            //Arrange
+            string input = @"
+variables:
+- group: myVariablegroup1
+- group: myVariablegroup2
+";
+            Conversion conversion = new Conversion();
+
+            //Act
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(input);
+
+            //Assert
+            string expected = @"
+env:
+  group: myVariablegroup1";
+            expected = UtilityTests.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+
+        }
+
         [TestMethod]
         public void VariableInsertationTest()
         {
@@ -325,7 +348,7 @@ env:
             
         }
 
-        //This test doesn't work with V1
+        
         [TestMethod]
         public void ParametersReservedWordTest()
         {
@@ -365,7 +388,7 @@ env:
             
         }
 
-        //This test doesn't work with V1
+        
         [TestMethod]
         public void ParametersAndVariablesComplexTest()
         {
@@ -414,6 +437,39 @@ env:
   environment2: dev2
   strategy2: dev2
   pool2: ''
+";
+            expected = UtilityTests.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+            
+        }
+
+        
+        [TestMethod]
+        public void VariablesWithTemplateTest()
+        {
+            //Arrange
+            string input = @"
+variables:
+- template: vars.yml  # Template reference
+
+steps:
+- script: echo My favorite vegetable is ${{ variables.favoriteVeggie }}.
+";
+
+            Conversion conversion = new Conversion();
+
+            //Act
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(input);
+
+            //Assert
+            string expected = @"
+env:
+  template: vars.yml
+jobs:
+  build:
+    steps:
+    - uses: actions/checkout@v2
+    - run: echo My favorite vegetable is ${{ env. variables.favoriteVeggie  }}.
 ";
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);

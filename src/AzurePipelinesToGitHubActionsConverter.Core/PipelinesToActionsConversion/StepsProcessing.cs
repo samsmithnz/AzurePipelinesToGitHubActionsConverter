@@ -45,6 +45,9 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                     case "AZUREWEBAPP@1":
                         gitHubStep = CreateAzureWebAppDeploymentStep(step);
                         break;
+                    case "BASH@3":
+                        gitHubStep = CreateBashStep(step);
+                        break;
                     case "CMDLINE@2":
                         gitHubStep = CreateScriptStep("cmd", step);
                         break;
@@ -63,11 +66,17 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                         gitHubStep = CreateDotNetCommandStep(step);
                         break;
                     case "DOWNLOADBUILDARTIFACTS@0":
-                        gitHubStep = CreateDownloadBuildArtifacts(step);
+                        gitHubStep = CreateDownloadBuildArtifactsStep(step);
                         break;
-                    //case "DOWNLOADPIPELINEARTIFACTS@2":
-                    //    gitHubStep = CreateDownloadPipelineArtifacts(step);
-                    //    break;
+                    case "DOWNLOADPIPELINEARTIFACT@2":
+                        gitHubStep = CreateDownloadPipelineArtifactsStep(step);
+                        break;
+                    case "EXTRACTFILES@1":
+                        gitHubStep = CreateExtractFilesStep(step);
+                        break;
+                    case "GITHUBRELEASE@0":
+                        gitHubStep = CreateGitHubReleaseStep(step);
+                        break;
                     case "GRADLE@2":
                         gitHubStep = CreateGradleStep(step);
                         break;
@@ -92,6 +101,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                     case "NUGETTOOLINSTALLER@1":
                         gitHubStep = CreateNuGetToolInstallerStep();
                         break;
+                    case "POWERSHELL@1":
                     case "POWERSHELL@2":
                         gitHubStep = CreateScriptStep("powershell", step);
                         break;
@@ -220,6 +230,10 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                 {
                     gitHubStep.timeout_minutes = step.timeoutInMinutes;
                 }
+                if (step.env != null)
+                {
+                    gitHubStep.env = step.env;
+                }
             }
             return gitHubStep;
         }
@@ -280,19 +294,8 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
             }
         }
 
-        private GitHubActions.Step CreateDownloadBuildArtifacts(AzurePipelines.Step step)
+        private GitHubActions.Step CreateDownloadBuildArtifactsStep(AzurePipelines.Step step)
         {
-            string artifactName = GetStepInput(step, "artifactname");
-
-            GitHubActions.Step gitHubStep = new GitHubActions.Step
-            {
-                uses = "actions/download-artifact@v1.0.0",
-                with = new Dictionary<string, string>
-                {
-                    { "name", artifactName }
-                }
-            };
-
             //From: 
             //- task: DownloadBuildArtifacts@0
             //  displayName: 'Download the build artifacts'
@@ -307,54 +310,103 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
             //  uses: actions/download-artifact@v1.0.0
             //  with:
             //    name: serviceapp
+
+            string downloadType = GetStepInput(step, "downloadType");
+            string artifactName = GetStepInput(step, "artifactname");
+            string downloadPath = GetStepInput(step, "downloadPath");
+
+            GitHubActions.Step gitHubStep = new GitHubActions.Step
+            {
+                uses = "actions/download-artifact@v2",
+                with = new Dictionary<string, string>()
+            };
+            if (downloadType.ToLower() == "single")
+            {
+                gitHubStep.with.Add("name", artifactName);
+            }
+            if (downloadPath != null)
+            {
+                gitHubStep.with.Add("path", downloadPath);
+            }
+
             return gitHubStep;
         }
 
-        //private GitHubActions.Step CreateDownloadPipelineArtifacts(AzurePipelines.Step step)
-        //{
-        //    string artifactName = GetStepInput(step, "artifact");
+        private GitHubActions.Step CreateDownloadPipelineArtifactsStep(AzurePipelines.Step step)
+        {
 
-        ////buildtype: current#  
-        ////artifactname: WebDeploy#  
-        ////targetpath: ${{ env.Pipeline.Workspace }}
+            //From: 
+            //- task: DownloadPipelineArtifact@2
+            //  inputs:
+            //    #source: 'current' # Options: current, specific
+            //    #project: # Required when source == Specific
+            //    #pipeline: # Required when source == Specific
+            //    #preferTriggeringPipeline: false # Optional
+            //    #runVersion: 'latest' # Required when source == Specific# Options: latest, latestFromBranch, specific
+            //    #runBranch: 'refs/heads/master' # Required when source == Specific && RunVersion == LatestFromBranch
+            //    #runId: # Required when source == Specific && RunVersion == Specific
+            //    #tags: # Optional
+            //    #artifact: # Optional
+            //    #patterns: '**' # Optional
+            //    #path: '$(Pipeline.Workspace)' 
+
+            //To:
+            //- name: Download serviceapp artifact
+            //  uses: actions/download-artifact@v1.0.0
+            //  with:
+            //    name: serviceapp
 
 
-        //    GitHubActions.Step gitHubStep = new GitHubActions.Step
-        //    {
-        //        uses = "actions/download-artifact@v1.0.0",
-        //        with = new Dictionary<string, string>
-        //        {
-        //            { "name", artifactName }
-        //        }
-        //    };
+            string artifactName = GetStepInput(step, "artifact");
+            string path = GetStepInput(step, "path");
 
-        //    //From: 
-        //    //- task: DownloadPipelineArtifact@2
-        //    //  inputs:
-        //    //    #source: 'current' # Options: current, specific
-        //    //    #project: # Required when source == Specific
-        //    //    #pipeline: # Required when source == Specific
-        //    //    #preferTriggeringPipeline: false # Optional
-        //    //    #runVersion: 'latest' # Required when source == Specific# Options: latest, latestFromBranch, specific
-        //    //    #runBranch: 'refs/heads/master' # Required when source == Specific && RunVersion == LatestFromBranch
-        //    //    #runId: # Required when source == Specific && RunVersion == Specific
-        //    //    #tags: # Optional
-        //    //    #artifact: # Optional
-        //    //    #patterns: '**' # Optional
-        //    //    #path: '$(Pipeline.Workspace)' 
+            //buildtype: current#  
+            //artifactname: WebDeploy#  
+            //targetpath: ${{ env.Pipeline.Workspace }}
 
-        //    //To:
-        //    //- name: Download serviceapp artifact
-        //    //  uses: actions/download-artifact@v1.0.0
-        //    //  with:
-        //    //    name: serviceapp
-        //    return gitHubStep;
-        //}
+            GitHubActions.Step gitHubStep = new GitHubActions.Step
+            {
+                uses = "actions/download-artifact@v2",
+                with = new Dictionary<string, string>()
+            };
+            if (artifactName != null)
+            {
+                gitHubStep.with.Add("name", artifactName);
+            }
+            if (path != null)
+            {
+                gitHubStep.with.Add("path", path);
+            }
+            return gitHubStep;
+        }
 
-        //https://github.com/actions/cache
-        private GitHubActions.Step CreateCacheStep(AzurePipelines.Step step)
+        private GitHubActions.Step CreateBashStep(AzurePipelines.Step step)
         {
             //From:
+            //- task: Bash@3
+            //  inputs:
+            //    #targetType: 'filePath' # Optional. Options: filePath, inline
+            //    #filePath: # Required when targetType == FilePath
+            //    #arguments: # Optional
+            //    #script: '# echo Hello world' # Required when targetType == inline
+            //    #workingDirectory: # Optional
+            //    #failOnStderr: false # Optional
+            //    #noProfile: true # Optional
+            //    #noRc: true # Optional
+
+            //To:
+            //- name: test bash
+            //  run: echo 'some text'
+            //  shell: bash
+
+            GitHubActions.Step gitHubStep = CreateScriptStep("bash", step);
+
+            return gitHubStep;
+        }
+
+        private GitHubActions.Step CreateCacheStep(AzurePipelines.Step step)
+        {
+            //From: https://github.com/actions/cache
             //- task: Cache@2
             //  displayName: Cache multiple paths
             //  inputs:
@@ -915,7 +967,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
             string configuration = GetStepInput(step, "configuration");
             string msbuildArgs = GetStepInput(step, "msbuildArgs");
             string msbuildArguments = GetStepInput(step, "msbuildArguments");
-            string msbuildArchitecture = GetStepInput(step, "msbuildArchitecture");
+            //string msbuildArchitecture = GetStepInput(step, "msbuildArchitecture");
             string run = "msbuild '" + solution + "'";
             if (configuration != null)
             {
@@ -925,7 +977,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
             {
                 run += " /p:platform='" + platform + "'";
             }
-            else if (msbuildArguments!= null)
+            else if (msbuildArguments != null)
             {
                 run += " /p:platform='" + msbuildArguments + "'";
             }
@@ -1087,6 +1139,126 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                 script = "chmod +x gradlew"
             };
             GitHubActions.Step gitHubStep = CreateScriptStep("", step);
+
+            return gitHubStep;
+        }
+
+        public GitHubActions.Step CreateExtractFilesStep(AzurePipelines.Step step)
+        {
+            //From: https://docs.microsoft.com/en-us/azure/devops/pipelines/tasks/utility/extract-files            //# GitHub Release
+            //# Extract files
+            //# Extract a variety of archive and compression files such as .7z, .rar, .tar.gz, and .zip
+            //- task: ExtractFiles@1
+            //  inputs:
+            //    #archiveFilePatterns: '**/*.zip' 
+            //    destinationFolder: 
+            //    #cleanDestinationFolder: true 
+            //    #overwriteExistingFiles: false
+
+            //To: 
+            //- uses: montudor/action-zip@v0.1.1
+            //  with:
+            //    args: unzip -qq dir.zip -d dir
+
+            string archiveFilePatterns = GetStepInput(step, "archiveFilePatterns");
+            string destinationFolder = GetStepInput(step, "destinationFolder");
+            //string cleanDestinationFolder = GetStepInput(step, "cleanDestinationFolder");
+            //string overwriteExistingFiles = GetStepInput(step, "overwriteExistingFiles");
+
+            string unzipCommand = "unzip -qq " + archiveFilePatterns + " -d " + destinationFolder;
+
+            GitHubActions.Step gitHubStep = new GitHubActions.Step
+            {
+                uses = "montudor/action-zip@v0.1.0",
+                with = new Dictionary<string, string>
+                {
+                    { "args", unzipCommand}
+                },
+                //TODO: Should there be a branch that creates a different path if it's a Windows runner?
+                step_message = "Note: This is a third party action and currently only supports Linux: https://github.com/marketplace/actions/create-zip-file"
+            };
+
+            return gitHubStep;
+        }
+
+        public GitHubActions.Step CreateGitHubReleaseStep(AzurePipelines.Step step)
+        {
+            //From: https://docs.microsoft.com/en-us/azure/devops/pipelines/tasks/utility/github-release?view=azure-devops#examples
+            //# GitHub Release
+            //# Create, edit, or delete a GitHub release
+            //- task: GitHubRelease@0
+            //  inputs:
+            //    gitHubConnection: 
+            //    #repositoryName: '$(Build.Repository.Name)' 
+            //    #action: 'create' # Options: create, edit, delete
+            //    #target: '$(Build.SourceVersion)' # Required when action == Create || Action == Edit
+            //    #tagSource: 'auto' # Required when action == Create# Options: auto, manual
+            //    #tagPattern: # Optional
+            //    #tag: # Required when action == Edit || Action == Delete || TagSource == Manual
+            //    #title: # Optional
+            //    #releaseNotesSource: 'file' # Optional. Options: file, input
+            //    #releaseNotesFile: # Optional
+            //    #releaseNotes: # Optional
+            //    #assets: '$(Build.ArtifactStagingDirectory)/*' # Optional
+            //    #assetUploadMode: 'delete' # Optional. Options: delete, replace
+            //    #isDraft: false # Optional
+            //    #isPreRelease: false # Optional
+            //    #addChangeLog: true # Optional
+            //    #compareWith: 'lastFullRelease' # Required when addChangeLog == True. Options: lastFullRelease, lastRelease, lastReleaseByTag
+            //    #releaseTag: # Required when compareWith == LastReleaseByTag
+
+            //To: https://github.com/actions/create-release
+            //- name: Create Release
+            //  id: create_release
+            //  uses: actions/create-release@v1
+            //  env:
+            //    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
+            //  with:
+            //    tag_name: ${{ github.ref }}
+            //    release_name: Release ${{ github.ref }}
+            //    body: |
+            //      Changes in this Release
+            //      - First Change
+            //      - Second Change
+            //    draft: false
+            //    prerelease: false
+
+            string tag = GetStepInput(step, "tag");
+            string title = GetStepInput(step, "title");
+            string releaseNotes = GetStepInput(step, "releaseNotes");
+            string isDraft = GetStepInput(step, "isDraft");
+            string isPreRelease = GetStepInput(step, "isPreRelease");
+
+            GitHubActions.Step gitHubStep = new GitHubActions.Step
+            {
+                name = step.name,
+                uses = "actions/create-release@v1",
+                env = new Dictionary<string, string>
+                {
+                    {"GITHUB_TOKEN", "${{ secrets.GITHUB_TOKEN }}"}
+                },
+                with = new Dictionary<string, string>
+                {
+                    { "tag_name", tag}
+                }
+            };
+
+            if (title != null)
+            {
+                gitHubStep.with.Add("release_name", title);
+            }
+            if (releaseNotes != null)
+            {
+                gitHubStep.with.Add("body", releaseNotes);
+            }
+            if (isDraft != null)
+            {
+                gitHubStep.with.Add("draft", isDraft);
+            }
+            if (isPreRelease != null)
+            {
+                gitHubStep.with.Add("prerelease", isPreRelease);
+            }
 
             return gitHubStep;
         }
@@ -1520,7 +1692,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                 {
                     { "args", zipCommand}
                 },
-                step_message = "Note: This is a third party action: https://github.com/marketplace/actions/create-zip-file"
+                step_message = "Note: This is a third party action and currently only supports Linux: https://github.com/marketplace/actions/create-zip-file"
             };
 
             return gitHubStep;
@@ -1667,7 +1839,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                 }
             }
             string azPSVersion = "latest";
-            if (azurePowerShellVersion == "otherVersion")
+            if (azurePowerShellVersion.ToLower() == "otherversion")
             {
                 //There are a couple aliases for power shell version in this task
                 if (preferredAzurePowerShellVersion != null)

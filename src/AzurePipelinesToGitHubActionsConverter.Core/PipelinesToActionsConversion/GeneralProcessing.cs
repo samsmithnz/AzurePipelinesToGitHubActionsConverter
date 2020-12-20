@@ -3,6 +3,7 @@ using AzurePipelinesToGitHubActionsConverter.Core.Serialization;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 
 namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversion
@@ -74,37 +75,30 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                     }
                     catch (Exception ex2)
                     {
-                        ConversionUtility.WriteLine($"Exception! " + ex2.Message, _verbose);
+                        ConversionUtility.WriteLine($"Deserializing (simple) environment failed. Let's try a complex deserialization with JSON. Error: " + ex2.Message, _verbose);
                         JObject json = JsonSerialization.DeserializeStringToObject(environmentYaml);
+                        if (json["name"] != null)
+                        {
+                            environment = new AzurePipelines.Environment();
+                            environment.name = json["name"].ToString();
+                        }
+                        if (json["resourceName"] != null)
+                        {
+                            environment.resourceName = json["resourceName"].ToString();
+                            ConversionUtility.WriteLine($"No conversion for resourceName at this time: " + environment.resourceName, _verbose);
+                        }
+                        if (json["resourceId"] != null)
+                        {
+                            environment.resourceId = json["resourceId"].ToString();
+                            ConversionUtility.WriteLine($"No conversion for resourceId at this time: " + environment.resourceId, _verbose);
+                        }
+                        if (json["resourceType"] != null)
+                        {
+                            environment.resourceType = json["resourceType"].ToString();
+                            ConversionUtility.WriteLine($"No conversion for resourceType at this time: " + environment.resourceType, _verbose);
+                        }
                         if (json["tags"].Type.ToString() == "String")
                         {
-                            string name = null;
-                            if (json["name"] != null)
-                            {
-                                name = json["name"].ToString();
-                            }
-                            string resourceName = null;
-                            if (json["resourceName"] != null)
-                            {
-                                name = json["resourceName"].ToString();
-                            }
-                            string resourceId = null;
-                            if (json["resourceId"] != null)
-                            {
-                                name = json["resourceId"].ToString();
-                            }
-                            string resourceType = null;
-                            if (json["resourceType"] != null)
-                            {
-                                name = json["resourceType"].ToString();
-                            }
-                            environment = new AzurePipelines.Environment
-                            {
-                                name = name,
-                                resourceName = resourceName,
-                                resourceId = resourceId,
-                                resourceType = resourceType
-                            };
                             //Move the single string demands to an array
                             environment.tags = new string[1];
                             environment.tags[0] = json["tags"].ToString();
@@ -141,20 +135,23 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
         {
             if (strategyYaml != null)
             {
-                try
-                {
-                    //Most often, the pool will be in this structure
-                    AzurePipelines.Strategy strategy = YamlSerialization.DeserializeYaml<AzurePipelines.Strategy>(strategyYaml);
-                    return strategy;
-                }
-                catch (Exception ex)
-                {
-                    ConversionUtility.WriteLine($"DeserializeYaml<AzurePipelines.Strategy>(strategyYaml) swallowed an exception: " + ex.Message, _verbose);
-                }
+                //try
+                //{
+                //Most often, the pool will be in this structure
+                AzurePipelines.Strategy strategy = YamlSerialization.DeserializeYaml<AzurePipelines.Strategy>(strategyYaml);
+                return strategy;
+                //}
+                //catch (Exception ex)
+                //{
+                //    ConversionUtility.WriteLine($"DeserializeYaml<AzurePipelines.Strategy>(strategyYaml) swallowed an exception: " + ex.Message, _verbose);
+                //}
             }
-            return null;
+            else
+            {
+                return null;
+            }
         }
-   
+
 
         //process the build pool/agent
         public string ProcessPool(Pool pool)
@@ -358,6 +355,17 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                 {
                     container.options = resources.containers[0].options;
                 }
+
+                //Couple properties not used yet
+                if (resources.containers[0].container != null)
+                {
+                    Debug.WriteLine("container property not used: " + resources.containers[0].container);
+                }
+                if (resources.containers[0].endpoint != null)
+                {
+                    Debug.WriteLine("endpoint property not used: " + resources.containers[0].endpoint);
+                }
+
                 return container;
             }
             else
@@ -365,7 +373,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                 return null;
             }
         }
-    
+
 
     }
 }

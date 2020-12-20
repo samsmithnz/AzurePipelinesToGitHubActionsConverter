@@ -105,7 +105,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             //Arrange
             Conversion conversion = new Conversion();
             string yaml = @"
-- bash: Write-Host 'some text'
+- bash: echo 'some text'
   displayName: test bash
 ";
 
@@ -115,8 +115,38 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             //Assert
             string expected = @"
 - name: test bash
-  run: Write-Host 'some text'
+  run: echo 'some text'
   shell: bash
+";
+            expected = UtilityTests.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+        }
+
+        [TestMethod]
+        public void BashTaskIndividualStepTest()
+        {
+            //Arrange
+            Conversion conversion = new Conversion();
+            string yaml = @"
+- task: Bash@3
+  displayName: test bash
+  inputs:
+    targetType: 'inline'
+    script: echo $MYSECRET
+  env:
+    MYSECRET: $(Foo)
+";
+
+            //Act
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineTaskToGitHubActionTask(yaml);
+
+            //Assert
+            string expected = @"
+- name: test bash
+  run: echo $MYSECRET
+  shell: bash
+  env:
+    MYSECRET: ${{ env.Foo }}
 ";
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
@@ -179,6 +209,32 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
   run: Copy '${{ github.workspace }}\FeatureFlags\FeatureFlags.ARMTemplates/**\*' '${{ github.workspace }}\ARMTemplates'
   shell: powershell
 ";
+            expected = UtilityTests.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+        }
+
+        [TestMethod]
+        public void Copy2IndividualStepTest()
+        {
+            //Arrange
+            Conversion conversion = new Conversion();
+            string yaml = @"
+- task: CopyFiles@2
+  displayName: Copy production build to artifact stage
+  inputs:
+    SourceFolder: '$(Build.SourcesDirectory)'
+    Contents: dist/**
+    TargetFolder: '$(Build.ArtifactStagingDirectory)'
+";
+
+            //Act
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineTaskToGitHubActionTask(yaml);
+
+            //Assert
+            string expected = @"
+- name: Copy production build to artifact stage
+  run: Copy '${{ github.workspace }}/dist/**' '${{ github.workspace }}'
+  shell: powershell";
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
         }
@@ -425,6 +481,41 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
 ";
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+        } 
+        
+        [TestMethod]
+        public void AzurePowershellWithOtherVersionIndividualStepTest()
+        {
+            //Arrange
+            Conversion conversion = new Conversion();
+            string yaml = @"
+- task: AzurePowerShell@4 
+  displayName: 'Run Azure PowerShell' 
+  inputs:
+    azureSubscription: 'Service Connection to Azure Portal'
+    ScriptPath: '$(build.artifactstagingdirectory)/drop/EnvironmentARMTemplate/PowerShell/Cleanup.ps1'
+    ScriptArguments: '-ResourceGroupName ""$(ResourceGroupName)""'
+    azurePowerShellVersion: OtherVersion
+    preferredAzurePowerShellVersion: 1.2.3
+    errorActionPreference: stop
+    FailOnStandardError: false
+";
+
+            //Act
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineTaskToGitHubActionTask(yaml);
+
+            //Assert
+            string expected = @"
+- name: Run Azure PowerShell
+  uses: azure/powershell@v1
+  with:
+    inlineScript: ${{ github.workspace }}/drop/EnvironmentARMTemplate/PowerShell/Cleanup.ps1 -ResourceGroupName ""${{ env.ResourceGroupName }}""
+    azPSVersion: 1.2.3
+    errorActionPreference: stop
+    failOnStandardError: false
+";
+            expected = UtilityTests.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
         }
 
         [TestMethod]
@@ -541,6 +632,62 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
     app-name: ${{ env.WebsiteName }}
     package: ${{ github.workspace }}/drop/MyProject.Web.zip
     slot-name: staging
+";
+            expected = UtilityTests.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+        }
+
+        [TestMethod]
+        public void DownloadBuildArtifactsIndividualStepTest()
+        {
+            //Arrange
+            Conversion conversion = new Conversion();
+            string yaml = @"
+          - task: DownloadBuildArtifacts@0
+            displayName: 'Download Build Artifact'
+            inputs:
+              buildType: 'current'
+              downloadType: 'single'
+              artifactName: $(buildArtifactName)
+              downloadPath: '$(Build.SourcesDirectory)'
+";
+
+            //Act
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineTaskToGitHubActionTask(yaml);
+
+            //Assert
+            string expected = @"
+- name: Download Build Artifact
+  uses: actions/download-artifact@v2
+  with:
+    name: ${{ env.buildArtifactName }}
+    path: ${{ github.workspace }}
+";
+            expected = UtilityTests.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+        }
+
+        [TestMethod]
+        public void DownloadPipelineArtifactsIndividualStepTest()
+        {
+            //Arrange
+            Conversion conversion = new Conversion();
+            string yaml = @"
+- task: DownloadPipelineArtifact@2
+  inputs:
+    artifact: 'WebApp'
+    path: $(Build.SourcesDirectory)/bin
+";
+
+            //Act
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineTaskToGitHubActionTask(yaml);
+
+            //Assert
+            string expected = @"
+- uses: actions/download-artifact@v2
+  with:
+    name: WebApp
+    path: ${{ github.workspace }}/bin
 ";
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
@@ -765,6 +912,33 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
         }
 
         [TestMethod]
+        public void ExtractFilesIndividualStepTest()
+        {
+            //Arrange
+            Conversion conversion = new Conversion();
+            string yaml = @"
+- task: ExtractFiles@1
+  inputs:
+    archiveFilePatterns: '**/*.zip'
+    cleanDestinationFolder: true
+    overwriteExistingFiles: false
+";
+
+            //Act
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineTaskToGitHubActionTask(yaml);
+
+            //Assert
+            string expected = @"
+- # 'Note: This is a third party action and currently only supports Linux: https://github.com/marketplace/actions/create-zip-file'
+  uses: montudor/action-zip@v0.1.0
+  with:
+    args: 'unzip -qq **/*.zip -d '
+";
+            expected = UtilityTests.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+        }
+        
+        [TestMethod]
         public void FunctionalTestIndividualStepTest()
         {
             //Arrange
@@ -799,6 +973,52 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
     Write-Host ""$command""
     Invoke-Expression $command
   shell: powershell
+";
+            expected = UtilityTests.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+        }
+
+        [TestMethod]
+        public void GitHubReleaseIndividualStepTest()
+        {
+            //Arrange
+            Conversion conversion = new Conversion();
+            string yaml = @"
+- task: GithubRelease@0 
+  displayName: 'Create GitHub Release'      
+  inputs:
+    gitHubConnection: zenithworks
+    repositoryName: zenithworks/javaAppWithMaven
+    tagSource: manual
+    tag: $(Build.BuildNumber)   
+    title: ""Release $(Build.BuildNumber)""
+    assets: $(Build.ArtifactStagingDirectory)/*.exe
+    releaseNotes: |
+      Changes in this Release
+      - First Change
+      - Second Change
+    isDraft: false # Optional
+    isPreRelease: false # Optional
+";
+
+            //Act
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineTaskToGitHubActionTask(yaml);
+
+            //Assert
+            string expected = @"
+- name: Create GitHub Release
+  uses: actions/create-release@v1
+  env:
+    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  with:
+    tag_name: ${{ github.run_number }}
+    release_name: Release ${{ github.run_number }}
+    body: 
+      Changes in this Release
+      - First Change
+      - Second Change
+    draft: false
+    prerelease: false
 ";
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
@@ -905,6 +1125,31 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
         }
 
 
+        [TestMethod]
+        public void ArchiveFilesStepTest()
+        {
+            //Arrange
+            Conversion conversion = new Conversion();
+            string yaml = @"
+- task: ArchiveFiles@2
+  inputs:
+    rootFolderOrFile: '$(build.sourcesDirectory)'
+    includeRootFolder: false";
+
+            //Act
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineTaskToGitHubActionTask(yaml);
+
+            //Assert
+            string expected = @"
+- # 'Note: This is a third party action and currently only supports Linux: https://github.com/marketplace/actions/create-zip-file'
+  uses: montudor/action-zip@v0.1.0
+  with:
+    args: zip -qq -r  ${{ github.workspace }}
+";
+            expected = UtilityTests.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+        }
+        
         [TestMethod]
         public void ArmTemplateDeploymentStepTest()
         {

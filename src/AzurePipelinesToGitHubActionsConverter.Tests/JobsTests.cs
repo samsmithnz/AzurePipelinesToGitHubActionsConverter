@@ -87,7 +87,7 @@ jobs:
         }
 
 
-        //This test doesn't work with V1
+        
         [TestMethod]
         public void ComplexVariablesWithComplexDependsOnJobTest()
         {
@@ -142,7 +142,7 @@ jobs:
             
         }
 
-        //This test doesn't work with V1
+        
         [TestMethod]
         public void ComplexVariablesWithSimpleDependsOnJobTest()
         {
@@ -283,6 +283,52 @@ jobs:
     - run: echo your commands here ${{ env.Variable1 }}
       shell: cmd
 ";
+
+            expected = UtilityTests.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+            
+        }
+
+       [TestMethod]
+        public void EnvironmentJobTest()
+        {
+            //Arrange
+            Conversion conversion = new Conversion();
+            string yaml = @"
+jobs:
+- job: provisionProd
+  displayName: 'Provision Prod'
+  pool:
+    vmImage: ubuntu-latest
+  dependsOn: 
+  - functionalTestsStaging
+  environment: 
+    name: abelNodeDemoAppEnv.prod
+  steps:
+  - task: CmdLine@2
+    inputs:
+      script: echo hello world
+";
+
+            //Act
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(yaml);
+
+            //Assert
+            string expected = @"
+jobs:
+  provisionProd:
+    name: Provision Prod
+    runs-on: ubuntu-latest
+    needs:
+    - functionalTestsStaging
+    environment:
+      name: abelNodeDemoAppEnv.prod
+    steps:
+    - uses: actions/checkout@v2
+    - run: echo hello world
+      shell: cmd
+";
+            //url: https://abel-node-gh-accelerator.azurewebsites.net
 
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);

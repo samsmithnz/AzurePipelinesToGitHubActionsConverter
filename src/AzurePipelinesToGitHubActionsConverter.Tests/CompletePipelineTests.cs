@@ -64,9 +64,10 @@ jobs:
       with:
         creds: ${{ secrets.AZURE_SP }}
     - name: Download the build artifacts
-      uses: actions/download-artifact@v1.0.0
+      uses: actions/download-artifact@v2
       with:
         name: drop
+        path: ${{ github.workspace }}
     - name: Deploy ARM Template to resource group
       uses: Azure/cli@v1.0.0
       with:
@@ -464,6 +465,7 @@ resources:
 - repo: self
   containers:
   - container: test123
+  - endpoint: endpointA
 
 trigger:
 - master
@@ -734,7 +736,7 @@ steps:
 
             //Assert
             string expected = @"
-#Note: This is a third party action: https://github.com/marketplace/actions/create-zip-file
+#Note: This is a third party action and currently only supports Linux: https://github.com/marketplace/actions/create-zip-file
 on:
   push:
     branches:
@@ -744,7 +746,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
-    - # 'Note: This is a third party action: https://github.com/marketplace/actions/create-zip-file'
+    - # 'Note: This is a third party action and currently only supports Linux: https://github.com/marketplace/actions/create-zip-file'
       uses: montudor/action-zip@v0.1.0
       with:
         args: zip -qq -r  ${{ github.workspace }}
@@ -1180,8 +1182,7 @@ stages:
             string expected = @"
 #Note: Error! This step does not have a conversion path yet: IISWebAppDeploymentOnMachineGroup@0
 #Note: Error! This step does not have a conversion path yet: IISWebAppManagementOnMachineGroup@0
-#Note: Error! This step does not have a conversion path yet: DownloadPipelineArtifact@2
-#Note: Azure DevOps strategy>runOnce>deploy does not have an equivalent in GitHub Actions yetNote: Azure DevOps job environment does not have an equivalent in GitHub Actions yet
+#Note: Azure DevOps strategy>runOnce>deploy does not have an equivalent in GitHub Actions yet
 #Note: This is a third party action: https://github.com/warrenbuckley/Setup-Nuget
 on:
   push:
@@ -1206,13 +1207,13 @@ jobs:
       with:
         path: ${{ github.workspace }}
   Deploy_Stage_job1:
-    # 'Note: Azure DevOps strategy>runOnce>deploy does not have an equivalent in GitHub Actions yetNote: Azure DevOps job environment does not have an equivalent in GitHub Actions yet'
+    # 'Note: Azure DevOps strategy>runOnce>deploy does not have an equivalent in GitHub Actions yet'
+    environment:
+      name: windows-server
     env:
       Art: Server=.;Database=Art;Trusted_Connection=True;
     steps:
-    - # 'Note: Error! This step does not have a conversion path yet: DownloadPipelineArtifact@2'
-      run: 'Write-Host Note: Error! This step does not have a conversion path yet: DownloadPipelineArtifact@2 #task: DownloadPipelineArtifact@2#inputs:#  buildtype: current#  artifactname: WebDeploy#  targetpath: ${{ env.Pipeline.Workspace }}'
-      shell: powershell
+    - uses: actions/download-artifact@v2
     - run: |
         echo Write your commands here
 
@@ -1322,7 +1323,7 @@ jobs:
 
         }
 
-        //This test doesn't work with V1
+        
         [TestMethod]
         public void SSDeploymentPipelineTest()
         {
@@ -1447,9 +1448,9 @@ jobs:
 
             //Assert
             string expected = @"
-#Note: Azure DevOps strategy>runOnce>deploy does not have an equivalent in GitHub Actions yetNote: Azure DevOps job environment does not have an equivalent in GitHub Actions yet
-#Note: Azure DevOps strategy>runOnce>deploy does not have an equivalent in GitHub Actions yetNote: Azure DevOps job environment does not have an equivalent in GitHub Actions yet
-#Note: Azure DevOps strategy>runOnce>deploy does not have an equivalent in GitHub Actions yetNote: Azure DevOps job environment does not have an equivalent in GitHub Actions yet
+#Note: Azure DevOps strategy>runOnce>deploy does not have an equivalent in GitHub Actions yet
+#Note: Azure DevOps strategy>runOnce>deploy does not have an equivalent in GitHub Actions yet
+#Note: Azure DevOps strategy>runOnce>deploy does not have an equivalent in GitHub Actions yet
 env:
   applicationInsightsApiKey: ${{ env.ApplicationInsights--APIKeyDev }}
   applicationInsightsApplicationId: ${{ env.ApplicationInsights--ApplicationIdDev }}
@@ -1488,35 +1489,44 @@ env:
   websiteUrl: https://myapp-${{ env.prLC }}-eu-web.azurewebsites.net/
 jobs:
   DeployTests1:
-    # 'Note: Azure DevOps strategy>runOnce>deploy does not have an equivalent in GitHub Actions yetNote: Azure DevOps job environment does not have an equivalent in GitHub Actions yet'
+    # 'Note: Azure DevOps strategy>runOnce>deploy does not have an equivalent in GitHub Actions yet'
     name: Deploy functional tests to ${{ env.environment }} job
     runs-on: ${{ env.vmImage }}
+    environment:
+      name: ${{ env.environment }}
     steps:
     - name: Download the build artifacts
-      uses: actions/download-artifact@v1.0.0
+      uses: actions/download-artifact@v2
       with:
         name: drop
+        path: ${{ github.workspace }}
   DeployTests2:
-    # 'Note: Azure DevOps strategy>runOnce>deploy does not have an equivalent in GitHub Actions yetNote: Azure DevOps job environment does not have an equivalent in GitHub Actions yet'
+    # 'Note: Azure DevOps strategy>runOnce>deploy does not have an equivalent in GitHub Actions yet'
     name: Deploy functional tests to ${{ env.environment }} job
     runs-on: ${{ env.vmImage }}
+    environment:
+      name: ${{ env.environment }}
     steps:
     - name: Download the build artifacts
-      uses: actions/download-artifact@v1.0.0
+      uses: actions/download-artifact@v2
       with:
         name: drop
+        path: ${{ github.workspace }}
   DeployTests3:
-    # 'Note: Azure DevOps strategy>runOnce>deploy does not have an equivalent in GitHub Actions yetNote: Azure DevOps job environment does not have an equivalent in GitHub Actions yet'
+    # 'Note: Azure DevOps strategy>runOnce>deploy does not have an equivalent in GitHub Actions yet'
     name: Deploy functional tests to ${{ env.environment }} job
     runs-on: ${{ env.vmImage }}
     needs:
     - DeployTests1
     - DeployTests2
+    environment:
+      name: ${{ env.environment }}
     steps:
     - name: Download the build artifacts
-      uses: actions/download-artifact@v1.0.0
+      uses: actions/download-artifact@v2
       with:
         name: drop
+        path: ${{ github.workspace }}
 ";
 
             expected = UtilityTests.TrimNewLines(expected);
@@ -1554,7 +1564,6 @@ stages:
 
             //Assert
             string expected = @"
-#Note: Error! This step does not have a conversion path yet: PowerShell@1
 name: PRBuild_${{ env.Year:yy }}${{ env.DayOfYear }}${{ env.Rev:.r }}
 on:
   push:
@@ -1565,9 +1574,7 @@ jobs:
     runs-on: PoolName
     steps:
     - uses: actions/checkout@v2
-    - # 'Note: Error! This step does not have a conversion path yet: PowerShell@1'
-      name: Script
-      run: 'Write-Host Note: Error! This step does not have a conversion path yet: PowerShell@1 #task: PowerShell@1#displayName: Script#inputs:#  scriptname: Script.ps1'
+    - name: Script
       shell: powershell
 ";
 
@@ -1578,7 +1585,7 @@ jobs:
 
 
         [TestMethod]
-        public void JLTestPipeline()
+        public void JLPipelineTest()
         {
             //Arrange
             Conversion conversion = new Conversion();
@@ -1955,6 +1962,8 @@ jobs:
       shell: powershell
     - name: Build & Package Module
       shell: powershell
+      env:
+        ModuleVersion: ${{ env.gitVersion.NuGetVersionV2 }}
     - name: Publish Build Artifact
       uses: actions/upload-artifact@v2
       with:
@@ -1966,9 +1975,10 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: Download Build Artifact
-      uses: actions/download-artifact@v1.0.0
+      uses: actions/download-artifact@v2
       with:
         name: output
+        path: ${{ github.workspace }}
     - name: Run HQRM Test
       shell: powershell
     - # 'PublishTestResults@2 is a Azure DevOps specific task. There is no equivalent in GitHub Actions until there is a testing summary tab. See: https://github.community/t/publishing-test-results/16215'
@@ -1981,9 +1991,10 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: Download Build Artifact
-      uses: actions/download-artifact@v1.0.0
+      uses: actions/download-artifact@v2
       with:
         name: ${{ env.buildArtifactName }}
+        path: ${{ github.workspace }}
     - name: Run Unit Test
       shell: powershell
     - # 'PublishTestResults@2 is a Azure DevOps specific task. There is no equivalent in GitHub Actions until there is a testing summary tab. See: https://github.community/t/publishing-test-results/16215'
@@ -2004,9 +2015,10 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: Download Build Artifact
-      uses: actions/download-artifact@v1.0.0
+      uses: actions/download-artifact@v2
       with:
         name: ${{ env.buildArtifactName }}
+        path: ${{ github.workspace }}
     - name: Configure WinRM
       run: winrm quickconfig -quiet
       shell: powershell
@@ -2059,9 +2071,10 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: Download Build Artifact
-      uses: actions/download-artifact@v1.0.0
+      uses: actions/download-artifact@v2
       with:
         name: ${{ env.buildArtifactName }}
+        path: ${{ github.workspace }}
     - name: Configure WinRM
       run: winrm quickconfig -quiet
       shell: powershell
@@ -2118,13 +2131,15 @@ jobs:
         echo ""##vso[task.setvariable variable=RepositoryName;isOutput=true]$repositoryName""
       shell: pwsh
     - name: Download Build Artifact
-      uses: actions/download-artifact@v1.0.0
+      uses: actions/download-artifact@v2
       with:
         name: ${{ env.buildArtifactName }}
+        path: ${{ github.workspace }}
     - name: Download Test Artifact
-      uses: actions/download-artifact@v1.0.0
+      uses: actions/download-artifact@v2
       with:
         name: ${{ env.testArtifactName }}
+        path: ${{ github.workspace }}/${{ env.buildFolderName }}
     - # 'Note: Error! This step does not have a conversion path yet: PublishCodeCoverageResults@1'
       name: Publish Azure Code Coverage
       run: 'Write-Host Note: Error! This step does not have a conversion path yet: PublishCodeCoverageResults@1 #task: PublishCodeCoverageResults@1#displayName: Publish Azure Code Coverage#condition: succeededOrFailed()#inputs:#  codecoveragetool: JaCoCo#  summaryfilelocation: ${{ env.buildFolderName }}/${{ env.testResultFolderName }}/JaCoCo_coverage.xml#  pathtosources: ${{ github.workspace }}/${{ env.buildFolderName }}/${{ env.dscBuildVariable.RepositoryName }}'
@@ -2140,13 +2155,19 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: Download Build Artifact
-      uses: actions/download-artifact@v1.0.0
+      uses: actions/download-artifact@v2
       with:
         name: ${{ env.buildArtifactName }}
+        path: ${{ github.workspace }}
     - name: Publish Release
       shell: powershell
+      env:
+        GitHubToken: ${{ env.GitHubToken }}
+        GalleryApiToken: ${{ env.GalleryApiToken }}
     - name: Send Changelog PR
       shell: powershell
+      env:
+        GitHubToken: ${{ env.GitHubToken }}
 ";
 
             expected = UtilityTests.TrimNewLines(expected);
