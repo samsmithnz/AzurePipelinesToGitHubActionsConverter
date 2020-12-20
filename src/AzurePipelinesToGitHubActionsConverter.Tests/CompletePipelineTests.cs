@@ -736,7 +736,7 @@ steps:
 
             //Assert
             string expected = @"
-#Note: This is a third party action: https://github.com/marketplace/actions/create-zip-file
+#Note: This is a third party action and currently only supports Linux: https://github.com/marketplace/actions/create-zip-file
 on:
   push:
     branches:
@@ -746,7 +746,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
-    - # 'Note: This is a third party action: https://github.com/marketplace/actions/create-zip-file'
+    - # 'Note: This is a third party action and currently only supports Linux: https://github.com/marketplace/actions/create-zip-file'
       uses: montudor/action-zip@v0.1.0
       with:
         args: zip -qq -r  ${{ github.workspace }}

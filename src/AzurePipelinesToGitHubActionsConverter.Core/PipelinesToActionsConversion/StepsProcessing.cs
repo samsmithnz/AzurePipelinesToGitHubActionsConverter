@@ -63,10 +63,13 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                         gitHubStep = CreateDotNetCommandStep(step);
                         break;
                     case "DOWNLOADBUILDARTIFACTS@0":
-                        gitHubStep = CreateDownloadBuildArtifacts(step);
+                        gitHubStep = CreateDownloadBuildArtifactsStep(step);
                         break;
                     case "DOWNLOADPIPELINEARTIFACT@2":
-                        gitHubStep = CreateDownloadPipelineArtifacts(step);
+                        gitHubStep = CreateDownloadPipelineArtifactsStep(step);
+                        break;
+                    case "EXTRACTFILES@1":
+                        gitHubStep = CreateExtractFilesStep(step);
                         break;
                     case "GITHUBRELEASE@0":
                         gitHubStep = CreateGitHubReleaseStep(step);
@@ -284,7 +287,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
             }
         }
 
-        private GitHubActions.Step CreateDownloadBuildArtifacts(AzurePipelines.Step step)
+        private GitHubActions.Step CreateDownloadBuildArtifactsStep(AzurePipelines.Step step)
         {
             //From: 
             //- task: DownloadBuildArtifacts@0
@@ -322,7 +325,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
             return gitHubStep;
         }
 
-        private GitHubActions.Step CreateDownloadPipelineArtifacts(AzurePipelines.Step step)
+        private GitHubActions.Step CreateDownloadPipelineArtifactsStep(AzurePipelines.Step step)
         {
 
             //From: 
@@ -1110,6 +1113,44 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
             return gitHubStep;
         }
 
+        public GitHubActions.Step CreateExtractFilesStep(AzurePipelines.Step step)
+        {
+            //From: https://docs.microsoft.com/en-us/azure/devops/pipelines/tasks/utility/extract-files            //# GitHub Release
+            //# Extract files
+            //# Extract a variety of archive and compression files such as .7z, .rar, .tar.gz, and .zip
+            //- task: ExtractFiles@1
+            //  inputs:
+            //    #archiveFilePatterns: '**/*.zip' 
+            //    destinationFolder: 
+            //    #cleanDestinationFolder: true 
+            //    #overwriteExistingFiles: false
+
+            //To: 
+            //- uses: montudor/action-zip@v0.1.1
+            //  with:
+            //    args: unzip -qq dir.zip -d dir
+
+            string archiveFilePatterns = GetStepInput(step, "archiveFilePatterns");
+            string destinationFolder = GetStepInput(step, "destinationFolder");
+            //string cleanDestinationFolder = GetStepInput(step, "cleanDestinationFolder");
+            //string overwriteExistingFiles = GetStepInput(step, "overwriteExistingFiles");
+
+            string unzipCommand = "unzip -qq " + archiveFilePatterns + " -d " + destinationFolder;
+
+            GitHubActions.Step gitHubStep = new GitHubActions.Step
+            {
+                uses = "montudor/action-zip@v0.1.0",
+                with = new Dictionary<string, string>
+                {
+                    { "args", unzipCommand}
+                },
+                //TODO: Should there be a branch that creates a different path if it's a Windows runner?
+                step_message = "Note: This is a third party action and currently only supports Linux: https://github.com/marketplace/actions/create-zip-file"
+            };
+
+            return gitHubStep;
+        }
+
         public GitHubActions.Step CreateGitHubReleaseStep(AzurePipelines.Step step)
         {
             //From: https://docs.microsoft.com/en-us/azure/devops/pipelines/tasks/utility/github-release?view=azure-devops#examples
@@ -1621,7 +1662,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                 {
                     { "args", zipCommand}
                 },
-                step_message = "Note: This is a third party action: https://github.com/marketplace/actions/create-zip-file"
+                step_message = "Note: This is a third party action and currently only supports Linux: https://github.com/marketplace/actions/create-zip-file"
             };
 
             return gitHubStep;
