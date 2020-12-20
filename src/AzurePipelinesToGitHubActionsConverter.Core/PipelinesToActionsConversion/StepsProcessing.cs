@@ -45,6 +45,9 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                     case "AZUREWEBAPP@1":
                         gitHubStep = CreateAzureWebAppDeploymentStep(step);
                         break;
+                    case "BASH@3":
+                        gitHubStep = CreateBashStep(step);
+                        break;
                     case "CMDLINE@2":
                         gitHubStep = CreateScriptStep("cmd", step);
                         break;
@@ -227,6 +230,10 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                 {
                     gitHubStep.timeout_minutes = step.timeoutInMinutes;
                 }
+                if (step.env != null)
+                {
+                    gitHubStep.env = step.env;
+                }
             }
             return gitHubStep;
         }
@@ -373,10 +380,33 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
             return gitHubStep;
         }
 
-        //https://github.com/actions/cache
-        private GitHubActions.Step CreateCacheStep(AzurePipelines.Step step)
+        private GitHubActions.Step CreateBashStep(AzurePipelines.Step step)
         {
             //From:
+            //- task: Bash@3
+            //  inputs:
+            //    #targetType: 'filePath' # Optional. Options: filePath, inline
+            //    #filePath: # Required when targetType == FilePath
+            //    #arguments: # Optional
+            //    #script: '# echo Hello world' # Required when targetType == inline
+            //    #workingDirectory: # Optional
+            //    #failOnStderr: false # Optional
+            //    #noProfile: true # Optional
+            //    #noRc: true # Optional
+
+            //To:
+            //- name: test bash
+            //  run: echo 'some text'
+            //  shell: bash
+
+            GitHubActions.Step gitHubStep = CreateScriptStep("bash", step);
+
+            return gitHubStep;
+        }
+
+        private GitHubActions.Step CreateCacheStep(AzurePipelines.Step step)
+        {
+            //From: https://github.com/actions/cache
             //- task: Cache@2
             //  displayName: Cache multiple paths
             //  inputs:

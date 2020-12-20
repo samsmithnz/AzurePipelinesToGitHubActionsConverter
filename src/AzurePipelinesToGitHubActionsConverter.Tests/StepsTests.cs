@@ -105,7 +105,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             //Arrange
             Conversion conversion = new Conversion();
             string yaml = @"
-- bash: Write-Host 'some text'
+- bash: echo 'some text'
   displayName: test bash
 ";
 
@@ -115,8 +115,38 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             //Assert
             string expected = @"
 - name: test bash
-  run: Write-Host 'some text'
+  run: echo 'some text'
   shell: bash
+";
+            expected = UtilityTests.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+        }
+
+        [TestMethod]
+        public void BashTaskIndividualStepTest()
+        {
+            //Arrange
+            Conversion conversion = new Conversion();
+            string yaml = @"
+- task: Bash@3
+  displayName: test bash
+  inputs:
+    targetType: 'inline'
+    script: echo $MYSECRET
+  env:
+    MYSECRET: $(Foo)
+";
+
+            //Act
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineTaskToGitHubActionTask(yaml);
+
+            //Assert
+            string expected = @"
+- name: test bash
+  run: echo $MYSECRET
+  shell: bash
+  env:
+    MYSECRET: ${{ env.Foo }}
 ";
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);

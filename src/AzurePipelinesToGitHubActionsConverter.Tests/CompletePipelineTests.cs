@@ -1962,6 +1962,8 @@ jobs:
       shell: powershell
     - name: Build & Package Module
       shell: powershell
+      env:
+        ModuleVersion: ${{ env.gitVersion.NuGetVersionV2 }}
     - name: Publish Build Artifact
       uses: actions/upload-artifact@v2
       with:
@@ -2159,8 +2161,13 @@ jobs:
         path: ${{ github.workspace }}
     - name: Publish Release
       shell: powershell
+      env:
+        GitHubToken: ${{ env.GitHubToken }}
+        GalleryApiToken: ${{ env.GalleryApiToken }}
     - name: Send Changelog PR
       shell: powershell
+      env:
+        GitHubToken: ${{ env.GitHubToken }}
 ";
 
             expected = UtilityTests.TrimNewLines(expected);
