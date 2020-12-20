@@ -187,7 +187,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
             //Build the return results
             return new GitHubActions.Trigger
             {
-                pull_request = pr?.pull_request
+                pull_request = pr.pull_request
             };
 
         }

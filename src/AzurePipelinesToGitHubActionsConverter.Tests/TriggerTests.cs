@@ -32,7 +32,7 @@ on:
             
         }
 
-        //This test doesn't work with V1
+        
         [TestMethod]
         public void TriggerAndPRNoneSimpleStringTest()
         {
@@ -255,6 +255,7 @@ on:
             string input = @"
 trigger:
   batch: true
+  autoCancel: true
   branches:
     exclude:
     - features/experimental/*
