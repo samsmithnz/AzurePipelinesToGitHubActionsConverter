@@ -15,12 +15,8 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.AzurePipelines
     //    exclude: [ string ] # file paths which will not trigger a build
     public class Trigger
     {
-        //Note: There is no batch property in actions
-        [DefaultValue(false)]
-        public bool batch { get; set; } = false;
-        //Note: There is no autoCancel property in actions
-        [DefaultValue(true)]
-        public bool autoCancel { get; set; } = true;
+        public bool? batch { get; set; } = null; //Note: There is no batch property in actions
+        public bool? autoCancel { get; set; } = null; //Note: There is no autoCancel property in actions
         public IncludeExclude branches { get; set; }
         public IncludeExclude tags { get; set; }
         public IncludeExclude paths { get; set; }
