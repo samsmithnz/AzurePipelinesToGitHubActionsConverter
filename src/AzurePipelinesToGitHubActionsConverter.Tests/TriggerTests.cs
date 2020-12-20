@@ -321,8 +321,7 @@ on:
   - cron: '0 0 3/4 ? * * *'
 ";
             expected = UtilityTests.TrimNewLines(expected);
-            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
-            
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);           
         }
 
         [TestMethod]
@@ -402,6 +401,36 @@ on:
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
             
+        }
+
+
+
+        [TestMethod]
+        public void OnPushAndScheduleCronTriggerTest()
+        {
+            //Arrange
+            string input = @"
+trigger:
+- master
+schedules:
+- cron: '0 0 3/4 ? * * *'
+";
+            Conversion conversion = new Conversion();
+
+            //Act
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(input);
+
+            //Assert
+            string expected = @"
+on:
+  push:
+    branches:
+    - master
+  schedule:
+  - cron: '0 0 3/4 ? * * *'
+";
+            expected = UtilityTests.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
         }
     }
 }
