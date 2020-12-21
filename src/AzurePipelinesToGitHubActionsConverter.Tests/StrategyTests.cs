@@ -253,9 +253,27 @@ jobs:
   strategy:
     # Default deployment strategy, more coming...
     runOnce:
+      preDeploy:
+        steps:
+        - download: current
+          artifact: drop
+        - script: echo initialize, cleanup, backup, install certs
       deploy:
         steps:
-        - script: echo my first deployment
+        - script: echo Deploy application to Website
+      routeTraffic:
+        steps:
+        - script: echo routing traffic
+      postRouteTraffic:
+        steps:
+        - script: echo health check post-route traffic
+      on:
+        failure:
+          steps:
+          - script: echo Restore from backup! This is on failure
+        success:
+          steps:
+          - script: echo Notify! This is on success
 ";
 
             //Act
@@ -272,7 +290,7 @@ jobs:
     environment:
       name: smarthotel-dev
     steps:
-    - run: echo my first deployment
+    - run: echo Deploy application to Website
 ";
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
@@ -301,11 +319,7 @@ jobs:
         - script: echo initialize, cleanup, backup, install certs
       deploy:
         steps:
-        - task: IISWebAppDeploymentOnMachineGroup@0
-          displayName: 'Deploy application to Website'
-          inputs:
-            WebSiteName: 'Default Web Site'
-            Package: '$(Pipeline.Workspace)/drop/**/*.zip'
+        - script: echo Deploy application to Website
       routeTraffic:
         steps:
         - script: echo routing traffic
@@ -325,7 +339,6 @@ jobs:
 
             //Assert
             string expected = @"
-#Note: Error! This step does not have a conversion path yet: IISWebAppDeploymentOnMachineGroup@0
 #Note: Azure DevOps strategy>rolling does not have an equivalent in GitHub Actions yet, and only the deploy steps are transferred to steps
 jobs:
   VMDeploy:
@@ -334,10 +347,7 @@ jobs:
     environment:
       name: smarthotel-dev
     steps:
-    - # 'Note: Error! This step does not have a conversion path yet: IISWebAppDeploymentOnMachineGroup@0'
-      name: Deploy application to Website
-      run: 'Write-Host Note: Error! This step does not have a conversion path yet: IISWebAppDeploymentOnMachineGroup@0 #task: IISWebAppDeploymentOnMachineGroup@0#displayName: Deploy application to Website#inputs:#  websitename: Default Web Site#  package: ${{ env.Pipeline.Workspace }}/drop/**/*.zip'
-      shell: powershell
+    - run: echo Deploy application to Website
 ";
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
@@ -358,23 +368,28 @@ jobs:
   strategy:
     canary:      
       increments: [10,20]  
-      preDeploy:                                     
-        steps:           
-        - script: initialize, cleanup....   
-      deploy:             
-        steps: 
-        - script: echo deploy updates... 
-      postRouteTraffic: 
-        pool: server 
-        steps:           
-        - script: echo monitor application health...   
-      on: 
-        failure: 
-          steps: 
-          - script: echo clean-up, rollback...   
-        success: 
-          steps: 
-          - script: echo checks passed, notify... ";
+      preDeploy:
+        steps:
+        - download: current
+          artifact: drop
+        - script: echo initialize, cleanup, backup, install certs
+      deploy:
+        steps:
+        - script: echo Deploy application to Website
+      routeTraffic:
+        steps:
+        - script: echo routing traffic
+      postRouteTraffic:
+        steps:
+        - script: echo health check post-route traffic
+      on:
+        failure:
+          steps:
+          - script: echo Restore from backup! This is on failure
+        success:
+          steps:
+          - script: echo Notify! This is on success
+";
 
             //Act
             ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(input);
@@ -389,7 +404,7 @@ jobs:
     environment:
       name: smarthotel-dev.bookings
     steps:
-    - run: echo deploy updates...
+    - run: echo Deploy application to Website
 ";
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
