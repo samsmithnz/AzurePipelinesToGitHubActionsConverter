@@ -1,5 +1,6 @@
 using AzurePipelinesToGitHubActionsConverter.Core;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System;
 
 namespace AzurePipelinesToGitHubActionsConverter.Tests
 {
@@ -30,12 +31,19 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             string input = "     ";
             Conversion conversion = new Conversion();
 
-            //Act
-            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(input);
 
-            //Assert
-            string expected = "";
-            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+            //Act
+            ConversionResponse gitHubOutput = null;
+            try
+            {
+                gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(input);
+            }
+            catch (Exception ex)
+            {
+                //Assert
+                Assert.AreEqual("This appears to be invalid YAML", ex.Message);
+                Assert.AreEqual(null, gitHubOutput);
+            }
         }
 
         [TestMethod]
@@ -50,6 +58,48 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
 
             //Assert
             string expected = "";
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+        }
+
+        [TestMethod]
+        public void PipelineGarbageStringTest()
+        {
+            //Arrange
+            string input = "gdagfds";
+            Conversion conversion = new Conversion();
+
+            //Act
+            ConversionResponse gitHubOutput = null;
+            try
+            {
+                gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(input);
+            }
+            catch (Exception ex)
+            {
+                //Assert
+                Assert.AreEqual("This appears to be invalid YAML", ex.Message);
+                Assert.AreEqual(null, gitHubOutput);
+            }
+
+        }
+
+        [TestMethod]
+        public void PipelineSimpleStringTest()
+        {
+            //Arrange
+            string input = "pool: windows-latest";
+            Conversion conversion = new Conversion();
+
+            //Act
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(input);
+
+            //Assert
+            string expected = @"
+jobs:
+  build:
+    runs-on: windows-latest
+";
+            expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
         }
 

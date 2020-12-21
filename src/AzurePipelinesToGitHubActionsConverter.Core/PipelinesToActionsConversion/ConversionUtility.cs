@@ -24,6 +24,11 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
         {
             string processedYaml = yaml;
 
+            if (yaml.IndexOf(":") == -1)
+            {
+                throw new Exception("This appears to be invalid YAML");
+            }
+
             //Process conditional insertions/ variables
             if (processedYaml.IndexOf("{{#if") >= 0 || processedYaml.IndexOf("{{ #if") >= 0 ||
                 processedYaml.IndexOf("${{if") >= 0 || processedYaml.IndexOf("${{ if") >= 0)
