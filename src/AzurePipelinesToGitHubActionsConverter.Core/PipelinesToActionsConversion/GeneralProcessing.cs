@@ -264,21 +264,18 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                     }
                     processedStrategy.max_parallel = strategy.maxParallel;
                 }
-                if (strategy.runOnce != null)
-                {
-                    //TODO: There is currently no conversion path for other strategies
-                    ConversionUtility.WriteLine("TODO: " + strategy.runOnce, _verbose);
-                }
-                if (strategy.canary != null)
-                {
-                    //TODO: There is currently no conversion path for other strategies
-                    ConversionUtility.WriteLine("TODO: " + strategy.canary, _verbose);
-                }
-                if (strategy.rolling != null)
-                {
-                    //TODO: There is currently no conversion path for other strategies
-                    ConversionUtility.WriteLine("TODO: " + strategy.rolling, _verbose);
-                }
+                //TODO: There is currently no conversion path for other strategies    //if (strategy.runOnce != null)
+                //{
+                //    ConversionUtility.WriteLine("TODO: " + strategy.runOnce, _verbose);
+                //}
+                //if (strategy.canary != null)
+                //{
+                //    ConversionUtility.WriteLine("TODO: " + strategy.canary, _verbose);
+                //}
+                //if (strategy.rolling != null)
+                //{
+                //    ConversionUtility.WriteLine("TODO: " + strategy.rolling, _verbose);
+                //}
                 return processedStrategy;
             }
             else

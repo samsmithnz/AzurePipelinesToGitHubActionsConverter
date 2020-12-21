@@ -68,12 +68,12 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
             if (strategyJson["routeTraffic"] != null)
             {
                 runOnce.routeTraffic = ProcessDeploy(strategyJson["routeTraffic"]);
-                ConversionUtility.WriteLine("Note that RunOnce>preDeploy isn't currently processed: " + runOnce.preDeploy.ToString(), _verbose);
+                ConversionUtility.WriteLine("Note that RunOnce>preDeploy isn't currently processed: " + runOnce.routeTraffic.ToString(), _verbose);
             }
             if (strategyJson["postRouteTraffic"] != null)
             {
                 runOnce.postRouteTraffic = ProcessDeploy(strategyJson["postRouteTraffic"]);
-                ConversionUtility.WriteLine("Note that RunOnce>preDeploy isn't currently processed: " + runOnce.preDeploy.ToString(), _verbose);
+                ConversionUtility.WriteLine("Note that RunOnce>preDeploy isn't currently processed: " + runOnce.postRouteTraffic.ToString(), _verbose);
             }
             if (strategyJson["on"] != null)
             {
