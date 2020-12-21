@@ -24,6 +24,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
         {
             string processedYaml = yaml;
 
+            //test that the inputted yaml has a ":" in the yaml - this is present in even the simpliest yaml
             if (yaml.IndexOf(":") == -1)
             {
                 throw new Exception("This appears to be invalid YAML");
