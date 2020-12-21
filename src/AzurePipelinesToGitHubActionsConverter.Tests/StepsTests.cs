@@ -1024,6 +1024,36 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
         }
 
+        [TestMethod]
+        public void HugoIndividualStepTest()
+        {
+            //Arrange
+            Conversion conversion = new Conversion();
+            string yaml = @"
+- task: HugoTask@1
+  displayName: 'Generate Hugo site'
+  inputs:
+    hugoVersion: latest
+    extendedVersion: true
+    destination: '$(Build.ArtifactStagingDirectory)'
+";
+
+            //Act
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineTaskToGitHubActionTask(yaml);
+
+            //Assert
+            string expected = @"
+- # 'Note: This is a third party action: https://github.com/peaceiris/actions-hugo'
+  name: Generate Hugo site
+  uses: peaceiris/actions-hugo@v2
+  with:
+    hugo-version: latest
+    extended: true
+";
+            expected = UtilityTests.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+        }
+
 //        [TestMethod]
 //        public void IISWebManagementStepTest()
 //        {
