@@ -638,6 +638,32 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
         }
 
         [TestMethod]
+        public void DownloadIndividualStepTest()
+        {
+            //Arrange
+            Conversion conversion = new Conversion();
+            string yaml = @"
+- download: current  # refers to artifacts published by current pipeline
+  artifact: WebApp
+  patterns: '**/.js'
+  displayName: Download artifact WebApp
+";
+
+            //Act
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineTaskToGitHubActionTask(yaml);
+
+            //Assert
+            string expected = @"
+- name: Download artifact WebApp
+  uses: actions/download-artifact@v2
+  with:
+    name: WebApp
+";
+            expected = UtilityTests.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+        }
+
+        [TestMethod]
         public void DownloadBuildArtifactsIndividualStepTest()
         {
             //Arrange

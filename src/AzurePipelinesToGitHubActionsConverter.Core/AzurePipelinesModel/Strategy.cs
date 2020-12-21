@@ -33,5 +33,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.AzurePipelines
         public string maxParallel { get; set; }
 
         public RunOnce runOnce { get; set; }
+        public Canary canary { get; set; }
+        public Rolling rolling { get; set; }
     }
 }

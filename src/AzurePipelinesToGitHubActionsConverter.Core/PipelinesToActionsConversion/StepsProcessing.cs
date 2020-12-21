@@ -193,6 +193,10 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
             {
                 gitHubStep = CreateTemplateStep(step);
             }
+            else if (step.download != null)
+            {
+                gitHubStep = CreateDownloadStep(step);
+            }
 
             if (gitHubStep != null)
             {
@@ -295,6 +299,40 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                 };
                 return gitHubStep;
             }
+        }
+
+        private GitHubActions.Step CreateDownloadStep(AzurePipelines.Step step)
+        {
+            //From: 
+            //- download: [ current | pipeline resource identifier | none ] # disable automatic download if "none"
+            //  artifact: string ## artifact name, optional; downloads all the available artifacts if not specified
+            //  patterns: string # patterns representing files to include; optional
+            //  displayName: string  # friendly name to display in the UI
+
+            //To:
+            //- name: Download serviceapp artifact
+            //  uses: actions/download-artifact@v1.0.0
+            //  with:
+            //    name: serviceapp
+
+            string artifact = step.artifact;
+            string patterns = step.patterns;
+
+            GitHubActions.Step gitHubStep = new GitHubActions.Step
+            {
+                uses = "actions/download-artifact@v2",
+                with = new Dictionary<string, string>()
+            };
+            if (artifact != null)
+            {
+                gitHubStep.with.Add("name", artifact);
+            }
+            else if (patterns != null)
+            {
+                gitHubStep.with.Add("name", patterns);
+            }
+
+            return gitHubStep;
         }
 
         private GitHubActions.Step CreateDownloadBuildArtifactsStep(AzurePipelines.Step step)
