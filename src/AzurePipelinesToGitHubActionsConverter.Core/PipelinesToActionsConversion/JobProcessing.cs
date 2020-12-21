@@ -130,7 +130,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                     }
                     if (jobJson["condition"] != null)
                     {
-                        job.condition = ConditionsProcessing.TranslateConditions(jobJson["condition"].ToString());
+                        job.condition = jobJson["condition"].ToString();
                     }
                     if (jobJson["environment"] != null)
                     {

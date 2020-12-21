@@ -1313,7 +1313,7 @@ jobs:
       prId: 000
       prUC: PR${{ env.prId }}
       prLC: pr${{ env.prId }}
-    if: and(success(),eq(variables['Build.Reason'], 'PullRequest'),ne(variables['System.PullRequest.PullRequestId'], 'Null'))
+    if: and(success(), eq(variables['Build.Reason'], 'PullRequest'), ne(variables['System.PullRequest.PullRequestId'], 'Null'))
     steps:
     - uses: actions/checkout@v2
 ";
@@ -2151,7 +2151,7 @@ jobs:
   Deploy_Stage_Deploy_Module:
     name: Deploy Module
     runs-on: ubuntu 16.04
-    if: and(success(),or(eq(github.ref, 'refs/heads/master'),startsWith(github.ref, 'refs/tags/')),contains(variables['System.TeamFoundationCollectionUri'], 'dsccommunity'))
+    if: and(success(), or(eq(github.ref, 'refs/heads/master'), startsWith(github.ref, 'refs/tags/')), contains(variables['System.TeamFoundationCollectionUri'], 'dsccommunity'))
     steps:
     - uses: actions/checkout@v2
     - name: Download Build Artifact

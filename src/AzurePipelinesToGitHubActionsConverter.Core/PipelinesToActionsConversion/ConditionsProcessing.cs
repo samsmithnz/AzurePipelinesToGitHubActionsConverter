@@ -39,7 +39,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                         innerContentsProcessed += TranslateConditions(innerContent);
                         if (i != innerContents.Count - 1)
                         {
-                            innerContentsProcessed += ",";
+                            innerContentsProcessed += ", ";
                         }
                     }
                     contents = innerContentsProcessed;
