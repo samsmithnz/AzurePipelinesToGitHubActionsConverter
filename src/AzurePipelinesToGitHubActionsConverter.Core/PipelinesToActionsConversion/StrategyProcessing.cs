@@ -1,0 +1,184 @@
+﻿using AzurePipelinesToGitHubActionsConverter.Core.AzurePipelines;
+using AzurePipelinesToGitHubActionsConverter.Core.Serialization;
+using Newtonsoft.Json.Linq;
+using System;
+using System.Collections.Generic;
+
+namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversion
+{
+    public class StrategyProcessing
+    {
+        private readonly bool _verbose;
+        public StrategyProcessing(bool verbose)
+        {
+            _verbose = verbose;
+        }
+
+        public Strategy ProcessStrategyV2(JToken strategyJson)
+        {
+            if (strategyJson != null)
+            {
+                AzurePipelines.Strategy newStrategy = new AzurePipelines.Strategy();
+                if (strategyJson["parallel"] != null)
+                {
+                    newStrategy.parallel = strategyJson["parallel"].ToString();
+                    ConversionUtility.WriteLine("Note that Parallel doesn't currently have an equivalent in Actions: " + newStrategy.parallel, _verbose);
+                }
+                if (strategyJson["matrix"] != null)
+                {
+                    newStrategy.matrix = YamlSerialization.DeserializeYaml<Dictionary<string, Dictionary<string, string>>>(strategyJson["matrix"].ToString());
+                }
+                if (strategyJson["maxParallel"] != null)
+                {
+                    newStrategy.maxParallel = strategyJson["maxParallel"].ToString();
+                }
+                if (strategyJson["runOnce"] != null)
+                {
+                    newStrategy.runOnce = ProcessRunOnceStrategy(strategyJson["runOnce"]);
+                }
+                if (strategyJson["canary"] != null)
+                {
+                    newStrategy.canary = ProcessCanaryStrategy(strategyJson["canary"]);
+                }
+                if (strategyJson["rolling"] != null)
+                {
+                    newStrategy.rolling = ProcessRollingStrategy(strategyJson["rolling"]);
+                }
+                return newStrategy;
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        private RunOnce ProcessRunOnceStrategy(JToken strategyJson)
+        {
+            RunOnce runOnce = new RunOnce();
+            if (strategyJson["preDeploy"] != null)
+            {
+                runOnce.preDeploy = ProcessDeploy(strategyJson["preDeploy"]);
+            }
+            if (strategyJson["deploy"] != null)
+            {
+                runOnce.deploy = ProcessDeploy(strategyJson["deploy"]);
+            }
+            if (strategyJson["routeTraffic"] != null)
+            {
+                runOnce.routeTraffic = ProcessDeploy(strategyJson["routeTraffic"]);
+            }
+            if (strategyJson["postRouteTraffic"] != null)
+            {
+                runOnce.postRouteTraffic = ProcessDeploy(strategyJson["postRouteTraffic"]);
+            }
+            if (strategyJson["on"] != null)
+            {
+                runOnce.on = ProcessOn(strategyJson["on"]);
+            }
+            return runOnce;
+        }
+
+        private Canary ProcessCanaryStrategy(JToken strategyJson)
+        {
+            Canary canary = new Canary();
+            if (strategyJson["increments"] != null)
+            {
+                canary.increments = YamlSerialization.DeserializeYaml<int[]>(strategyJson["increments"].ToString());
+            }
+            if (strategyJson["preDeploy"] != null)
+            {
+                canary.preDeploy = ProcessDeploy(strategyJson["preDeploy"]);
+            }
+            if (strategyJson["deploy"] != null)
+            {
+                canary.deploy = ProcessDeploy(strategyJson["deploy"]);
+            }
+            if (strategyJson["routeTraffic"] != null)
+            {
+                canary.routeTraffic = ProcessDeploy(strategyJson["routeTraffic"]);
+            }
+            if (strategyJson["postRouteTraffic"] != null)
+            {
+                canary.postRouteTraffic = ProcessDeploy(strategyJson["postRouteTraffic"]);
+            }
+            if (strategyJson["on"] != null)
+            {
+                canary.on = ProcessOn(strategyJson["on"]);
+            }
+            return canary;
+        }
+
+        private Rolling ProcessRollingStrategy(JToken strategyJson)
+        {
+            Rolling rolling = new Rolling();
+            if (strategyJson["preDeploy"] != null)
+            {
+                rolling.preDeploy = ProcessDeploy(strategyJson["preDeploy"]);
+            }
+            if (strategyJson["maxParallel"] != null)
+            {
+                rolling.maxParallel = (int)(strategyJson["maxParallel"]);
+            }
+            if (strategyJson["preDeploy"] != null)
+            {
+                rolling.preDeploy = ProcessDeploy(strategyJson["preDeploy"]);
+            }
+            if (strategyJson["deploy"] != null)
+            {
+                rolling.deploy = ProcessDeploy(strategyJson["deploy"]);
+            }
+            if (strategyJson["routeTraffic"] != null)
+            {
+                rolling.routeTraffic = ProcessDeploy(strategyJson["routeTraffic"]);
+            }
+            if (strategyJson["postRouteTraffic"] != null)
+            {
+                rolling.postRouteTraffic = ProcessDeploy(strategyJson["postRouteTraffic"]);
+            }
+            if (strategyJson["on"] != null)
+            {
+                rolling.on = ProcessOn(strategyJson["on"]);
+            }
+
+            return rolling;
+        }
+
+        private Deploy ProcessDeploy(JToken deployJson)
+        {
+            GeneralProcessing gp = new GeneralProcessing(_verbose);
+            Deploy deploy = new Deploy();
+            if (deployJson["pool"] != null)
+            {
+                deploy.pool = gp.ProcessPoolV2(deployJson["pool"].ToString());
+            }
+            if (deployJson["steps"] != null)
+            {
+                try
+                {
+                    deploy.steps = YamlSerialization.DeserializeYaml<AzurePipelines.Step[]>(deployJson["steps"].ToString());
+                }
+                catch (Exception ex)
+                {
+                    ConversionUtility.WriteLine($"DeserializeYaml<AzurePipelines.Step[]>(ProcessDeploy[\"steps\"].ToString() swallowed an exception: " + ex.Message, _verbose);
+                }
+            }
+
+            return deploy;
+        }
+
+        private On ProcessOn(JToken onJson)
+        {
+            On on = new On();
+            if (onJson["success"] != null)
+            {
+                on.success = ProcessDeploy(onJson["success"]);
+            }
+            if (onJson["failure"] != null)
+            {
+                on.failure = ProcessDeploy(onJson["failure"]);
+            }
+            return on;
+        }
+
+    }
+}

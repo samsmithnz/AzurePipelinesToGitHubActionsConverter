@@ -142,7 +142,7 @@ jobs:
         }
 
         [TestMethod]
-        public void StrategyRunOnceDeploymentTest()
+        public void StrategyRunOnceSimpleEnvironmentDeploymentTest()
         {
             //Arrange
             Conversion conversion = new Conversion();
@@ -169,10 +169,10 @@ jobs:
 
             //Assert
             string expected = @"
-#Note: Azure DevOps strategy>runOnce>deploy does not have an equivalent in GitHub Actions yet
+#Note: Azure DevOps strategy>runOnce does not have an equivalent in GitHub Actions yet, and only the deploy steps are transferred to steps
 jobs:
   DeployInfrastructure:
-    # 'Note: Azure DevOps strategy>runOnce>deploy does not have an equivalent in GitHub Actions yet'
+    # 'Note: Azure DevOps strategy>runOnce does not have an equivalent in GitHub Actions yet, and only the deploy steps are transferred to steps'
     name: Deploy job
     runs-on: windows-latest
     environment:
@@ -219,10 +219,10 @@ jobs:
 
             //Assert
             string expected = @"
-#Note: Azure DevOps strategy>runOnce>deploy does not have an equivalent in GitHub Actions yet
+#Note: Azure DevOps strategy>runOnce does not have an equivalent in GitHub Actions yet, and only the deploy steps are transferred to steps
 jobs:
   DeployInfrastructure:
-    # 'Note: Azure DevOps strategy>runOnce>deploy does not have an equivalent in GitHub Actions yet'
+    # 'Note: Azure DevOps strategy>runOnce does not have an equivalent in GitHub Actions yet, and only the deploy steps are transferred to steps'
     name: Deploy job
     runs-on: windows-latest
     environment:
@@ -233,11 +233,54 @@ jobs:
       shell: powershell";
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
-            
+
         }
 
         [TestMethod]
-        public void StrategyRollingWithComplexEnvironmentsDeploymentTest()
+        public void StrategyRunOnceDeploymentTest()
+        {
+            //Arrange
+            Conversion conversion = new Conversion();
+            string input = @"
+jobs:
+  # Track deployments on the environment.
+- deployment: DeployWeb
+  displayName: deploy Web App
+  pool:
+    vmImage: 'Ubuntu-16.04'
+  # Creates an environment if it doesn't exist.
+  environment: 'smarthotel-dev'
+  strategy:
+    # Default deployment strategy, more coming...
+    runOnce:
+      deploy:
+        steps:
+        - script: echo my first deployment
+";
+
+            //Act
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(input);
+
+            //Assert
+            string expected = @"
+#Note: Azure DevOps strategy>runOnce does not have an equivalent in GitHub Actions yet, and only the deploy steps are transferred to steps
+jobs:
+  DeployWeb:
+    # 'Note: Azure DevOps strategy>runOnce does not have an equivalent in GitHub Actions yet, and only the deploy steps are transferred to steps'
+    name: deploy Web App
+    runs-on: Ubuntu-16.04
+    environment:
+      name: smarthotel-dev
+    steps:
+    - run: echo my first deployment
+";
+            expected = UtilityTests.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+
+        }
+
+        [TestMethod]
+        public void StrategyRollingDeploymentTest()
         {
             //Arrange
             Conversion conversion = new Conversion();
@@ -281,13 +324,20 @@ jobs:
             ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(input);
 
             //Assert
-            //TODO: Process the rest of the steps
             string expected = @"
+#Note: Error! This step does not have a conversion path yet: IISWebAppDeploymentOnMachineGroup@0
+#Note: Azure DevOps strategy>rolling does not have an equivalent in GitHub Actions yet, and only the deploy steps are transferred to steps
 jobs:
   VMDeploy:
+    # 'Note: Azure DevOps strategy>rolling does not have an equivalent in GitHub Actions yet, and only the deploy steps are transferred to steps'
     name: web
     environment:
       name: smarthotel-dev
+    steps:
+    - # 'Note: Error! This step does not have a conversion path yet: IISWebAppDeploymentOnMachineGroup@0'
+      name: Deploy application to Website
+      run: 'Write-Host Note: Error! This step does not have a conversion path yet: IISWebAppDeploymentOnMachineGroup@0 #task: IISWebAppDeploymentOnMachineGroup@0#displayName: Deploy application to Website#inputs:#  websitename: Default Web Site#  package: ${{ env.Pipeline.Workspace }}/drop/**/*.zip'
+      shell: powershell
 ";
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
@@ -295,7 +345,7 @@ jobs:
         }
 
         [TestMethod]
-        public void StrategyCanaryWithComplexEnvironmentsDeploymentTest()
+        public void StrategyCanaryDeploymentTest()
         {
             //Arrange
             Conversion conversion = new Conversion();
@@ -305,7 +355,7 @@ jobs:
   environment: smarthotel-dev.bookings
   pool: 
     name: smarthotel-devPool
-  strategy:                  
+  strategy:
     canary:      
       increments: [10,20]  
       preDeploy:                                     
@@ -330,13 +380,16 @@ jobs:
             ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(input);
 
             //Assert
-            //TODO: Process the rest of the steps
             string expected = @"
+#Note: Azure DevOps strategy>canary does not have an equivalent in GitHub Actions yet, and only the deploy steps are transferred to steps
 jobs:
   VMDeploy:
+    # 'Note: Azure DevOps strategy>canary does not have an equivalent in GitHub Actions yet, and only the deploy steps are transferred to steps'
     runs-on: smarthotel-devPool
     environment:
       name: smarthotel-dev.bookings
+    steps:
+    - run: echo deploy updates...
 ";
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);

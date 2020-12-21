@@ -363,5 +363,33 @@ contains(variables['System.TeamFoundationCollectionUri'], 'dsccommunity')
             Assert.AreEqual(3, results.Count);
         }
 
+        [TestMethod]
+        public void NoConditionTest()
+        {
+            //Arrange
+            string condition = "";
+
+            //Act
+            string result = ConditionsProcessing.TranslateConditions(condition);
+
+            //Assert
+            string expected = null;
+            Assert.AreEqual(expected, result);
+        }
+
+        [TestMethod]
+        public void TestConditionTest()
+        {
+            //Arrange
+            string condition = "Test()"; // (doesn't exist as a condition)
+
+            //Act
+            string result = ConditionsProcessing.TranslateConditions(condition);
+
+            //Assert
+            string expected = "";
+            Assert.AreEqual(expected, result);
+        }
+
     }
 }

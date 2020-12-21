@@ -126,29 +126,6 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
             return null;
         }
 
-        public AzurePipelines.Strategy ProcessStrategyV2(string strategyYaml)
-        {
-            if (strategyYaml != null)
-            {
-                try
-                {
-                    //Most often, the pool will be in this structure
-                    AzurePipelines.Strategy strategy = YamlSerialization.DeserializeYaml<AzurePipelines.Strategy>(strategyYaml);
-                    return strategy;
-                }
-                catch (Exception ex)
-                {
-                    ConversionUtility.WriteLine($"DeserializeYaml<AzurePipelines.Strategy>(strategyYaml) swallowed an exception: " + ex.Message, _verbose);
-                    return null;
-                }
-            }
-            else
-            {
-                return null;
-            }
-        }
-
-
         //process the build pool/agent
         public string ProcessPool(Pool pool)
         {

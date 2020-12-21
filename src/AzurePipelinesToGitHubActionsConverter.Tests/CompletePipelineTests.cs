@@ -1182,7 +1182,7 @@ stages:
             string expected = @"
 #Note: Error! This step does not have a conversion path yet: IISWebAppDeploymentOnMachineGroup@0
 #Note: Error! This step does not have a conversion path yet: IISWebAppManagementOnMachineGroup@0
-#Note: Azure DevOps strategy>runOnce>deploy does not have an equivalent in GitHub Actions yet
+#Note: Azure DevOps strategy>runOnce does not have an equivalent in GitHub Actions yet, and only the deploy steps are transferred to steps
 #Note: This is a third party action: https://github.com/warrenbuckley/Setup-Nuget
 on:
   push:
@@ -1207,7 +1207,7 @@ jobs:
       with:
         path: ${{ github.workspace }}
   Deploy_Stage_job1:
-    # 'Note: Azure DevOps strategy>runOnce>deploy does not have an equivalent in GitHub Actions yet'
+    # 'Note: Azure DevOps strategy>runOnce does not have an equivalent in GitHub Actions yet, and only the deploy steps are transferred to steps'
     environment:
       name: windows-server
     env:
@@ -1448,9 +1448,9 @@ jobs:
 
             //Assert
             string expected = @"
-#Note: Azure DevOps strategy>runOnce>deploy does not have an equivalent in GitHub Actions yet
-#Note: Azure DevOps strategy>runOnce>deploy does not have an equivalent in GitHub Actions yet
-#Note: Azure DevOps strategy>runOnce>deploy does not have an equivalent in GitHub Actions yet
+#Note: Azure DevOps strategy>runOnce does not have an equivalent in GitHub Actions yet, and only the deploy steps are transferred to steps
+#Note: Azure DevOps strategy>runOnce does not have an equivalent in GitHub Actions yet, and only the deploy steps are transferred to steps
+#Note: Azure DevOps strategy>runOnce does not have an equivalent in GitHub Actions yet, and only the deploy steps are transferred to steps
 env:
   applicationInsightsApiKey: ${{ env.ApplicationInsights--APIKeyDev }}
   applicationInsightsApplicationId: ${{ env.ApplicationInsights--ApplicationIdDev }}
@@ -1489,7 +1489,7 @@ env:
   websiteUrl: https://myapp-${{ env.prLC }}-eu-web.azurewebsites.net/
 jobs:
   DeployTests1:
-    # 'Note: Azure DevOps strategy>runOnce>deploy does not have an equivalent in GitHub Actions yet'
+    # 'Note: Azure DevOps strategy>runOnce does not have an equivalent in GitHub Actions yet, and only the deploy steps are transferred to steps'
     name: Deploy functional tests to ${{ env.environment }} job
     runs-on: ${{ env.vmImage }}
     environment:
@@ -1501,7 +1501,7 @@ jobs:
         name: drop
         path: ${{ github.workspace }}
   DeployTests2:
-    # 'Note: Azure DevOps strategy>runOnce>deploy does not have an equivalent in GitHub Actions yet'
+    # 'Note: Azure DevOps strategy>runOnce does not have an equivalent in GitHub Actions yet, and only the deploy steps are transferred to steps'
     name: Deploy functional tests to ${{ env.environment }} job
     runs-on: ${{ env.vmImage }}
     environment:
@@ -1513,7 +1513,7 @@ jobs:
         name: drop
         path: ${{ github.workspace }}
   DeployTests3:
-    # 'Note: Azure DevOps strategy>runOnce>deploy does not have an equivalent in GitHub Actions yet'
+    # 'Note: Azure DevOps strategy>runOnce does not have an equivalent in GitHub Actions yet, and only the deploy steps are transferred to steps'
     name: Deploy functional tests to ${{ env.environment }} job
     runs-on: ${{ env.vmImage }}
     needs:

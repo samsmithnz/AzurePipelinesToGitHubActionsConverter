@@ -12,7 +12,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
             _verbose = verbose;
         }
 
-        public Dictionary<string, GitHubActions.Job> ProcessStagesV2(JToken stagesJson, string strategyYaml)
+        public Dictionary<string, GitHubActions.Job> ProcessStagesV2(JToken stagesJson, JToken strategyJson)
         {
             AzurePipelines.Job[] jobs = null;
             List<AzurePipelines.Stage> stages = new List<AzurePipelines.Stage>();
@@ -40,7 +40,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                     if (stageJson["jobs"] != null)
                     {
                         JobProcessing jp = new JobProcessing(_verbose);
-                        stage.jobs = jp.ExtractAzurePipelinesJobsV2(stageJson["jobs"], strategyYaml);
+                        stage.jobs = jp.ExtractAzurePipelinesJobsV2(stageJson["jobs"], strategyJson);
                     }
                     if (stageJson["pool"] != null && stage.jobs != null)
                     {
