@@ -54,7 +54,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                     //Initialize the array with no items
                     job.steps = new AzurePipelines.Step[0];
                     //Process the steps, adding the default checkout step
-                    newJob.steps = sp.AddSupportingSteps(job.strategy?.runOnce?.deploy?.steps, false);
+                    newJob.steps = sp.AddSupportingSteps(job.strategy.runOnce.deploy.steps, false);
                 }
                 //TODO: There is currently no conversion path for runOnce strategy
                 newJob.job_message += "Note: Azure DevOps strategy>runOnce does not have an equivalent in GitHub Actions yet, and only the deploy steps are transferred to steps";
@@ -66,7 +66,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                     //Initialize the array with no items
                     job.steps = new AzurePipelines.Step[0];
                     //Process the steps, adding the default checkout step
-                    newJob.steps = sp.AddSupportingSteps(job.strategy?.canary?.deploy?.steps, false);
+                    newJob.steps = sp.AddSupportingSteps(job.strategy.canary.deploy.steps, false);
                 }
                 //TODO: There is currently no conversion path for runOnce strategy
                 newJob.job_message += "Note: Azure DevOps strategy>canary does not have an equivalent in GitHub Actions yet, and only the deploy steps are transferred to steps";
@@ -78,7 +78,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                     //Initialize the array with no items
                     job.steps = new AzurePipelines.Step[0];
                     //Process the steps, adding the default checkout step
-                    newJob.steps = sp.AddSupportingSteps(job.strategy?.rolling?.deploy?.steps, false);
+                    newJob.steps = sp.AddSupportingSteps(job.strategy.rolling.deploy.steps, false);
                 }
                 //TODO: There is currently no conversion path for runOnce strategy
                 newJob.job_message += "Note: Azure DevOps strategy>rolling does not have an equivalent in GitHub Actions yet, and only the deploy steps are transferred to steps";

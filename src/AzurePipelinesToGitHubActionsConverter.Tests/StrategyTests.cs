@@ -259,6 +259,8 @@ jobs:
           artifact: drop
         - script: echo initialize, cleanup, backup, install certs
       deploy:
+        pool: 
+          name: smarthotel-devPool  
         steps:
         - script: echo Deploy application to Website
       routeTraffic:
@@ -318,6 +320,8 @@ jobs:
           artifact: drop
         - script: echo initialize, cleanup, backup, install certs
       deploy:
+        pool: 
+          name: smarthotel-devPool  
         steps:
         - script: echo Deploy application to Website
       routeTraffic:
@@ -374,6 +378,8 @@ jobs:
           artifact: drop
         - script: echo initialize, cleanup, backup, install certs
       deploy:
+        pool: 
+          name: smarthotel-devPool    
         steps:
         - script: echo Deploy application to Website
       routeTraffic:

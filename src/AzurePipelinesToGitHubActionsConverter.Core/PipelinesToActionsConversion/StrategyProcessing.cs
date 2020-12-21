@@ -3,6 +3,7 @@ using AzurePipelinesToGitHubActionsConverter.Core.Serialization;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
+using System.Runtime.Serialization;
 
 namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversion
 {
@@ -58,6 +59,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
             if (strategyJson["preDeploy"] != null)
             {
                 runOnce.preDeploy = ProcessDeploy(strategyJson["preDeploy"]);
+                ConversionUtility.WriteLine("Note that RunOnce>preDeploy isn't currently processed: " + runOnce.preDeploy.ToString(), _verbose);
             }
             if (strategyJson["deploy"] != null)
             {
@@ -66,14 +68,17 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
             if (strategyJson["routeTraffic"] != null)
             {
                 runOnce.routeTraffic = ProcessDeploy(strategyJson["routeTraffic"]);
+                ConversionUtility.WriteLine("Note that RunOnce>preDeploy isn't currently processed: " + runOnce.preDeploy.ToString(), _verbose);
             }
             if (strategyJson["postRouteTraffic"] != null)
             {
                 runOnce.postRouteTraffic = ProcessDeploy(strategyJson["postRouteTraffic"]);
+                ConversionUtility.WriteLine("Note that RunOnce>preDeploy isn't currently processed: " + runOnce.preDeploy.ToString(), _verbose);
             }
             if (strategyJson["on"] != null)
             {
                 runOnce.on = ProcessOn(strategyJson["on"]);
+                ConversionUtility.WriteLine("Note that RunOnce>on isn't currently processed: " + runOnce.on.ToString(), _verbose);
             }
             return runOnce;
         }
@@ -84,10 +89,12 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
             if (strategyJson["increments"] != null)
             {
                 canary.increments = YamlSerialization.DeserializeYaml<int[]>(strategyJson["increments"].ToString());
+                ConversionUtility.WriteLine("Note that canary>increments isn't currently processed: " + canary.increments.ToString(), _verbose);
             }
             if (strategyJson["preDeploy"] != null)
             {
                 canary.preDeploy = ProcessDeploy(strategyJson["preDeploy"]);
+                ConversionUtility.WriteLine("Note that canary>preDeploy isn't currently processed: " + canary.preDeploy.ToString(), _verbose);
             }
             if (strategyJson["deploy"] != null)
             {
@@ -96,14 +103,17 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
             if (strategyJson["routeTraffic"] != null)
             {
                 canary.routeTraffic = ProcessDeploy(strategyJson["routeTraffic"]);
+                ConversionUtility.WriteLine("Note that canary>routeTraffic isn't currently processed: " + canary.routeTraffic.ToString(), _verbose);
             }
             if (strategyJson["postRouteTraffic"] != null)
             {
                 canary.postRouteTraffic = ProcessDeploy(strategyJson["postRouteTraffic"]);
+                ConversionUtility.WriteLine("Note that canary>postRouteTraffic isn't currently processed: " + canary.postRouteTraffic.ToString(), _verbose);
             }
             if (strategyJson["on"] != null)
             {
                 canary.on = ProcessOn(strategyJson["on"]);
+                ConversionUtility.WriteLine("Note that canary>on isn't currently processed: " + canary.on.ToString(), _verbose);
             }
             return canary;
         }
@@ -111,17 +121,15 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
         private Rolling ProcessRollingStrategy(JToken strategyJson)
         {
             Rolling rolling = new Rolling();
-            if (strategyJson["preDeploy"] != null)
-            {
-                rolling.preDeploy = ProcessDeploy(strategyJson["preDeploy"]);
-            }
             if (strategyJson["maxParallel"] != null)
             {
                 rolling.maxParallel = (int)(strategyJson["maxParallel"]);
+                ConversionUtility.WriteLine("Note that rolling>maxParallel isn't currently processed: " + rolling.maxParallel.ToString(), _verbose);
             }
             if (strategyJson["preDeploy"] != null)
             {
                 rolling.preDeploy = ProcessDeploy(strategyJson["preDeploy"]);
+                ConversionUtility.WriteLine("Note that rolling>preDeploy isn't currently processed: " + rolling.preDeploy.ToString(), _verbose);
             }
             if (strategyJson["deploy"] != null)
             {
@@ -130,14 +138,17 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
             if (strategyJson["routeTraffic"] != null)
             {
                 rolling.routeTraffic = ProcessDeploy(strategyJson["routeTraffic"]);
+                ConversionUtility.WriteLine("Note that rolling>routeTraffic isn't currently processed: " + rolling.routeTraffic.ToString(), _verbose);
             }
             if (strategyJson["postRouteTraffic"] != null)
             {
                 rolling.postRouteTraffic = ProcessDeploy(strategyJson["postRouteTraffic"]);
+                ConversionUtility.WriteLine("Note that rolling>postRouteTraffic isn't currently processed: " + rolling.postRouteTraffic.ToString(), _verbose);
             }
             if (strategyJson["on"] != null)
             {
                 rolling.on = ProcessOn(strategyJson["on"]);
+                ConversionUtility.WriteLine("Note that rolling>on isn't currently processed: " + rolling.on.ToString(), _verbose);
             }
 
             return rolling;
@@ -172,10 +183,12 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
             if (onJson["success"] != null)
             {
                 on.success = ProcessDeploy(onJson["success"]);
+                ConversionUtility.WriteLine("Note that success isn't currently processed: " + on.success.ToString(), _verbose);
             }
             if (onJson["failure"] != null)
             {
                 on.failure = ProcessDeploy(onJson["failure"]);
+                ConversionUtility.WriteLine("Note that failure isn't currently processed: " + on.failure.ToString(), _verbose);
             }
             return on;
         }
