@@ -49,6 +49,9 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                     case "BASH@3":
                         gitHubStep = CreateBashStep(step);
                         break;
+                    case "BATCHSCRIPT@1":
+                        gitHubStep = CreateBatchScriptStep(step);
+                        break;
                     case "CMDLINE@2":
                         gitHubStep = CreateScriptStep("cmd", step);
                         break;
@@ -462,6 +465,37 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
             //  shell: bash
 
             GitHubActions.Step gitHubStep = CreateScriptStep("bash", step);
+
+            return gitHubStep;
+        }
+
+        private GitHubActions.Step CreateBatchScriptStep(AzurePipelines.Step step)
+        {
+            //From:
+            //- task: BatchScript@1
+            //  inputs:
+            //    filename: 
+            //    #arguments: # Optional
+            //    #modifyEnvironment: False # Optional
+            //    #workingFolder: # Optional
+            //    #failOnStandardError: false # Optional
+
+            //To:
+            //- name: test cmd
+            //  run: dir /w
+            //  shell: cmd
+
+            string filename = GetStepInput(step, "filename");
+            string arguments = GetStepInput(step, "arguments");
+
+            string inlineScript = filename;
+            if (arguments != null)
+            {
+                inlineScript += " " + arguments;
+            }
+
+            GitHubActions.Step gitHubStep = CreateScriptStep("cmd", step);
+            gitHubStep.run = inlineScript;
 
             return gitHubStep;
         }

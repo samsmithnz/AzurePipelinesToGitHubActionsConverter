@@ -294,6 +294,35 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
         }
 
+
+        [TestMethod]
+        public void BatchIndividualStepTest()
+        {
+            //Arrange
+            Conversion conversion = new Conversion();
+            string yaml = @"
+  - task: BatchScript@1
+    inputs:
+      filename: scripts/azure-pipelines/setup_msvc_env.bat
+      modifyEnvironment: True
+      arguments: /w
+    condition: eq(variables['Agent.OS'], 'Windows_NT')
+    displayName: Setup MSVC Environment";
+
+            //Act
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineTaskToGitHubActionTask(yaml);
+
+            //Assert
+            string expected = @"
+- name: Setup MSVC Environment
+  run: scripts/azure-pipelines/setup_msvc_env.bat /w
+  shell: cmd
+  if: eq(runner.os, 'Windows_NT')
+";
+            expected = UtilityTests.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+        }
+
         [TestMethod]
         public void BuildDotNetIndividualStepTest()
         {
@@ -525,6 +554,76 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
     ScriptArguments: '-ResourceGroupName ""$(ResourceGroupName)""'
     azurePowerShellVersion: OtherVersion
     preferredAzurePowerShellVersion: 1.2.3
+    errorActionPreference: stop
+    FailOnStandardError: false
+";
+
+            //Act
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineTaskToGitHubActionTask(yaml);
+
+            //Assert
+            string expected = @"
+- name: Run Azure PowerShell
+  uses: azure/powershell@v1
+  with:
+    inlineScript: ${{ github.workspace }}/drop/EnvironmentARMTemplate/PowerShell/Cleanup.ps1 -ResourceGroupName ""${{ env.ResourceGroupName }}""
+    azPSVersion: 1.2.3
+    errorActionPreference: stop
+    failOnStandardError: false
+";
+            expected = UtilityTests.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+        }
+        
+        [TestMethod]
+        public void AzurePowershellWithOtherVersionAndTargetAzurePsIndividualStepTest()
+        {
+            //Arrange
+            Conversion conversion = new Conversion();
+            string yaml = @"
+- task: AzurePowerShell@4 
+  displayName: 'Run Azure PowerShell' 
+  inputs:
+    azureSubscription: 'Service Connection to Azure Portal'
+    ScriptPath: '$(build.artifactstagingdirectory)/drop/EnvironmentARMTemplate/PowerShell/Cleanup.ps1'
+    ScriptArguments: '-ResourceGroupName ""$(ResourceGroupName)""'
+    azurePowerShellVersion: OtherVersion
+    targetAzurePs: 1.2.3
+    errorActionPreference: stop
+    FailOnStandardError: false
+";
+
+            //Act
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineTaskToGitHubActionTask(yaml);
+
+            //Assert
+            string expected = @"
+- name: Run Azure PowerShell
+  uses: azure/powershell@v1
+  with:
+    inlineScript: ${{ github.workspace }}/drop/EnvironmentARMTemplate/PowerShell/Cleanup.ps1 -ResourceGroupName ""${{ env.ResourceGroupName }}""
+    azPSVersion: 1.2.3
+    errorActionPreference: stop
+    failOnStandardError: false
+";
+            expected = UtilityTests.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+        }
+        
+        [TestMethod]
+        public void AzurePowershellWithOtherVersionAndCustomTargetAzurePsIndividualStepTest()
+        {
+            //Arrange
+            Conversion conversion = new Conversion();
+            string yaml = @"
+- task: AzurePowerShell@4 
+  displayName: 'Run Azure PowerShell' 
+  inputs:
+    azureSubscription: 'Service Connection to Azure Portal'
+    ScriptPath: '$(build.artifactstagingdirectory)/drop/EnvironmentARMTemplate/PowerShell/Cleanup.ps1'
+    ScriptArguments: '-ResourceGroupName ""$(ResourceGroupName)""'
+    azurePowerShellVersion: OtherVersion
+    customTargetAzurePs: 1.2.3
     errorActionPreference: stop
     FailOnStandardError: false
 ";

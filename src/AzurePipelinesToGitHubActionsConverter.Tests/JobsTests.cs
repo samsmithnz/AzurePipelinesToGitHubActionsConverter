@@ -19,6 +19,7 @@ jobs:
   displayName: 'Build job'
   pool:
     vmImage: 'windows-latest'
+  timeoutInMinutes: 30
   steps:
   - task: CmdLine@2
     inputs:
@@ -34,6 +35,7 @@ jobs:
   Build:
     name: Build job
     runs-on: windows-latest
+    timeout-minutes: 30
     steps:
     - uses: actions/checkout@v2
     - run: echo your commands here
