@@ -341,10 +341,10 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                 {
                     Debug.WriteLine("container property not used: " + resources.containers[0].container);
                 }
-                if (resources.containers[0].endpoint != null)
-                {
-                    Debug.WriteLine("endpoint property not used: " + resources.containers[0].endpoint);
-                }
+                //if (resources.containers[0].endpoint != null)
+                //{
+                //    Debug.WriteLine("endpoint property not used: " + resources.containers[0].endpoint);
+                //}
 
                 return container;
             }

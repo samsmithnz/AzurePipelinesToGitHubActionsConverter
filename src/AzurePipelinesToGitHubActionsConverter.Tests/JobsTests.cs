@@ -292,6 +292,46 @@ jobs:
         }
 
        [TestMethod]
+        public void CheckoutJobTest()
+        {
+            //Arrange
+            Conversion conversion = new Conversion();
+            string yaml = @"
+jobs:
+- job: provisionProd
+  pool:
+    vmImage: ubuntu-latest
+  steps:
+  - checkout: self
+  - checkout: git://MyProject/MyRepo
+  - checkout: MyGitHubRepo # Repo declared in a repository resource
+";
+
+            //Act
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(yaml);
+
+            //Assert
+            string expected = @"
+jobs:
+  provisionProd:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/checkout@v2
+    - uses: actions/checkout@v2
+      with:
+        repository: git://MyProject/MyRepo
+    - uses: actions/checkout@v2
+      with:
+        repository: MyGitHubRepo
+";
+
+            expected = UtilityTests.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+            
+        }
+
+       [TestMethod]
         public void EnvironmentJobTest()
         {
             //Arrange

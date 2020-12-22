@@ -548,7 +548,7 @@ jobs:
         - vs2017-win2016
     steps:
     - uses: actions/checkout@v2
-    - 
+    - uses: actions/checkout@v2
     - name: Enable Python 3.8
       uses: actions/setup-python@v1
       with:

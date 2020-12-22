@@ -190,25 +190,28 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                         job.variables = vp.ProcessParametersAndVariablesV2(null, jobJson["variables"].ToString());
                     }
                     //Currently no conversion path for services
-                    if (jobJson["services"] != null)
-                    {
-                        job.services = new Dictionary<string, string>();
-                    }
+                    //if (jobJson["services"] != null)
+                    //{
+                    //    job.services = new Dictionary<string, string>();
+                    //    ConversionUtility.WriteLine($"Currently no conversion path for services: " + job.services.ToString(), _verbose);
+                    //}
                     //Currently no conversion path for parameters
                     if (jobJson["parameters"] != null)
                     {
                         job.parameters = new Dictionary<string, string>();
                     }
                     //Currently no conversion path for container
-                    if (jobJson["container"] != null)
-                    {
-                        job.container = new Containers();
-                    }
-                    //Currently no conversion path for cancelTimeoutInMinutes
-                    if (jobJson["cancelTimeoutInMinutes"] != null)
-                    {
-                        job.cancelTimeoutInMinutes = int.Parse(jobJson["cancelTimeoutInMinutes"].ToString());
-                    }
+                    //if (jobJson["container"] != null)
+                    //{
+                    //    job.container = new Containers();
+                    //    ConversionUtility.WriteLine($"Currently no conversion path for services: " + job.container.ToString(), _verbose);
+                    //}
+                    ////Currently no conversion path for cancelTimeoutInMinutes
+                    //if (jobJson["cancelTimeoutInMinutes"] != null)
+                    //{
+                    //    job.cancelTimeoutInMinutes = int.Parse(jobJson["cancelTimeoutInMinutes"].ToString());
+                    //    ConversionUtility.WriteLine($"Currently no conversion path for services: " + job.cancelTimeoutInMinutes.ToString(), _verbose);
+                    //}
                     if (jobJson["steps"] != null)
                     {
                         try

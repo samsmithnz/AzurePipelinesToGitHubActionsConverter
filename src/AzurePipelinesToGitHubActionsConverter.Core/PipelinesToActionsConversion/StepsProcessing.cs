@@ -204,6 +204,10 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
             {
                 gitHubStep = CreateDownloadStep(step);
             }
+            else if (step.checkout != null)
+            {
+                gitHubStep = CreateCheckoutStep(step);
+            }
 
             if (gitHubStep != null)
             {
@@ -763,13 +767,126 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
             return gitHubStep;
         }
 
-        public GitHubActions.Step CreateCheckoutStep()
+        public GitHubActions.Step CreateCheckoutStep(AzurePipelines.Step step = null)
         {
+            //https://github.com/actions/checkout
+            //- uses: actions/checkout@v2
+            //  with:
+            //    # Repository name with owner. For example, actions/checkout
+            //    # Default: ${{ github.repository }}
+            //    repository: ''
+
+            //    # The branch, tag or SHA to checkout. When checking out the repository that triggered a workflow, this defaults to the reference or SHA for that event.
+            //    # Otherwise, uses the default branch.
+            //    ref: ''
+
+            //    # Personal access token (PAT) used to fetch the repository. The PAT is configured with the local git config, which enables your scripts to run authenticated git commands. The post-job step removes the PAT.
+            //    # We recommend using a service account with the least permissions necessary. Also when generating a new PAT, select the least scopes necessary.
+            //    # Default: ${{ github.token }}
+            //    token: ''
+
+            //    # SSH key used to fetch the repository. The SSH key is configured with the local git config, which enables your scripts to run authenticated git commands. The post-job step removes the SSH key.
+            //    ssh-key: ''
+
+            //    # Known hosts in addition to the user and global host key database. The public SSH keys for a host may be obtained using the utility `ssh-keyscan`. For example, `ssh-keyscan github.com`. The public key for github.com is always implicitly added.
+            //    ssh-known-hosts: ''
+
+            //    # Whether to perform strict host key checking. When true, adds the options `StrictHostKeyChecking=yes` and `CheckHostIP=no` to the SSH command line. Use the input `ssh-known-hosts` to configure additional hosts.
+            //    # Default: true
+            //    ssh-strict: ''
+
+            //    # Whether to configure the token or SSH key with the local git config
+            //    # Default: true
+            //    persist-credentials: ''
+
+            //    # Relative path under $GITHUB_WORKSPACE to place the repository
+            //    path: ''
+
+            //    # Whether to execute `git clean -ffdx && git reset --hard HEAD` before fetching
+            //    # Default: true
+            //    clean: ''
+
+            //    # Number of commits to fetch. 0 indicates all history for all branches and tags.
+            //    # Default: 1
+            //    fetch-depth: ''
+
+            //    # Whether to download Git-LFS files
+            //    # Default: false
+            //    lfs: ''
+
+            //    # Whether to checkout submodules: `true` to checkout submodules or `recursive` to
+            //    # recursively checkout submodules.
+            //    #
+            //    # When the `ssh-key` input is not provided, SSH URLs beginning with
+            //    # `git@github.com:` are converted to HTTPS.
+            //    #
+            //    # Default: false
+            //    submodules: ''
+
+
             //Add the check out step to get the code
-            return new GitHubActions.Step
+            GitHubActions.Step gitHubStep = new GitHubActions.Step
             {
-                uses = "actions/checkout@v2"
+                uses = "actions/checkout@v2",
+                with = new Dictionary<string, string>()
             };
+
+            if (step != null)
+            {
+                string fetchDepth = step.fetchDepth;
+                string persistCredentials = step.persistCredentials;
+                string lfs = step.lfs;
+                string clean = step.clean;
+
+                //    # Repository name with owner. For example, actions/checkout
+                //    # Default: ${{ github.repository }}
+                //    repository: ''
+
+                //    # The branch, tag or SHA to checkout. When checking out the repository that triggered a workflow, this defaults to the reference or SHA for that event.
+                //    # Otherwise, uses the default branch.
+                //    ref: ''
+                //    token: ${{ github.token }}
+
+                //    # SSH key used to fetch the repository. The SSH key is configured with the local git config, which enables your scripts to run authenticated git commands. The post-job step removes the SSH key.
+                //    ssh-key: ''
+
+                //    # Known hosts in addition to the user and global host key database. The public SSH keys for a host may be obtained using the utility `ssh-keyscan`. For example, `ssh-keyscan github.com`. The public key for github.com is always implicitly added.
+                //    ssh-known-hosts: ''
+                //    ssh-strict: true
+                //    persist-credentials: true
+                //    path: '/mycode'
+                //    clean: true
+                //    fetch-depth: 1
+                //    lfs: false
+                //    submodules: false
+
+
+                if (step.checkout != null && step.checkout != "self")
+                {
+                    gitHubStep.with.Add("repository", step.checkout);
+                }
+                if (fetchDepth != null)
+                {
+                    gitHubStep.with.Add("fetch-depth", fetchDepth);
+                }
+                if (persistCredentials != null)
+                {
+                    gitHubStep.with.Add("persist-credentials", persistCredentials);
+                }
+                if (lfs != null)
+                {
+                    gitHubStep.with.Add("lfs", lfs);
+                }
+                if (clean != null)
+                {
+                    gitHubStep.with.Add("clean", clean);
+                }
+            }
+            if (gitHubStep.with.Count == 0)
+            {
+                gitHubStep.with = null;
+            }
+            return gitHubStep;
         }
 
         public GitHubActions.Step CreateAzureLoginStep()

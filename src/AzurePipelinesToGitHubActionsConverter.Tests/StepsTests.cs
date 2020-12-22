@@ -212,6 +212,36 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
 ";
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+        }   
+        
+        [TestMethod]
+        public void CheckOutIndividualStepTest()
+        {
+            //Arrange
+            Conversion conversion = new Conversion();
+            string yaml = @"
+- checkout: self
+  submodules: true
+  persistCredentials: true
+  fetchDepth: 0
+  lfs: false
+  clean: true
+";
+
+            //Act
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineTaskToGitHubActionTask(yaml);
+
+            //Assert
+            string expected = @"
+- uses: actions/checkout@v2
+  with:
+    fetch-depth: 0
+    persist-credentials: true
+    lfs: false
+    clean: true
+";
+            expected = UtilityTests.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
         }
 
         [TestMethod]
