@@ -801,6 +801,36 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
         }
+        
+
+        [TestMethod]
+        public void DotNetCoreCLIPushIndividualStepTest()
+        {
+            //Arrange
+            Conversion conversion = new Conversion();
+            string yaml = @"
+- task: DotNetCoreCLI@2
+  displayName: 'Push to GitHub Packages'
+  condition: and(succeeded(), startsWith(variables['build.sourceBranch'], 'refs/tags/')) # Only run this step when the trigger event is a tag push
+  inputs:
+    command: 'push'
+    packagesToPush: '$(Build.ArtifactStagingDirectory)/*.nupkg'
+    nuGetFeedType: 'external'
+    publishFeedCredentials: 'GitHub Packages'
+";
+
+            //Act
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineTaskToGitHubActionTask(yaml);
+
+            //Assert
+            string expected = @"
+- name: Push to GitHub Packages
+  run: dotnet nuget push ${{ github.workspace }}/*.nupkg --source ""github""
+  if: and(success(), startsWith(github.ref, 'refs/tags/'))
+";
+            expected = UtilityTests.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+        }
 
         [TestMethod]
         public void DotNetCoreCLIBuildIndividualStepTest()

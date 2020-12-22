@@ -268,7 +268,12 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                 string runScript = "dotnet ";
                 if (step.inputs.ContainsKey("command") == true)
                 {
-                    runScript += GetStepInput(step, "command") + " ";
+                    string command = GetStepInput(step, "command");
+                    if (command == "push")
+                    {
+                        command = "nuget " + command;
+                    }
+                    runScript += command + " ";
                 }
                 if (step.inputs.ContainsKey("projects") == true)
                 {
@@ -277,6 +282,18 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                 if (step.inputs.ContainsKey("packagestopack") == true)
                 {
                     runScript += GetStepInput(step, "packagesToPack") + " ";
+                }
+                if (step.inputs.ContainsKey("packagestopush") == true)
+                {
+                    runScript += GetStepInput(step, "packagestopush") + " ";
+                }
+                if (step.inputs.ContainsKey("publishfeedcredentials") == true)
+                {
+                    string publishFeedCredentials = GetStepInput(step, "publishFeedCredentials");
+                    if (publishFeedCredentials == "GitHub Packages")
+                    {
+                        runScript += "--source \"github\" ";
+                    }
                 }
                 if (step.inputs.ContainsKey("arguments") == true)
                 {
