@@ -125,21 +125,18 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                 {
                     gitHubActions.messages.Add("TODO: Container conversion not yet done, we need help!: https://github.com/samsmithnz/AzurePipelinesToGitHubActionsConverter/issues/39");
                 }
-                //Strategy
-                string strategyYaml = json["strategy"]?.ToString();
-
 
                 //If we have stages, convert them into jobs first:
                 if (json["stages"] != null)
                 {
                     StagesProcessing sp = new StagesProcessing(_verbose);
-                    gitHubActions.jobs = sp.ProcessStagesV2(json["stages"], strategyYaml);
+                    gitHubActions.jobs = sp.ProcessStagesV2(json["stages"], json["strategy"]);
                 }
                 //If we don't have stages, but have jobs:
                 else if (json["stages"] == null && json["jobs"] != null)
                 {
                     JobProcessing jp = new JobProcessing(_verbose);
-                    gitHubActions.jobs = jp.ProcessJobsV2(jp.ExtractAzurePipelinesJobsV2(json["jobs"], strategyYaml), gp.ExtractResourcesV2(resourcesYaml));
+                    gitHubActions.jobs = jp.ProcessJobsV2(jp.ExtractAzurePipelinesJobsV2(json["jobs"], json["strategy"]), gp.ExtractResourcesV2(resourcesYaml));
                     _matrixVariableName = jp.MatrixVariableName;
                 }
                 //Otherwise, if we don't have stages or jobs, we just have steps, and need to load them into a new job
@@ -156,7 +153,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                     //Steps
                     string stepsYaml = json["steps"]?.ToString();
                     JobProcessing jp = new JobProcessing(_verbose);
-                    AzurePipelines.Job[] pipelineJobs = jp.ProcessJobFromPipelineRootV2(poolYaml, strategyYaml, stepsYaml);
+                    AzurePipelines.Job[] pipelineJobs = jp.ProcessJobFromPipelineRootV2(poolYaml, json["strategy"], stepsYaml);
                     Resources resources = gp.ExtractResourcesV2(resourcesYaml);
                     gitHubActions.jobs = jp.ProcessJobsV2(pipelineJobs, resources);
                     _matrixVariableName = jp.MatrixVariableName;

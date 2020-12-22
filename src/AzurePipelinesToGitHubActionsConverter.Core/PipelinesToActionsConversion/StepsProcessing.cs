@@ -80,6 +80,9 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                     case "GRADLE@2":
                         gitHubStep = CreateGradleStep(step);
                         break;
+                    case "HUGOTASK@1":
+                        gitHubStep = CreateHugoStep(step);
+                        break;
                     //case "KUBERNETES@1":
                     //    gitHubStep = CreateKubernetesStep(step);
                     //    break;
@@ -190,6 +193,10 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
             {
                 gitHubStep = CreateTemplateStep(step);
             }
+            else if (step.download != null)
+            {
+                gitHubStep = CreateDownloadStep(step);
+            }
 
             if (gitHubStep != null)
             {
@@ -292,6 +299,40 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                 };
                 return gitHubStep;
             }
+        }
+
+        private GitHubActions.Step CreateDownloadStep(AzurePipelines.Step step)
+        {
+            //From: 
+            //- download: [ current | pipeline resource identifier | none ] # disable automatic download if "none"
+            //  artifact: string ## artifact name, optional; downloads all the available artifacts if not specified
+            //  patterns: string # patterns representing files to include; optional
+            //  displayName: string  # friendly name to display in the UI
+
+            //To:
+            //- name: Download serviceapp artifact
+            //  uses: actions/download-artifact@v1.0.0
+            //  with:
+            //    name: serviceapp
+
+            string artifact = step.artifact;
+            string patterns = step.patterns;
+
+            GitHubActions.Step gitHubStep = new GitHubActions.Step
+            {
+                uses = "actions/download-artifact@v2",
+                with = new Dictionary<string, string>()
+            };
+            if (artifact != null)
+            {
+                gitHubStep.with.Add("name", artifact);
+            }
+            else if (patterns != null)
+            {
+                gitHubStep.with.Add("name", patterns);
+            }
+
+            return gitHubStep;
         }
 
         private GitHubActions.Step CreateDownloadBuildArtifactsStep(AzurePipelines.Step step)
@@ -1282,6 +1323,44 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
 
             step.script = "./gradlew build";
             GitHubActions.Step gitHubStep = CreateScriptStep("", step);
+
+            return gitHubStep;
+        }
+
+        public GitHubActions.Step CreateHugoStep(AzurePipelines.Step step)
+        {
+            //coming from:
+            //- task: HugoTask@1
+            //  displayName: 'Generate Hugo site'
+            //  inputs:
+            //    hugoVersion: latest
+            //    extendedVersion: true
+            //    destination: '$(Build.ArtifactStagingDirectory)'
+
+            //Going to: https://github.com/peaceiris/actions-hugo
+            //- name: Generate Hugo site
+            //  uses: peaceiris/actions-hugo@v2
+            //  with:
+            //    hugo-version: latest
+            //    extended: true
+
+            string hugoVersion = GetStepInput(step, "hugoVersion");
+            string extendedVersion = GetStepInput(step, "extendedVersion");
+            //string destination = GetStepInput(step, "destination");
+
+            GitHubActions.Step gitHubStep = new GitHubActions.Step
+            {
+                uses = "peaceiris/actions-hugo@v2",
+                with = new Dictionary<string, string>
+                {
+                    { "hugo-version", hugoVersion}
+                },
+                step_message = "Note: This is a third party action: https://github.com/peaceiris/actions-hugo"
+            };
+            if (extendedVersion != null)
+            {
+                gitHubStep.with.Add("extended", extendedVersion);
+            }
 
             return gitHubStep;
         }

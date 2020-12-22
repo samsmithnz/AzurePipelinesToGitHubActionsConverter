@@ -213,14 +213,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
             Schedule[] schedules = null;
             if (schedulesYaml != null)
             {
-                try
-                {
-                    schedules = YamlSerialization.DeserializeYaml<Schedule[]>(schedulesYaml);
-                }
-                catch (Exception ex)
-                {
-                    ConversionUtility.WriteLine($"DeserializeYaml<Schedule[]>(schedulesYaml) swallowed an exception: " + ex.Message, _verbose);
-                }
+                schedules = YamlSerialization.DeserializeYaml<Schedule[]>(schedulesYaml);
             }
 
             //Convert the pieces to GitHub

@@ -2,9 +2,9 @@
 
 namespace AzurePipelinesToGitHubActionsConverter.Core.AzurePipelines
 {
-    public class Deploy
+    public class On
     {
-        public Pool pool { get; set; }
-        public Step[] steps { get; set; }
+        public Deploy failure { get; set; }
+        public Deploy success { get; set; }
     }
 }

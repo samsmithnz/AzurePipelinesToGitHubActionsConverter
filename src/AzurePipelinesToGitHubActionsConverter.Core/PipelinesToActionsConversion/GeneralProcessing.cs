@@ -19,14 +19,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
 
         public string ProcessNameV2(string nameYaml)
         {
-            if (nameYaml != null)
-            {
-                return nameYaml.Replace("name:", "").Replace(System.Environment.NewLine, "").Trim();
-            }
-            else
-            {
-                return null;
-            }
+            return nameYaml.Replace("name:", "").Replace(System.Environment.NewLine, "").Trim();
         }
 
         public string[] ProcessDependsOnV2(string dependsOnYaml)
@@ -79,8 +72,10 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                         JObject json = JsonSerialization.DeserializeStringToObject(environmentYaml);
                         if (json["name"] != null)
                         {
-                            environment = new AzurePipelines.Environment();
-                            environment.name = json["name"].ToString();
+                            environment = new AzurePipelines.Environment
+                            {
+                                name = json["name"].ToString()
+                            };
                         }
                         if (json["resourceName"] != null)
                         {
@@ -130,28 +125,6 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
             }
             return null;
         }
-
-        public AzurePipelines.Strategy ProcessStrategyV2(string strategyYaml)
-        {
-            if (strategyYaml != null)
-            {
-                //try
-                //{
-                //Most often, the pool will be in this structure
-                AzurePipelines.Strategy strategy = YamlSerialization.DeserializeYaml<AzurePipelines.Strategy>(strategyYaml);
-                return strategy;
-                //}
-                //catch (Exception ex)
-                //{
-                //    ConversionUtility.WriteLine($"DeserializeYaml<AzurePipelines.Strategy>(strategyYaml) swallowed an exception: " + ex.Message, _verbose);
-                //}
-            }
-            else
-            {
-                return null;
-            }
-        }
-
 
         //process the build pool/agent
         public string ProcessPool(Pool pool)
@@ -291,11 +264,18 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                     }
                     processedStrategy.max_parallel = strategy.maxParallel;
                 }
-                if (strategy.runOnce != null)
-                {
-                    //TODO: There is currently no conversion path for other strategies
-                    ConversionUtility.WriteLine("TODO: " + strategy.runOnce, _verbose);
-                }
+                //TODO: There is currently no conversion path for other strategies    //if (strategy.runOnce != null)
+                //{
+                //    ConversionUtility.WriteLine("TODO: " + strategy.runOnce, _verbose);
+                //}
+                //if (strategy.canary != null)
+                //{
+                //    ConversionUtility.WriteLine("TODO: " + strategy.canary, _verbose);
+                //}
+                //if (strategy.rolling != null)
+                //{
+                //    ConversionUtility.WriteLine("TODO: " + strategy.rolling, _verbose);
+                //}
                 return processedStrategy;
             }
             else

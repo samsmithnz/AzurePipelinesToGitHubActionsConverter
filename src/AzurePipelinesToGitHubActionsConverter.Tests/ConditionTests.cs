@@ -115,7 +115,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             string result = ConditionsProcessing.TranslateConditions(condition);
 
             //Assert
-            string expected = "and(eq('ABCDE', 'BCD'),ne(0, 1))";
+            string expected = "and(eq('ABCDE', 'BCD'), ne(0, 1))";
             Assert.AreEqual(expected, result);
         }
 
@@ -129,7 +129,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             string result = ConditionsProcessing.TranslateConditions(condition);
 
             //Assert
-            string expected = "and(success(),eq(github.ref, 'refs/heads/master'))";
+            string expected = "and(success(), eq(github.ref, 'refs/heads/master'))";
             Assert.AreEqual(expected, result);
         }
 
@@ -143,7 +143,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             string result = ConditionsProcessing.TranslateConditions(condition);
 
             //Assert
-            string expected = "and(success(),endsWith(github.ref, 'master'))";
+            string expected = "and(success(), endsWith(github.ref, 'master'))";
             Assert.AreEqual(expected, result);
         }
 
@@ -165,7 +165,7 @@ contains(variables['System.TeamFoundationCollectionUri'], 'dsccommunity')
             string result = ConditionsProcessing.TranslateConditions(text);
 
             //Assert
-            string expected = "and(success(),or(eq(github.ref, 'refs/heads/master'),startsWith(github.ref, 'refs/tags/')),contains(variables['System.TeamFoundationCollectionUri'], 'dsccommunity'))";
+            string expected = "and(success(), or(eq(github.ref, 'refs/heads/master'), startsWith(github.ref, 'refs/tags/')), contains(variables['System.TeamFoundationCollectionUri'], 'dsccommunity'))";
             Assert.AreEqual(expected, result);
         }
 
@@ -180,7 +180,7 @@ and(succeeded(),or(succeeded(),succeeded()))";
             string result = ConditionsProcessing.TranslateConditions(text);
 
             //Assert
-            string expected = "and(success(),or(success(),success()))";
+            string expected = "and(success(), or(success(), success()))";
             Assert.AreEqual(expected, result);
         }
 
@@ -195,7 +195,7 @@ and(succeeded(),OR(succeeded(),succeeded()))";
             string result = ConditionsProcessing.TranslateConditions(text);
 
             //Assert
-            string expected = "and(success(),OR(success(),success()))";
+            string expected = "and(success(), OR(success(), success()))";
             Assert.AreEqual(expected, result);
         }
 
@@ -227,7 +227,7 @@ and(succeeded(), eq(variables['Build.Reason'], 'PullRequest'), ne(variables['Sys
             string result = ConditionsProcessing.TranslateConditions(text);
 
             //Assert
-            string expected = "and(success(),eq(variables['Build.Reason'], 'PullRequest'),ne(variables['System.PullRequest.PullRequestId'], 'Null'))";
+            string expected = "and(success(), eq(variables['Build.Reason'], 'PullRequest'), ne(variables['System.PullRequest.PullRequestId'], 'Null'))";
             Assert.AreEqual(expected, result);
         }
 
@@ -361,6 +361,34 @@ contains(variables['System.TeamFoundationCollectionUri'], 'dsccommunity')
 
             //Assert
             Assert.AreEqual(3, results.Count);
+        }
+
+        [TestMethod]
+        public void NoConditionTest()
+        {
+            //Arrange
+            string condition = "";
+
+            //Act
+            string result = ConditionsProcessing.TranslateConditions(condition);
+
+            //Assert
+            string expected = null;
+            Assert.AreEqual(expected, result);
+        }
+
+        [TestMethod]
+        public void TestConditionTest()
+        {
+            //Arrange
+            string condition = "Test()"; // (doesn't exist as a condition)
+
+            //Act
+            string result = ConditionsProcessing.TranslateConditions(condition);
+
+            //Assert
+            string expected = "";
+            Assert.AreEqual(expected, result);
         }
 
     }

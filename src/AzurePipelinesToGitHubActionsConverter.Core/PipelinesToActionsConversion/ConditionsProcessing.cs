@@ -9,7 +9,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
 
         public static string TranslateConditions(string condition)
         {
-            if (condition == null)
+            if (string.IsNullOrEmpty(condition) == true)
             {
                 return null;
             }
@@ -39,7 +39,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                         innerContentsProcessed += TranslateConditions(innerContent);
                         if (i != innerContents.Count - 1)
                         {
-                            innerContentsProcessed += ",";
+                            innerContentsProcessed += ", ";
                         }
                     }
                     contents = innerContentsProcessed;

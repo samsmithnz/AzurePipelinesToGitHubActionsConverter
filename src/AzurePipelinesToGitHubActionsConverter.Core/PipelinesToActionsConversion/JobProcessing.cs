@@ -3,7 +3,6 @@ using AzurePipelinesToGitHubActionsConverter.Core.Serialization;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 
 namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversion
@@ -53,10 +52,43 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                 //Initialize the array with no items
                 job.steps = new AzurePipelines.Step[0];
                 //Process the steps, adding the default checkout step
-                newJob.steps = sp.AddSupportingSteps(job.strategy?.runOnce?.deploy?.steps, false);
-                //TODO: There is currently no conversion path for templates
-                newJob.job_message += "Note: Azure DevOps strategy>runOnce>deploy does not have an equivalent in GitHub Actions yet";
+                newJob.steps = sp.AddSupportingSteps(job.strategy.runOnce.deploy.steps, false);
+                //TODO: There is currently no conversion path for runOnce strategy
+                newJob.job_message += "Note: Azure DevOps strategy>runOnce does not have an equivalent in GitHub Actions yet, and only the deploy steps are transferred to steps";
             }
+            else if (newJob.steps == null && job.strategy?.canary?.deploy?.steps != null)
+            {
+                //Initialize the array with no items
+                job.steps = new AzurePipelines.Step[0];
+                //Process the steps, adding the default checkout step
+                newJob.steps = sp.AddSupportingSteps(job.strategy.canary.deploy.steps, false);
+                //TODO: There is currently no conversion path for runOnce strategy
+                newJob.job_message += "Note: Azure DevOps strategy>canary does not have an equivalent in GitHub Actions yet, and only the deploy steps are transferred to steps";
+            }
+            else if (newJob.steps == null && job.strategy?.rolling?.deploy?.steps != null)
+            {
+                //Initialize the array with no items
+                job.steps = new AzurePipelines.Step[0];
+                //Process the steps, adding the default checkout step
+                newJob.steps = sp.AddSupportingSteps(job.strategy.rolling.deploy.steps, false);
+                //TODO: There is currently no conversion path for runOnce strategy
+                newJob.job_message += "Note: Azure DevOps strategy>rolling does not have an equivalent in GitHub Actions yet, and only the deploy steps are transferred to steps";
+            }
+
+
+            //TODO: Add this pools in for other strategies  
+            //if (newJob.runs_on == null && job.strategy?.runOnce?.deploy?.pool != null)
+            //{
+            //    newJob.runs_on = generalProcessing.ProcessPool(job.strategy?.runOnce?.deploy?.pool);
+            //}
+            //else if (newJob.runs_on == null && job.strategy?.canary?.deploy?.pool != null)
+            //{
+            //    newJob.runs_on = generalProcessing.ProcessPool(job.strategy?.canary?.deploy?.pool);
+            //}
+            //else if (newJob.runs_on == null && job.strategy?.rolling?.deploy?.pool != null)
+            //{
+            //    newJob.runs_on = generalProcessing.ProcessPool(job.strategy?.rolling?.deploy?.pool);
+            //}
             if (job.continueOnError == true)
             {
                 newJob.continue_on_error = job.continueOnError;
@@ -96,9 +128,10 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
             }
         }
 
-        public AzurePipelines.Job[] ExtractAzurePipelinesJobsV2(JToken jobsJson, string strategyYaml)
+        public AzurePipelines.Job[] ExtractAzurePipelinesJobsV2(JToken jobsJson, JToken strategyJson)
         {
             GeneralProcessing gp = new GeneralProcessing(_verbose);
+            StrategyProcessing sp = new StrategyProcessing(_verbose);
             AzurePipelines.Job[] jobs = new AzurePipelines.Job[jobsJson.Count()];
             if (jobsJson != null)
             {
@@ -116,21 +149,23 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                     {
                         job.pool = gp.ProcessPoolV2(jobJson["pool"].ToString());
                     }
+                    //Strategy
                     if (jobJson["strategy"] != null)
                     {
-                        job.strategy = gp.ProcessStrategyV2(jobJson["strategy"].ToString());
+                        strategyJson = jobJson["strategy"];
                     }
-                    else if (strategyYaml != null)
+                    if (strategyJson != null)
                     {
-                        job.strategy = gp.ProcessStrategyV2(strategyYaml);
+                        job.strategy = sp.ProcessStrategyV2(strategyJson);
                     }
+
                     if (jobJson["dependsOn"] != null)
                     {
                         job.dependsOn = gp.ProcessDependsOnV2(jobJson["dependsOn"].ToString());
                     }
                     if (jobJson["condition"] != null)
                     {
-                        job.condition = ConditionsProcessing.TranslateConditions(jobJson["condition"].ToString());
+                        job.condition = jobJson["condition"].ToString();
                     }
                     if (jobJson["environment"] != null)
                     {
@@ -193,24 +228,21 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
             return jobs;
         }
 
-        public AzurePipelines.Job[] ProcessJobFromPipelineRootV2(string poolYaml, string strategyYaml, string stepsYaml)
+        public AzurePipelines.Job[] ProcessJobFromPipelineRootV2(string poolYaml, JToken strategyJson, string stepsYaml)
         {
+            //Pool
             Pool pool = null;
             if (poolYaml != null)
             {
                 GeneralProcessing gp = new GeneralProcessing(_verbose);
                 pool = gp.ProcessPoolV2(poolYaml);
             }
-            AzurePipelines.Strategy strategy = null;
-            try
-            {
-                //Most often, the pool will be in this structure
-                strategy = YamlSerialization.DeserializeYaml<AzurePipelines.Strategy>(strategyYaml);
-            }
-            catch (Exception ex)
-            {
-                ConversionUtility.WriteLine($"DeserializeYaml<AzurePipelines.Strategy>(strategyYaml) swallowed an exception: " + ex.Message, _verbose);
-            }
+
+            //Strategy
+            StrategyProcessing sp = new StrategyProcessing(_verbose);
+            AzurePipelines.Strategy strategy = sp.ProcessStrategyV2(strategyJson);
+
+            //Steps
             AzurePipelines.Step[] steps = null;
             if (stepsYaml != null)
             {
