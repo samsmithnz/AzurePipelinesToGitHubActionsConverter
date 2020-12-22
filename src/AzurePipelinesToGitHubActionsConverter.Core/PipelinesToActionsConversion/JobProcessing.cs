@@ -49,49 +49,46 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
             }
             else if (newJob.steps == null && job.strategy?.runOnce?.deploy?.steps != null)
             {
-                if (job.strategy?.runOnce?.deploy?.steps != null)
-                {
-                    //Initialize the array with no items
-                    job.steps = new AzurePipelines.Step[0];
-                    //Process the steps, adding the default checkout step
-                    newJob.steps = sp.AddSupportingSteps(job.strategy.runOnce.deploy.steps, false);
-                }
+                //Initialize the array with no items
+                job.steps = new AzurePipelines.Step[0];
+                //Process the steps, adding the default checkout step
+                newJob.steps = sp.AddSupportingSteps(job.strategy.runOnce.deploy.steps, false);
                 //TODO: There is currently no conversion path for runOnce strategy
                 newJob.job_message += "Note: Azure DevOps strategy>runOnce does not have an equivalent in GitHub Actions yet, and only the deploy steps are transferred to steps";
             }
             else if (newJob.steps == null && job.strategy?.canary?.deploy?.steps != null)
             {
-                if (job.strategy?.canary?.deploy?.steps != null)
-                {
-                    //Initialize the array with no items
-                    job.steps = new AzurePipelines.Step[0];
-                    //Process the steps, adding the default checkout step
-                    newJob.steps = sp.AddSupportingSteps(job.strategy.canary.deploy.steps, false);
-                }
+                //Initialize the array with no items
+                job.steps = new AzurePipelines.Step[0];
+                //Process the steps, adding the default checkout step
+                newJob.steps = sp.AddSupportingSteps(job.strategy.canary.deploy.steps, false);
                 //TODO: There is currently no conversion path for runOnce strategy
                 newJob.job_message += "Note: Azure DevOps strategy>canary does not have an equivalent in GitHub Actions yet, and only the deploy steps are transferred to steps";
             }
             else if (newJob.steps == null && job.strategy?.rolling?.deploy?.steps != null)
             {
-                if (job.strategy?.rolling?.deploy?.steps != null)
-                {
-                    //Initialize the array with no items
-                    job.steps = new AzurePipelines.Step[0];
-                    //Process the steps, adding the default checkout step
-                    newJob.steps = sp.AddSupportingSteps(job.strategy.rolling.deploy.steps, false);
-                }
+                //Initialize the array with no items
+                job.steps = new AzurePipelines.Step[0];
+                //Process the steps, adding the default checkout step
+                newJob.steps = sp.AddSupportingSteps(job.strategy.rolling.deploy.steps, false);
                 //TODO: There is currently no conversion path for runOnce strategy
                 newJob.job_message += "Note: Azure DevOps strategy>rolling does not have an equivalent in GitHub Actions yet, and only the deploy steps are transferred to steps";
             }
 
 
-            if (newJob.runs_on == null && job.strategy?.runOnce?.deploy?.pool != null)
-            {
-                if (job.strategy?.runOnce?.deploy?.pool != null)
-                {
-                    newJob.runs_on = generalProcessing.ProcessPool(job.strategy?.runOnce?.deploy?.pool);
-                }
-            }
+            //TODO: Add this pools in for other strategies  
+            //if (newJob.runs_on == null && job.strategy?.runOnce?.deploy?.pool != null)
+            //{
+            //    newJob.runs_on = generalProcessing.ProcessPool(job.strategy?.runOnce?.deploy?.pool);
+            //}
+            //else if (newJob.runs_on == null && job.strategy?.canary?.deploy?.pool != null)
+            //{
+            //    newJob.runs_on = generalProcessing.ProcessPool(job.strategy?.canary?.deploy?.pool);
+            //}
+            //else if (newJob.runs_on == null && job.strategy?.rolling?.deploy?.pool != null)
+            //{
+            //    newJob.runs_on = generalProcessing.ProcessPool(job.strategy?.rolling?.deploy?.pool);
+            //}
             if (job.continueOnError == true)
             {
                 newJob.continue_on_error = job.continueOnError;
