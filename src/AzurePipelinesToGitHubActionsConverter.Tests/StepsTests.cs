@@ -31,6 +31,34 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
         }
 
         [TestMethod]
+        public void CmakeIndividualStepTest()
+        {
+            //Arrange
+            Conversion conversion = new Conversion();
+            string yaml = @"
+    - task: CMake@1
+      inputs:
+        workingDirectory: 'build'
+        cmakeArgs: '-A x64 -DCMAKE_TOOLCHAIN_FILE=../../vcpkg/scripts/buildsystems/vcpkg.cmake -DSELENE_BUILD_ALL=ON -DSELENE_WARNINGS_AS_ERRORS=ON ..'
+      displayName: 'Run CMake'
+";
+
+            //Act
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineTaskToGitHubActionTask(yaml);
+
+            //Assert
+            string expected = @"
+- name: Run CMake
+  uses: ashutoshvarma/action-cmake-build@master
+  with:
+    build-dir: build
+    build-options: -A x64 -DCMAKE_TOOLCHAIN_FILE=../../vcpkg/scripts/buildsystems/vcpkg.cmake -DSELENE_BUILD_ALL=ON -DSELENE_WARNINGS_AS_ERRORS=ON ..
+";
+            expected = UtilityTests.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+        }
+
+        [TestMethod]
         public void CmdLineIndividualStepTest()
         {
             //Arrange
@@ -184,6 +212,36 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
 ";
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+        }   
+        
+        [TestMethod]
+        public void CheckOutIndividualStepTest()
+        {
+            //Arrange
+            Conversion conversion = new Conversion();
+            string yaml = @"
+- checkout: self
+  submodules: true
+  persistCredentials: true
+  fetchDepth: 0
+  lfs: false
+  clean: true
+";
+
+            //Act
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineTaskToGitHubActionTask(yaml);
+
+            //Assert
+            string expected = @"
+- uses: actions/checkout@v2
+  with:
+    fetch-depth: 0
+    persist-credentials: true
+    lfs: false
+    clean: true
+";
+            expected = UtilityTests.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
         }
 
         [TestMethod]
@@ -261,6 +319,35 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
   uses: actions/setup-dotnet@v1
   with:
     dotnet-version: 2.2.203
+";
+            expected = UtilityTests.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+        }
+
+
+        [TestMethod]
+        public void BatchIndividualStepTest()
+        {
+            //Arrange
+            Conversion conversion = new Conversion();
+            string yaml = @"
+  - task: BatchScript@1
+    inputs:
+      filename: scripts/azure-pipelines/setup_msvc_env.bat
+      modifyEnvironment: True
+      arguments: /w
+    condition: eq(variables['Agent.OS'], 'Windows_NT')
+    displayName: Setup MSVC Environment";
+
+            //Act
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineTaskToGitHubActionTask(yaml);
+
+            //Assert
+            string expected = @"
+- name: Setup MSVC Environment
+  run: scripts/azure-pipelines/setup_msvc_env.bat /w
+  shell: cmd
+  if: eq(runner.os, 'Windows_NT')
 ";
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
@@ -517,6 +604,76 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
         }
+        
+        [TestMethod]
+        public void AzurePowershellWithOtherVersionAndTargetAzurePsIndividualStepTest()
+        {
+            //Arrange
+            Conversion conversion = new Conversion();
+            string yaml = @"
+- task: AzurePowerShell@4 
+  displayName: 'Run Azure PowerShell' 
+  inputs:
+    azureSubscription: 'Service Connection to Azure Portal'
+    ScriptPath: '$(build.artifactstagingdirectory)/drop/EnvironmentARMTemplate/PowerShell/Cleanup.ps1'
+    ScriptArguments: '-ResourceGroupName ""$(ResourceGroupName)""'
+    azurePowerShellVersion: OtherVersion
+    targetAzurePs: 1.2.3
+    errorActionPreference: stop
+    FailOnStandardError: false
+";
+
+            //Act
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineTaskToGitHubActionTask(yaml);
+
+            //Assert
+            string expected = @"
+- name: Run Azure PowerShell
+  uses: azure/powershell@v1
+  with:
+    inlineScript: ${{ github.workspace }}/drop/EnvironmentARMTemplate/PowerShell/Cleanup.ps1 -ResourceGroupName ""${{ env.ResourceGroupName }}""
+    azPSVersion: 1.2.3
+    errorActionPreference: stop
+    failOnStandardError: false
+";
+            expected = UtilityTests.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+        }
+        
+        [TestMethod]
+        public void AzurePowershellWithOtherVersionAndCustomTargetAzurePsIndividualStepTest()
+        {
+            //Arrange
+            Conversion conversion = new Conversion();
+            string yaml = @"
+- task: AzurePowerShell@4 
+  displayName: 'Run Azure PowerShell' 
+  inputs:
+    azureSubscription: 'Service Connection to Azure Portal'
+    ScriptPath: '$(build.artifactstagingdirectory)/drop/EnvironmentARMTemplate/PowerShell/Cleanup.ps1'
+    ScriptArguments: '-ResourceGroupName ""$(ResourceGroupName)""'
+    azurePowerShellVersion: OtherVersion
+    customTargetAzurePs: 1.2.3
+    errorActionPreference: stop
+    FailOnStandardError: false
+";
+
+            //Act
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineTaskToGitHubActionTask(yaml);
+
+            //Assert
+            string expected = @"
+- name: Run Azure PowerShell
+  uses: azure/powershell@v1
+  with:
+    inlineScript: ${{ github.workspace }}/drop/EnvironmentARMTemplate/PowerShell/Cleanup.ps1 -ResourceGroupName ""${{ env.ResourceGroupName }}""
+    azPSVersion: 1.2.3
+    errorActionPreference: stop
+    failOnStandardError: false
+";
+            expected = UtilityTests.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+        }
 
         [TestMethod]
         public void AzureWebAppDeploymentIndividualStepTest()
@@ -661,6 +818,31 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
 ";
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+        }  
+        
+        [TestMethod]
+        public void DownloadWithPatternsIndividualStepTest()
+        {
+            //Arrange
+            Conversion conversion = new Conversion();
+            string yaml = @"
+- download: current  # refers to artifacts published by current pipeline
+  patterns: '**/.js'
+  displayName: Download artifact WebApp
+";
+
+            //Act
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineTaskToGitHubActionTask(yaml);
+
+            //Assert
+            string expected = @"
+- name: Download artifact WebApp
+  uses: actions/download-artifact@v2
+  with:
+    name: '**/.js'
+";
+            expected = UtilityTests.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
         }
 
         [TestMethod]
@@ -797,6 +979,36 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             string expected = @"
 - name: Restore
   run: dotnet restore MyProject/MyProject.Models/MyProject.Models.csproj
+";
+            expected = UtilityTests.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+        }
+        
+
+        [TestMethod]
+        public void DotNetCoreCLIPushIndividualStepTest()
+        {
+            //Arrange
+            Conversion conversion = new Conversion();
+            string yaml = @"
+- task: DotNetCoreCLI@2
+  displayName: 'Push to GitHub Packages'
+  condition: and(succeeded(), startsWith(variables['build.sourceBranch'], 'refs/tags/')) # Only run this step when the trigger event is a tag push
+  inputs:
+    command: 'push'
+    packagesToPush: '$(Build.ArtifactStagingDirectory)/*.nupkg'
+    nuGetFeedType: 'external'
+    publishFeedCredentials: 'GitHub Packages'
+";
+
+            //Act
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineTaskToGitHubActionTask(yaml);
+
+            //Assert
+            string expected = @"
+- name: Push to GitHub Packages
+  run: dotnet nuget push ${{ github.workspace }}/*.nupkg --source ""github""
+  if: and(success(), startsWith(github.ref, 'refs/tags/'))
 ";
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
@@ -1438,7 +1650,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
 
             //Assert
             string expected = @"
-- # There is no conversion path for templates, currently there is no support to call other actions/yaml files from a GitHub Action
+- # There is no conversion path for templates in GitHub Actions
   run: |
     #templates/npm-build-steps.yaml
     extensionName: ${{ env.ExtensionName }}

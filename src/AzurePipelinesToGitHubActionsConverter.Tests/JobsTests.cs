@@ -19,6 +19,7 @@ jobs:
   displayName: 'Build job'
   pool:
     vmImage: 'windows-latest'
+  timeoutInMinutes: 30
   steps:
   - task: CmdLine@2
     inputs:
@@ -34,6 +35,7 @@ jobs:
   Build:
     name: Build job
     runs-on: windows-latest
+    timeout-minutes: 30
     steps:
     - uses: actions/checkout@v2
     - run: echo your commands here
@@ -282,6 +284,77 @@ jobs:
     - uses: actions/checkout@v2
     - run: echo your commands here ${{ env.Variable1 }}
       shell: cmd
+";
+
+            expected = UtilityTests.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+            
+        }
+
+       [TestMethod]
+        public void CheckoutJobTest()
+        {
+            //Arrange
+            Conversion conversion = new Conversion();
+            string yaml = @"
+jobs:
+- job: provisionProd
+  pool:
+    vmImage: ubuntu-latest
+  steps:
+  - checkout: self
+  - checkout: git://MyProject/MyRepo
+  - checkout: MyGitHubRepo # Repo declared in a repository resource
+";
+
+            //Act
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(yaml);
+
+            //Assert
+            string expected = @"
+jobs:
+  provisionProd:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/checkout@v2
+      with:
+        repository: git://MyProject/MyRepo
+    - uses: actions/checkout@v2
+      with:
+        repository: MyGitHubRepo
+";
+
+            expected = UtilityTests.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+            
+        }
+
+       [TestMethod]
+        public void CheckoutSimpleJobTest()
+        {
+            //Arrange
+            Conversion conversion = new Conversion();
+            string yaml = @"
+jobs:
+- job: Build
+  pool:
+    vmImage: ubuntu-latest
+  steps:
+  - checkout: self
+    submodules: true
+";
+
+            //Act
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(yaml);
+
+            //Assert
+            string expected = @"
+jobs:
+  Build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
 ";
 
             expected = UtilityTests.TrimNewLines(expected);

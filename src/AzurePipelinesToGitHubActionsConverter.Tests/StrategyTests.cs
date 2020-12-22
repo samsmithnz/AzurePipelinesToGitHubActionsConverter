@@ -416,5 +416,210 @@ jobs:
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
             
         }
+
+
+
+        [TestMethod]
+        public void StrategyWithMatrixPipelineTest()
+        {
+            //Arrange
+            Conversion conversion = new Conversion();
+            string yaml = @"
+trigger:
+- master
+
+variables:
+  # It's important to put these in a path that won't change
+  PARAVIEW_SOURCE_FOLDER: /tmp/paraview_source
+  PARAVIEW_BUILD_FOLDER: /tmp/paraview_build
+
+jobs:
+- job: Build
+  timeoutInMinutes: 0
+
+  strategy:
+    matrix:
+      Linux:
+        imageName: 'ubuntu-18.04'
+      Mac:
+        imageName: 'macos-10.14'
+      Windows:
+        imageName: 'vs2017-win2016'
+        # The D:\ drive (default) on Windows only has about 4 GB of disk
+        # space available, which is not enough to build ParaView.
+        # But the C:\ drive has a lot of free space, around 150 GB.
+        PARAVIEW_SOURCE_FOLDER: 'C:\paraview_source'
+        PARAVIEW_BUILD_FOLDER: 'C:\paraview_build'
+
+  pool:
+    vmImage: $(imageName)
+
+  steps:
+  - checkout: self
+    submodules: true
+
+  - task: UsePythonVersion@0
+    inputs:
+      versionSpec: 3.8
+    displayName: Enable Python 3.8
+
+  - bash: scripts/azure-pipelines/install.sh
+    displayName: Install Dependencies
+
+  - bash: scripts/azure-pipelines/install_python_deps.sh
+    displayName: Install Python Dependencies
+
+  # Use the OS's native script language for this command
+  - script: git clone --recursive https://github.com/openchemistry/paraview $(PARAVIEW_SOURCE_FOLDER)
+    displayName: Clone ParaView
+
+  - bash: scripts/azure-pipelines/prepend_paths.sh
+    displayName: Prepend Paths
+
+  # This will set up the MSVC environment for future commands
+  - task: BatchScript@1
+    inputs:
+      filename: scripts/azure-pipelines/setup_msvc_env.bat
+      modifyEnvironment: True
+    condition: eq(variables['Agent.OS'], 'Windows_NT')
+    displayName: Setup MSVC Environment
+
+  # Creates a ""deps_md5sum"" variable that, when this has changed,
+  # automatically re-build paraview.
+  - bash: scripts/azure-pipelines/create_deps_md5sum.sh
+    displayName: Create Dependency md5sum
+
+  - task: Cache@2
+    inputs:
+      # Change the ""v*"" at the end to force a re-build
+      key: paraview | $(Agent.OS) | $(deps_md5sum) | v2
+      path: $(PARAVIEW_BUILD_FOLDER)
+      cacheHitVar: PARAVIEW_BUILD_RESTORED
+    displayName: Restore ParaView Build
+
+  - bash: scripts/azure-pipelines/build_paraview.sh
+    condition: ne(variables.PARAVIEW_BUILD_RESTORED, 'true')
+    displayName: Build ParaView
+
+  - bash: scripts/azure-pipelines/build_tomviz.sh
+    displayName: Build Tomviz
+
+  - bash: scripts/azure-pipelines/run_ctest.sh
+    displayName: Run CTest
+
+  - bash: scripts/azure-pipelines/run_pytest.sh
+    displayName: Run PyTest
+
+- job: clang_format
+  pool:
+    vmImage: 'ubuntu-18.04'
+  steps:
+  - bash: scripts/azure-pipelines/run_clang_format_diff.sh
+    displayName: Run clang-format
+
+- job: flake8
+  pool:
+    vmImage: 'ubuntu-18.04'
+  steps:
+  - bash: scripts/azure-pipelines/run_flake8.sh
+    displayName: Run flake8
+";
+
+            //Act
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(yaml);
+
+            //Assert
+            string expected = @"
+on:
+  push:
+    branches:
+    - master
+env:
+  PARAVIEW_SOURCE_FOLDER: /tmp/paraview_source
+  PARAVIEW_BUILD_FOLDER: /tmp/paraview_build
+jobs:
+  Build:
+    runs-on: ${{ matrix.imageName }}
+    strategy:
+      matrix:
+        imageName:
+        - ubuntu-18.04
+        - macos-10.14
+        - vs2017-win2016
+    steps:
+    - uses: actions/checkout@v2
+    - name: Enable Python 3.8
+      uses: actions/setup-python@v1
+      with:
+        python-version: 3.8
+    - name: Install Dependencies
+      run: scripts/azure-pipelines/install.sh
+      shell: bash
+    - name: Install Python Dependencies
+      run: scripts/azure-pipelines/install_python_deps.sh
+      shell: bash
+    - name: Clone ParaView
+      run: git clone --recursive https://github.com/openchemistry/paraview ${{ env.PARAVIEW_SOURCE_FOLDER }}
+    - name: Prepend Paths
+      run: scripts/azure-pipelines/prepend_paths.sh
+      shell: bash
+    - name: Setup MSVC Environment
+      run: scripts/azure-pipelines/setup_msvc_env.bat
+      shell: cmd
+      if: eq(runner.os, 'Windows_NT')
+    - name: Create Dependency md5sum
+      run: scripts/azure-pipelines/create_deps_md5sum.sh
+      shell: bash
+    - name: Restore ParaView Build
+      uses: actions/cache@v2
+      with:
+        key: paraview | ${{ runner.os }} | ${{ env.deps_md5sum }} | v2
+        restore-keys: 
+        path: ${{ env.PARAVIEW_BUILD_FOLDER }}
+    - name: Build ParaView
+      run: scripts/azure-pipelines/build_paraview.sh
+      shell: bash
+      if: ne(variables.PARAVIEW_BUILD_RESTORED, 'true')
+    - name: Build Tomviz
+      run: scripts/azure-pipelines/build_tomviz.sh
+      shell: bash
+    - name: Run CTest
+      run: scripts/azure-pipelines/run_ctest.sh
+      shell: bash
+    - name: Run PyTest
+      run: scripts/azure-pipelines/run_pytest.sh
+      shell: bash
+  clang_format:
+    runs-on: ubuntu-18.04
+    strategy:
+      matrix:
+        imageName:
+        - ubuntu-18.04
+        - macos-10.14
+        - vs2017-win2016
+    steps:
+    - uses: actions/checkout@v2
+    - name: Run clang-format
+      run: scripts/azure-pipelines/run_clang_format_diff.sh
+      shell: bash
+  flake8:
+    runs-on: ubuntu-18.04
+    strategy:
+      matrix:
+        imageName:
+        - ubuntu-18.04
+        - macos-10.14
+        - vs2017-win2016
+    steps:
+    - uses: actions/checkout@v2
+    - name: Run flake8
+      run: scripts/azure-pipelines/run_flake8.sh
+      shell: bash
+";
+
+            expected = UtilityTests.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+
+        }
     }
 }

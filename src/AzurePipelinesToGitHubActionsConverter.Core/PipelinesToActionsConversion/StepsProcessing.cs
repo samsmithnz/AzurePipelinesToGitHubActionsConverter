@@ -4,6 +4,7 @@ using AzurePipelinesToGitHubActionsConverter.Core.Extensions;
 using System.Collections.Generic;
 using System.Text;
 using System;
+using System.Runtime.InteropServices;
 
 namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversion
 {
@@ -48,11 +49,17 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                     case "BASH@3":
                         gitHubStep = CreateBashStep(step);
                         break;
+                    case "BATCHSCRIPT@1":
+                        gitHubStep = CreateBatchScriptStep(step);
+                        break;
                     case "CMDLINE@2":
                         gitHubStep = CreateScriptStep("cmd", step);
                         break;
                     case "CACHE@2":
                         gitHubStep = CreateCacheStep(step);
+                        break;
+                    case "CMAKE@1":
+                        gitHubStep = CreateCMakeStep(step);
                         break;
                     case "COPYFILES@2":
                         gitHubStep = CreateCopyFilesStep(step);
@@ -197,6 +204,10 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
             {
                 gitHubStep = CreateDownloadStep(step);
             }
+            else if (step.checkout != null)
+            {
+                gitHubStep = CreateCheckoutStep(step);
+            }
 
             if (gitHubStep != null)
             {
@@ -268,7 +279,12 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                 string runScript = "dotnet ";
                 if (step.inputs.ContainsKey("command") == true)
                 {
-                    runScript += GetStepInput(step, "command") + " ";
+                    string command = GetStepInput(step, "command");
+                    if (command == "push")
+                    {
+                        command = "nuget " + command;
+                    }
+                    runScript += command + " ";
                 }
                 if (step.inputs.ContainsKey("projects") == true)
                 {
@@ -277,6 +293,18 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                 if (step.inputs.ContainsKey("packagestopack") == true)
                 {
                     runScript += GetStepInput(step, "packagesToPack") + " ";
+                }
+                if (step.inputs.ContainsKey("packagestopush") == true)
+                {
+                    runScript += GetStepInput(step, "packagestopush") + " ";
+                }
+                if (step.inputs.ContainsKey("publishfeedcredentials") == true)
+                {
+                    string publishFeedCredentials = GetStepInput(step, "publishFeedCredentials");
+                    if (publishFeedCredentials == "GitHub Packages")
+                    {
+                        runScript += "--source \"github\" ";
+                    }
                 }
                 if (step.inputs.ContainsKey("arguments") == true)
                 {
@@ -445,6 +473,37 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
             return gitHubStep;
         }
 
+        private GitHubActions.Step CreateBatchScriptStep(AzurePipelines.Step step)
+        {
+            //From: https://docs.microsoft.com/en-us/azure/devops/pipelines/tasks/utility/batch-script?view=azure-devops
+            //- task: BatchScript@1
+            //  inputs:
+            //    filename: 
+            //    #arguments: # Optional
+            //    #modifyEnvironment: False # Optional
+            //    #workingFolder: # Optional
+            //    #failOnStandardError: false # Optional
+
+            //To:
+            //- name: test cmd
+            //  run: dir /w
+            //  shell: cmd
+
+            string filename = GetStepInput(step, "filename");
+            string arguments = GetStepInput(step, "arguments");
+
+            string inlineScript = filename;
+            if (arguments != null)
+            {
+                inlineScript += " " + arguments;
+            }
+
+            GitHubActions.Step gitHubStep = CreateScriptStep("cmd", step);
+            gitHubStep.run = inlineScript;
+
+            return gitHubStep;
+        }
+
         private GitHubActions.Step CreateCacheStep(AzurePipelines.Step step)
         {
             //From: https://github.com/actions/cache
@@ -482,6 +541,54 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                     { "path", path }
                 }
             };
+
+            return gitHubStep;
+        }
+
+        private GitHubActions.Step CreateCMakeStep(AzurePipelines.Step step)
+        {
+            //From: https://docs.microsoft.com/en-us/azure/devops/pipelines/tasks/build/cmake?view=azure-devops
+            //- task: CMake@1
+            //  inputs:
+            //    #workingDirectory: 'build' # Optional
+            //    #cmakeArgs: # Optional
+
+            //https://github.com/marketplace/actions/build-cmake
+            //To:
+            //- name: Build & Test
+            //     uses: ashutoshvarma/action-cmake-build@master
+            //     with:
+            //       build-dir: ${{ runner.workspace }}/build
+            //       build-options: Misc Options to pass to CMake while building project using cmake --build
+            //       # will set the CC & CXX for cmake
+            //       cc: gcc
+            //       cxx: g++
+            //       build-type: Release
+            //       # Extra options pass to cmake while configuring project
+            //       configure-options: -DCMAKE_C_FLAGS=-w32 -DPNG_INCLUDE=OFF
+            //       run-test: true
+            //       ctest-options: -R mytest
+            //       # install the build using cmake --install
+            //       install-build: true
+            //       # run build using '-j [parallel]' to use multiple threads to build
+            //       parallel: 14
+
+            string workingDirectory = GetStepInput(step, "workingDirectory");
+            string cmakeArgs = GetStepInput(step, "cmakeArgs");
+
+            GitHubActions.Step gitHubStep = new GitHubActions.Step
+            {
+                uses = "ashutoshvarma/action-cmake-build@master",
+                with = new Dictionary<string, string>()
+            };
+            if (workingDirectory != null)
+            {
+                gitHubStep.with.Add("build-dir", workingDirectory);
+            }
+            if (cmakeArgs != null)
+            {
+                gitHubStep.with.Add("build-options", cmakeArgs);
+            }
 
             return gitHubStep;
         }
@@ -660,13 +767,126 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
             return gitHubStep;
         }
 
-        public GitHubActions.Step CreateCheckoutStep()
+        public GitHubActions.Step CreateCheckoutStep(AzurePipelines.Step step = null)
         {
+            //https://github.com/actions/checkout
+            //- uses: actions/checkout@v2
+            //  with:
+            //    # Repository name with owner. For example, actions/checkout
+            //    # Default: ${{ github.repository }}
+            //    repository: ''
+
+            //    # The branch, tag or SHA to checkout. When checking out the repository that triggered a workflow, this defaults to the reference or SHA for that event.
+            //    # Otherwise, uses the default branch.
+            //    ref: ''
+
+            //    # Personal access token (PAT) used to fetch the repository. The PAT is configured with the local git config, which enables your scripts to run authenticated git commands. The post-job step removes the PAT.
+            //    # We recommend using a service account with the least permissions necessary. Also when generating a new PAT, select the least scopes necessary.
+            //    # Default: ${{ github.token }}
+            //    token: ''
+
+            //    # SSH key used to fetch the repository. The SSH key is configured with the local git config, which enables your scripts to run authenticated git commands. The post-job step removes the SSH key.
+            //    ssh-key: ''
+
+            //    # Known hosts in addition to the user and global host key database. The public SSH keys for a host may be obtained using the utility `ssh-keyscan`. For example, `ssh-keyscan github.com`. The public key for github.com is always implicitly added.
+            //    ssh-known-hosts: ''
+
+            //    # Whether to perform strict host key checking. When true, adds the options `StrictHostKeyChecking=yes` and `CheckHostIP=no` to the SSH command line. Use the input `ssh-known-hosts` to configure additional hosts.
+            //    # Default: true
+            //    ssh-strict: ''
+
+            //    # Whether to configure the token or SSH key with the local git config
+            //    # Default: true
+            //    persist-credentials: ''
+
+            //    # Relative path under $GITHUB_WORKSPACE to place the repository
+            //    path: ''
+
+            //    # Whether to execute `git clean -ffdx && git reset --hard HEAD` before fetching
+            //    # Default: true
+            //    clean: ''
+
+            //    # Number of commits to fetch. 0 indicates all history for all branches and tags.
+            //    # Default: 1
+            //    fetch-depth: ''
+
+            //    # Whether to download Git-LFS files
+            //    # Default: false
+            //    lfs: ''
+
+            //    # Whether to checkout submodules: `true` to checkout submodules or `recursive` to
+            //    # recursively checkout submodules.
+            //    #
+            //    # When the `ssh-key` input is not provided, SSH URLs beginning with
+            //    # `git@github.com:` are converted to HTTPS.
+            //    #
+            //    # Default: false
+            //    submodules: ''
+
+
             //Add the check out step to get the code
-            return new GitHubActions.Step
+            GitHubActions.Step gitHubStep = new GitHubActions.Step
             {
-                uses = "actions/checkout@v2"
+                uses = "actions/checkout@v2",
+                with = new Dictionary<string, string>()
             };
+
+            if (step != null)
+            {
+                string fetchDepth = step.fetchDepth;
+                string persistCredentials = step.persistCredentials;
+                string lfs = step.lfs;
+                string clean = step.clean;
+
+                //    # Repository name with owner. For example, actions/checkout
+                //    # Default: ${{ github.repository }}
+                //    repository: ''
+
+                //    # The branch, tag or SHA to checkout. When checking out the repository that triggered a workflow, this defaults to the reference or SHA for that event.
+                //    # Otherwise, uses the default branch.
+                //    ref: ''
+                //    token: ${{ github.token }}
+
+                //    # SSH key used to fetch the repository. The SSH key is configured with the local git config, which enables your scripts to run authenticated git commands. The post-job step removes the SSH key.
+                //    ssh-key: ''
+
+                //    # Known hosts in addition to the user and global host key database. The public SSH keys for a host may be obtained using the utility `ssh-keyscan`. For example, `ssh-keyscan github.com`. The public key for github.com is always implicitly added.
+                //    ssh-known-hosts: ''
+                //    ssh-strict: true
+                //    persist-credentials: true
+                //    path: '/mycode'
+                //    clean: true
+                //    fetch-depth: 1
+                //    lfs: false
+                //    submodules: false
+
+
+                if (step.checkout != null && step.checkout != "self")
+                {
+                    gitHubStep.with.Add("repository", step.checkout);
+                }
+                if (fetchDepth != null)
+                {
+                    gitHubStep.with.Add("fetch-depth", fetchDepth);
+                }
+                if (persistCredentials != null)
+                {
+                    gitHubStep.with.Add("persist-credentials", persistCredentials);
+                }
+                if (lfs != null)
+                {
+                    gitHubStep.with.Add("lfs", lfs);
+                }
+                if (clean != null)
+                {
+                    gitHubStep.with.Add("clean", clean);
+                }
+            }
+            if (gitHubStep.with.Count == 0)
+            {
+                gitHubStep.with = null;
+            }
+            return gitHubStep;
         }
 
         public GitHubActions.Step CreateAzureLoginStep()
@@ -1017,10 +1237,6 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
             if (platform != null)
             {
                 run += " /p:platform='" + platform + "'";
-            }
-            else if (msbuildArguments != null)
-            {
-                run += " /p:platform='" + msbuildArguments + "'";
             }
             if (msbuildArgs != null) //VSBuild@1
             {
@@ -2124,7 +2340,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
             GitHubActions.Step gitHubStep = new GitHubActions.Step
             {
                 run = "#" + step.template,
-                step_message = "There is no conversion path for templates, currently there is no support to call other actions/yaml files from a GitHub Action"
+                step_message = "There is no conversion path for templates in GitHub Actions"
             };
 
 

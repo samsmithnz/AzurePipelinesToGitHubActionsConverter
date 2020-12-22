@@ -75,6 +75,8 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                 newJob.job_message += "Note: Azure DevOps strategy>rolling does not have an equivalent in GitHub Actions yet, and only the deploy steps are transferred to steps";
             }
 
+            //Process the steps to ensure the checkout task hasn't been added twice.
+            newJob.steps = RemoveDuplicateSteps(newJob.steps);
 
             //TODO: Add this pools in for other strategies  
             //if (newJob.runs_on == null && job.strategy?.runOnce?.deploy?.pool != null)
@@ -97,6 +99,43 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
             return newJob;
         }
 
+        private GitHubActions.Step[] RemoveDuplicateSteps(GitHubActions.Step[] steps)
+        {
+            if (steps != null)
+            {
+                GitHubActions.Step previousStep = null;
+                List<int> indexesToRemove = new List<int>();
+                //Look through all of the current items to see if a current step matches a previous step
+                for (int i = 0; i < steps.Length; i++)
+                {
+                    if (previousStep == null)
+                    {
+                        previousStep = steps[i];
+                    }
+                    else if (JsonSerialization.JsonCompare(previousStep, steps[i]) == true)
+                    {
+                        //mark the current step as one to remove
+                        indexesToRemove.Add(i);
+                    }
+                }
+                //Then insert all of the steps that don't need to be removed into the new array
+                GitHubActions.Step[] newSteps = new GitHubActions.Step[steps.Length - indexesToRemove.Count];
+                int index = 0;
+                for (int i = 0; i < steps.Length; i++)
+                {
+                    if (indexesToRemove.Contains(i) == false)
+                    {
+                        newSteps[index] = steps[i];
+                        index++;
+                    }
+                }
+                return newSteps;
+            }
+            else
+            {
+                return null;
+            }
+        }
 
         public Dictionary<string, GitHubActions.Job> ProcessJobsV2(AzurePipelines.Job[] jobs, Resources resources)
         {
@@ -190,25 +229,28 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                         job.variables = vp.ProcessParametersAndVariablesV2(null, jobJson["variables"].ToString());
                     }
                     //Currently no conversion path for services
-                    if (jobJson["services"] != null)
-                    {
-                        job.services = new Dictionary<string, string>();
-                    }
+                    //if (jobJson["services"] != null)
+                    //{
+                    //    job.services = new Dictionary<string, string>();
+                    //    ConversionUtility.WriteLine($"Currently no conversion path for services: " + job.services.ToString(), _verbose);
+                    //}
                     //Currently no conversion path for parameters
                     if (jobJson["parameters"] != null)
                     {
                         job.parameters = new Dictionary<string, string>();
                     }
                     //Currently no conversion path for container
-                    if (jobJson["container"] != null)
-                    {
-                        job.container = new Containers();
-                    }
-                    //Currently no conversion path for cancelTimeoutInMinutes
-                    if (jobJson["cancelTimeoutInMinutes"] != null)
-                    {
-                        job.cancelTimeoutInMinutes = int.Parse(jobJson["cancelTimeoutInMinutes"].ToString());
-                    }
+                    //if (jobJson["container"] != null)
+                    //{
+                    //    job.container = new Containers();
+                    //    ConversionUtility.WriteLine($"Currently no conversion path for services: " + job.container.ToString(), _verbose);
+                    //}
+                    ////Currently no conversion path for cancelTimeoutInMinutes
+                    //if (jobJson["cancelTimeoutInMinutes"] != null)
+                    //{
+                    //    job.cancelTimeoutInMinutes = int.Parse(jobJson["cancelTimeoutInMinutes"].ToString());
+                    //    ConversionUtility.WriteLine($"Currently no conversion path for services: " + job.cancelTimeoutInMinutes.ToString(), _verbose);
+                    //}
                     if (jobJson["steps"] != null)
                     {
                         try

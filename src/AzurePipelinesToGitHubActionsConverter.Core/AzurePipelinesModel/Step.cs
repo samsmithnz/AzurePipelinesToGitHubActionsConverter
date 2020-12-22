@@ -100,5 +100,12 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.AzurePipelines
         public Dictionary<string, string> inputs { get; set; }
         public Dictionary<string, string> env { get; set; }
         public Dictionary<string, string> parameters { get; set; }
+        public string clean { get; set; }
+        public string fetchDepth { get; set; }
+        public string lfs { get; set; }
+        public string submodules { get; set; }
+        public string path { get; set; }
+        public string persistCredentials { get; set; }
+        
     }
 }
