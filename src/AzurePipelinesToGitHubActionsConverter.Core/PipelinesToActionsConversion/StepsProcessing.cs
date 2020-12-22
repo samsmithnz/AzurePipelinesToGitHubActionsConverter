@@ -471,7 +471,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
 
         private GitHubActions.Step CreateBatchScriptStep(AzurePipelines.Step step)
         {
-            //From:
+            //From: https://docs.microsoft.com/en-us/azure/devops/pipelines/tasks/utility/batch-script?view=azure-devops
             //- task: BatchScript@1
             //  inputs:
             //    filename: 
@@ -1120,10 +1120,6 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
             if (platform != null)
             {
                 run += " /p:platform='" + platform + "'";
-            }
-            else if (msbuildArguments != null)
-            {
-                run += " /p:platform='" + msbuildArguments + "'";
             }
             if (msbuildArgs != null) //VSBuild@1
             {
