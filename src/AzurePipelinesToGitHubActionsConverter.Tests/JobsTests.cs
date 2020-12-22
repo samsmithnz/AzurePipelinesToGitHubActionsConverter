@@ -318,12 +318,43 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - uses: actions/checkout@v2
-    - uses: actions/checkout@v2
       with:
         repository: git://MyProject/MyRepo
     - uses: actions/checkout@v2
       with:
         repository: MyGitHubRepo
+";
+
+            expected = UtilityTests.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+            
+        }
+
+       [TestMethod]
+        public void CheckoutSimpleJobTest()
+        {
+            //Arrange
+            Conversion conversion = new Conversion();
+            string yaml = @"
+jobs:
+- job: Build
+  pool:
+    vmImage: ubuntu-latest
+  steps:
+  - checkout: self
+    submodules: true
+";
+
+            //Act
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(yaml);
+
+            //Assert
+            string expected = @"
+jobs:
+  Build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
 ";
 
             expected = UtilityTests.TrimNewLines(expected);

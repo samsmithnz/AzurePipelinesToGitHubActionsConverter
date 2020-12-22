@@ -171,7 +171,6 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                 //Create the GitHub YAML and apply some adjustments
                 gitHubYaml = GitHubActionsSerialization.Serialize(gitHubActions, variableList, _matrixVariableName);
 
-
                 //Load failed task comments for processing
                 //Add any header messages
                 foreach (string message in gitHubActions.messages)
