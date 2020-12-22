@@ -1035,7 +1035,7 @@ stages:
 
             //Assert
             string expected = @"
-#There is no conversion path for templates, currently there is no support to call other actions/yaml files from a GitHub Action
+#There is no conversion path for templates in GitHub Actions
 name: ${{ env.Version }}.${GITHUB_RUN_NUMBER}
 on:
   push:
@@ -1059,7 +1059,7 @@ jobs:
     runs-on: Hosted VS2017
     steps:
     - uses: actions/checkout@v2
-    - # There is no conversion path for templates, currently there is no support to call other actions/yaml files from a GitHub Action
+    - # There is no conversion path for templates in GitHub Actions
       run: |
         #templates/npm-build-steps.yaml
         extensionName: ${{ env.ExtensionName }}

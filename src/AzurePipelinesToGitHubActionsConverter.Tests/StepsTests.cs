@@ -31,6 +31,34 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
         }
 
         [TestMethod]
+        public void CmakeIndividualStepTest()
+        {
+            //Arrange
+            Conversion conversion = new Conversion();
+            string yaml = @"
+    - task: CMake@1
+      inputs:
+        workingDirectory: 'build'
+        cmakeArgs: '-A x64 -DCMAKE_TOOLCHAIN_FILE=../../vcpkg/scripts/buildsystems/vcpkg.cmake -DSELENE_BUILD_ALL=ON -DSELENE_WARNINGS_AS_ERRORS=ON ..'
+      displayName: 'Run CMake'
+";
+
+            //Act
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineTaskToGitHubActionTask(yaml);
+
+            //Assert
+            string expected = @"
+- name: Run CMake
+  uses: ashutoshvarma/action-cmake-build@master
+  with:
+    build-dir: build
+    build-options: -A x64 -DCMAKE_TOOLCHAIN_FILE=../../vcpkg/scripts/buildsystems/vcpkg.cmake -DSELENE_BUILD_ALL=ON -DSELENE_WARNINGS_AS_ERRORS=ON ..
+";
+            expected = UtilityTests.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+        }
+
+        [TestMethod]
         public void CmdLineIndividualStepTest()
         {
             //Arrange
@@ -1468,7 +1496,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
 
             //Assert
             string expected = @"
-- # There is no conversion path for templates, currently there is no support to call other actions/yaml files from a GitHub Action
+- # There is no conversion path for templates in GitHub Actions
   run: |
     #templates/npm-build-steps.yaml
     extensionName: ${{ env.ExtensionName }}

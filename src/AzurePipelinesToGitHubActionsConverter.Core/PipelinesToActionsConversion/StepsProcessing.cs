@@ -4,6 +4,7 @@ using AzurePipelinesToGitHubActionsConverter.Core.Extensions;
 using System.Collections.Generic;
 using System.Text;
 using System;
+using System.Runtime.InteropServices;
 
 namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversion
 {
@@ -53,6 +54,9 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                         break;
                     case "CACHE@2":
                         gitHubStep = CreateCacheStep(step);
+                        break;
+                    case "CMAKE@1":
+                        gitHubStep = CreateCMakeStep(step);
                         break;
                     case "COPYFILES@2":
                         gitHubStep = CreateCopyFilesStep(step);
@@ -499,6 +503,54 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                     { "path", path }
                 }
             };
+
+            return gitHubStep;
+        }
+
+        private GitHubActions.Step CreateCMakeStep(AzurePipelines.Step step)
+        {
+            //From: https://docs.microsoft.com/en-us/azure/devops/pipelines/tasks/build/cmake?view=azure-devops
+            //- task: CMake@1
+            //  inputs:
+            //    #workingDirectory: 'build' # Optional
+            //    #cmakeArgs: # Optional
+
+            //https://github.com/marketplace/actions/build-cmake
+            //To:
+            //- name: Build & Test
+            //     uses: ashutoshvarma/action-cmake-build@master
+            //     with:
+            //       build-dir: ${{ runner.workspace }}/build
+            //       build-options: Misc Options to pass to CMake while building project using cmake --build
+            //       # will set the CC & CXX for cmake
+            //       cc: gcc
+            //       cxx: g++
+            //       build-type: Release
+            //       # Extra options pass to cmake while configuring project
+            //       configure-options: -DCMAKE_C_FLAGS=-w32 -DPNG_INCLUDE=OFF
+            //       run-test: true
+            //       ctest-options: -R mytest
+            //       # install the build using cmake --install
+            //       install-build: true
+            //       # run build using '-j [parallel]' to use multiple threads to build
+            //       parallel: 14
+
+            string workingDirectory = GetStepInput(step, "workingDirectory");
+            string cmakeArgs = GetStepInput(step, "cmakeArgs");
+
+            GitHubActions.Step gitHubStep = new GitHubActions.Step
+            {
+                uses = "ashutoshvarma/action-cmake-build@master",
+                with = new Dictionary<string, string>()
+            };
+            if (workingDirectory != null)
+            {
+                gitHubStep.with.Add("build-dir", workingDirectory);
+            }
+            if (cmakeArgs != null)
+            {
+                gitHubStep.with.Add("build-options", cmakeArgs);
+            }
 
             return gitHubStep;
         }
@@ -2141,7 +2193,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
             GitHubActions.Step gitHubStep = new GitHubActions.Step
             {
                 run = "#" + step.template,
-                step_message = "There is no conversion path for templates, currently there is no support to call other actions/yaml files from a GitHub Action"
+                step_message = "There is no conversion path for templates in GitHub Actions"
             };
 
 
