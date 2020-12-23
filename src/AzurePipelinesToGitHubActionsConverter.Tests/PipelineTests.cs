@@ -125,18 +125,25 @@ jobs:
     - uses: actions/checkout@v2
     - run: 'DeserializeYaml<AzurePipelines.Step[]>(stepsYaml) swallowed an exception: (Line: 2, Col: 3, Idx: 5) - (Line: 2, Col: 3, Idx: 5): Exception during deserialization'
 ";
-#if Linux
-            expected = @"
+
+            string expectedLinux = @"
 jobs:
   build:
     runs-on: windows-latest
     steps:
     - uses: actions/checkout@v2
     - run: 'DeserializeYaml<AzurePipelines.Step[]>(stepsYaml) swallowed an exception: (Line: 2, Col: 3, Idx: 4) - (Line: 2, Col: 3, Idx: 4): Exception during deserialization'
-";    
-#endif
+";
+
             expected = UtilityTests.TrimNewLines(expected);
-            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+            if (expected == gitHubOutput.actionsYaml)
+            {
+                Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+            }
+            else
+            {
+                Assert.AreEqual(expectedLinux, gitHubOutput.actionsYaml);
+            }
         }
 
     }
