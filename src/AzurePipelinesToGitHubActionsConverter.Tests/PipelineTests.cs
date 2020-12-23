@@ -135,10 +135,11 @@ jobs:
     - run: 'DeserializeYaml<AzurePipelines.Step[]>(stepsYaml) swallowed an exception: (Line: 2, Col: 3, Idx: 4) - (Line: 2, Col: 3, Idx: 4): Exception during deserialization'
 ";
 
+            //When this test runs on a Linux runner, the YAML converter returns a slightly different result
+            expected = UtilityTests.TrimNewLines(expected);
             if (expected == gitHubOutput.actionsYaml)
             {
-                expected = UtilityTests.TrimNewLines(expected);
-                Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+               Assert.AreEqual(expected, gitHubOutput.actionsYaml);
             }
             else
             {
