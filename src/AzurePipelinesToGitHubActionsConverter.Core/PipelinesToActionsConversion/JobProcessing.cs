@@ -297,6 +297,11 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                 }
                 catch (Exception ex)
                 {
+                    steps = new AzurePipelines.Step[1];
+                    steps[0] = new Step
+                    {
+                        script = $"DeserializeYaml<AzurePipelines.Step[]>(stepsYaml) swallowed an exception: " + ex.Message
+                    };
                     ConversionUtility.WriteLine($"DeserializeYaml<AzurePipelines.Step[]>(stepsYaml) swallowed an exception: " + ex.Message, _verbose);
                 }
             }

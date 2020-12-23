@@ -609,7 +609,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
             //Use PowerShell to copy files
             step.script = "Copy '" + GetStepInput(step, "sourcefolder") + "/" + GetStepInput(step, "contents") + "' '" + GetStepInput(step, "targetfolder") + "'";
 
-            GitHubActions.Step gitHubStep = CreateScriptStep("powershell", step);
+            GitHubActions.Step gitHubStep = CreateScriptStep("", step);
             return gitHubStep;
         }
 
@@ -1070,13 +1070,13 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
         private GitHubActions.Step CreateNuGetCommandStep(AzurePipelines.Step step)
         {
             string command = GetStepInput(step, "command");
-            if (string.IsNullOrEmpty(command) == false)
+            if (string.IsNullOrEmpty(command) == true)
             {
                 command = "restore";
             }
             string restoresolution = GetStepInput(step, "restoresolution");
 
-            GitHubActions.Step gitHubStep = CreateScriptStep("powershell", step);
+            GitHubActions.Step gitHubStep = CreateScriptStep("", step);
             gitHubStep.run = "nuget " + command + " " + restoresolution;
 
             //coming from:

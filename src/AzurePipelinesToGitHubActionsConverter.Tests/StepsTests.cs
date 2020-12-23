@@ -264,7 +264,6 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             string expected = @"
 - name: 'Copy environment ARM template files to: ${{ github.workspace }}'
   run: Copy '${{ github.workspace }}\FeatureFlags\FeatureFlags.ARMTemplates/**\*' '${{ github.workspace }}\ARMTemplates'
-  shell: powershell
 ";
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
@@ -291,7 +290,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             string expected = @"
 - name: Copy production build to artifact stage
   run: Copy '${{ github.workspace }}/dist/**' '${{ github.workspace }}'
-  shell: powershell";
+";
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
         }
@@ -1522,6 +1521,53 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             string expected = @"
 - name: Build Angular
   run: npm run build -- --prod src/angular7
+";
+
+            expected = UtilityTests.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+        }
+
+        [TestMethod]
+        public void NuGetStepTest()
+        {
+            //Arrange
+            Conversion conversion = new Conversion();
+            string yaml = @"
+- task: NuGetCommand@2
+  inputs:
+    restoreSolution: '$(solution)'
+";
+
+            //Act
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineTaskToGitHubActionTask(yaml);
+
+            //Assert
+            string expected = @"
+- run: nuget restore ${{ env.solution }}
+";
+
+            expected = UtilityTests.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+        }
+
+        [TestMethod]
+        public void NuGetWithRestoreStepTest()
+        {
+            //Arrange
+            Conversion conversion = new Conversion();
+            string yaml = @"
+- task: NuGetCommand@2
+  inputs:
+    command: restore
+    restoreSolution: '$(solution)'
+";
+
+            //Act
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineTaskToGitHubActionTask(yaml);
+
+            //Assert
+            string expected = @"
+- run: nuget restore ${{ env.solution }}
 ";
 
             expected = UtilityTests.TrimNewLines(expected);

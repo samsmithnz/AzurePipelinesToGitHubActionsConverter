@@ -244,8 +244,7 @@ jobs:
     - uses: microsoft/setup-msbuild@v1.0.0
     - # 'Note: This is a third party action: https://github.com/warrenbuckley/Setup-Nuget'
       uses: warrenbuckley/Setup-Nuget@v1
-    - run: nuget  ${{ env.solution }}
-      shell: powershell
+    - run: nuget restore ${{ env.solution }}
     - run: msbuild '${{ env.solution }}' /p:configuration='${{ env.buildConfiguration }}' /p:platform='${{ env.buildPlatform }}'
 ";
 
@@ -896,8 +895,7 @@ jobs:
     - uses: actions/checkout@v2
     - # 'Note: This is a third party action: https://github.com/warrenbuckley/Setup-Nuget'
       uses: warrenbuckley/Setup-Nuget@v1
-    - run: nuget  **/*.sln
-      shell: powershell
+    - run: nuget restore **/*.sln
     - run: |
         cd Blank
         nuget restore
@@ -970,8 +968,7 @@ jobs:
       run: sudo $AGENT_HOMEDIRECTORY/scripts/select-xamarin-sdk.sh 5_12_0
     - # 'Note: This is a third party action: https://github.com/warrenbuckley/Setup-Nuget'
       uses: warrenbuckley/Setup-Nuget@v1
-    - run: nuget  **/*.sln
-      shell: powershell
+    - run: nuget restore **/*.sln
     - run: |
         cd Blank
         nuget restore
@@ -1200,8 +1197,7 @@ jobs:
     - uses: microsoft/setup-msbuild@v1.0.0
     - # 'Note: This is a third party action: https://github.com/warrenbuckley/Setup-Nuget'
       uses: warrenbuckley/Setup-Nuget@v1
-    - run: nuget  ${{ env.solution }}
-      shell: powershell
+    - run: nuget restore ${{ env.solution }}
     - run: msbuild '${{ env.solution }}' /p:configuration='${{ env.buildConfiguration }}' /p:platform='${{ env.buildPlatform }}' /p:DeployOnBuild=true /p:WebPublishMethod=Package /p:PackageAsSingleFile=true /p:SkipInvalidConfigurations=true /p:PackageLocation=""${{ github.workspace }}""
     - uses: actions/upload-artifact@v2
       with:

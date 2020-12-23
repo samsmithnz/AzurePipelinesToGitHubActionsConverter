@@ -12,31 +12,30 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
         public void PipelineNameTest()
         {
             //Arrange
-            string input = "name: test ci pipelines";
             Conversion conversion = new Conversion();
+            string yaml = "name: test ci pipelines";
 
             //Act
-            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(input);
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(yaml);
 
             //Assert
             string expected = "name: test ci pipelines";
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
-            Assert.AreEqual(input, gitHubOutput.pipelinesYaml);
+            Assert.AreEqual(yaml, gitHubOutput.pipelinesYaml);
         }
 
         [TestMethod]
         public void PipelineInvalidStringTest()
         {
             //Arrange
-            string input = "     ";
             Conversion conversion = new Conversion();
-
+            string yaml = "     ";
 
             //Act
             ConversionResponse gitHubOutput = null;
             try
             {
-                gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(input);
+                gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(yaml);
             }
             catch (Exception ex)
             {
@@ -50,11 +49,11 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
         public void PipelineNullStringTest()
         {
             //Arrange
-            string input = null;
             Conversion conversion = new Conversion();
+            string yaml = null;
 
             //Act
-            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(input);
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(yaml);
 
             //Assert
             string expected = "";
@@ -65,14 +64,14 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
         public void PipelineGarbageStringTest()
         {
             //Arrange
-            string input = "gdagfds";
             Conversion conversion = new Conversion();
+            string yaml = "gdagfds";
 
             //Act
             ConversionResponse gitHubOutput = null;
             try
             {
-                gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(input);
+                gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(yaml);
             }
             catch (Exception ex)
             {
@@ -87,17 +86,44 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
         public void PipelineSimpleStringTest()
         {
             //Arrange
-            string input = "pool: windows-latest";
             Conversion conversion = new Conversion();
+            string yaml = "pool: windows-latest";
 
             //Act
-            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(input);
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(yaml);
 
             //Assert
             string expected = @"
 jobs:
   build:
     runs-on: windows-latest
+";
+            expected = UtilityTests.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+        }
+
+        [TestMethod]
+        public void PipelineWithInvalidStepTest()
+        {
+            //Arrange
+            Conversion conversion = new Conversion();
+            string yaml = @"
+pool: 'windows-latest'
+steps:
+- task2: CmdLine@2 #This is purposely an invalid step
+";
+
+            //Act
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(yaml);
+
+            //Assert
+            string expected = @"
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+    - uses: actions/checkout@v2
+    - run: 'DeserializeYaml<AzurePipelines.Step[]>(stepsYaml) swallowed an exception: (Line: 2, Col: 3, Idx: 5) - (Line: 2, Col: 3, Idx: 5): Exception during deserialization'
 ";
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
