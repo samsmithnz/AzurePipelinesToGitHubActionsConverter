@@ -264,7 +264,8 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                     }
                     processedStrategy.max_parallel = strategy.maxParallel;
                 }
-                //TODO: There is currently no conversion path for other strategies    //if (strategy.runOnce != null)
+                //TODO: There is currently no conversion path for other strategies    
+                //if (strategy.runOnce != null)
                 //{
                 //    ConversionUtility.WriteLine("TODO: " + strategy.runOnce, _verbose);
                 //}

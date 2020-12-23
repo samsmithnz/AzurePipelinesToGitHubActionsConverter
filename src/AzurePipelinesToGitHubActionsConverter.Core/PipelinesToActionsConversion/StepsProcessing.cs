@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Text;
 using System;
 using System.Runtime.InteropServices;
+using System.ComponentModel.Design;
 
 namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversion
 {
@@ -152,7 +153,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                         break;
 
                     default:
-                        gitHubStep = CreateScriptStep("powershell", step);
+                        gitHubStep = CreateScriptStep("", step);
                         string newYaml = YamlSerialization.SerializeYaml<AzurePipelines.Step>(step);
                         string[] newYamlSplit = newYaml.Split(System.Environment.NewLine);
                         StringBuilder yamlBuilder = new StringBuilder();
@@ -165,8 +166,18 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                                 yamlBuilder.Append(line);
                             }
                         }
+                        ////Let's check for tasks we know are on the radar, but need help, helping to direct users to the repo and encourage contributions
+                        //switch (step.task.ToUpper())
+                        //{
+                        //    case "GULP@1":
+                        //        gitHubStep.step_message = "Note: The GULP@1 step does not have a conversion path yet, but it's on our radar. Please consider contributing! https://github.com/samsmithnz/AzurePipelinesToGitHubActionsConverter/issues/219";
+                        //        break;
+                        //    default:
                         gitHubStep.step_message = "Note: Error! This step does not have a conversion path yet: " + step.task;
-                        gitHubStep.run = "Write-Host " + gitHubStep.step_message + " " + yamlBuilder.ToString();
+                        //        break;
+                        //}
+                        gitHubStep.run = @"echo """ + gitHubStep.step_message + " " + yamlBuilder.ToString() + @"""";
+
                         break;
                 }
             }
@@ -1944,7 +1955,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
 
             //TODO: Monitor this when a testing tab is finally added to GitHub
             //Going to:
-            //- run: echo "This task equivalent does not yet exist in GitHub Actions"
+            //- run: echo ""This task equivalent does not yet exist in GitHub Actions""
 
             //string scriptPath = GetStepInput(step, "scriptPath");
 

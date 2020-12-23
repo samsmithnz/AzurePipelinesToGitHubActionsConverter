@@ -171,15 +171,15 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                 //Create the GitHub YAML and apply some adjustments
                 gitHubYaml = GitHubActionsSerialization.Serialize(gitHubActions, variableList, _matrixVariableName);
 
-                //Load failed task comments for processing
+                //Add failed task comments to the top of the converted YAML
                 //Add any header messages
                 foreach (string message in gitHubActions.messages)
                 {
                     stepComments.Add(ConversionUtility.ConvertMessageToYamlComment(message));
                 }
+                //look through jobs for any individual step comments
                 if (gitHubActions.jobs != null)
                 {
-                    //Add each individual step comments
                     foreach (KeyValuePair<string, GitHubActions.Job> job in gitHubActions.jobs)
                     {
                         if (job.Value.steps != null)
@@ -206,6 +206,10 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
             {
                 gitHubYaml = item + System.Environment.NewLine + gitHubYaml;
             }
+            //if (stepComments.Count > 0)
+            //{
+            //    gitHubYaml = "#Conversion messages (" + stepComments.Count.ToString() + "):" + System.Environment.NewLine + gitHubYaml;
+            //}
 
             //Return the final conversion result, with the original (pipeline) yaml, processed (actions) yaml, and any comments
             return new ConversionResponse

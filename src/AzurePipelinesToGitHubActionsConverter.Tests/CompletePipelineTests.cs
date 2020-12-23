@@ -1220,11 +1220,9 @@ jobs:
         DIR
       shell: cmd
     - # 'Note: Error! This step does not have a conversion path yet: IISWebAppManagementOnMachineGroup@0'
-      run: ""Write-Host Note: Error! This step does not have a conversion path yet: IISWebAppManagementOnMachineGroup@0 #task: IISWebAppManagementOnMachineGroup@0#inputs:#  iisdeploymenttype: IISWebsite#  actioniiswebsite: CreateOrUpdateWebsite#  websitename: Spark#  websitephysicalpath: '%SystemDrive%\\inetpub\\wwwroot'#  websitephysicalpathauth: WebsiteUserPassThrough#  addbinding: true#  createorupdateapppoolforwebsite: true#  configureauthenticationforwebsite: true#  apppoolnameforwebsite: Spark#  dotnetversionforwebsite: v4.0#  pipelinemodeforwebsite: Integrated#  apppoolidentityforwebsite: ApplicationPoolIdentity#  anonymousauthenticationforwebsite: true#  windowsauthenticationforwebsite: false#  protocol: http#  ipaddress: All Unassigned#  port: 80""
-      shell: powershell
+      run: ""echo \""Note: Error! This step does not have a conversion path yet: IISWebAppManagementOnMachineGroup@0 #task: IISWebAppManagementOnMachineGroup@0#inputs:#  iisdeploymenttype: IISWebsite#  actioniiswebsite: CreateOrUpdateWebsite#  websitename: Spark#  websitephysicalpath: '%SystemDrive%\\inetpub\\wwwroot'#  websitephysicalpathauth: WebsiteUserPassThrough#  addbinding: true#  createorupdateapppoolforwebsite: true#  configureauthenticationforwebsite: true#  apppoolnameforwebsite: Spark#  dotnetversionforwebsite: v4.0#  pipelinemodeforwebsite: Integrated#  apppoolidentityforwebsite: ApplicationPoolIdentity#  anonymousauthenticationforwebsite: true#  windowsauthenticationforwebsite: false#  protocol: http#  ipaddress: All Unassigned#  port: 80\""""
     - # 'Note: Error! This step does not have a conversion path yet: IISWebAppDeploymentOnMachineGroup@0'
-      run: 'Write-Host Note: Error! This step does not have a conversion path yet: IISWebAppDeploymentOnMachineGroup@0 #task: IISWebAppDeploymentOnMachineGroup@0#inputs:#  websitename: Spark#  package: ${{ env.Pipeline.Workspace }}\Art.Web.zip#  xmlvariablesubstitution: true'
-      shell: powershell
+      run: 'echo ""Note: Error! This step does not have a conversion path yet: IISWebAppDeploymentOnMachineGroup@0 #task: IISWebAppDeploymentOnMachineGroup@0#inputs:#  websitename: Spark#  package: ${{ env.Pipeline.Workspace }}\Art.Web.zip#  xmlvariablesubstitution: true""'
 ";
 
             expected = UtilityTests.TrimNewLines(expected);
@@ -1958,8 +1956,7 @@ jobs:
     - uses: actions/checkout@v2
     - # 'Note: Error! This step does not have a conversion path yet: GitVersion@5'
       name: Evaluate Next Version
-      run: 'Write-Host Note: Error! This step does not have a conversion path yet: GitVersion@5 #task: GitVersion@5#displayName: Evaluate Next Version#name: gitVersion#inputs:#  runtime: core#  configfilepath: GitVersion.yml'
-      shell: powershell
+      run: 'echo ""Note: Error! This step does not have a conversion path yet: GitVersion@5 #task: GitVersion@5#displayName: Evaluate Next Version#name: gitVersion#inputs:#  runtime: core#  configfilepath: GitVersion.yml""'
     - name: Build & Package Module
       shell: powershell
       env:
@@ -2142,8 +2139,7 @@ jobs:
         path: ${{ github.workspace }}/${{ env.buildFolderName }}
     - # 'Note: Error! This step does not have a conversion path yet: PublishCodeCoverageResults@1'
       name: Publish Azure Code Coverage
-      run: 'Write-Host Note: Error! This step does not have a conversion path yet: PublishCodeCoverageResults@1 #task: PublishCodeCoverageResults@1#displayName: Publish Azure Code Coverage#condition: succeededOrFailed()#inputs:#  codecoveragetool: JaCoCo#  summaryfilelocation: ${{ env.buildFolderName }}/${{ env.testResultFolderName }}/JaCoCo_coverage.xml#  pathtosources: ${{ github.workspace }}/${{ env.buildFolderName }}/${{ env.dscBuildVariable.RepositoryName }}'
-      shell: powershell
+      run: 'echo ""Note: Error! This step does not have a conversion path yet: PublishCodeCoverageResults@1 #task: PublishCodeCoverageResults@1#displayName: Publish Azure Code Coverage#condition: succeededOrFailed()#inputs:#  codecoveragetool: JaCoCo#  summaryfilelocation: ${{ env.buildFolderName }}/${{ env.testResultFolderName }}/JaCoCo_coverage.xml#  pathtosources: ${{ github.workspace }}/${{ env.buildFolderName }}/${{ env.dscBuildVariable.RepositoryName }}""'
       if: ne(${{ job.status }}, 'cancelled')
     - name: Upload to Codecov.io
       run: bash <(curl -s https://codecov.io/bash) -f ""./${{ env.buildFolderName }}/${{ env.testResultFolderName }}/JaCoCo_coverage.xml"" -F unit
