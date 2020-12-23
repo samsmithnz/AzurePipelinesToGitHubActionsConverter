@@ -82,6 +82,9 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                     case "GITHUBRELEASE@0":
                         gitHubStep = CreateGitHubReleaseStep(step);
                         break;
+                    case "GITVERSION@5":
+                        gitHubStep = CreateGitVersionStep(step);
+                        break;
                     case "GRADLE@2":
                         gitHubStep = CreateGradleStep(step);
                         break;
@@ -1524,6 +1527,31 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
             {
                 gitHubStep.with.Add("prerelease", isPreRelease);
             }
+
+            return gitHubStep;
+        }
+
+
+        public GitHubActions.Step CreateGitVersionStep(AzurePipelines.Step step)
+        {
+            //From: https://marketplace.visualstudio.com/items?itemName=gittools.gitversion
+            //- task: GitVersion@5
+            //  name: gitVersion
+            //  displayName: 'Evaluate Next Version'
+            //  inputs:
+            //    runtime: 'core'
+            //    configFilePath: 'GitVersion.yml'
+
+            //To: https://github.com/GitTools/actions/blob/master/docs/examples/github/gitversion/execute/usage-examples.md
+            //- name: Determine Version
+            //  uses: gittools/actions/gitversion/execute@v0.9.7
+
+
+            GitHubActions.Step gitHubStep = new GitHubActions.Step
+            {
+                name = step.name,
+                uses = "gittools/actions/gitversion/execute@v0.9.7"
+            };
 
             return gitHubStep;
         }
