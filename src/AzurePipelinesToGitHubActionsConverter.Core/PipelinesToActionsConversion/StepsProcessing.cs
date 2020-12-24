@@ -21,6 +21,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                     case "ANT@1":
                         gitHubStep = CreateAntStep(step);
                         break;
+                    case "ARCHIVEFILES@1":
                     case "ARCHIVEFILES@2":
                         gitHubStep = CreateArchiveFilesStep(step);
                         break;
