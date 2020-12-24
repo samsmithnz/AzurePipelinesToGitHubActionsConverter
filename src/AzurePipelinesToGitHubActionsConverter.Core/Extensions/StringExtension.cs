@@ -1,4 +1,5 @@
 ﻿using System;
+
 namespace AzurePipelinesToGitHubActionsConverter.Core.Extensions
 {
     public static class StringExtension

@@ -1177,8 +1177,8 @@ stages:
 
             //Assert
             string expected = @"
-#Note: Error! This step does not have a conversion path yet: IISWebAppDeploymentOnMachineGroup@0
-#Note: Error! This step does not have a conversion path yet: IISWebAppManagementOnMachineGroup@0
+#Error: the step 'IISWebAppDeploymentOnMachineGroup@0' does not have a conversion path yet
+#Error: the step 'IISWebAppManagementOnMachineGroup@0' does not have a conversion path yet
 #Note: Azure DevOps strategy>runOnce does not have an equivalent in GitHub Actions yet, and only the deploy steps are transferred to steps
 #Note: This is a third party action: https://github.com/warrenbuckley/Setup-Nuget
 on:
@@ -1215,10 +1215,36 @@ jobs:
 
         DIR
       shell: cmd
-    - # 'Note: Error! This step does not have a conversion path yet: IISWebAppManagementOnMachineGroup@0'
-      run: ""echo \""Note: Error! This step does not have a conversion path yet: IISWebAppManagementOnMachineGroup@0 #task: IISWebAppManagementOnMachineGroup@0#inputs:#  iisdeploymenttype: IISWebsite#  actioniiswebsite: CreateOrUpdateWebsite#  websitename: Spark#  websitephysicalpath: '%SystemDrive%\\inetpub\\wwwroot'#  websitephysicalpathauth: WebsiteUserPassThrough#  addbinding: true#  createorupdateapppoolforwebsite: true#  configureauthenticationforwebsite: true#  apppoolnameforwebsite: Spark#  dotnetversionforwebsite: v4.0#  pipelinemodeforwebsite: Integrated#  apppoolidentityforwebsite: ApplicationPoolIdentity#  anonymousauthenticationforwebsite: true#  windowsauthenticationforwebsite: false#  protocol: http#  ipaddress: All Unassigned#  port: 80\""""
-    - # 'Note: Error! This step does not have a conversion path yet: IISWebAppDeploymentOnMachineGroup@0'
-      run: 'echo ""Note: Error! This step does not have a conversion path yet: IISWebAppDeploymentOnMachineGroup@0 #task: IISWebAppDeploymentOnMachineGroup@0#inputs:#  websitename: Spark#  package: ${{ env.Pipeline.Workspace }}\Art.Web.zip#  xmlvariablesubstitution: true""'
+    - # ""Error: the step 'IISWebAppManagementOnMachineGroup@0' does not have a conversion path yet""
+      run: |
+        echo ""Error: the step 'IISWebAppManagementOnMachineGroup@0' does not have a conversion path yet""
+        #task: IISWebAppManagementOnMachineGroup@0
+        #inputs:
+        #  iisdeploymenttype: IISWebsite
+        #  actioniiswebsite: CreateOrUpdateWebsite
+        #  websitename: Spark
+        #  websitephysicalpath: '%SystemDrive%\inetpub\wwwroot'
+        #  websitephysicalpathauth: WebsiteUserPassThrough
+        #  addbinding: true
+        #  createorupdateapppoolforwebsite: true
+        #  configureauthenticationforwebsite: true
+        #  apppoolnameforwebsite: Spark
+        #  dotnetversionforwebsite: v4.0
+        #  pipelinemodeforwebsite: Integrated
+        #  apppoolidentityforwebsite: ApplicationPoolIdentity
+        #  anonymousauthenticationforwebsite: true
+        #  windowsauthenticationforwebsite: false
+        #  protocol: http
+        #  ipaddress: All Unassigned
+        #  port: 80
+    - # ""Error: the step 'IISWebAppDeploymentOnMachineGroup@0' does not have a conversion path yet""
+      run: |
+        echo ""Error: the step 'IISWebAppDeploymentOnMachineGroup@0' does not have a conversion path yet""
+        #task: IISWebAppDeploymentOnMachineGroup@0
+        #inputs:
+        #  websitename: Spark
+        #  package: ${{ env.Pipeline.Workspace }}\Art.Web.zip
+        #  xmlvariablesubstitution: true
 ";
 
             expected = UtilityTests.TrimNewLines(expected);
@@ -1923,7 +1949,7 @@ stages:
 
             //Assert
             string expected = @"
-#Note: Error! This step does not have a conversion path yet: PublishCodeCoverageResults@1
+#Error: the step 'PublishCodeCoverageResults@1' does not have a conversion path yet
 #PublishTestResults@2 is a Azure DevOps specific task. There is no equivalent in GitHub Actions until there is a testing summary tab. See: https://github.community/t/publishing-test-results/16215
 #PublishTestResults@2 is a Azure DevOps specific task. There is no equivalent in GitHub Actions until there is a testing summary tab. See: https://github.community/t/publishing-test-results/16215
 #PublishTestResults@2 is a Azure DevOps specific task. There is no equivalent in GitHub Actions until there is a testing summary tab. See: https://github.community/t/publishing-test-results/16215
@@ -2131,9 +2157,17 @@ jobs:
       with:
         name: ${{ env.testArtifactName }}
         path: ${{ github.workspace }}/${{ env.buildFolderName }}
-    - # 'Note: Error! This step does not have a conversion path yet: PublishCodeCoverageResults@1'
+    - # ""Error: the step 'PublishCodeCoverageResults@1' does not have a conversion path yet""
       name: Publish Azure Code Coverage
-      run: 'echo ""Note: Error! This step does not have a conversion path yet: PublishCodeCoverageResults@1 #task: PublishCodeCoverageResults@1#displayName: Publish Azure Code Coverage#condition: succeededOrFailed()#inputs:#  codecoveragetool: JaCoCo#  summaryfilelocation: ${{ env.buildFolderName }}/${{ env.testResultFolderName }}/JaCoCo_coverage.xml#  pathtosources: ${{ github.workspace }}/${{ env.buildFolderName }}/${{ env.dscBuildVariable.RepositoryName }}""'
+      run: |
+        echo ""Error: the step 'PublishCodeCoverageResults@1' does not have a conversion path yet""
+        #task: PublishCodeCoverageResults@1
+        #displayName: Publish Azure Code Coverage
+        #condition: succeededOrFailed()
+        #inputs:
+        #  codecoveragetool: JaCoCo
+        #  summaryfilelocation: ${{ env.buildFolderName }}/${{ env.testResultFolderName }}/JaCoCo_coverage.xml
+        #  pathtosources: ${{ github.workspace }}/${{ env.buildFolderName }}/${{ env.dscBuildVariable.RepositoryName }}
       if: ne(${{ job.status }}, 'cancelled')
     - name: Upload to Codecov.io
       run: bash <(curl -s https://codecov.io/bash) -f ""./${{ env.buildFolderName }}/${{ env.testResultFolderName }}/JaCoCo_coverage.xml"" -F unit

@@ -1,9 +1,11 @@
 ﻿using AzurePipelinesToGitHubActionsConverter.Core.AzurePipelines;
-using AzurePipelinesToGitHubActionsConverter.Core.Serialization;
+using AzurePipelinesToGitHubActionsConverter.Core.Extensions;
 using AzurePipelinesToGitHubActionsConverter.Core.GitHubActions;
-using Newtonsoft.Json.Linq;
-using System.Collections.Generic;
 using AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversion;
+using AzurePipelinesToGitHubActionsConverter.Core.Serialization;
+using Newtonsoft.Json.Linq;
+using System;
+using System.Collections.Generic;
 
 namespace AzurePipelinesToGitHubActionsConverter.Core
 {
@@ -202,8 +204,10 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
             }
 
             //Append all of the comments to the top of the file
+            stepComments = ProcessHeaderComments(gitHubYaml, stepComments);
             foreach (string item in stepComments)
             {
+                //gitHubYaml = item.Replace("#Note:", "#(Line ##) Note:") + System.Environment.NewLine + gitHubYaml;
                 gitHubYaml = item + System.Environment.NewLine + gitHubYaml;
             }
             //if (stepComments.Count > 0)
@@ -219,6 +223,43 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                 comments = stepComments
             };
         }
+
+        //get line numbers for step comments
+        private List<string> ProcessHeaderComments(string gitHubYaml, List<string> stepComments)
+        {
+            ////loop through the comments, searching the yaml for the comment and getting the line number
+
+            ////Start by loading each step comment, initialize with line 0 (which shouldn't exist)
+            //Dictionary<int, string> stepCommentWithLines = new Dictionary<int, string>();
+            //foreach (string stepComment in stepComments)
+            //{
+            //    stepCommentWithLines.Add(0, stepComment);
+            //}
+
+            ////for each comment, find it in the text
+
+            //if (gitHubYaml != null)
+            //{
+            //    string[] lines = gitHubYaml.Split(System.Environment.NewLine);
+            //    foreach (string line in lines)
+            //    {
+            //        //List<string> variableResults = FindPipelineVariablesInString(line);
+            //        //variableResults.AddRange(FindPipelineParametersInString(line));
+            //        //if (variableResults.Count > 0)
+            //        //{
+            //        //    variableList.AddRange(variableResults);
+            //        //}
+            //    }
+            //}
+
+            return stepComments;
+        }
+
+        private List<string> FindPipelineVariablesInString(string line)
+        {
+            throw new NotImplementedException();
+        }
+
 
         /// <summary>
         /// Convert a single Azure DevOps Pipeline task to a GitHub Actions task

@@ -21,8 +21,10 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
 
             //Assert
             string expected = @"
-- # 'Note: Error! This step does not have a conversion path yet: invalid fake task'
-  run: 'echo ""Note: Error! This step does not have a conversion path yet: invalid fake task #task: invalid fake task""'
+- # ""Error: the step 'invalid fake task' does not have a conversion path yet""
+  run: |
+    echo ""Error: the step 'invalid fake task' does not have a conversion path yet""
+    #task: invalid fake task
 ";
 
             expected = UtilityTests.TrimNewLines(expected);

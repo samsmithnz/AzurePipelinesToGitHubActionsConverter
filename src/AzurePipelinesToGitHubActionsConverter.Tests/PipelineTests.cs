@@ -139,7 +139,7 @@ jobs:
             expected = UtilityTests.TrimNewLines(expected);
             if (expected == gitHubOutput.actionsYaml)
             {
-               Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+                Assert.AreEqual(expected, gitHubOutput.actionsYaml);
             }
             else
             {
@@ -147,6 +147,49 @@ jobs:
                 Assert.AreEqual(expectedLinux, gitHubOutput.actionsYaml);
             }
         }
+
+//        [TestMethod]
+//        public void LineNumberPipelineTest()
+//        {
+//            //Arrange
+//            Conversion conversion = new Conversion();
+//            string yaml = @"
+//stages:
+//  - stage: Test
+//    jobs:
+//      - job: Code_Coverage
+//        displayName: 'Publish Code Coverage'
+//        pool:
+//          vmImage: 'ubuntu 16.04'
+//        steps:
+//          - task: PublishCodeCoverageResults@1
+//            displayName: 'Publish Azure Code Coverage'
+//            inputs:
+//              codeCoverageTool: 'JaCoCo'
+//              summaryFileLocation: '$(buildFolderName)/$(testResultFolderName)/JaCoCo_coverage.xml'
+//              pathToSources: '$(Build.SourcesDirectory)/$(buildFolderName)/$(dscBuildVariable.RepositoryName)'
+//";
+
+//            //Act
+//            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(yaml);
+
+//            //Assert
+//            string expected = @"
+//#(Line 8) Note: Error! This step does not have a conversion path yet: PublishCodeCoverageResults@1
+//jobs:
+//  Test_Stage_Code_Coverage:
+//    name: Publish Code Coverage
+//    runs-on: ubuntu 16.04
+//    steps:
+//    - uses: actions/checkout@v2
+//    - # 'Note: Error! This step does not have a conversion path yet: PublishCodeCoverageResults@1'
+//      name: Publish Azure Code Coverage
+//      run: 'echo ""Note: Error! This step does not have a conversion path yet: PublishCodeCoverageResults@1 #task: PublishCodeCoverageResults@1#displayName: Publish Azure Code Coverage#inputs:#  codecoveragetool: JaCoCo#  summaryfilelocation: ${{ env.buildFolderName }}/${{ env.testResultFolderName }}/JaCoCo_coverage.xml#  pathtosources: ${{ github.workspace }}/${{ env.buildFolderName }}/${{ env.dscBuildVariable.RepositoryName }}""'";
+
+//            expected = UtilityTests.TrimNewLines(expected);
+//            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+
+//        }
 
     }
 }
