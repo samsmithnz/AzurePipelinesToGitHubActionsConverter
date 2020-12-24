@@ -148,48 +148,61 @@ jobs:
             }
         }
 
-//        [TestMethod]
-//        public void LineNumberPipelineTest()
-//        {
-//            //Arrange
-//            Conversion conversion = new Conversion();
-//            string yaml = @"
-//stages:
-//  - stage: Test
-//    jobs:
-//      - job: Code_Coverage
-//        displayName: 'Publish Code Coverage'
-//        pool:
-//          vmImage: 'ubuntu 16.04'
-//        steps:
-//          - task: PublishCodeCoverageResults@1
-//            displayName: 'Publish Azure Code Coverage'
-//            inputs:
-//              codeCoverageTool: 'JaCoCo'
-//              summaryFileLocation: '$(buildFolderName)/$(testResultFolderName)/JaCoCo_coverage.xml'
-//              pathToSources: '$(Build.SourcesDirectory)/$(buildFolderName)/$(dscBuildVariable.RepositoryName)'
-//";
+        [TestMethod]
+        public void LineNumberPipelineTest()
+        {
+            //Arrange
+            Conversion conversion = new Conversion();
+            string yaml = @"
+stages:
+  - stage: Test
+    jobs:
+      - job: Code_Coverage
+        displayName: 'Publish Code Coverage'
+        pool:
+          vmImage: 'ubuntu 16.04'
+        steps:
+          - task: PublishCodeCoverageResults@1
+            displayName: 'Publish Azure Code Coverage'
+            inputs:
+              codeCoverageTool: 'JaCoCo'
+          - task: Gulp@1
+";
 
-//            //Act
-//            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(yaml);
+            //Act
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(yaml);
 
-//            //Assert
-//            string expected = @"
-//#(Line 8) Note: Error! This step does not have a conversion path yet: PublishCodeCoverageResults@1
-//jobs:
-//  Test_Stage_Code_Coverage:
-//    name: Publish Code Coverage
-//    runs-on: ubuntu 16.04
-//    steps:
-//    - uses: actions/checkout@v2
-//    - # 'Note: Error! This step does not have a conversion path yet: PublishCodeCoverageResults@1'
-//      name: Publish Azure Code Coverage
-//      run: 'echo ""Note: Error! This step does not have a conversion path yet: PublishCodeCoverageResults@1 #task: PublishCodeCoverageResults@1#displayName: Publish Azure Code Coverage#inputs:#  codecoveragetool: JaCoCo#  summaryfilelocation: ${{ env.buildFolderName }}/${{ env.testResultFolderName }}/JaCoCo_coverage.xml#  pathtosources: ${{ github.workspace }}/${{ env.buildFolderName }}/${{ env.dscBuildVariable.RepositoryName }}""'";
+            //Assert
+            //#Conversion messages (2):
+            //#(line 18) Error: the step 'Gulp@1' does not have a conversion path yet
+            //#(line 10) Error: the step 'PublishCodeCoverageResults@1' does not have a conversion path yet
+            string expected = @"
+#Error: the step 'PublishCodeCoverageResults@1' does not have a conversion path yet
+#Error: the step 'Gulp@1' does not have a conversion path yet
+jobs:
+  Test_Stage_Code_Coverage:
+    name: Publish Code Coverage
+    runs-on: ubuntu 16.04
+    steps:
+    - uses: actions/checkout@v2
+    - # ""Error: the step 'PublishCodeCoverageResults@1' does not have a conversion path yet""
+      name: Publish Azure Code Coverage
+      run: |
+        echo ""Error: the step 'PublishCodeCoverageResults@1' does not have a conversion path yet""
+        #task: PublishCodeCoverageResults@1
+        #displayName: Publish Azure Code Coverage
+        #inputs:
+        #  codecoveragetool: JaCoCo
+    - # ""Error: the step 'Gulp@1' does not have a conversion path yet""
+      run: |
+        echo ""Error: the step 'Gulp@1' does not have a conversion path yet""
+        #task: Gulp@1
+";
 
-//            expected = UtilityTests.TrimNewLines(expected);
-//            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+            expected = UtilityTests.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
 
-//        }
+        }
 
     }
 }

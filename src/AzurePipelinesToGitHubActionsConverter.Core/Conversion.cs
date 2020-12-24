@@ -203,12 +203,12 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
 
             }
 
-            //Append all of the comments to the top of the file
+            //Append all of the comments to the top of the file (traverse them in reverse so they appear in the correct order)
             stepComments = ProcessHeaderComments(gitHubYaml, stepComments);
-            foreach (string item in stepComments)
+            for (int i = stepComments.Count - 1; i >= 0; i--)
             {
-                //gitHubYaml = item.Replace("#Note:", "#(Line ##) Note:") + System.Environment.NewLine + gitHubYaml;
-                gitHubYaml = item + System.Environment.NewLine + gitHubYaml;
+                //gitHubYaml = stepComments[i].Replace("#Note:", "#(Line ##) Note:") + System.Environment.NewLine + gitHubYaml;
+                gitHubYaml = stepComments[i] + System.Environment.NewLine + gitHubYaml;
             }
             //if (stepComments.Count > 0)
             //{

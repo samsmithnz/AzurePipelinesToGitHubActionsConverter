@@ -1177,10 +1177,10 @@ stages:
 
             //Assert
             string expected = @"
-#Error: the step 'IISWebAppDeploymentOnMachineGroup@0' does not have a conversion path yet
-#Error: the step 'IISWebAppManagementOnMachineGroup@0' does not have a conversion path yet
-#Note: Azure DevOps strategy>runOnce does not have an equivalent in GitHub Actions yet, and only the deploy steps are transferred to steps
 #Note: This is a third party action: https://github.com/warrenbuckley/Setup-Nuget
+#Note: Azure DevOps strategy>runOnce does not have an equivalent in GitHub Actions yet, and only the deploy steps are transferred to steps
+#Error: the step 'IISWebAppManagementOnMachineGroup@0' does not have a conversion path yet
+#Error: the step 'IISWebAppDeploymentOnMachineGroup@0' does not have a conversion path yet
 on:
   push:
     branches:
@@ -1949,11 +1949,11 @@ stages:
 
             //Assert
             string expected = @"
+#PublishTestResults@2 is a Azure DevOps specific task. There is no equivalent in GitHub Actions until there is a testing summary tab. See: https://github.community/t/publishing-test-results/16215
+#PublishTestResults@2 is a Azure DevOps specific task. There is no equivalent in GitHub Actions until there is a testing summary tab. See: https://github.community/t/publishing-test-results/16215
+#PublishTestResults@2 is a Azure DevOps specific task. There is no equivalent in GitHub Actions until there is a testing summary tab. See: https://github.community/t/publishing-test-results/16215
+#PublishTestResults@2 is a Azure DevOps specific task. There is no equivalent in GitHub Actions until there is a testing summary tab. See: https://github.community/t/publishing-test-results/16215
 #Error: the step 'PublishCodeCoverageResults@1' does not have a conversion path yet
-#PublishTestResults@2 is a Azure DevOps specific task. There is no equivalent in GitHub Actions until there is a testing summary tab. See: https://github.community/t/publishing-test-results/16215
-#PublishTestResults@2 is a Azure DevOps specific task. There is no equivalent in GitHub Actions until there is a testing summary tab. See: https://github.community/t/publishing-test-results/16215
-#PublishTestResults@2 is a Azure DevOps specific task. There is no equivalent in GitHub Actions until there is a testing summary tab. See: https://github.community/t/publishing-test-results/16215
-#PublishTestResults@2 is a Azure DevOps specific task. There is no equivalent in GitHub Actions until there is a testing summary tab. See: https://github.community/t/publishing-test-results/16215
 on:
   push:
     branches:
