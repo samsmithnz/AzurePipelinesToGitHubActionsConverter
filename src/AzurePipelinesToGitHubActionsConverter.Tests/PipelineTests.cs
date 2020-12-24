@@ -167,6 +167,11 @@ stages:
             inputs:
               codeCoverageTool: 'JaCoCo'
           - task: Gulp@1
+          - task: PublishCodeCoverageResults@1
+            displayName: 'Publish Azure Code Coverage'
+            inputs:
+              codeCoverageTool: 'JaCoCo'
+          - task: Gulp@1
 ";
 
             //Act
@@ -177,14 +182,28 @@ stages:
             //#(line 18) Error: the step 'Gulp@1' does not have a conversion path yet
             //#(line 10) Error: the step 'PublishCodeCoverageResults@1' does not have a conversion path yet
             string expected = @"
-#Error (line 10): the step 'PublishCodeCoverageResults@1' does not have a conversion path yet
-#Error (line 18): the step 'Gulp@1' does not have a conversion path yet
+#Error (line 12): the step 'PublishCodeCoverageResults@1' does not have a conversion path yet
+#Error (line 20): the step 'Gulp@1' does not have a conversion path yet
+#Error (line 24): the step 'PublishCodeCoverageResults@1' does not have a conversion path yet
+#Error (line 32): the step 'Gulp@1' does not have a conversion path yet
 jobs:
   Test_Stage_Code_Coverage:
     name: Publish Code Coverage
     runs-on: ubuntu 16.04
     steps:
     - uses: actions/checkout@v2
+    - # ""Error: the step 'PublishCodeCoverageResults@1' does not have a conversion path yet""
+      name: Publish Azure Code Coverage
+      run: |
+        echo ""Error: the step 'PublishCodeCoverageResults@1' does not have a conversion path yet""
+        #task: PublishCodeCoverageResults@1
+        #displayName: Publish Azure Code Coverage
+        #inputs:
+        #  codecoveragetool: JaCoCo
+    - # ""Error: the step 'Gulp@1' does not have a conversion path yet""
+      run: |
+        echo ""Error: the step 'Gulp@1' does not have a conversion path yet""
+        #task: Gulp@1
     - # ""Error: the step 'PublishCodeCoverageResults@1' does not have a conversion path yet""
       name: Publish Azure Code Coverage
       run: |
