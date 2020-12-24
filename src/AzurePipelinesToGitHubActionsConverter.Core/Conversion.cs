@@ -136,14 +136,14 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                     gitHubActions.jobs = sp.ProcessStagesV2(json["stages"], json["strategy"]);
                 }
                 //If we don't have stages, but have jobs:
-                else if (json["stages"] == null && json["jobs"] != null)
+                else if (json["stages"] == null & json["jobs"] != null)
                 {
                     JobProcessing jp = new JobProcessing(_verbose);
                     gitHubActions.jobs = jp.ProcessJobsV2(jp.ExtractAzurePipelinesJobsV2(json["jobs"], json["strategy"]), gp.ExtractResourcesV2(resourcesYaml));
                     _matrixVariableName = jp.MatrixVariableName;
                 }
                 //Otherwise, if we don't have stages or jobs, we just have steps, and need to load them into a new job
-                else if (json["stages"] == null && json["jobs"] == null)
+                else if (json["stages"] == null & json["jobs"] == null)
                 {
                     //Pool
                     string poolYaml = json["pool"]?.ToString();

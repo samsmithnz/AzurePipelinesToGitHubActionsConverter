@@ -874,7 +874,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                 //    submodules: false
 
 
-                if (step.checkout != null && step.checkout != "self")
+                if (step.checkout != null & step.checkout != "self")
                 {
                     gitHubStep.with.Add("repository", step.checkout);
                 }
@@ -2338,7 +2338,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
             }
 
             //In publish task, I we need to delete any usage of build.artifactstagingdirectory variable as it's implied in github actions, and therefore not needed (Adding it adds the path twice)
-            if (gitHubStep.with.ContainsKey("path") == true && gitHubStep.with["path"] != null)
+            if (gitHubStep.with.ContainsKey("path") == true & gitHubStep.with["path"] != null)
             {
                 gitHubStep.with["path"].Replace("$(build.artifactstagingdirectory)", "");
             }
