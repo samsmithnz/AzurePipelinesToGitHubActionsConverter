@@ -38,59 +38,62 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
             MatrixVariableName = generalProcessing.MatrixVariableName;
             VariableList = vp.VariableList;
 
-            if (newJob.steps == null & job.template != null)
+            if (newJob.steps == null)
             {
-                //Initialize the array with no items
-                job.steps = new AzurePipelines.Step[0];
-                //Process the steps, adding the default checkout step
-                newJob.steps = sp.AddSupportingSteps(job.steps, true);
-                //TODO: There is currently no conversion path for templates
-                newJob.job_message += "Note: Azure DevOps template does not have an equivalent in GitHub Actions yet";
-            }
-            else if (newJob.steps == null && job.strategy?.runOnce?.deploy?.steps != null)
-            {
-                //Initialize the array with no items
-                job.steps = new AzurePipelines.Step[0];
-                //Process the steps, adding the default checkout step
-                newJob.steps = sp.AddSupportingSteps(job.strategy.runOnce.deploy.steps, false);
-                //TODO: There is currently no conversion path for runOnce strategy
-                newJob.job_message += "Note: Azure DevOps strategy>runOnce does not have an equivalent in GitHub Actions yet, and only the deploy steps are transferred to steps";
-            }
-            else if (newJob.steps == null && job.strategy?.canary?.deploy?.steps != null)
-            {
-                //Initialize the array with no items
-                job.steps = new AzurePipelines.Step[0];
-                //Process the steps, adding the default checkout step
-                newJob.steps = sp.AddSupportingSteps(job.strategy.canary.deploy.steps, false);
-                //TODO: There is currently no conversion path for runOnce strategy
-                newJob.job_message += "Note: Azure DevOps strategy>canary does not have an equivalent in GitHub Actions yet, and only the deploy steps are transferred to steps";
-            }
-            else if (newJob.steps == null && job.strategy?.rolling?.deploy?.steps != null)
-            {
-                //Initialize the array with no items
-                job.steps = new AzurePipelines.Step[0];
-                //Process the steps, adding the default checkout step
-                newJob.steps = sp.AddSupportingSteps(job.strategy.rolling.deploy.steps, false);
-                //TODO: There is currently no conversion path for runOnce strategy
-                newJob.job_message += "Note: Azure DevOps strategy>rolling does not have an equivalent in GitHub Actions yet, and only the deploy steps are transferred to steps";
+                if (job.template != null)
+                {
+                    //Initialize the array with no items
+                    job.steps = new AzurePipelines.Step[0];
+                    //Process the steps, adding the default checkout step
+                    newJob.steps = sp.AddSupportingSteps(job.steps, true);
+                    //TODO: There is currently no conversion path for templates
+                    newJob.job_message += "Note: Azure DevOps template does not have an equivalent in GitHub Actions yet";
+                }
+                else if (job.strategy?.runOnce?.deploy?.steps != null)
+                {
+                    //Initialize the array with no items
+                    job.steps = new AzurePipelines.Step[0];
+                    //Process the steps, adding the default checkout step
+                    newJob.steps = sp.AddSupportingSteps(job.strategy.runOnce.deploy.steps, false);
+                    //TODO: There is currently no conversion path for runOnce strategy
+                    newJob.job_message += "Note: Azure DevOps strategy>runOnce does not have an equivalent in GitHub Actions yet, and only the deploy steps are transferred to steps";
+                }
+                else if (job.strategy?.canary?.deploy?.steps != null)
+                {
+                    //Initialize the array with no items
+                    job.steps = new AzurePipelines.Step[0];
+                    //Process the steps, adding the default checkout step
+                    newJob.steps = sp.AddSupportingSteps(job.strategy.canary.deploy.steps, false);
+                    //TODO: There is currently no conversion path for canary strategy
+                    newJob.job_message += "Note: Azure DevOps strategy>canary does not have an equivalent in GitHub Actions yet, and only the deploy steps are transferred to steps";
+                }
+                else if (job.strategy?.rolling?.deploy?.steps != null)
+                {
+                    //Initialize the array with no items
+                    job.steps = new AzurePipelines.Step[0];
+                    //Process the steps, adding the default checkout step
+                    newJob.steps = sp.AddSupportingSteps(job.strategy.rolling.deploy.steps, false);
+                    //TODO: There is currently no conversion path for rolling strategy
+                    newJob.job_message += "Note: Azure DevOps strategy>rolling does not have an equivalent in GitHub Actions yet, and only the deploy steps are transferred to steps";
+                }
             }
 
-            //Process the steps to ensure the checkout task hasn't been added twice.
+            //Process the steps to ensure identical tasks haven't been added twice. (e.g. the checkout task)
             newJob.steps = RemoveDuplicateSteps(newJob.steps);
 
-            //TODO: Add this pools in for other strategies  
-            //if (newJob.runs_on == null && job.strategy?.runOnce?.deploy?.pool != null)
-            //{
-            //    newJob.runs_on = generalProcessing.ProcessPool(job.strategy?.runOnce?.deploy?.pool);
-            //}
-            //else if (newJob.runs_on == null && job.strategy?.canary?.deploy?.pool != null)
-            //{
-            //    newJob.runs_on = generalProcessing.ProcessPool(job.strategy?.canary?.deploy?.pool);
-            //}
-            //else if (newJob.runs_on == null && job.strategy?.rolling?.deploy?.pool != null)
-            //{
-            //    newJob.runs_on = generalProcessing.ProcessPool(job.strategy?.rolling?.deploy?.pool);
-            //}
+            //Add this pools in for other strategies  
+            if (job.strategy?.runOnce?.deploy?.pool != null)
+            {
+                newJob.runs_on = generalProcessing.ProcessPool(job.strategy.runOnce.deploy.pool);
+            }
+            else if (job.strategy?.canary?.deploy?.pool != null)
+            {
+                newJob.runs_on = generalProcessing.ProcessPool(job.strategy.canary.deploy.pool);
+            }
+            else if (job.strategy?.rolling?.deploy?.pool != null)
+            {
+                newJob.runs_on = generalProcessing.ProcessPool(job.strategy.rolling.deploy.pool);
+            }
             if (job.continueOnError == true)
             {
                 newJob.continue_on_error = job.continueOnError;
@@ -294,6 +297,11 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                 }
                 catch (Exception ex)
                 {
+                    steps = new AzurePipelines.Step[1];
+                    steps[0] = new Step
+                    {
+                        script = $"DeserializeYaml<AzurePipelines.Step[]>(stepsYaml) swallowed an exception: " + ex.Message
+                    };
                     ConversionUtility.WriteLine($"DeserializeYaml<AzurePipelines.Step[]>(stepsYaml) swallowed an exception: " + ex.Message, _verbose);
                 }
             }

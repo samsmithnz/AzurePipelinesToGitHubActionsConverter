@@ -244,8 +244,7 @@ jobs:
     - uses: microsoft/setup-msbuild@v1.0.0
     - # 'Note: This is a third party action: https://github.com/warrenbuckley/Setup-Nuget'
       uses: warrenbuckley/Setup-Nuget@v1
-    - run: nuget  ${{ env.solution }}
-      shell: powershell
+    - run: nuget restore ${{ env.solution }}
     - run: msbuild '${{ env.solution }}' /p:configuration='${{ env.buildConfiguration }}' /p:platform='${{ env.buildPlatform }}'
 ";
 
@@ -896,8 +895,7 @@ jobs:
     - uses: actions/checkout@v2
     - # 'Note: This is a third party action: https://github.com/warrenbuckley/Setup-Nuget'
       uses: warrenbuckley/Setup-Nuget@v1
-    - run: nuget  **/*.sln
-      shell: powershell
+    - run: nuget restore **/*.sln
     - run: |
         cd Blank
         nuget restore
@@ -970,8 +968,7 @@ jobs:
       run: sudo $AGENT_HOMEDIRECTORY/scripts/select-xamarin-sdk.sh 5_12_0
     - # 'Note: This is a third party action: https://github.com/warrenbuckley/Setup-Nuget'
       uses: warrenbuckley/Setup-Nuget@v1
-    - run: nuget  **/*.sln
-      shell: powershell
+    - run: nuget restore **/*.sln
     - run: |
         cd Blank
         nuget restore
@@ -1180,10 +1177,10 @@ stages:
 
             //Assert
             string expected = @"
-#Note: Error! This step does not have a conversion path yet: IISWebAppDeploymentOnMachineGroup@0
-#Note: Error! This step does not have a conversion path yet: IISWebAppManagementOnMachineGroup@0
-#Note: Azure DevOps strategy>runOnce does not have an equivalent in GitHub Actions yet, and only the deploy steps are transferred to steps
 #Note: This is a third party action: https://github.com/warrenbuckley/Setup-Nuget
+#Note: Azure DevOps strategy>runOnce does not have an equivalent in GitHub Actions yet, and only the deploy steps are transferred to steps
+#Error (line 40): the step 'IISWebAppManagementOnMachineGroup@0' does not have a conversion path yet
+#Error (line 62): the step 'IISWebAppDeploymentOnMachineGroup@0' does not have a conversion path yet
 on:
   push:
     branches:
@@ -1200,8 +1197,7 @@ jobs:
     - uses: microsoft/setup-msbuild@v1.0.0
     - # 'Note: This is a third party action: https://github.com/warrenbuckley/Setup-Nuget'
       uses: warrenbuckley/Setup-Nuget@v1
-    - run: nuget  ${{ env.solution }}
-      shell: powershell
+    - run: nuget restore ${{ env.solution }}
     - run: msbuild '${{ env.solution }}' /p:configuration='${{ env.buildConfiguration }}' /p:platform='${{ env.buildPlatform }}' /p:DeployOnBuild=true /p:WebPublishMethod=Package /p:PackageAsSingleFile=true /p:SkipInvalidConfigurations=true /p:PackageLocation=""${{ github.workspace }}""
     - uses: actions/upload-artifact@v2
       with:
@@ -1219,12 +1215,36 @@ jobs:
 
         DIR
       shell: cmd
-    - # 'Note: Error! This step does not have a conversion path yet: IISWebAppManagementOnMachineGroup@0'
-      run: ""Write-Host Note: Error! This step does not have a conversion path yet: IISWebAppManagementOnMachineGroup@0 #task: IISWebAppManagementOnMachineGroup@0#inputs:#  iisdeploymenttype: IISWebsite#  actioniiswebsite: CreateOrUpdateWebsite#  websitename: Spark#  websitephysicalpath: '%SystemDrive%\\inetpub\\wwwroot'#  websitephysicalpathauth: WebsiteUserPassThrough#  addbinding: true#  createorupdateapppoolforwebsite: true#  configureauthenticationforwebsite: true#  apppoolnameforwebsite: Spark#  dotnetversionforwebsite: v4.0#  pipelinemodeforwebsite: Integrated#  apppoolidentityforwebsite: ApplicationPoolIdentity#  anonymousauthenticationforwebsite: true#  windowsauthenticationforwebsite: false#  protocol: http#  ipaddress: All Unassigned#  port: 80""
-      shell: powershell
-    - # 'Note: Error! This step does not have a conversion path yet: IISWebAppDeploymentOnMachineGroup@0'
-      run: 'Write-Host Note: Error! This step does not have a conversion path yet: IISWebAppDeploymentOnMachineGroup@0 #task: IISWebAppDeploymentOnMachineGroup@0#inputs:#  websitename: Spark#  package: ${{ env.Pipeline.Workspace }}\Art.Web.zip#  xmlvariablesubstitution: true'
-      shell: powershell
+    - # ""Error: the step 'IISWebAppManagementOnMachineGroup@0' does not have a conversion path yet""
+      run: |
+        echo ""Error: the step 'IISWebAppManagementOnMachineGroup@0' does not have a conversion path yet""
+        #task: IISWebAppManagementOnMachineGroup@0
+        #inputs:
+        #  iisdeploymenttype: IISWebsite
+        #  actioniiswebsite: CreateOrUpdateWebsite
+        #  websitename: Spark
+        #  websitephysicalpath: '%SystemDrive%\inetpub\wwwroot'
+        #  websitephysicalpathauth: WebsiteUserPassThrough
+        #  addbinding: true
+        #  createorupdateapppoolforwebsite: true
+        #  configureauthenticationforwebsite: true
+        #  apppoolnameforwebsite: Spark
+        #  dotnetversionforwebsite: v4.0
+        #  pipelinemodeforwebsite: Integrated
+        #  apppoolidentityforwebsite: ApplicationPoolIdentity
+        #  anonymousauthenticationforwebsite: true
+        #  windowsauthenticationforwebsite: false
+        #  protocol: http
+        #  ipaddress: All Unassigned
+        #  port: 80
+    - # ""Error: the step 'IISWebAppDeploymentOnMachineGroup@0' does not have a conversion path yet""
+      run: |
+        echo ""Error: the step 'IISWebAppDeploymentOnMachineGroup@0' does not have a conversion path yet""
+        #task: IISWebAppDeploymentOnMachineGroup@0
+        #inputs:
+        #  websitename: Spark
+        #  package: ${{ env.Pipeline.Workspace }}\Art.Web.zip
+        #  xmlvariablesubstitution: true
 ";
 
             expected = UtilityTests.TrimNewLines(expected);
@@ -1929,12 +1949,11 @@ stages:
 
             //Assert
             string expected = @"
-#Note: Error! This step does not have a conversion path yet: PublishCodeCoverageResults@1
-#PublishTestResults@2 is a Azure DevOps specific task. There is no equivalent in GitHub Actions until there is a testing summary tab. See: https://github.community/t/publishing-test-results/16215
-#PublishTestResults@2 is a Azure DevOps specific task. There is no equivalent in GitHub Actions until there is a testing summary tab. See: https://github.community/t/publishing-test-results/16215
-#PublishTestResults@2 is a Azure DevOps specific task. There is no equivalent in GitHub Actions until there is a testing summary tab. See: https://github.community/t/publishing-test-results/16215
-#PublishTestResults@2 is a Azure DevOps specific task. There is no equivalent in GitHub Actions until there is a testing summary tab. See: https://github.community/t/publishing-test-results/16215
-#Note: Error! This step does not have a conversion path yet: GitVersion@5
+#Error (line 51): the step 'PublishTestResults@2' does not have a conversion path yet
+#Error (line 54): the step 'PublishTestResults@2' does not have a conversion path yet
+#Error (line 75): the step 'PublishTestResults@2' does not have a conversion path yet
+#Error (line 78): the step 'PublishTestResults@2' does not have a conversion path yet
+#Error (line 242): the step 'PublishCodeCoverageResults@1' does not have a conversion path yet
 on:
   push:
     branches:
@@ -1956,10 +1975,8 @@ jobs:
     runs-on: ubuntu 16.04
     steps:
     - uses: actions/checkout@v2
-    - # 'Note: Error! This step does not have a conversion path yet: GitVersion@5'
-      name: Evaluate Next Version
-      run: 'Write-Host Note: Error! This step does not have a conversion path yet: GitVersion@5 #task: GitVersion@5#displayName: Evaluate Next Version#name: gitVersion#inputs:#  runtime: core#  configfilepath: GitVersion.yml'
-      shell: powershell
+    - name: Evaluate Next Version
+      uses: gittools/actions/gitversion/execute@v0.9.7
     - name: Build & Package Module
       shell: powershell
       env:
@@ -1981,9 +1998,17 @@ jobs:
         path: ${{ github.workspace }}
     - name: Run HQRM Test
       shell: powershell
-    - # 'PublishTestResults@2 is a Azure DevOps specific task. There is no equivalent in GitHub Actions until there is a testing summary tab. See: https://github.community/t/publishing-test-results/16215'
+    - # ""Error: the step 'PublishTestResults@2' does not have a conversion path yet""
       name: Publish Test Results
-      run: echo ""This task equivalent does not yet exist in GitHub Actions""
+      run: |
+        echo ""Error: the step 'PublishTestResults@2' does not have a conversion path yet""
+        #task: PublishTestResults@2
+        #displayName: Publish Test Results
+        #condition: succeededOrFailed()
+        #inputs:
+        #  testresultsformat: NUnit
+        #  testresultsfiles: output/testResults/NUnit*.xml
+        #  testruntitle: HQRM
       if: ne(${{ job.status }}, 'cancelled')
   Test_Stage_Test_Unit:
     name: Unit
@@ -1997,9 +2022,17 @@ jobs:
         path: ${{ github.workspace }}
     - name: Run Unit Test
       shell: powershell
-    - # 'PublishTestResults@2 is a Azure DevOps specific task. There is no equivalent in GitHub Actions until there is a testing summary tab. See: https://github.community/t/publishing-test-results/16215'
+    - # ""Error: the step 'PublishTestResults@2' does not have a conversion path yet""
       name: Publish Test Results
-      run: echo ""This task equivalent does not yet exist in GitHub Actions""
+      run: |
+        echo ""Error: the step 'PublishTestResults@2' does not have a conversion path yet""
+        #task: PublishTestResults@2
+        #displayName: Publish Test Results
+        #condition: succeededOrFailed()
+        #inputs:
+        #  testresultsformat: NUnit
+        #  testresultsfiles: ${{ env.buildFolderName }}/${{ env.testResultFolderName }}/NUnit*.xml
+        #  testruntitle: Unit (Windows Server Core)
       if: ne(${{ job.status }}, 'cancelled')
     - name: Publish Test Artifact
       uses: actions/upload-artifact@v2
@@ -2058,9 +2091,17 @@ jobs:
             'tests/Integration/DSC_SqlDatabaseObjectPermission.Integration.Tests.ps1'
         )
       shell: powershell
-    - # 'PublishTestResults@2 is a Azure DevOps specific task. There is no equivalent in GitHub Actions until there is a testing summary tab. See: https://github.community/t/publishing-test-results/16215'
+    - # ""Error: the step 'PublishTestResults@2' does not have a conversion path yet""
       name: Publish Test Results
-      run: echo ""This task equivalent does not yet exist in GitHub Actions""
+      run: |
+        echo ""Error: the step 'PublishTestResults@2' does not have a conversion path yet""
+        #task: PublishTestResults@2
+        #displayName: Publish Test Results
+        #condition: succeededOrFailed()
+        #inputs:
+        #  testresultsformat: NUnit
+        #  testresultsfiles: ${{ env.buildFolderName }}/${{ env.testResultFolderName }}/NUnit*.xml
+        #  testruntitle: Integration (SQL Server 2016 / Windows Server 2019)
       if: ne(${{ job.status }}, 'cancelled')
   Test_Stage_Test_Integration_SQL2017:
     name: Integration (SQL2017)
@@ -2113,9 +2154,17 @@ jobs:
             'tests/Integration/DSC_SqlDatabaseObjectPermission.Integration.Tests.ps1'
         )
       shell: powershell
-    - # 'PublishTestResults@2 is a Azure DevOps specific task. There is no equivalent in GitHub Actions until there is a testing summary tab. See: https://github.community/t/publishing-test-results/16215'
+    - # ""Error: the step 'PublishTestResults@2' does not have a conversion path yet""
       name: Publish Test Results
-      run: echo ""This task equivalent does not yet exist in GitHub Actions""
+      run: |
+        echo ""Error: the step 'PublishTestResults@2' does not have a conversion path yet""
+        #task: PublishTestResults@2
+        #displayName: Publish Test Results
+        #condition: succeededOrFailed()
+        #inputs:
+        #  testresultsformat: NUnit
+        #  testresultsfiles: ${{ env.buildFolderName }}/${{ env.testResultFolderName }}/NUnit*.xml
+        #  testruntitle: Integration (Windows Server Core)
       if: ne(${{ job.status }}, 'cancelled')
   Test_Stage_Code_Coverage:
     name: Publish Code Coverage
@@ -2140,10 +2189,17 @@ jobs:
       with:
         name: ${{ env.testArtifactName }}
         path: ${{ github.workspace }}/${{ env.buildFolderName }}
-    - # 'Note: Error! This step does not have a conversion path yet: PublishCodeCoverageResults@1'
+    - # ""Error: the step 'PublishCodeCoverageResults@1' does not have a conversion path yet""
       name: Publish Azure Code Coverage
-      run: 'Write-Host Note: Error! This step does not have a conversion path yet: PublishCodeCoverageResults@1 #task: PublishCodeCoverageResults@1#displayName: Publish Azure Code Coverage#condition: succeededOrFailed()#inputs:#  codecoveragetool: JaCoCo#  summaryfilelocation: ${{ env.buildFolderName }}/${{ env.testResultFolderName }}/JaCoCo_coverage.xml#  pathtosources: ${{ github.workspace }}/${{ env.buildFolderName }}/${{ env.dscBuildVariable.RepositoryName }}'
-      shell: powershell
+      run: |
+        echo ""Error: the step 'PublishCodeCoverageResults@1' does not have a conversion path yet""
+        #task: PublishCodeCoverageResults@1
+        #displayName: Publish Azure Code Coverage
+        #condition: succeededOrFailed()
+        #inputs:
+        #  codecoveragetool: JaCoCo
+        #  summaryfilelocation: ${{ env.buildFolderName }}/${{ env.testResultFolderName }}/JaCoCo_coverage.xml
+        #  pathtosources: ${{ github.workspace }}/${{ env.buildFolderName }}/${{ env.dscBuildVariable.RepositoryName }}
       if: ne(${{ job.status }}, 'cancelled')
     - name: Upload to Codecov.io
       run: bash <(curl -s https://codecov.io/bash) -f ""./${{ env.buildFolderName }}/${{ env.testResultFolderName }}/JaCoCo_coverage.xml"" -F unit
@@ -2173,6 +2229,108 @@ jobs:
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
 
+        }
+
+        [TestMethod]
+        public void CDTest()
+        {
+            //Arrange
+            string input = @"
+trigger:
+- master
+
+variables:
+  buildConfiguration: 'Release'
+  buildPlatform: 'Any CPU'
+
+jobs:
+- job: Deploy
+  displayName: ""Deploy job""
+  pool:
+    vmImage: ubuntu-latest
+  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
+  variables:
+    AppSettings.Environment: 'data'
+    ArmTemplateResourceGroupLocation: 'eu'
+    ResourceGroupName: 'MyProjectRG'
+    WebsiteName: 'myproject-web'
+  steps:
+  - task: DownloadBuildArtifacts@0
+    displayName: 'Download the build artifacts'
+    inputs:
+      buildType: 'current'
+      downloadType: 'single'
+      artifactName: 'drop'
+      downloadPath: '$(build.artifactstagingdirectory)'
+  - task: AzureRmWebAppDeployment@3
+    displayName: 'Azure App Service Deploy: web site'
+    inputs:
+      azureSubscription: 'connection to Azure Portal'
+      WebAppName: $(WebsiteName)
+      DeployToSlotFlag: true
+      ResourceGroupName: $(ResourceGroupName)
+      SlotName: 'staging'
+      Package: '$(build.artifactstagingdirectory)/drop/MyProject.Web.zip'
+      TakeAppOfflineFlag: true
+      JSONFiles: '**/appsettings.json'        
+  - task: AzureAppServiceManage@0
+    displayName: 'Swap Slots: website'
+    inputs:
+      azureSubscription: 'connection to Azure Portal'
+      WebAppName: $(WebsiteName)
+      ResourceGroupName: $(ResourceGroupName)
+      SourceSlot: 'staging'";
+            Conversion conversion = new Conversion();
+
+            //Act
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(input);
+
+            //Assert
+            string expected = @"
+#Note: 'AZURE_SP' secret is required to be setup and added into GitHub Secrets: https://help.github.com/en/actions/automating-your-workflow-with-github-actions/creating-and-using-encrypted-secrets
+on:
+  push:
+    branches:
+    - master
+env:
+  buildConfiguration: Release
+  buildPlatform: Any CPU
+jobs:
+  Deploy:
+    name: Deploy job
+    runs-on: ubuntu-latest
+    env:
+      AppSettings.Environment: data
+      ArmTemplateResourceGroupLocation: eu
+      ResourceGroupName: MyProjectRG
+      WebsiteName: myproject-web
+    if: and(success(), eq(github.ref, 'refs/heads/master'))
+    steps:
+    - uses: actions/checkout@v2
+    - # ""Note: 'AZURE_SP' secret is required to be setup and added into GitHub Secrets: https://help.github.com/en/actions/automating-your-workflow-with-github-actions/creating-and-using-encrypted-secrets""
+      name: Azure Login
+      uses: azure/login@v1
+      with:
+        creds: ${{ secrets.AZURE_SP }}
+    - name: Download the build artifacts
+      uses: actions/download-artifact@v2
+      with:
+        name: drop
+        path: ${{ github.workspace }}
+    - name: 'Azure App Service Deploy: web site'
+      uses: Azure/webapps-deploy@v2
+      with:
+        app-name: ${{ env.WebsiteName }}
+        package: ${{ github.workspace }}/drop/MyProject.Web.zip
+        slot-name: staging
+    - name: 'Swap Slots: website'
+      uses: Azure/cli@v1.0.0
+      with:
+        inlineScript: az webapp deployment slot swap --resource-group ${{ env.ResourceGroupName }} --name ${{ env.WebsiteName }} --slot staging --target-slot production
+";
+
+            expected = UtilityTests.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
         }
 
     }

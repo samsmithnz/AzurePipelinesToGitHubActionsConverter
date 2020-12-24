@@ -43,9 +43,9 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             //Assert
             //TODO: Solve roadblocks with the "FilesToIgnore"
             //Check if any errors were detected
-            Assert.AreEqual(null, comments.FirstOrDefault(s => s.Contains("Error!")));
+            Assert.AreEqual(null, comments.FirstOrDefault(s => s.Contains("#Error:")));
             //Check that the remaining comments equals what we expect
-            Assert.AreEqual(35, comments.Count);
+            Assert.AreEqual(34, comments.Count);
         }   
 
     }

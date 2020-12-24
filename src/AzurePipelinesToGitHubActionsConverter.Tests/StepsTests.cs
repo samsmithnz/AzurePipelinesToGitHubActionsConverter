@@ -21,9 +21,10 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
 
             //Assert
             string expected = @"
-- # 'Note: Error! This step does not have a conversion path yet: invalid fake task'
-  run: 'Write-Host Note: Error! This step does not have a conversion path yet: invalid fake task #task: invalid fake task'
-  shell: powershell
+- # ""Error: the step 'invalid fake task' does not have a conversion path yet""
+  run: |
+    echo ""Error: the step 'invalid fake task' does not have a conversion path yet""
+    #task: invalid fake task
 ";
 
             expected = UtilityTests.TrimNewLines(expected);
@@ -212,8 +213,8 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
 ";
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
-        }   
-        
+        }
+
         [TestMethod]
         public void CheckOutIndividualStepTest()
         {
@@ -265,7 +266,6 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             string expected = @"
 - name: 'Copy environment ARM template files to: ${{ github.workspace }}'
   run: Copy '${{ github.workspace }}\FeatureFlags\FeatureFlags.ARMTemplates/**\*' '${{ github.workspace }}\ARMTemplates'
-  shell: powershell
 ";
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
@@ -292,7 +292,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             string expected = @"
 - name: Copy production build to artifact stage
   run: Copy '${{ github.workspace }}/dist/**' '${{ github.workspace }}'
-  shell: powershell";
+";
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
         }
@@ -568,8 +568,8 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
 ";
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
-        } 
-        
+        }
+
         [TestMethod]
         public void AzurePowershellWithOtherVersionIndividualStepTest()
         {
@@ -604,7 +604,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
         }
-        
+
         [TestMethod]
         public void AzurePowershellWithOtherVersionAndTargetAzurePsIndividualStepTest()
         {
@@ -639,7 +639,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
         }
-        
+
         [TestMethod]
         public void AzurePowershellWithOtherVersionAndCustomTargetAzurePsIndividualStepTest()
         {
@@ -818,8 +818,8 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
 ";
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
-        }  
-        
+        }
+
         [TestMethod]
         public void DownloadWithPatternsIndividualStepTest()
         {
@@ -983,7 +983,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
         }
-        
+
 
         [TestMethod]
         public void DotNetCoreCLIPushIndividualStepTest()
@@ -1175,7 +1175,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
         }
-        
+
         [TestMethod]
         public void FunctionalTestIndividualStepTest()
         {
@@ -1263,6 +1263,32 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
         }
 
         [TestMethod]
+        public void GitVersionIndividualStepTest()
+        {
+            //Arrange
+            Conversion conversion = new Conversion();
+            string yaml = @"
+- task: GitVersion@5
+  name: gitVersion
+  displayName: 'Evaluate Next Version'
+  inputs:
+    runtime: 'core'
+    configFilePath: 'GitVersion.yml'
+";
+
+            //Act
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineTaskToGitHubActionTask(yaml);
+
+            //Assert
+            string expected = @"
+- name: Evaluate Next Version
+  uses: gittools/actions/gitversion/execute@v0.9.7
+";
+            expected = UtilityTests.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+        }
+
+        [TestMethod]
         public void HugoIndividualStepTest()
         {
             //Arrange
@@ -1292,42 +1318,42 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
         }
 
-//        [TestMethod]
-//        public void IISWebManagementStepTest()
-//        {
-//            //Arrange
-//            Conversion conversion = new Conversion();
-//            string yaml = @"
-//              - task: IISWebAppManagementOnMachineGroup@0
-//                inputs:
-//                  IISDeploymentType: 'IISWebsite'
-//                  ActionIISWebsite: 'CreateOrUpdateWebsite'
-//                  WebsiteName: 'Spark'
-//                  WebsitePhysicalPath: '%SystemDrive%\inetpub\wwwroot'
-//                  WebsitePhysicalPathAuth: 'WebsiteUserPassThrough'
-//                  AddBinding: true
-//                  CreateOrUpdateAppPoolForWebsite: true
-//                  ConfigureAuthenticationForWebsite: true
-//                  AppPoolNameForWebsite: 'Spark'
-//                  DotNetVersionForWebsite: 'v4.0'
-//                  PipeLineModeForWebsite: 'Integrated'
-//                  AppPoolIdentityForWebsite: 'ApplicationPoolIdentity'
-//                  AnonymousAuthenticationForWebsite: true
-//                  WindowsAuthenticationForWebsite: false
-//                  protocol: 'http' 
-//                  iPAddress: 'All Unassigned'
-//                  port: '80'
-//";
+        //        [TestMethod]
+        //        public void IISWebManagementStepTest()
+        //        {
+        //            //Arrange
+        //            Conversion conversion = new Conversion();
+        //            string yaml = @"
+        //              - task: IISWebAppManagementOnMachineGroup@0
+        //                inputs:
+        //                  IISDeploymentType: 'IISWebsite'
+        //                  ActionIISWebsite: 'CreateOrUpdateWebsite'
+        //                  WebsiteName: 'Spark'
+        //                  WebsitePhysicalPath: '%SystemDrive%\inetpub\wwwroot'
+        //                  WebsitePhysicalPathAuth: 'WebsiteUserPassThrough'
+        //                  AddBinding: true
+        //                  CreateOrUpdateAppPoolForWebsite: true
+        //                  ConfigureAuthenticationForWebsite: true
+        //                  AppPoolNameForWebsite: 'Spark'
+        //                  DotNetVersionForWebsite: 'v4.0'
+        //                  PipeLineModeForWebsite: 'Integrated'
+        //                  AppPoolIdentityForWebsite: 'ApplicationPoolIdentity'
+        //                  AnonymousAuthenticationForWebsite: true
+        //                  WindowsAuthenticationForWebsite: false
+        //                  protocol: 'http' 
+        //                  iPAddress: 'All Unassigned'
+        //                  port: '80'
+        //";
 
-//            //Act
-//            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineTaskToGitHubActionTask(yaml);
+        //            //Act
+        //            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineTaskToGitHubActionTask(yaml);
 
-//            //Assert
-//            string expected = @"
-//";
-//            expected = UtilityTests.TrimNewLines(expected);
-//            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
-//        }
+        //            //Assert
+        //            string expected = @"
+        //";
+        //            expected = UtilityTests.TrimNewLines(expected);
+        //            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+        //        }
 
         [TestMethod]
         public void SQLAzureDacPacDeployStepTest()
@@ -1417,7 +1443,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
         }
-        
+
         [TestMethod]
         public void ArmTemplateDeploymentStepTest()
         {
@@ -1530,6 +1556,53 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
         }
 
         [TestMethod]
+        public void NuGetStepTest()
+        {
+            //Arrange
+            Conversion conversion = new Conversion();
+            string yaml = @"
+- task: NuGetCommand@2
+  inputs:
+    restoreSolution: '$(solution)'
+";
+
+            //Act
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineTaskToGitHubActionTask(yaml);
+
+            //Assert
+            string expected = @"
+- run: nuget restore ${{ env.solution }}
+";
+
+            expected = UtilityTests.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+        }
+
+        [TestMethod]
+        public void NuGetWithRestoreStepTest()
+        {
+            //Arrange
+            Conversion conversion = new Conversion();
+            string yaml = @"
+- task: NuGetCommand@2
+  inputs:
+    command: restore
+    restoreSolution: '$(solution)'
+";
+
+            //Act
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineTaskToGitHubActionTask(yaml);
+
+            //Assert
+            string expected = @"
+- run: nuget restore ${{ env.solution }}
+";
+
+            expected = UtilityTests.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+        }
+
+        [TestMethod]
         public void MSBuildStepTest()
         {
             //Arrange
@@ -1599,8 +1672,14 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
 
             //Assert
             string expected = @"
-- # 'PublishTestResults@2 is a Azure DevOps specific task. There is no equivalent in GitHub Actions until there is a testing summary tab. See: https://github.community/t/publishing-test-results/16215'
-  run: echo ""This task equivalent does not yet exist in GitHub Actions""
+- # ""Error: the step 'PublishTestResults@2' does not have a conversion path yet""
+  run: |
+    echo ""Error: the step 'PublishTestResults@2' does not have a conversion path yet""
+    #task: PublishTestResults@2
+    #inputs:
+    #  testrunner: VSTest
+    #  testresultsfiles: '**/*.trx'
+    #  failtaskonfailedtests: true
 ";
 
             expected = UtilityTests.TrimNewLines(expected);

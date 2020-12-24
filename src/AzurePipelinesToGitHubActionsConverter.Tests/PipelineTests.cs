@@ -12,31 +12,30 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
         public void PipelineNameTest()
         {
             //Arrange
-            string input = "name: test ci pipelines";
             Conversion conversion = new Conversion();
+            string yaml = "name: test ci pipelines";
 
             //Act
-            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(input);
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(yaml);
 
             //Assert
             string expected = "name: test ci pipelines";
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
-            Assert.AreEqual(input, gitHubOutput.pipelinesYaml);
+            Assert.AreEqual(yaml, gitHubOutput.pipelinesYaml);
         }
 
         [TestMethod]
         public void PipelineInvalidStringTest()
         {
             //Arrange
-            string input = "     ";
             Conversion conversion = new Conversion();
-
+            string yaml = "     ";
 
             //Act
             ConversionResponse gitHubOutput = null;
             try
             {
-                gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(input);
+                gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(yaml);
             }
             catch (Exception ex)
             {
@@ -50,11 +49,11 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
         public void PipelineNullStringTest()
         {
             //Arrange
-            string input = null;
             Conversion conversion = new Conversion();
+            string yaml = null;
 
             //Act
-            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(input);
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(yaml);
 
             //Assert
             string expected = "";
@@ -65,14 +64,14 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
         public void PipelineGarbageStringTest()
         {
             //Arrange
-            string input = "gdagfds";
             Conversion conversion = new Conversion();
+            string yaml = "gdagfds";
 
             //Act
             ConversionResponse gitHubOutput = null;
             try
             {
-                gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(input);
+                gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(yaml);
             }
             catch (Exception ex)
             {
@@ -87,11 +86,11 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
         public void PipelineSimpleStringTest()
         {
             //Arrange
-            string input = "pool: windows-latest";
             Conversion conversion = new Conversion();
+            string yaml = "pool: windows-latest";
 
             //Act
-            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(input);
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(yaml);
 
             //Assert
             string expected = @"
@@ -101,6 +100,127 @@ jobs:
 ";
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+        }
+
+        [TestMethod]
+        public void PipelineWithInvalidStepTest()
+        {
+            //Arrange
+            Conversion conversion = new Conversion();
+            string yaml = @"
+pool: 'windows-latest'
+steps:
+- task2: CmdLine@2 #This is purposely an invalid step
+";
+
+            //Act
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(yaml);
+
+            //Assert
+            string expected = @"
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+    - uses: actions/checkout@v2
+    - run: 'DeserializeYaml<AzurePipelines.Step[]>(stepsYaml) swallowed an exception: (Line: 2, Col: 3, Idx: 5) - (Line: 2, Col: 3, Idx: 5): Exception during deserialization'
+";
+
+            string expectedLinux = @"
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+    - uses: actions/checkout@v2
+    - run: 'DeserializeYaml<AzurePipelines.Step[]>(stepsYaml) swallowed an exception: (Line: 2, Col: 3, Idx: 4) - (Line: 2, Col: 3, Idx: 4): Exception during deserialization'
+";
+
+            //When this test runs on a Linux runner, the YAML converter returns a slightly different result
+            expected = UtilityTests.TrimNewLines(expected);
+            if (expected == gitHubOutput.actionsYaml)
+            {
+                Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+            }
+            else
+            {
+                expectedLinux = UtilityTests.TrimNewLines(expectedLinux);
+                Assert.AreEqual(expectedLinux, gitHubOutput.actionsYaml);
+            }
+        }
+
+        [TestMethod]
+        public void LineNumberPipelineTest()
+        {
+            //Arrange
+            Conversion conversion = new Conversion();
+            string yaml = @"
+stages:
+  - stage: Test
+    jobs:
+      - job: Code_Coverage
+        displayName: 'Publish Code Coverage'
+        pool:
+          vmImage: 'ubuntu 16.04'
+        steps:
+          - task: PublishCodeCoverageResults@1
+            displayName: 'Publish Azure Code Coverage'
+            inputs:
+              codeCoverageTool: 'JaCoCo'
+          - task: Gulp@1
+          - task: PublishCodeCoverageResults@1
+            displayName: 'Publish Azure Code Coverage'
+            inputs:
+              codeCoverageTool: 'JaCoCo'
+          - task: Gulp@1
+";
+
+            //Act
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(yaml);
+
+            //Assert
+            //#Conversion messages (2):
+            //#(line 18) Error: the step 'Gulp@1' does not have a conversion path yet
+            //#(line 10) Error: the step 'PublishCodeCoverageResults@1' does not have a conversion path yet
+            string expected = @"
+#Error (line 12): the step 'PublishCodeCoverageResults@1' does not have a conversion path yet
+#Error (line 20): the step 'Gulp@1' does not have a conversion path yet
+#Error (line 24): the step 'PublishCodeCoverageResults@1' does not have a conversion path yet
+#Error (line 32): the step 'Gulp@1' does not have a conversion path yet
+jobs:
+  Test_Stage_Code_Coverage:
+    name: Publish Code Coverage
+    runs-on: ubuntu 16.04
+    steps:
+    - uses: actions/checkout@v2
+    - # ""Error: the step 'PublishCodeCoverageResults@1' does not have a conversion path yet""
+      name: Publish Azure Code Coverage
+      run: |
+        echo ""Error: the step 'PublishCodeCoverageResults@1' does not have a conversion path yet""
+        #task: PublishCodeCoverageResults@1
+        #displayName: Publish Azure Code Coverage
+        #inputs:
+        #  codecoveragetool: JaCoCo
+    - # ""Error: the step 'Gulp@1' does not have a conversion path yet""
+      run: |
+        echo ""Error: the step 'Gulp@1' does not have a conversion path yet""
+        #task: Gulp@1
+    - # ""Error: the step 'PublishCodeCoverageResults@1' does not have a conversion path yet""
+      name: Publish Azure Code Coverage
+      run: |
+        echo ""Error: the step 'PublishCodeCoverageResults@1' does not have a conversion path yet""
+        #task: PublishCodeCoverageResults@1
+        #displayName: Publish Azure Code Coverage
+        #inputs:
+        #  codecoveragetool: JaCoCo
+    - # ""Error: the step 'Gulp@1' does not have a conversion path yet""
+      run: |
+        echo ""Error: the step 'Gulp@1' does not have a conversion path yet""
+        #task: Gulp@1
+";
+
+            expected = UtilityTests.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+
         }
 
     }

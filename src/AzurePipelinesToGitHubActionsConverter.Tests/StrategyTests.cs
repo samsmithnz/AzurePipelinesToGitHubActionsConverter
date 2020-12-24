@@ -288,7 +288,7 @@ jobs:
   DeployWeb:
     # 'Note: Azure DevOps strategy>runOnce does not have an equivalent in GitHub Actions yet, and only the deploy steps are transferred to steps'
     name: deploy Web App
-    runs-on: Ubuntu-16.04
+    runs-on: smarthotel-devPool
     environment:
       name: smarthotel-dev
     steps:
@@ -348,6 +348,7 @@ jobs:
   VMDeploy:
     # 'Note: Azure DevOps strategy>rolling does not have an equivalent in GitHub Actions yet, and only the deploy steps are transferred to steps'
     name: web
+    runs-on: smarthotel-devPool
     environment:
       name: smarthotel-dev
     steps:
@@ -368,7 +369,7 @@ jobs:
 - deployment: VMDeploy
   environment: smarthotel-dev.bookings
   pool: 
-    name: smarthotel-devPool
+    name: smarthotel-mainPool
   strategy:
     canary:      
       increments: [10,20]  

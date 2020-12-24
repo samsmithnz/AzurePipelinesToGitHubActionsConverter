@@ -1,10 +1,8 @@
 ﻿using AzurePipelinesToGitHubActionsConverter.Core.AzurePipelines;
-using AzurePipelinesToGitHubActionsConverter.Core.Serialization;
 using AzurePipelinesToGitHubActionsConverter.Core.Extensions;
+using AzurePipelinesToGitHubActionsConverter.Core.Serialization;
 using System.Collections.Generic;
 using System.Text;
-using System;
-using System.Runtime.InteropServices;
 
 namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversion
 {
@@ -84,6 +82,9 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                     case "GITHUBRELEASE@0":
                         gitHubStep = CreateGitHubReleaseStep(step);
                         break;
+                    case "GITVERSION@5":
+                        gitHubStep = CreateGitVersionStep(step);
+                        break;
                     case "GRADLE@2":
                         gitHubStep = CreateGradleStep(step);
                         break;
@@ -123,9 +124,9 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                     case "PYTHONSCRIPT@0":
                         gitHubStep = CreatePythonStep(step);
                         break;
-                    case "PUBLISHTESTRESULTS@2":
-                        gitHubStep = CreatePublishTestResultsStep(step);
-                        break;
+                    //case "PUBLISHTESTRESULTS@2":
+                    //    gitHubStep = CreatePublishTestResultsStep(step);
+                    //    break;
                     case "SQLAZUREDACPACDEPLOYMENT@1":
                         gitHubStep = CreateSQLAzureDacPacDeployStep(step);
                         break;
@@ -152,7 +153,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                         break;
 
                     default:
-                        gitHubStep = CreateScriptStep("powershell", step);
+                        gitHubStep = CreateScriptStep("", step);
                         string newYaml = YamlSerialization.SerializeYaml<AzurePipelines.Step>(step);
                         string[] newYamlSplit = newYaml.Split(System.Environment.NewLine);
                         StringBuilder yamlBuilder = new StringBuilder();
@@ -163,10 +164,21 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                             {
                                 yamlBuilder.Append("#");
                                 yamlBuilder.Append(line);
+                                yamlBuilder.Append(System.Environment.NewLine);
                             }
                         }
-                        gitHubStep.step_message = "Note: Error! This step does not have a conversion path yet: " + step.task;
-                        gitHubStep.run = "Write-Host " + gitHubStep.step_message + " " + yamlBuilder.ToString();
+                        ////Let's check for tasks we know are on the radar, but need help, helping to direct users to the repo and encourage contributions
+                        //switch (step.task.ToUpper())
+                        //{
+                        //    case "GULP@1":
+                        //        gitHubStep.step_message = "Note: The GULP@1 step does not have a conversion path yet, but it's on our radar. Please consider contributing! https://github.com/samsmithnz/AzurePipelinesToGitHubActionsConverter/issues/219";
+                        //        break;
+                        //    default:
+                        gitHubStep.step_message = $"Error: the step '{step.task}' does not have a conversion path yet";
+                        //        break;
+                        //}
+                        gitHubStep.run = "echo \"" + gitHubStep.step_message + "\"" + System.Environment.NewLine + yamlBuilder.ToString();
+
                         break;
                 }
             }
@@ -598,7 +610,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
             //Use PowerShell to copy files
             step.script = "Copy '" + GetStepInput(step, "sourcefolder") + "/" + GetStepInput(step, "contents") + "' '" + GetStepInput(step, "targetfolder") + "'";
 
-            GitHubActions.Step gitHubStep = CreateScriptStep("powershell", step);
+            GitHubActions.Step gitHubStep = CreateScriptStep("", step);
             return gitHubStep;
         }
 
@@ -1059,13 +1071,13 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
         private GitHubActions.Step CreateNuGetCommandStep(AzurePipelines.Step step)
         {
             string command = GetStepInput(step, "command");
-            if (string.IsNullOrEmpty(command) == false)
+            if (string.IsNullOrEmpty(command) == true)
             {
                 command = "restore";
             }
             string restoresolution = GetStepInput(step, "restoresolution");
 
-            GitHubActions.Step gitHubStep = CreateScriptStep("powershell", step);
+            GitHubActions.Step gitHubStep = CreateScriptStep("", step);
             gitHubStep.run = "nuget " + command + " " + restoresolution;
 
             //coming from:
@@ -1521,6 +1533,31 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
         }
 
 
+        public GitHubActions.Step CreateGitVersionStep(AzurePipelines.Step step)
+        {
+            //From: https://marketplace.visualstudio.com/items?itemName=gittools.gitversion
+            //- task: GitVersion@5
+            //  name: gitVersion
+            //  displayName: 'Evaluate Next Version'
+            //  inputs:
+            //    runtime: 'core'
+            //    configFilePath: 'GitVersion.yml'
+
+            //To: https://github.com/GitTools/actions/blob/master/docs/examples/github/gitversion/execute/usage-examples.md
+            //- name: Determine Version
+            //  uses: gittools/actions/gitversion/execute@v0.9.7
+
+
+            GitHubActions.Step gitHubStep = new GitHubActions.Step
+            {
+                name = step.name,
+                uses = "gittools/actions/gitversion/execute@v0.9.7"
+            };
+
+            return gitHubStep;
+        }
+
+
         public GitHubActions.Step CreateGradleStep(AzurePipelines.Step step)
         {
             //coming from:
@@ -1926,37 +1963,37 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
             return gitHubStep;
         }
 
-        private GitHubActions.Step CreatePublishTestResultsStep(AzurePipelines.Step step)
-        {
-            //coming from:
-            //# Publish Test Results
-            //- task: PublishTestResults@2
-            //  inputs:
-            //    #testResultsFormat: 'JUnit' # Options: JUnit, NUnit, VSTest, xUnit, cTest
-            //    #testResultsFiles: '**/TEST-*.xml' 
-            //    #searchFolder: '$(System.DefaultWorkingDirectory)' # Optional
-            //    #mergeTestResults: false # Optional
-            //    #failTaskOnFailedTests: false # Optional
-            //    #testRunTitle: # Optional
-            //    #buildPlatform: # Optional
-            //    #buildConfiguration: # Optional
-            //    #publishRunAttachments: true # Optional
+        //private GitHubActions.Step CreatePublishTestResultsStep(AzurePipelines.Step step)
+        //{
+        //    //coming from:
+        //    //# Publish Test Results
+        //    //- task: PublishTestResults@2
+        //    //  inputs:
+        //    //    #testResultsFormat: 'JUnit' # Options: JUnit, NUnit, VSTest, xUnit, cTest
+        //    //    #testResultsFiles: '**/TEST-*.xml' 
+        //    //    #searchFolder: '$(System.DefaultWorkingDirectory)' # Optional
+        //    //    #mergeTestResults: false # Optional
+        //    //    #failTaskOnFailedTests: false # Optional
+        //    //    #testRunTitle: # Optional
+        //    //    #buildPlatform: # Optional
+        //    //    #buildConfiguration: # Optional
+        //    //    #publishRunAttachments: true # Optional
 
-            //TODO: Monitor this when a testing tab is finally added to GitHub
-            //Going to:
-            //- run: echo "This task equivalent does not yet exist in GitHub Actions"
+        //    //TODO: Monitor this when a testing tab is finally added to GitHub
+        //    //Going to:
+        //    //- run: echo ""This task equivalent does not yet exist in GitHub Actions""
 
-            //string scriptPath = GetStepInput(step, "scriptPath");
+        //    //string scriptPath = GetStepInput(step, "scriptPath");
 
-            string command = @"echo ""This task equivalent does not yet exist in GitHub Actions""";
-            step.script = command;
+        //    string command = @"echo ""This task equivalent does not yet exist in GitHub Actions""";
+        //    step.script = command;
 
-            GitHubActions.Step gitHubStep = CreateScriptStep("", step);
+        //    GitHubActions.Step gitHubStep = CreateScriptStep("", step);
 
-            gitHubStep.step_message = "PublishTestResults@2 is a Azure DevOps specific task. There is no equivalent in GitHub Actions until there is a testing summary tab. See: https://github.community/t/publishing-test-results/16215";
+        //    gitHubStep.step_message = "PublishTestResults@2 is a Azure DevOps specific task. There is no equivalent in GitHub Actions until there is a testing summary tab. See: https://github.community/t/publishing-test-results/16215";
 
-            return gitHubStep;
-        }
+        //    return gitHubStep;
+        //}
 
         private GitHubActions.Step CreateArchiveFilesStep(AzurePipelines.Step step)
         {
