@@ -254,8 +254,8 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                         //Compare the cleaned up line with the step comments
                         if (line.IndexOf(stepComment.Replace("#", "")) >= 0)
                         {
-                            //The zero indexed current line + 1, number of comments, and summary line 
-                            int lineNumber = i + 1 + stepComments.Count() + 1;
+                            //The zero indexed current line + 1, number of comments //, and summary line 
+                            int lineNumber = i + 1 + stepComments.Count(); // + 1;
                             stepCommentWithLines.Add(new KeyValuePair<int, string>(lineNumber, stepComment));
                             currentLine = i + 1;
                             foundStepComment = true;

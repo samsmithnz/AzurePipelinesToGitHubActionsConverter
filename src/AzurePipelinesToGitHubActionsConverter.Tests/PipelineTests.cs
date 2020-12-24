@@ -182,10 +182,10 @@ stages:
             //#(line 18) Error: the step 'Gulp@1' does not have a conversion path yet
             //#(line 10) Error: the step 'PublishCodeCoverageResults@1' does not have a conversion path yet
             string expected = @"
-#Error (line 12): the step 'PublishCodeCoverageResults@1' does not have a conversion path yet
-#Error (line 20): the step 'Gulp@1' does not have a conversion path yet
-#Error (line 24): the step 'PublishCodeCoverageResults@1' does not have a conversion path yet
-#Error (line 32): the step 'Gulp@1' does not have a conversion path yet
+#Error (line 11): the step 'PublishCodeCoverageResults@1' does not have a conversion path yet
+#Error (line 19): the step 'Gulp@1' does not have a conversion path yet
+#Error (line 23): the step 'PublishCodeCoverageResults@1' does not have a conversion path yet
+#Error (line 31): the step 'Gulp@1' does not have a conversion path yet
 jobs:
   Test_Stage_Code_Coverage:
     name: Publish Code Coverage

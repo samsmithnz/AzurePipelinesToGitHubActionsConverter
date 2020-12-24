@@ -1179,8 +1179,8 @@ stages:
             string expected = @"
 #Note: This is a third party action: https://github.com/warrenbuckley/Setup-Nuget
 #Note: Azure DevOps strategy>runOnce does not have an equivalent in GitHub Actions yet, and only the deploy steps are transferred to steps
-#Error (line 40): the step 'IISWebAppManagementOnMachineGroup@0' does not have a conversion path yet
-#Error (line 62): the step 'IISWebAppDeploymentOnMachineGroup@0' does not have a conversion path yet
+#Error (line 39): the step 'IISWebAppManagementOnMachineGroup@0' does not have a conversion path yet
+#Error (line 61): the step 'IISWebAppDeploymentOnMachineGroup@0' does not have a conversion path yet
 on:
   push:
     branches:
@@ -1949,11 +1949,11 @@ stages:
 
             //Assert
             string expected = @"
-#Error (line 51): the step 'PublishTestResults@2' does not have a conversion path yet
-#Error (line 54): the step 'PublishTestResults@2' does not have a conversion path yet
-#Error (line 75): the step 'PublishTestResults@2' does not have a conversion path yet
-#Error (line 78): the step 'PublishTestResults@2' does not have a conversion path yet
-#Error (line 242): the step 'PublishCodeCoverageResults@1' does not have a conversion path yet
+#Error (line 50): the step 'PublishTestResults@2' does not have a conversion path yet
+#Error (line 53): the step 'PublishTestResults@2' does not have a conversion path yet
+#Error (line 74): the step 'PublishTestResults@2' does not have a conversion path yet
+#Error (line 77): the step 'PublishTestResults@2' does not have a conversion path yet
+#Error (line 241): the step 'PublishCodeCoverageResults@1' does not have a conversion path yet
 on:
   push:
     branches:
