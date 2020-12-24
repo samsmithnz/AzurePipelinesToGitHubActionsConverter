@@ -1179,8 +1179,8 @@ stages:
             string expected = @"
 #Note: This is a third party action: https://github.com/warrenbuckley/Setup-Nuget
 #Note: Azure DevOps strategy>runOnce does not have an equivalent in GitHub Actions yet, and only the deploy steps are transferred to steps
-#Error: the step 'IISWebAppManagementOnMachineGroup@0' does not have a conversion path yet
-#Error: the step 'IISWebAppDeploymentOnMachineGroup@0' does not have a conversion path yet
+#Error (line 40): the step 'IISWebAppManagementOnMachineGroup@0' does not have a conversion path yet
+#Error (line 62): the step 'IISWebAppDeploymentOnMachineGroup@0' does not have a conversion path yet
 on:
   push:
     branches:
@@ -1949,11 +1949,11 @@ stages:
 
             //Assert
             string expected = @"
-#PublishTestResults@2 is a Azure DevOps specific task. There is no equivalent in GitHub Actions until there is a testing summary tab. See: https://github.community/t/publishing-test-results/16215
-#PublishTestResults@2 is a Azure DevOps specific task. There is no equivalent in GitHub Actions until there is a testing summary tab. See: https://github.community/t/publishing-test-results/16215
-#PublishTestResults@2 is a Azure DevOps specific task. There is no equivalent in GitHub Actions until there is a testing summary tab. See: https://github.community/t/publishing-test-results/16215
-#PublishTestResults@2 is a Azure DevOps specific task. There is no equivalent in GitHub Actions until there is a testing summary tab. See: https://github.community/t/publishing-test-results/16215
-#Error: the step 'PublishCodeCoverageResults@1' does not have a conversion path yet
+#Error (line 51): the step 'PublishTestResults@2' does not have a conversion path yet
+#Error (line 54): the step 'PublishTestResults@2' does not have a conversion path yet
+#Error (line 75): the step 'PublishTestResults@2' does not have a conversion path yet
+#Error (line 78): the step 'PublishTestResults@2' does not have a conversion path yet
+#Error (line 242): the step 'PublishCodeCoverageResults@1' does not have a conversion path yet
 on:
   push:
     branches:
@@ -1998,9 +1998,17 @@ jobs:
         path: ${{ github.workspace }}
     - name: Run HQRM Test
       shell: powershell
-    - # 'PublishTestResults@2 is a Azure DevOps specific task. There is no equivalent in GitHub Actions until there is a testing summary tab. See: https://github.community/t/publishing-test-results/16215'
+    - # ""Error: the step 'PublishTestResults@2' does not have a conversion path yet""
       name: Publish Test Results
-      run: echo ""This task equivalent does not yet exist in GitHub Actions""
+      run: |
+        echo ""Error: the step 'PublishTestResults@2' does not have a conversion path yet""
+        #task: PublishTestResults@2
+        #displayName: Publish Test Results
+        #condition: succeededOrFailed()
+        #inputs:
+        #  testresultsformat: NUnit
+        #  testresultsfiles: output/testResults/NUnit*.xml
+        #  testruntitle: HQRM
       if: ne(${{ job.status }}, 'cancelled')
   Test_Stage_Test_Unit:
     name: Unit
@@ -2014,9 +2022,17 @@ jobs:
         path: ${{ github.workspace }}
     - name: Run Unit Test
       shell: powershell
-    - # 'PublishTestResults@2 is a Azure DevOps specific task. There is no equivalent in GitHub Actions until there is a testing summary tab. See: https://github.community/t/publishing-test-results/16215'
+    - # ""Error: the step 'PublishTestResults@2' does not have a conversion path yet""
       name: Publish Test Results
-      run: echo ""This task equivalent does not yet exist in GitHub Actions""
+      run: |
+        echo ""Error: the step 'PublishTestResults@2' does not have a conversion path yet""
+        #task: PublishTestResults@2
+        #displayName: Publish Test Results
+        #condition: succeededOrFailed()
+        #inputs:
+        #  testresultsformat: NUnit
+        #  testresultsfiles: ${{ env.buildFolderName }}/${{ env.testResultFolderName }}/NUnit*.xml
+        #  testruntitle: Unit (Windows Server Core)
       if: ne(${{ job.status }}, 'cancelled')
     - name: Publish Test Artifact
       uses: actions/upload-artifact@v2
@@ -2075,9 +2091,17 @@ jobs:
             'tests/Integration/DSC_SqlDatabaseObjectPermission.Integration.Tests.ps1'
         )
       shell: powershell
-    - # 'PublishTestResults@2 is a Azure DevOps specific task. There is no equivalent in GitHub Actions until there is a testing summary tab. See: https://github.community/t/publishing-test-results/16215'
+    - # ""Error: the step 'PublishTestResults@2' does not have a conversion path yet""
       name: Publish Test Results
-      run: echo ""This task equivalent does not yet exist in GitHub Actions""
+      run: |
+        echo ""Error: the step 'PublishTestResults@2' does not have a conversion path yet""
+        #task: PublishTestResults@2
+        #displayName: Publish Test Results
+        #condition: succeededOrFailed()
+        #inputs:
+        #  testresultsformat: NUnit
+        #  testresultsfiles: ${{ env.buildFolderName }}/${{ env.testResultFolderName }}/NUnit*.xml
+        #  testruntitle: Integration (SQL Server 2016 / Windows Server 2019)
       if: ne(${{ job.status }}, 'cancelled')
   Test_Stage_Test_Integration_SQL2017:
     name: Integration (SQL2017)
@@ -2130,9 +2154,17 @@ jobs:
             'tests/Integration/DSC_SqlDatabaseObjectPermission.Integration.Tests.ps1'
         )
       shell: powershell
-    - # 'PublishTestResults@2 is a Azure DevOps specific task. There is no equivalent in GitHub Actions until there is a testing summary tab. See: https://github.community/t/publishing-test-results/16215'
+    - # ""Error: the step 'PublishTestResults@2' does not have a conversion path yet""
       name: Publish Test Results
-      run: echo ""This task equivalent does not yet exist in GitHub Actions""
+      run: |
+        echo ""Error: the step 'PublishTestResults@2' does not have a conversion path yet""
+        #task: PublishTestResults@2
+        #displayName: Publish Test Results
+        #condition: succeededOrFailed()
+        #inputs:
+        #  testresultsformat: NUnit
+        #  testresultsfiles: ${{ env.buildFolderName }}/${{ env.testResultFolderName }}/NUnit*.xml
+        #  testruntitle: Integration (Windows Server Core)
       if: ne(${{ job.status }}, 'cancelled')
   Test_Stage_Code_Coverage:
     name: Publish Code Coverage

@@ -124,9 +124,9 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                     case "PYTHONSCRIPT@0":
                         gitHubStep = CreatePythonStep(step);
                         break;
-                    case "PUBLISHTESTRESULTS@2":
-                        gitHubStep = CreatePublishTestResultsStep(step);
-                        break;
+                    //case "PUBLISHTESTRESULTS@2":
+                    //    gitHubStep = CreatePublishTestResultsStep(step);
+                    //    break;
                     case "SQLAZUREDACPACDEPLOYMENT@1":
                         gitHubStep = CreateSQLAzureDacPacDeployStep(step);
                         break;
@@ -1963,37 +1963,37 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
             return gitHubStep;
         }
 
-        private GitHubActions.Step CreatePublishTestResultsStep(AzurePipelines.Step step)
-        {
-            //coming from:
-            //# Publish Test Results
-            //- task: PublishTestResults@2
-            //  inputs:
-            //    #testResultsFormat: 'JUnit' # Options: JUnit, NUnit, VSTest, xUnit, cTest
-            //    #testResultsFiles: '**/TEST-*.xml' 
-            //    #searchFolder: '$(System.DefaultWorkingDirectory)' # Optional
-            //    #mergeTestResults: false # Optional
-            //    #failTaskOnFailedTests: false # Optional
-            //    #testRunTitle: # Optional
-            //    #buildPlatform: # Optional
-            //    #buildConfiguration: # Optional
-            //    #publishRunAttachments: true # Optional
+        //private GitHubActions.Step CreatePublishTestResultsStep(AzurePipelines.Step step)
+        //{
+        //    //coming from:
+        //    //# Publish Test Results
+        //    //- task: PublishTestResults@2
+        //    //  inputs:
+        //    //    #testResultsFormat: 'JUnit' # Options: JUnit, NUnit, VSTest, xUnit, cTest
+        //    //    #testResultsFiles: '**/TEST-*.xml' 
+        //    //    #searchFolder: '$(System.DefaultWorkingDirectory)' # Optional
+        //    //    #mergeTestResults: false # Optional
+        //    //    #failTaskOnFailedTests: false # Optional
+        //    //    #testRunTitle: # Optional
+        //    //    #buildPlatform: # Optional
+        //    //    #buildConfiguration: # Optional
+        //    //    #publishRunAttachments: true # Optional
 
-            //TODO: Monitor this when a testing tab is finally added to GitHub
-            //Going to:
-            //- run: echo ""This task equivalent does not yet exist in GitHub Actions""
+        //    //TODO: Monitor this when a testing tab is finally added to GitHub
+        //    //Going to:
+        //    //- run: echo ""This task equivalent does not yet exist in GitHub Actions""
 
-            //string scriptPath = GetStepInput(step, "scriptPath");
+        //    //string scriptPath = GetStepInput(step, "scriptPath");
 
-            string command = @"echo ""This task equivalent does not yet exist in GitHub Actions""";
-            step.script = command;
+        //    string command = @"echo ""This task equivalent does not yet exist in GitHub Actions""";
+        //    step.script = command;
 
-            GitHubActions.Step gitHubStep = CreateScriptStep("", step);
+        //    GitHubActions.Step gitHubStep = CreateScriptStep("", step);
 
-            gitHubStep.step_message = "PublishTestResults@2 is a Azure DevOps specific task. There is no equivalent in GitHub Actions until there is a testing summary tab. See: https://github.community/t/publishing-test-results/16215";
+        //    gitHubStep.step_message = "PublishTestResults@2 is a Azure DevOps specific task. There is no equivalent in GitHub Actions until there is a testing summary tab. See: https://github.community/t/publishing-test-results/16215";
 
-            return gitHubStep;
-        }
+        //    return gitHubStep;
+        //}
 
         private GitHubActions.Step CreateArchiveFilesStep(AzurePipelines.Step step)
         {
