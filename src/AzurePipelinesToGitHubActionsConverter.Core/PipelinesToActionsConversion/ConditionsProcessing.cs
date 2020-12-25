@@ -118,11 +118,11 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
 
         private static IEnumerable<string> Nested(string value)
         {
-            //From: https://stackoverflow.com/questions/38479148/separate-nested-parentheses-in-c-sharp
-            if (string.IsNullOrEmpty(value))
-            {
-                yield break; // or throw exception
-            }
+            ////From: https://stackoverflow.com/questions/38479148/separate-nested-parentheses-in-c-sharp
+            //if (string.IsNullOrEmpty(value))
+            //{
+            //    yield break; // or throw exception
+            //}
 
             Stack<int> brackets = new Stack<int>();
 

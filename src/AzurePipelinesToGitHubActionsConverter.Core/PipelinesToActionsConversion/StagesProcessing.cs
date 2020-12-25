@@ -21,12 +21,19 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                 //for each stage
                 foreach (JToken stageJson in stagesJson)
                 {
-                    AzurePipelines.Stage stage = new AzurePipelines.Stage
+                    AzurePipelines.Stage stage = new AzurePipelines.Stage();
+                    if (stageJson["stage"] != null)
                     {
-                        stage = stageJson["stage"]?.ToString(),
-                        displayName = stageJson["displayName"]?.ToString(),
-                        condition = stageJson["condition"]?.ToString()
-                    };
+                        stage.stage = stageJson["stage"].ToString();
+                    }
+                    if (stageJson["displayName"] != null)
+                    {
+                        stage.displayName = stageJson["displayName"].ToString();
+                    }
+                    if (stageJson["condition"] != null)
+                    {
+                        stage.condition = stageJson["condition"].ToString();
+                    }
                     if (stageJson["dependsOn"] != null)
                     {
                         GeneralProcessing gp = new GeneralProcessing(_verbose);
@@ -118,20 +125,17 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
             }
 
             //Build the final list of GitHub jobs and return it
+            Dictionary<string, GitHubActions.Job> gitHubJobs = null;
             if (jobs != null)
             {
-                Dictionary<string, GitHubActions.Job> gitHubJobs = new Dictionary<string, GitHubActions.Job>();
+                gitHubJobs = new Dictionary<string, GitHubActions.Job>();
                 foreach (AzurePipelines.Job job in jobs)
                 {
                     JobProcessing jobProcessing = new JobProcessing(_verbose);
                     gitHubJobs.Add(job.job, jobProcessing.ProcessJob(job, null));
                 }
-                return gitHubJobs;
             }
-            else
-            {
-                return null;
-            }
+            return gitHubJobs;
         }
 
     }

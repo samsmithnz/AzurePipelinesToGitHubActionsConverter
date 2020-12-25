@@ -136,14 +136,14 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                     gitHubActions.jobs = sp.ProcessStagesV2(json["stages"], json["strategy"]);
                 }
                 //If we don't have stages, but have jobs:
-                else if (json["stages"] == null && json["jobs"] != null)
+                else if (json["stages"] == null & json["jobs"] != null)
                 {
                     JobProcessing jp = new JobProcessing(_verbose);
                     gitHubActions.jobs = jp.ProcessJobsV2(jp.ExtractAzurePipelinesJobsV2(json["jobs"], json["strategy"]), gp.ExtractResourcesV2(resourcesYaml));
                     _matrixVariableName = jp.MatrixVariableName;
                 }
                 //Otherwise, if we don't have stages or jobs, we just have steps, and need to load them into a new job
-                else if (json["stages"] == null && json["jobs"] == null)
+                else if (json["stages"] == null & json["jobs"] == null)
                 {
                     //Pool
                     string poolYaml = json["pool"]?.ToString();
@@ -254,8 +254,8 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                         //Compare the cleaned up line with the step comments
                         if (line.IndexOf(stepComment.Replace("#", "")) >= 0)
                         {
-                            //The zero indexed current line + 1, number of comments, and summary line 
-                            int lineNumber = i + 1 + stepComments.Count() + 1;
+                            //The zero indexed current line + 1, number of comments //, and summary line 
+                            int lineNumber = i + 1 + stepComments.Count(); // + 1;
                             stepCommentWithLines.Add(new KeyValuePair<int, string>(lineNumber, stepComment));
                             currentLine = i + 1;
                             foundStepComment = true;

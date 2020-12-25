@@ -41,6 +41,7 @@ jobs:
       run: dotnet test src/AzurePipelinesToGitHubActionsConverter.Tests/AzurePipelinesToGitHubActionsConverter.Tests.csproj --configuration Release --no-build /p:CollectCoverage=true /p:CoverletOutput=TestResults/ /p:CoverletOutputFormat=lcov
     - name: Publish coverage report to coveralls.io
       uses: coverallsapp/github-action@master
+      if: runner.OS == 'Linux' #Only push the Linux coverage
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
         path-to-lcov: src/AzurePipelinesToGitHubActionsConverter.Tests/TestResults/coverage.info 
@@ -50,9 +51,11 @@ jobs:
       run: dotnet pack src/AzurePipelinesToGitHubActionsConverter.Core/AzurePipelinesToGitHubActionsConverter.Core.csproj --configuration Release --no-build /p:PackageVersion=${{ steps.gitversion.outputs.nuGetVersionV2 }}
     - name: Upload nuget package back to GitHub
       uses: actions/upload-artifact@v2
+      if: runner.OS == 'Linux' #Only pack the Linux nuget package
       with:
         name: nugetPackage
         path: src/AzurePipelinesToGitHubActionsConverter.Core/bin/Release      
+
 
   NuGetPush:
     runs-on: ubuntu-latest

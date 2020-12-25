@@ -50,7 +50,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
     command: build
     repository: contosoRepository
     Dockerfile: app/Dockerfile
-
+    arguments: --secret id=mysecret,src=mysecret.txt
 ";
 
             //Act
@@ -59,7 +59,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             //Assert
             string expected = @"
 - name: Build
-  run: docker build . --file app/Dockerfile contosoRepository
+  run: docker build . --file app/Dockerfile contosoRepository --secret id=mysecret,src=mysecret.txt
 ";
 
             expected = UtilityTests.TrimNewLines(expected);

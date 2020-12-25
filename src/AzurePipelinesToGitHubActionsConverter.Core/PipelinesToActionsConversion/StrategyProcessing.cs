@@ -164,14 +164,14 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
             }
             if (deployJson["steps"] != null)
             {
-                try
-                {
-                    deploy.steps = YamlSerialization.DeserializeYaml<AzurePipelines.Step[]>(deployJson["steps"].ToString());
-                }
-                catch (Exception ex)
-                {
-                    ConversionUtility.WriteLine($"DeserializeYaml<AzurePipelines.Step[]>(ProcessDeploy[\"steps\"].ToString() swallowed an exception: " + ex.Message, _verbose);
-                }
+                //try
+                //{
+                deploy.steps = YamlSerialization.DeserializeYaml<AzurePipelines.Step[]>(deployJson["steps"].ToString());
+                //}
+                //catch (Exception ex)
+                //{
+                //    ConversionUtility.WriteLine($"DeserializeYaml<AzurePipelines.Step[]>(ProcessDeploy[\"steps\"].ToString() swallowed an exception: " + ex.Message, _verbose);
+                //}
             }
 
             return deploy;

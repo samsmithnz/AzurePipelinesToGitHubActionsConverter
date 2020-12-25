@@ -101,10 +101,11 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
             GitHubActions.Trigger push = ProcessComplexTrigger(trigger);
 
             //Build the return results
-            return new GitHubActions.Trigger
-            {
-                push = push?.push
-            };
+            return push;
+            //return new GitHubActions.Trigger
+            //{
+            //    push = push?.push
+            //};
 
         }
 
@@ -195,10 +196,10 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
         //process the schedule
         public string[] ProcessSchedules(AzurePipelines.Schedule[] schedules)
         {
-            if (schedules == null)
-            {
-                return null;
-            }
+            //if (schedules == null)
+            //{
+            //    return null;
+            //}
             string[] newSchedules = new string[schedules.Length];
             for (int i = 0; i < schedules.Length; i++)
             {
@@ -220,17 +221,15 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
             string[] schedule = ProcessSchedules(schedules);
 
             //Build the return results
+            GitHubActions.Trigger newSchedule = null;
             if (schedule != null)
             {
-                return new GitHubActions.Trigger
+                newSchedule = new GitHubActions.Trigger
                 {
                     schedule = schedule
                 };
             }
-            else
-            {
-                return null;
-            }
+            return newSchedule;
         }
 
     }
