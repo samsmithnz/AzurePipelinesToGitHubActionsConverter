@@ -188,6 +188,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             Conversion conversion = new Conversion();
             string yaml = @"
 - task: ShellScript@2
+  displayName: test bash
   inputs:
     scriptPath: myscript.sh
     args: -f 'John Smith'
