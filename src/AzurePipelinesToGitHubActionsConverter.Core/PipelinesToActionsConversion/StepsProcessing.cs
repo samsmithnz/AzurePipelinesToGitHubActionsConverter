@@ -113,6 +113,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                     case "NUGETCOMMAND@2":
                         gitHubStep = CreateNuGetCommandStep(step);
                         break;
+                    case "NUGETTOOLINSTALLER@0":
                     case "NUGETTOOLINSTALLER@1":
                         gitHubStep = CreateNuGetToolInstallerStep();
                         break;
