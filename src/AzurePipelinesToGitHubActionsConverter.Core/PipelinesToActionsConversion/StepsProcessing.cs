@@ -31,7 +31,10 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                     case "AZURECLI@2":
                         gitHubStep = CreateAzureCLIStep(step);
                         break;
+                    case "AZUREPOWERSHELL@2":
+                    case "AZUREPOWERSHELL@3":
                     case "AZUREPOWERSHELL@4":
+                    case "AZUREPOWERSHELL@5":
                         gitHubStep = CreateAzurePowershellStep(step);
                         break;
                     case "AZURERESOURCEGROUPDEPLOYMENT@2":
