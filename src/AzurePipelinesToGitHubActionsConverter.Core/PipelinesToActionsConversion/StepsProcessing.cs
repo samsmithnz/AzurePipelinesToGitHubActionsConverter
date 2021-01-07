@@ -31,7 +31,10 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                     case "AZURECLI@2":
                         gitHubStep = CreateAzureCLIStep(step);
                         break;
+                    case "AZUREPOWERSHELL@2":
+                    case "AZUREPOWERSHELL@3":
                     case "AZUREPOWERSHELL@4":
+                    case "AZUREPOWERSHELL@5":
                         gitHubStep = CreateAzurePowershellStep(step);
                         break;
                     case "AZURERESOURCEGROUPDEPLOYMENT@2":
@@ -128,6 +131,9 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                     //case "PUBLISHTESTRESULTS@2":
                     //    gitHubStep = CreatePublishTestResultsStep(step);
                     //    break;
+                    case "SHELLSCRIPT@2":
+                        gitHubStep = CreateBashShellScriptStep(step);
+                        break;
                     case "SQLAZUREDACPACDEPLOYMENT@1":
                         gitHubStep = CreateSQLAzureDacPacDeployStep(step);
                         break;
@@ -462,6 +468,38 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
             return gitHubStep;
         }
 
+        private GitHubActions.Step CreateBashShellScriptStep(AzurePipelines.Step step)
+        {
+            //From:
+            //- task: ShellScript@2
+            //  inputs:
+            //    scriptPath:
+            //    #args: '' # Optional
+            //    #disableAutoCwd: false # Optional
+            //    #cwd: '' # Optional
+            //    #failOnStandardError: false
+
+            //To:
+            //- name: test bash
+            //  run: echo 'some text'
+            //  shell: bash
+
+            string scriptPath = GetStepInput(step, "scriptpath");
+            string args = GetStepInput(step, "args");
+            //string failOnStandardError = GetStepInput(step, "failOnStandardError");
+
+            string inlineScript = scriptPath;
+            if (args != null)
+            {
+                inlineScript += " " + args;
+            }
+
+            GitHubActions.Step gitHubStep = CreateScriptStep("bash", step);
+            gitHubStep.run = inlineScript;
+
+            return gitHubStep;
+        } 
+        
         private GitHubActions.Step CreateBashStep(AzurePipelines.Step step)
         {
             //From:

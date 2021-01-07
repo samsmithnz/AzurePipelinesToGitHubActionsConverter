@@ -182,6 +182,32 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
         }
 
         [TestMethod]
+        public void BashWithBatchShellTaskIndividualStepTest()
+        {
+            //Arrange
+            Conversion conversion = new Conversion();
+            string yaml = @"
+- task: ShellScript@2
+  displayName: test bash
+  inputs:
+    scriptPath: myscript.sh
+    args: -f 'John Smith'
+";
+
+            //Act
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineTaskToGitHubActionTask(yaml);
+
+            //Assert
+            string expected = @"
+- name: test bash
+  run: myscript.sh -f 'John Smith'
+  shell: bash
+";
+            expected = UtilityTests.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+        }
+
+        [TestMethod]
         public void CacheIndividualStepTest()
         {
             //Arrange
