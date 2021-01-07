@@ -31,6 +31,9 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                     case "AZURECLI@2":
                         gitHubStep = CreateAzureCLIStep(step);
                         break;
+                    case "AZUREKEYVAULT@1":
+                        gitHubStep = CreateAzureKeyStep(step);
+                        break;
                     case "AZUREPOWERSHELL@2":
                     case "AZUREPOWERSHELL@3":
                     case "AZUREPOWERSHELL@4":
@@ -499,8 +502,8 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
             gitHubStep.run = inlineScript;
 
             return gitHubStep;
-        } 
-        
+        }
+
         private GitHubActions.Step CreateBashStep(AzurePipelines.Step step)
         {
             //From:
@@ -2151,6 +2154,41 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                     inlineScript += " " + arguments;
                 }
             }
+
+            GitHubActions.Step gitHubStep = new GitHubActions.Step
+            {
+                uses = "azure/cli@v1.0.0",
+                with = new Dictionary<string, string>
+                {
+                    { "inlineScript", inlineScript },
+                    { "azcliversion", "latest" }
+                }
+            };
+
+            return gitHubStep;
+        }
+
+        private GitHubActions.Step CreateAzureKeyStep(AzurePipelines.Step step)
+        {
+            //From: https://docs.microsoft.com/en-us/azure/devops/pipelines/tasks/deploy/azure-key-vault?view=azure-devops
+            //- task: AzureKeyVault@1
+            //  inputs:
+            //    azureSubscription: 
+            //    keyVaultName: 
+            //    secretsFilter: '*'
+            //    runAsPreJob: false # Azure DevOps Services only
+
+            //To: https://github.com/Azure/CLI
+            //- name: Azure CLI script
+            //  uses: azure/CLI@v1
+            //  with:
+            //    azcliversion: 2.0.72
+            //    inlineScript: az keyvault secret list --subscription 'mysubscription' --vault-name 'keyvaultname'
+
+            string azureSubscription = GetStepInput(step, "azureSubscription");
+            string keyVaultName = GetStepInput(step, "keyVaultName");
+            string inlineScript = "az keyvault secret list --subscription " + azureSubscription;
+            inlineScript += " --vault-name " + keyVaultName;
 
             GitHubActions.Step gitHubStep = new GitHubActions.Step
             {
