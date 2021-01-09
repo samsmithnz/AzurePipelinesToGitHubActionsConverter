@@ -149,6 +149,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
             Pool pool = null;
             if (poolYaml != null)
             {
+
                 //try
                 //{
                 //    //Most often, the pool will be in this structure
