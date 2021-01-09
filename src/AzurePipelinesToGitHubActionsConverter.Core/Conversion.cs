@@ -6,6 +6,7 @@ using AzurePipelinesToGitHubActionsConverter.Core.Serialization;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices.ComTypes;
 using System.Text.Json;
 
 namespace AzurePipelinesToGitHubActionsConverter.Core
@@ -53,7 +54,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
             {
                 //Clean up the YAML to remove conditional insert statements
                 string processedYaml = ConversionUtility.CleanYamlBeforeDeserializationV2(yaml);
-                jsonObject = JsonSerialization.DeserializeStringToObject(processedYaml);
+                jsonObject = JsonSerialization.DeserializeStringToJsonElement(processedYaml);
             }
 
             //Build up the GitHub object piece by piece
@@ -74,15 +75,29 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                 TriggerProcessing tp = new TriggerProcessing(_verbose);
                 if (jsonObject.TryGetProperty("trigger", out jsonElement) == true)
                 {
-                    string triggerYaml = jsonElement.GetProperty("trigger").ToString();
-                    triggerYaml = ConversionUtility.ProcessNoneJsonElement(triggerYaml);
+                    string triggerYaml = null;
+                    if (jsonElement.ToString() == "none")
+                    {
+                        triggerYaml = ConversionUtility.ProcessNoneJsonElement(jsonElement.ToString());
+                    }
+                    else
+                    {
+                        triggerYaml = jsonObject.GetProperty("trigger").ToString();
+                    }
                     gitHubActions.on = tp.ProcessTriggerV2(triggerYaml);
                 }
                 if (jsonObject.TryGetProperty("pr", out jsonElement) == true)
                 {
-                    string prYaml = jsonObject.GetProperty("pr").ToString();
-                    prYaml = ConversionUtility.ProcessNoneJsonElement(prYaml);
-                    GitHubActions.Trigger prTrigger = tp.ProcessPullRequestV2(prYaml);
+                    string prYaml = null;
+                    if (jsonElement.ToString() == "none")
+                    {
+                        prYaml = ConversionUtility.ProcessNoneJsonElement(jsonElement.ToString());
+                    }
+                    else
+                    {
+                        prYaml = jsonObject.GetProperty("pr").ToString();
+                    }
+                    GitHubActions.Trigger prTrigger = tp.ProcessPullRequestV2(prYaml);                    
                     if (gitHubActions.on == null)
                     {
                         gitHubActions.on = prTrigger;
@@ -157,17 +172,21 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                     gitHubActions.jobs = sp.ProcessStagesV2(jsonObject.GetProperty("stages"), strategy);
                 }
                 //If we don't have stages, but have jobs:
-                else if (jsonObject.TryGetProperty("stages", out jsonElement) == true & jsonObject.TryGetProperty("jobs", out jsonElement) == true)
+                else if (jsonObject.TryGetProperty("stages", out jsonElement) == false & jsonObject.TryGetProperty("jobs", out jsonElement) == true)
                 {
                     JobProcessing jp = new JobProcessing(_verbose);
                     gitHubActions.jobs = jp.ProcessJobsV2(jp.ExtractAzurePipelinesJobsV2(jsonObject.GetProperty("jobs"), strategy), gp.ExtractResourcesV2(resourcesYaml));
                     _matrixVariableName = jp.MatrixVariableName;
                 }
                 //Otherwise, if we don't have stages or jobs, we just have steps, and need to load them into a new job
-                else if (jsonObject.TryGetProperty("stages", out jsonElement) == true & jsonObject.TryGetProperty("jobs", out jsonElement) == true)
+                else if (jsonObject.TryGetProperty("stages", out jsonElement) == false & jsonObject.TryGetProperty("jobs", out jsonElement) == false)
                 {
                     //Pool
-                    string poolYaml = jsonObject.GetProperty("pool").ToString();
+                    string poolYaml = null;
+                    if (jsonObject.TryGetProperty("pool", out jsonElement) == true)
+                    {
+                        poolYaml = jsonObject.GetProperty("pool").ToString();
+                    }
                     //pool/demands
                     if (poolYaml?.IndexOf("\"demands\":") >= 0)
                     {
@@ -175,7 +194,11 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                     }
 
                     //Steps
-                    string stepsYaml = jsonObject.GetProperty("steps").ToString();
+                    string stepsYaml = null;
+                    if (jsonObject.TryGetProperty("steps", out jsonElement) == true)
+                    {
+                        stepsYaml = jsonObject.GetProperty("steps").ToString();
+                    }
                     JobProcessing jp = new JobProcessing(_verbose);
                     AzurePipelines.Job[] pipelineJobs = jp.ProcessJobFromPipelineRootV2(poolYaml, strategy, stepsYaml);
                     Resources resources = gp.ExtractResourcesV2(resourcesYaml);

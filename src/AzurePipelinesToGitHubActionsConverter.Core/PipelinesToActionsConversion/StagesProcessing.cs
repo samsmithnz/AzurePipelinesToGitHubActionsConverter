@@ -16,7 +16,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
         {
             AzurePipelines.Job[] jobs = null;
             List<AzurePipelines.Stage> stages = new List<AzurePipelines.Stage>();
-            if (stagesJson.ToString() != null)
+            if (stagesJson.ValueKind != JsonValueKind.Undefined)
             {
                 //for each stage
                 foreach (JsonElement stageJson in stagesJson.EnumerateArray())

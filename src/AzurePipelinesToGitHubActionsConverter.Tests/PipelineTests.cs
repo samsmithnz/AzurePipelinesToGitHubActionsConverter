@@ -118,34 +118,18 @@ steps:
 
             //Assert
             string expected = @"
+#Error (line 7): this step is unknown and has possible syntax errors
 jobs:
   build:
     runs-on: windows-latest
     steps:
     - uses: actions/checkout@v2
-    - run: 'DeserializeYaml<AzurePipelines.Step[]>(stepsYaml) swallowed an exception: (Line: 2, Col: 3, Idx: 5) - (Line: 2, Col: 3, Idx: 5): Exception during deserialization'
+    - # 'Error: this step is unknown and has possible syntax errors'
+      run: 'echo ""Error: this step is unknown and has possible syntax errors""'
 ";
-
-            string expectedLinux = @"
-jobs:
-  build:
-    runs-on: windows-latest
-    steps:
-    - uses: actions/checkout@v2
-    - run: 'DeserializeYaml<AzurePipelines.Step[]>(stepsYaml) swallowed an exception: (Line: 2, Col: 3, Idx: 4) - (Line: 2, Col: 3, Idx: 4): Exception during deserialization'
-";
-
             //When this test runs on a Linux runner, the YAML converter returns a slightly different result
             expected = UtilityTests.TrimNewLines(expected);
-            if (expected == gitHubOutput.actionsYaml)
-            {
-                Assert.AreEqual(expected, gitHubOutput.actionsYaml);
-            }
-            else
-            {
-                expectedLinux = UtilityTests.TrimNewLines(expectedLinux);
-                Assert.AreEqual(expectedLinux, gitHubOutput.actionsYaml);
-            }
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
         }
 
         [TestMethod]

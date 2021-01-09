@@ -108,19 +108,19 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
             {
                 GitHubActions.Step previousStep = null;
                 List<int> indexesToRemove = new List<int>();
-                ////Look through all of the current items to see if a current step matches a previous step
-                //for (int i = 0; i < steps.Length; i++)
-                //{
-                //    if (previousStep == null)
-                //    {
-                //        previousStep = steps[i];
-                //    }
-                //    else if (JsonSerialization.JsonCompare(previousStep, steps[i]) == true)
-                //    {
-                //        //mark the current step as one to remove
-                //        indexesToRemove.Add(i);
-                //    }
-                //}
+                //Look through all of the current items to see if a current step matches a previous step
+                for (int i = 0; i < steps.Length; i++)
+                {
+                    if (previousStep == null)
+                    {
+                        previousStep = steps[i];
+                    }
+                    else if (JsonSerialization.JsonCompare(previousStep, steps[i]) == true)
+                    {
+                        //mark the current step as one to remove
+                        indexesToRemove.Add(i);
+                    }
+                }
                 //Then insert all of the steps that don't need to be removed into the new array
                 GitHubActions.Step[] newSteps = new GitHubActions.Step[steps.Length - indexesToRemove.Count];
                 int index = 0;
@@ -175,7 +175,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
             GeneralProcessing gp = new GeneralProcessing(_verbose);
             StrategyProcessing sp = new StrategyProcessing(_verbose);
             AzurePipelines.Job[] jobs = new AzurePipelines.Job[jobsJson.EnumerateArray().Count()];
-            if (jobsJson.ToString() != null)
+            if (jobsJson.ValueKind != JsonValueKind.Undefined)
             {
                 int i = 0;
                 foreach (JsonElement jobJson in jobsJson.EnumerateArray())
@@ -305,7 +305,8 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
             {
                 try
                 {
-                    steps = YamlSerialization.DeserializeYaml<AzurePipelines.Step[]>(stepsYaml);
+                    steps = JsonSerialization.DeserializeStringToObject<AzurePipelines.Step[]>(stepsYaml);
+                    //steps = YamlSerialization.DeserializeYaml<AzurePipelines.Step[]>(stepsYaml);
                 }
                 catch (Exception ex)
                 {
