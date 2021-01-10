@@ -25,35 +25,35 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                     JsonElement jsonElement = new JsonElement();
                     if (stageJson.TryGetProperty("stage", out jsonElement) == true)
                     {
-                        stage.stage = stageJson.GetProperty("stage").ToString();
+                        stage.stage = jsonElement.ToString();
                     }
                     if (stageJson.TryGetProperty("displayName", out jsonElement) == true)
                     {
-                        stage.displayName = stageJson.GetProperty("displayName").ToString();
+                        stage.displayName = jsonElement.ToString();
                     }
                     if (stageJson.TryGetProperty("condition", out jsonElement) == true)
                     {
-                        stage.condition = stageJson.GetProperty("condition").ToString();
+                        stage.condition = jsonElement.ToString();
                     }
                     if (stageJson.TryGetProperty("dependsOn", out jsonElement) == true)
                     {
                         GeneralProcessing gp = new GeneralProcessing(_verbose);
-                        stage.dependsOn = gp.ProcessDependsOnV2(stageJson.GetProperty("dependsOn").ToString());
+                        stage.dependsOn = gp.ProcessDependsOnV2(jsonElement.ToString());
                     }
                     if (stageJson.TryGetProperty("variables", out jsonElement) == true)
                     {
                         VariablesProcessing vp = new VariablesProcessing(_verbose);
-                        stage.variables = vp.ProcessParametersAndVariablesV2(null, stageJson.GetProperty("variables").ToString());
+                        stage.variables = vp.ProcessParametersAndVariablesV2(null, jsonElement.ToString());
                     }
                     if (stageJson.TryGetProperty("jobs", out jsonElement) == true)
                     {
                         JobProcessing jp = new JobProcessing(_verbose);
-                        stage.jobs = jp.ExtractAzurePipelinesJobsV2(stageJson.GetProperty("jobs"), strategyJson);
+                        stage.jobs = jp.ExtractAzurePipelinesJobsV2(jsonElement, strategyJson);
                     }
                     if (stageJson.TryGetProperty("pool", out jsonElement) == true && stage.jobs != null)
                     {
                         GeneralProcessing gp = new GeneralProcessing(_verbose);
-                        stage.pool = gp.ProcessPoolV2(stageJson.GetProperty("pool").ToString());
+                        stage.pool = gp.ProcessPoolV2(jsonElement.ToString());
                         foreach (Job item in stage.jobs)
                         {
                             //Only update the job pool if it hasn't already been set by the job

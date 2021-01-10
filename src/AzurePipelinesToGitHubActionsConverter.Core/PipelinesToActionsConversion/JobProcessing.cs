@@ -184,29 +184,29 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                     AzurePipelines.Job job = new AzurePipelines.Job();
                     if (jobJson.TryGetProperty("job", out jsonElement) == true)
                     {
-                        job.job = jobJson.GetProperty("job").ToString();
+                        job.job = jsonElement.ToString();
                     }
                     if (jobJson.TryGetProperty("deployment", out jsonElement) == true)
                     {
-                        job.deployment = jobJson.GetProperty("deployment").ToString();
+                        job.deployment = jsonElement.ToString();
                     }
                     if (jobJson.TryGetProperty("displayName", out jsonElement) == true)
                     {
-                        job.displayName = jobJson.GetProperty("displayName").ToString();
+                        job.displayName = jsonElement.ToString();
                     }
                     if (jobJson.TryGetProperty("template", out jsonElement) == true)
                     {
-                        job.template = jobJson.GetProperty("template").ToString();
+                        job.template = jsonElement.ToString();
                     }
                     //Pool
                     if (jobJson.TryGetProperty("pool", out jsonElement) == true)
                     {
-                        job.pool = gp.ProcessPoolV2(jobJson.GetProperty("pool").ToString());
+                        job.pool = gp.ProcessPoolV2(jsonElement.ToString());
                     }
                     //Strategy
                     if (jobJson.TryGetProperty("strategy", out jsonElement) == true)
                     {
-                        strategyJson = jobJson.GetProperty("strategy");
+                        strategyJson = jsonElement;
                     }
                     if (strategyJson.ToString() != null)
                     {
@@ -215,19 +215,19 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
 
                     if (jobJson.TryGetProperty("dependsOn", out jsonElement) == true)
                     {
-                        job.dependsOn = gp.ProcessDependsOnV2(jobJson.GetProperty("dependsOn").ToString());
+                        job.dependsOn = gp.ProcessDependsOnV2(jsonElement.ToString());
                     }
                     if (jobJson.TryGetProperty("condition", out jsonElement) == true)
                     {
-                        job.condition = jobJson.GetProperty("condition").ToString();
+                        job.condition = jsonElement.ToString();
                     }
                     if (jobJson.TryGetProperty("environment", out jsonElement) == true)
                     {
-                        job.environment = gp.ProcessEnvironmentV2(jobJson.GetProperty("environment").ToString());
+                        job.environment = gp.ProcessEnvironmentV2(jsonElement.ToString());
                     }
                     if (jobJson.TryGetProperty("timeoutInMinutes", out jsonElement) == true)
                     {
-                        int.TryParse(jobJson.GetProperty("timeoutInMinutes").ToString(), out int timeOut);
+                        int.TryParse(jsonElement.ToString(), out int timeOut);
                         if (timeOut > 0)
                         {
                             job.timeoutInMinutes = timeOut;
@@ -235,13 +235,13 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                     }
                     if (jobJson.TryGetProperty("continueOnError", out jsonElement) == true)
                     {
-                        bool.TryParse(jobJson.GetProperty("continueOnError").ToString(), out bool continueOnError);
+                        bool.TryParse(jsonElement.ToString(), out bool continueOnError);
                         job.continueOnError = continueOnError;
                     }
                     if (jobJson.TryGetProperty("variables", out jsonElement) == true)
                     {
                         VariablesProcessing vp = new VariablesProcessing(_verbose);
-                        job.variables = vp.ProcessParametersAndVariablesV2(null, jobJson.GetProperty("variables").ToString());
+                        job.variables = vp.ProcessParametersAndVariablesV2(null, jsonElement.ToString());
                     }
                     //Currently no conversion path for services
                     //if (jobJson["services"] != null)
@@ -270,7 +270,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                     {
                         try
                         {
-                            job.steps = YamlSerialization.DeserializeYaml<AzurePipelines.Step[]>(jobJson.GetProperty("steps").ToString());
+                            job.steps = YamlSerialization.DeserializeYaml<AzurePipelines.Step[]>(jsonElement.ToString());
                         }
                         catch (Exception ex)
                         {
@@ -305,7 +305,6 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
             {
                 try
                 {
-                    //steps = JsonSerialization.DeserializeStringToObject<AzurePipelines.Step[]>(stepsYaml);
                     steps = YamlSerialization.DeserializeYaml<AzurePipelines.Step[]>(stepsYaml);
                 }
                 catch (Exception ex)

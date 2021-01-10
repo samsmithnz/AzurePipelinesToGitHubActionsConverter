@@ -167,8 +167,9 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                     if (poolJson.TryGetProperty("demands", out jsonElement) == true)
                     {
                         string demands = jsonElement.ToString();
-                        if (demands != null)// & poolJson.GetProperty("demands").GetType() == Type.GetType("string"))
-                        {    //Move the single string demands to an array
+                        if (demands != null)
+                        {
+                            //Move the single string demands to an array
                             pool.demands = new string[1];
                             pool.demands[0] = demands;
                         }
