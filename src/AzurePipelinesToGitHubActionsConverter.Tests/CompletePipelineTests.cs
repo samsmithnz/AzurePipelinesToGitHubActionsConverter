@@ -981,6 +981,187 @@ jobs:
 
         }
 
+//              [TestMethod]
+//        public void XamariniOS1PipelineTest()
+//        {
+//            //Arrange
+//            Conversion conversion = new Conversion();
+//            //Source is: https://raw.githubusercontent.com/microsoft/azure-pipelines-yaml/master/templates/xamarin.ios.yml
+//            string yaml = @"
+//trigger:
+//- master
+
+//pool:
+//  vmImage: 'macos-latest'
+
+//steps:
+//- script: sudo $AGENT_HOMEDIRECTORY/scripts/select-xamarin-sdk.sh 5_12_0
+//  displayName: 'Select the Xamarin SDK version'
+//  enabled: false
+//- task: NuGetToolInstaller@1
+//- task: NuGetCommand@2
+//  inputs:
+//    restoreSolution: '**/*.sln'
+//- task: XamariniOS@2
+//  inputs:
+//    solutionFile: '**/*.sln'
+//    configuration: 'Release'
+//    buildForSimulator: true
+//    packageApp: false
+//";
+
+//            //Act
+//            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(yaml);
+
+//            //Assert
+//            string expected = @"
+//#Note: This is a third party action: https://github.com/warrenbuckley/Setup-Nuget
+//on:
+//  push:
+//    branches:
+//    - master
+//jobs:
+//  build:
+//    runs-on: macos-latest
+//    steps:
+//    - uses: actions/checkout@v2
+//    - name: Select the Xamarin SDK version
+//      run: sudo $AGENT_HOMEDIRECTORY/scripts/select-xamarin-sdk.sh 5_12_0
+//    - # 'Note: This is a third party action: https://github.com/warrenbuckley/Setup-Nuget'
+//      uses: warrenbuckley/Setup-Nuget@v1
+//    - run: nuget restore **/*.sln
+//    - run: |
+//        cd Blank
+//        nuget restore
+//        cd Blank.Android
+//        msbuild  /verbosity:normal /t:Rebuild /p:Platform=iPhoneSimulator /p:Configuration=Release
+//";
+
+//            expected = UtilityTests.TrimNewLines(expected);
+//            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+
+//        }
+
+ 
+//        [TestMethod]
+//        public void XamariniOS2PipelineTest()
+//        {
+//            //Arrange
+//            Conversion conversion = new Conversion();
+//            //Source is: https://raw.githubusercontent.com/microsoft/azure-pipelines-yaml/master/templates/xamarin.ios.yml
+//            string yaml = @"
+//# Xamarin.iOS
+//# Build a Xamarin.iOS project.
+//# Add steps that install certificates, test, sign, and distribute an app, save build artifacts, and more:
+//# https://docs.microsoft.com/azure/devops/pipelines/languages/xamarin
+
+//trigger:
+//- master
+
+//pool:
+//  vmImage: 'macos-latest'
+
+//steps:
+//# To manually select a Xamarin SDK version on the Microsoft-hosted macOS agent,
+//# configure this task with the *Mono* version that is associated with the
+//# Xamarin SDK version that you need, and set the ""enabled"" property to true.
+//# See https://go.microsoft.com/fwlink/?linkid=871629
+//- script: sudo $AGENT_HOMEDIRECTORY/scripts/select-xamarin-sdk.sh 5_12_0
+//  displayName: 'Select the Xamarin SDK version'
+//  enabled: false
+//";
+
+//            //Act
+//            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(yaml);
+
+//            //Assert
+//            string expected = @"
+//#Note: This is a third party action: https://github.com/warrenbuckley/Setup-Nuget
+//on:
+//  push:
+//    branches:
+//    - master
+//jobs:
+//  build:
+//    runs-on: macos-latest
+//    steps:
+//    - uses: actions/checkout@v2
+//    - name: Select the Xamarin SDK version
+//      run: sudo $AGENT_HOMEDIRECTORY/scripts/select-xamarin-sdk.sh 5_12_0
+//    - # 'Note: This is a third party action: https://github.com/warrenbuckley/Setup-Nuget'
+//      uses: warrenbuckley/Setup-Nuget@v1
+//    - run: nuget restore **/*.sln
+//    - run: |
+//        cd Blank
+//        nuget restore
+//        cd Blank.Android
+//        msbuild  /verbosity:normal /t:Rebuild /p:Platform=iPhoneSimulator /p:Configuration=Release
+//";
+
+//            expected = UtilityTests.TrimNewLines(expected);
+//            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+
+//        }
+
+//        [TestMethod]
+//        public void XamariniOS3PipelineTest()
+//        {
+//            //Arrange
+//            Conversion conversion = new Conversion();
+//            //Source is: https://raw.githubusercontent.com/microsoft/azure-pipelines-yaml/master/templates/xamarin.ios.yml
+//            string yaml = @"
+//# Xamarin.iOS
+//# Build a Xamarin.iOS project.
+//# Add steps that install certificates, test, sign, and distribute an app, save build artifacts, and more:
+//# https://docs.microsoft.com/azure/devops/pipelines/languages/xamarin
+
+//trigger:
+//- master
+
+//pool:
+//  vmImage: 'macos-latest'
+
+//steps:
+//- task: XamariniOS@2
+//  inputs:
+//    solutionFile: '**/*.sln'
+//    configuration: 'Release'
+//    buildForSimulator: true
+//    packageApp: false
+//";
+
+//            //Act
+//            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(yaml);
+
+//            //Assert
+//            string expected = @"
+//#Note: This is a third party action: https://github.com/warrenbuckley/Setup-Nuget
+//on:
+//  push:
+//    branches:
+//    - master
+//jobs:
+//  build:
+//    runs-on: macos-latest
+//    steps:
+//    - uses: actions/checkout@v2
+//    - name: Select the Xamarin SDK version
+//      run: sudo $AGENT_HOMEDIRECTORY/scripts/select-xamarin-sdk.sh 5_12_0
+//    - # 'Note: This is a third party action: https://github.com/warrenbuckley/Setup-Nuget'
+//      uses: warrenbuckley/Setup-Nuget@v1
+//    - run: nuget restore **/*.sln
+//    - run: |
+//        cd Blank
+//        nuget restore
+//        cd Blank.Android
+//        msbuild  /verbosity:normal /t:Rebuild /p:Platform=iPhoneSimulator /p:Configuration=Release
+//";
+
+//            expected = UtilityTests.TrimNewLines(expected);
+//            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+
+//        }
+
         [TestMethod]
         public void PipelineWithWorkspaceAndTemplateStepTest()
         {

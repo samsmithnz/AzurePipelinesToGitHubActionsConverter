@@ -118,14 +118,12 @@ steps:
 
             //Assert
             string expected = @"
-#Error (line 7): this step is unknown and has possible syntax errors
 jobs:
   build:
     runs-on: windows-latest
     steps:
     - uses: actions/checkout@v2
-    - # 'Error: this step is unknown and has possible syntax errors'
-      run: 'echo ""Error: this step is unknown and has possible syntax errors""'
+    - run: 'This step is unknown and caused an exception: (Line: 1, Col: 2, Idx: 1) - (Line: 1, Col: 2, Idx: 1): Exception during deserialization'
 ";
             //When this test runs on a Linux runner, the YAML converter returns a slightly different result
             expected = UtilityTests.TrimNewLines(expected);

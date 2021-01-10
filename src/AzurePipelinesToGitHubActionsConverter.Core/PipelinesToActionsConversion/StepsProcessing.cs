@@ -230,27 +230,27 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
             {
                 gitHubStep = CreateCheckoutStep(step);
             }
-            else
-            {
-                gitHubStep = CreateScriptStep("", step);
-                //string newYaml = YamlSerialization.SerializeYaml<AzurePipelines.Step>(step);
-                //string[] newYamlSplit = newYaml.Split(System.Environment.NewLine);
-                //StringBuilder yamlBuilder = new StringBuilder();
-                //for (int i = 0; i < newYamlSplit.Length; i++)
-                //{
-                //    string line = newYamlSplit[i];
-                //    if (line.Trim().Length > 0)
-                //    {
-                //        yamlBuilder.Append("#");
-                //        yamlBuilder.Append(line);
-                //        yamlBuilder.Append(System.Environment.NewLine);
-                //    }
-                //}
-                gitHubStep.step_message = $"Error: this step is unknown and has possible syntax errors";
-                gitHubStep.run = "echo \"" + gitHubStep.step_message + "\""; //+ System.Environment.NewLine + yamlBuilder.ToString();
+            //else
+            //{
+            //    gitHubStep = CreateScriptStep("", step);
+            //    //string newYaml = YamlSerialization.SerializeYaml<AzurePipelines.Step>(step);
+            //    //string[] newYamlSplit = newYaml.Split(System.Environment.NewLine);
+            //    //StringBuilder yamlBuilder = new StringBuilder();
+            //    //for (int i = 0; i < newYamlSplit.Length; i++)
+            //    //{
+            //    //    string line = newYamlSplit[i];
+            //    //    if (line.Trim().Length > 0)
+            //    //    {
+            //    //        yamlBuilder.Append("#");
+            //    //        yamlBuilder.Append(line);
+            //    //        yamlBuilder.Append(System.Environment.NewLine);
+            //    //    }
+            //    //}
+            //    gitHubStep.step_message = $"Error: this step is unknown and has possible syntax errors";
+            //    gitHubStep.run = "echo \"" + gitHubStep.step_message + "\""; //+ System.Environment.NewLine + yamlBuilder.ToString();
 
-                return gitHubStep;
-            }
+            //    return gitHubStep;
+            //}
 
             if (gitHubStep != null)
             {

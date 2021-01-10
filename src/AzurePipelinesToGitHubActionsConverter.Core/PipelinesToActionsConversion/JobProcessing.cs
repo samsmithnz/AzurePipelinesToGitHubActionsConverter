@@ -305,15 +305,15 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
             {
                 try
                 {
-                    steps = JsonSerialization.DeserializeStringToObject<AzurePipelines.Step[]>(stepsYaml);
-                    //steps = YamlSerialization.DeserializeYaml<AzurePipelines.Step[]>(stepsYaml);
+                    //steps = JsonSerialization.DeserializeStringToObject<AzurePipelines.Step[]>(stepsYaml);
+                    steps = YamlSerialization.DeserializeYaml<AzurePipelines.Step[]>(stepsYaml);
                 }
                 catch (Exception ex)
                 {
                     steps = new AzurePipelines.Step[1];
                     steps[0] = new Step
                     {
-                        script = $"DeserializeYaml<AzurePipelines.Step[]>(stepsYaml) swallowed an exception: " + ex.Message
+                        script = $"This step is unknown and caused an exception: " + ex.Message
                     };
                     ConversionUtility.WriteLine($"DeserializeYaml<AzurePipelines.Step[]>(stepsYaml) swallowed an exception: " + ex.Message, _verbose);
                 }

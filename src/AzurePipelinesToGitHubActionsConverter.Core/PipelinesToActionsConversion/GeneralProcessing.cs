@@ -99,10 +99,6 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                             environment.tags = new string[1];
                             environment.tags[0] = json.GetProperty("tags").ToString();
                         }
-                        //else
-                        //{
-                        //    ConversionUtility.WriteLine($"Manual deserialization with demands string swallowed an exception: " + ex2.Message, _verbose);
-                        //}
                     }
                 }
             }

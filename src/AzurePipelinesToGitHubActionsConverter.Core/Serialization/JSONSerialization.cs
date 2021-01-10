@@ -6,6 +6,17 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Serialization
 {
     public static class JsonSerialization
     {
+        //public static JObject DeserializeStringToObject(string yaml)
+        //{
+        //    StringWriter sw = new StringWriter();
+        //    StringReader sr = new StringReader(yaml);
+        //    Deserializer deserializer = new Deserializer();
+        //    var yamlObject = deserializer.Deserialize(sr);
+        //    JsonSerializer serializer = new JsonSerializer();
+        //    serializer.Serialize(sw, yamlObject);
+        //    return JsonConvert.DeserializeObject<JObject>(sw.ToString());
+        //}
+
         public static JsonElement DeserializeStringToJsonElement(string yaml)
         {
             StringReader sr = new StringReader(yaml);
@@ -15,10 +26,10 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Serialization
             return JsonSerializer.Deserialize<JsonElement>(processedYaml);
         }
 
-        public static T DeserializeStringToObject<T>(string json)
-        {
-            return JsonSerializer.Deserialize<T>(json);
-        }
+        //public static T DeserializeStringToObject<T>(string json)
+        //{
+        //    return JsonSerializer.Deserialize<T>(json);
+        //}
 
         //From: https://stackoverflow.com/a/36125258/337421
         public static bool JsonCompare(this object obj, object another)
