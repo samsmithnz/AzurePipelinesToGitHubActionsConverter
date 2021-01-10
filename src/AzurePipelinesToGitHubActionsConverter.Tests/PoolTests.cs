@@ -20,7 +20,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
     public class PoolTests
     {
         [TestMethod]
-        public void PoolUbuntuVMImageLatestStringTest()
+        public void PoolVMImageUbuntuLatestStringTest()
         {
             //Arrange
             string input = @"
@@ -42,7 +42,7 @@ jobs:
         }
 
         [TestMethod]
-        public void PoolUbuntuNameLatestStringTest()
+        public void PoolStringUbuntuNameLatestTest()
         {
             //Arrange
             string input = @"
@@ -63,7 +63,7 @@ jobs:
         }
 
         [TestMethod]
-        public void PoolWindowsVMImageLatestStringTest()
+        public void PoolVMImageWindowsLatestStringTest()
         {
             //Arrange
             string input = @"
@@ -85,7 +85,7 @@ jobs:
         }
 
         [TestMethod]
-        public void PoolWindowsStringLatestStringTest()
+        public void PoolStringWindowsLatestStringTest()
         {
             //Arrange
             string input = @"
@@ -106,7 +106,7 @@ jobs:
         }
 
         [TestMethod]
-        public void PoolNameDemandsStringTest()
+        public void PoolNameAndDemandsTest()
         {
             //Arrange
             string input = @"
@@ -130,7 +130,7 @@ jobs:
         }
 
         [TestMethod]
-        public void PoolNameDemandsListStringTest()
+        public void PoolNameAndDemandsListTest()
         {
             //Arrange
             string input = @"
@@ -156,8 +156,60 @@ jobs:
             
         }
 
+
         [TestMethod]
-        public void PoolSimpleNameTest()
+        public void PoolVMImageAndDemandsTest()
+        {
+            //Arrange
+            string input = @"
+pool:
+  vmImage: Hosted VS2017
+  demands: npm";
+            Conversion conversion = new Conversion();
+
+            //Act
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(input);
+
+            //Assert
+            string expected = @"
+#Note: GitHub Actions does not have a 'demands' command on 'runs-on' yet
+jobs:
+  build:
+    runs-on: Hosted VS2017";
+            expected = UtilityTests.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+
+        }
+
+        [TestMethod]
+        public void PoolVMImageAndDemandsListTest()
+        {
+            //Arrange
+            string input = @"
+pool:
+  vmImage: Hosted VS2017
+  demands: 
+  - npm
+  - Agent.OS -equals Windows_NT";
+
+            Conversion conversion = new Conversion();
+
+            //Act
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(input);
+
+            //Assert
+            string expected = @"
+#Note: GitHub Actions does not have a 'demands' command on 'runs-on' yet
+jobs:
+  build:
+    runs-on: Hosted VS2017";
+            expected = UtilityTests.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+
+        }
+
+        [TestMethod]
+        public void PoolStringSimpleNameTest()
         {
             //Arrange
             string input = @"

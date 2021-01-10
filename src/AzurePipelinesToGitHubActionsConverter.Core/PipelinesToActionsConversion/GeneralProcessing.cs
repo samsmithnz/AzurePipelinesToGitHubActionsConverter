@@ -75,29 +75,29 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                         {
                             environment = new AzurePipelines.Environment
                             {
-                                name = json.GetProperty("name").ToString()
+                                name = jsonElement.ToString()
                             };
                         }
                         if (json.TryGetProperty("resourceName", out jsonElement) == true)
                         {
-                            environment.resourceName = json.GetProperty("resourceName").ToString();
+                            environment.resourceName = jsonElement.ToString();
                             ConversionUtility.WriteLine($"No conversion for resourceName at this time: " + environment.resourceName, _verbose);
                         }
                         if (json.TryGetProperty("resourceId", out jsonElement) == true)
                         {
-                            environment.resourceId = json.GetProperty("resourceId").ToString();
+                            environment.resourceId = jsonElement.ToString();
                             ConversionUtility.WriteLine($"No conversion for resourceId at this time: " + environment.resourceId, _verbose);
                         }
                         if (json.TryGetProperty("resourceType", out jsonElement) == true)
                         {
-                            environment.resourceType = json.GetProperty("resourceType").ToString();
+                            environment.resourceType = jsonElement.ToString();
                             ConversionUtility.WriteLine($"No conversion for resourceType at this time: " + environment.resourceType, _verbose);
                         }
                         if (json.TryGetProperty("tags", out jsonElement) == true)
                         {
                             //Move the single string demands to an array
                             environment.tags = new string[1];
-                            environment.tags[0] = json.GetProperty("tags").ToString();
+                            environment.tags[0] = jsonElement.ToString();
                         }
                     }
                 }
@@ -158,15 +158,15 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                 {
                     if (poolJson.TryGetProperty("name", out jsonElement) == true)
                     {
-                        pool.name = poolJson.GetProperty("name").ToString();
+                        pool.name = jsonElement.ToString();
                     }
                     if (poolJson.TryGetProperty("vmImage", out jsonElement) == true)
                     {
-                        pool.vmImage = poolJson.GetProperty("vmImage").ToString();
+                        pool.vmImage = jsonElement.ToString();
                     }
                     if (poolJson.TryGetProperty("demands", out jsonElement) == true)
                     {
-                        string demands = poolJson.GetProperty("demands").ToString();
+                        string demands = jsonElement.ToString();
                         if (demands != null)// & poolJson.GetProperty("demands").GetType() == Type.GetType("string"))
                         {    //Move the single string demands to an array
                             pool.demands = new string[1];
