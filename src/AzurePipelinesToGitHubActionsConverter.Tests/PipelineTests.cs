@@ -123,29 +123,11 @@ jobs:
     runs-on: windows-latest
     steps:
     - uses: actions/checkout@v2
-    - run: 'DeserializeYaml<AzurePipelines.Step[]>(stepsYaml) swallowed an exception: (Line: 2, Col: 3, Idx: 5) - (Line: 2, Col: 3, Idx: 5): Exception during deserialization'
+    - run: 'This step is unknown and caused an exception: (Line: 1, Col: 2, Idx: 1) - (Line: 1, Col: 2, Idx: 1): Exception during deserialization'
 ";
-
-            string expectedLinux = @"
-jobs:
-  build:
-    runs-on: windows-latest
-    steps:
-    - uses: actions/checkout@v2
-    - run: 'DeserializeYaml<AzurePipelines.Step[]>(stepsYaml) swallowed an exception: (Line: 2, Col: 3, Idx: 4) - (Line: 2, Col: 3, Idx: 4): Exception during deserialization'
-";
-
             //When this test runs on a Linux runner, the YAML converter returns a slightly different result
             expected = UtilityTests.TrimNewLines(expected);
-            if (expected == gitHubOutput.actionsYaml)
-            {
-                Assert.AreEqual(expected, gitHubOutput.actionsYaml);
-            }
-            else
-            {
-                expectedLinux = UtilityTests.TrimNewLines(expectedLinux);
-                Assert.AreEqual(expectedLinux, gitHubOutput.actionsYaml);
-            }
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
         }
 
         [TestMethod]

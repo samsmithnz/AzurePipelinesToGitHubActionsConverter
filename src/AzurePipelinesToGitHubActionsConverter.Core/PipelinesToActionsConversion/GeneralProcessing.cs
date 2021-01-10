@@ -1,10 +1,10 @@
 ﻿using AzurePipelinesToGitHubActionsConverter.Core.AzurePipelines;
 using AzurePipelinesToGitHubActionsConverter.Core.Serialization;
-using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Text.Json;
 
 namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversion
 {
@@ -69,39 +69,36 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                     catch (Exception ex2)
                     {
                         ConversionUtility.WriteLine($"Deserializing (simple) environment failed. Let's try a complex deserialization with JSON. Error: " + ex2.Message, _verbose);
-                        JObject json = JsonSerialization.DeserializeStringToObject(environmentYaml);
-                        if (json["name"] != null)
+                        JsonElement json = JsonSerialization.DeserializeStringToJsonElement(environmentYaml);
+                        JsonElement jsonElement = new JsonElement();
+                        if (json.TryGetProperty("name", out jsonElement) == true)
                         {
                             environment = new AzurePipelines.Environment
                             {
-                                name = json["name"].ToString()
+                                name = jsonElement.ToString()
                             };
                         }
-                        if (json["resourceName"] != null)
+                        if (json.TryGetProperty("resourceName", out jsonElement) == true)
                         {
-                            environment.resourceName = json["resourceName"].ToString();
+                            environment.resourceName = jsonElement.ToString();
                             ConversionUtility.WriteLine($"No conversion for resourceName at this time: " + environment.resourceName, _verbose);
                         }
-                        if (json["resourceId"] != null)
+                        if (json.TryGetProperty("resourceId", out jsonElement) == true)
                         {
-                            environment.resourceId = json["resourceId"].ToString();
+                            environment.resourceId = jsonElement.ToString();
                             ConversionUtility.WriteLine($"No conversion for resourceId at this time: " + environment.resourceId, _verbose);
                         }
-                        if (json["resourceType"] != null)
+                        if (json.TryGetProperty("resourceType", out jsonElement) == true)
                         {
-                            environment.resourceType = json["resourceType"].ToString();
+                            environment.resourceType = jsonElement.ToString();
                             ConversionUtility.WriteLine($"No conversion for resourceType at this time: " + environment.resourceType, _verbose);
                         }
-                        if (json["tags"].Type.ToString() == "String")
+                        if (json.TryGetProperty("tags", out jsonElement) == true)
                         {
                             //Move the single string demands to an array
                             environment.tags = new string[1];
-                            environment.tags[0] = json["tags"].ToString();
+                            environment.tags[0] = jsonElement.ToString();
                         }
-                        //else
-                        //{
-                        //    ConversionUtility.WriteLine($"Manual deserialization with demands string swallowed an exception: " + ex2.Message, _verbose);
-                        //}
                     }
                 }
             }
@@ -149,56 +146,33 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
             Pool pool = null;
             if (poolYaml != null)
             {
-                try
+                JsonElement poolJson = JsonSerialization.DeserializeStringToJsonElement(poolYaml);
+                JsonElement jsonElement = new JsonElement();
+                pool = new Pool();
+                //If it's a simple pool string, and has no json in it, assign it to the name
+                if (poolJson.ValueKind == JsonValueKind.String)
                 {
-                    //Most often, the pool will be in this structure
-                    pool = YamlSerialization.DeserializeYaml<Pool>(poolYaml);
+                    pool.name = poolJson.ToString();
                 }
-                catch (Exception ex)
+                else //otherwise, demands is probably a string, instead of string[], let's fix it
                 {
-                    ConversionUtility.WriteLine($"DeserializeYaml<Pool>(poolYaml) swallowed an exception: " + ex.Message, _verbose);
-                    //If it's a simple pool string, and has no json in it, assign it to the name
-                    if (poolYaml.IndexOf("{") < 0)
+                    if (poolJson.TryGetProperty("name", out jsonElement) == true)
                     {
-                        pool = new Pool
-                        {
-                            name = poolYaml
-                        };
+                        pool.name = jsonElement.ToString();
                     }
-                    else
+                    if (poolJson.TryGetProperty("vmImage", out jsonElement) == true)
                     {
-                        //otherwise, demands is probably a string, instead of string[], let's fix it
-                        JObject json = JsonSerialization.DeserializeStringToObject(poolYaml);
-                        if (json["demands"].Type.ToString() == "String")
+                        pool.vmImage = jsonElement.ToString();
+                    }
+                    if (poolJson.TryGetProperty("demands", out jsonElement) == true)
+                    {
+                        string demands = jsonElement.ToString();
+                        if (demands != null)
                         {
-                            string name = null;
-                            if (json["name"] != null)
-                            {
-                                name = json["name"].ToString();
-                            }
-                            string vmImage = null;
-                            if (json["vmImage"] != null)
-                            {
-                                vmImage = json["vmImage"].ToString();
-                            }
-                            string demands = null;
-                            if (json["demands"] != null)
-                            {
-                                demands = json["demands"].ToString();
-                            }
-                            pool = new Pool
-                            {
-                                name = name,
-                                vmImage = vmImage
-                            };
                             //Move the single string demands to an array
                             pool.demands = new string[1];
                             pool.demands[0] = demands;
                         }
-                        //else
-                        //{
-                        //    ConversionUtility.WriteLine($"Manual deserialization with demands string swallowed an exception: " + ex.Message, _verbose);
-                        //}
                     }
                 }
             }

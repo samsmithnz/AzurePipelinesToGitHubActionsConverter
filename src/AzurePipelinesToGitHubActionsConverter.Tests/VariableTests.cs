@@ -154,7 +154,25 @@ env:
   group: myVariablegroup";
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
-            
+
+        }
+
+        [TestMethod]
+        public void SimpleVariablesNoneTest()
+        {
+            //Arrange
+            string input = @"
+variables:";
+            Conversion conversion = new Conversion();
+
+            //Act
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(input);
+
+            //Assert
+            string expected = @"";
+            expected = UtilityTests.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+
         }
 
         [TestMethod]

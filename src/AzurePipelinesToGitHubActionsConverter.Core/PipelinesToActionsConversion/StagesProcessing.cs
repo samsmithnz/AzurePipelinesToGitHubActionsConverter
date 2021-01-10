@@ -1,6 +1,6 @@
 ﻿using AzurePipelinesToGitHubActionsConverter.Core.AzurePipelines;
-using Newtonsoft.Json.Linq;
 using System.Collections.Generic;
+using System.Text.Json;
 
 namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversion
 {
@@ -12,47 +12,48 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
             _verbose = verbose;
         }
 
-        public Dictionary<string, GitHubActions.Job> ProcessStagesV2(JToken stagesJson, JToken strategyJson)
+        public Dictionary<string, GitHubActions.Job> ProcessStagesV2(JsonElement stagesJson, JsonElement strategyJson)
         {
             AzurePipelines.Job[] jobs = null;
             List<AzurePipelines.Stage> stages = new List<AzurePipelines.Stage>();
-            if (stagesJson != null)
+            if (stagesJson.ValueKind != JsonValueKind.Undefined)
             {
                 //for each stage
-                foreach (JToken stageJson in stagesJson)
+                foreach (JsonElement stageJson in stagesJson.EnumerateArray())
                 {
                     AzurePipelines.Stage stage = new AzurePipelines.Stage();
-                    if (stageJson["stage"] != null)
+                    JsonElement jsonElement = new JsonElement();
+                    if (stageJson.TryGetProperty("stage", out jsonElement) == true)
                     {
-                        stage.stage = stageJson["stage"].ToString();
+                        stage.stage = jsonElement.ToString();
                     }
-                    if (stageJson["displayName"] != null)
+                    if (stageJson.TryGetProperty("displayName", out jsonElement) == true)
                     {
-                        stage.displayName = stageJson["displayName"].ToString();
+                        stage.displayName = jsonElement.ToString();
                     }
-                    if (stageJson["condition"] != null)
+                    if (stageJson.TryGetProperty("condition", out jsonElement) == true)
                     {
-                        stage.condition = stageJson["condition"].ToString();
+                        stage.condition = jsonElement.ToString();
                     }
-                    if (stageJson["dependsOn"] != null)
+                    if (stageJson.TryGetProperty("dependsOn", out jsonElement) == true)
                     {
                         GeneralProcessing gp = new GeneralProcessing(_verbose);
-                        stage.dependsOn = gp.ProcessDependsOnV2(stageJson["dependsOn"].ToString());
+                        stage.dependsOn = gp.ProcessDependsOnV2(jsonElement.ToString());
                     }
-                    if (stageJson["variables"] != null)
+                    if (stageJson.TryGetProperty("variables", out jsonElement) == true)
                     {
                         VariablesProcessing vp = new VariablesProcessing(_verbose);
-                        stage.variables = vp.ProcessParametersAndVariablesV2(null, stageJson["variables"].ToString());
+                        stage.variables = vp.ProcessParametersAndVariablesV2(null, jsonElement.ToString());
                     }
-                    if (stageJson["jobs"] != null)
+                    if (stageJson.TryGetProperty("jobs", out jsonElement) == true)
                     {
                         JobProcessing jp = new JobProcessing(_verbose);
-                        stage.jobs = jp.ExtractAzurePipelinesJobsV2(stageJson["jobs"], strategyJson);
+                        stage.jobs = jp.ExtractAzurePipelinesJobsV2(jsonElement, strategyJson);
                     }
-                    if (stageJson["pool"] != null && stage.jobs != null)
+                    if (stageJson.TryGetProperty("pool", out jsonElement) == true && stage.jobs != null)
                     {
                         GeneralProcessing gp = new GeneralProcessing(_verbose);
-                        stage.pool = gp.ProcessPoolV2(stageJson["pool"].ToString());
+                        stage.pool = gp.ProcessPoolV2(jsonElement.ToString());
                         foreach (Job item in stage.jobs)
                         {
                             //Only update the job pool if it hasn't already been set by the job

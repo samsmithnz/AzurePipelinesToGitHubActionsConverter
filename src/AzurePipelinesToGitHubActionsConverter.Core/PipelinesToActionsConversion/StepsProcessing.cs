@@ -162,7 +162,6 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                     case "XAMARINIOS@2":
                         gitHubStep = CreateXamariniOSStep(step);
                         break;
-
                     default:
                         gitHubStep = CreateScriptStep("", step);
                         string newYaml = YamlSerialization.SerializeYaml<AzurePipelines.Step>(step);
@@ -178,7 +177,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                                 yamlBuilder.Append(System.Environment.NewLine);
                             }
                         }
-                        ////Let's check for tasks we know are on the radar, but need help, helping to direct users to the repo and encourage contributions
+                        ////perhaps check for tasks we know are on the radar, but need help, helping to direct users to the repo and encourage contributions
                         //switch (step.task.ToUpper())
                         //{
                         //    case "GULP@1":
