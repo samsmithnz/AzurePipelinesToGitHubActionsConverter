@@ -87,14 +87,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
         // This is a lot simplier in JSON, as it's already only returning the none string.
         public static string ProcessNoneJsonElement(string yaml)
         {
-            if (yaml == "none")
-            {
-                return "[ none ]";
-            }
-            else
-            {
-                return yaml;
-            }
+            return "[ none ]";
         }
 
         public static string ConvertMessageToYamlComment(string message)
