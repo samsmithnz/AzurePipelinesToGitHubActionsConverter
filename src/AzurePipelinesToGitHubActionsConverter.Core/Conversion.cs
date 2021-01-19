@@ -63,7 +63,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
 
             if (jsonObject.ValueKind != JsonValueKind.Undefined)
             {
-                JsonElement jsonElement = new JsonElement();
+                JsonElement jsonElement;
                 //Name
                 if (jsonObject.TryGetProperty("name", out jsonElement) == true)
                 {
@@ -75,10 +75,10 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                 TriggerProcessing tp = new TriggerProcessing(_verbose);
                 if (jsonObject.TryGetProperty("trigger", out jsonElement) == true)
                 {
-                    string triggerYaml = null;
+                    string triggerYaml;
                     if (jsonElement.ToString() == "none")
                     {
-                        triggerYaml = ConversionUtility.ProcessNoneJsonElement(jsonElement.ToString());
+                        triggerYaml = ConversionUtility.ProcessNoneJsonElement();
                     }
                     else
                     {
@@ -89,16 +89,16 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                 //PR
                 if (jsonObject.TryGetProperty("pr", out jsonElement) == true)
                 {
-                    string prYaml = null;
+                    string prYaml;
                     if (jsonElement.ToString() == "none")
                     {
-                        prYaml = ConversionUtility.ProcessNoneJsonElement(jsonElement.ToString());
+                        prYaml = ConversionUtility.ProcessNoneJsonElement();
                     }
                     else
                     {
                         prYaml = jsonElement.ToString();
                     }
-                    GitHubActions.Trigger prTrigger = tp.ProcessPullRequestV2(prYaml);                    
+                    GitHubActions.Trigger prTrigger = tp.ProcessPullRequestV2(prYaml);
                     if (gitHubActions.on == null)
                     {
                         gitHubActions.on = prTrigger;
@@ -164,12 +164,12 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                 }
 
                 //Strategy
-JsonElement strategy = new JsonElement();
+                JsonElement strategy = new JsonElement();
                 if (jsonObject.TryGetProperty("strategy", out jsonElement) == true)
                 {
                     strategy = jsonElement;
                 }
-                
+
                 //If we have stages, convert them into jobs first:
                 if (jsonObject.TryGetProperty("stages", out jsonElement) == true)
                 {
