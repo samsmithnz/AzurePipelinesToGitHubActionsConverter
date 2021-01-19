@@ -19,7 +19,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
         {
             if (strategyJson.ValueKind != JsonValueKind.Undefined)
             {
-                JsonElement jsonElement = new JsonElement();
+                JsonElement jsonElement;
                 AzurePipelines.Strategy newStrategy = new AzurePipelines.Strategy();
                 if (strategyJson.TryGetProperty("parallel", out jsonElement) == true)
                 {
@@ -56,7 +56,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
 
         private RunOnce ProcessRunOnceStrategy(JsonElement strategyJson)
         {
-            JsonElement jsonElement = new JsonElement();
+            JsonElement jsonElement;
             RunOnce runOnce = new RunOnce();
             if (strategyJson.TryGetProperty("preDeploy", out jsonElement) == true)
             {
@@ -87,7 +87,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
 
         private Canary ProcessCanaryStrategy(JsonElement strategyJson)
         {
-            JsonElement jsonElement = new JsonElement();
+            JsonElement jsonElement;
             Canary canary = new Canary();
             if (strategyJson.TryGetProperty("increments", out jsonElement) == true)
             {
@@ -123,7 +123,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
 
         private Rolling ProcessRollingStrategy(JsonElement strategyJson)
         {
-            JsonElement jsonElement = new JsonElement();
+            JsonElement jsonElement;
             Rolling rolling = new Rolling();
             if (strategyJson.TryGetProperty("maxParallel", out jsonElement) == true)
             {
@@ -163,7 +163,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
 
         private Deploy ProcessDeploy(JsonElement deployJson)
         {
-            JsonElement jsonElement = new JsonElement();
+            JsonElement jsonElement;
             GeneralProcessing gp = new GeneralProcessing(_verbose);
             Deploy deploy = new Deploy();
             if (deployJson.TryGetProperty("pool", out jsonElement) == true)
@@ -180,7 +180,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
 
         private On ProcessOn(JsonElement onJson)
         {
-            JsonElement jsonElement = new JsonElement();
+            JsonElement jsonElement;
             On on = new On();
             if (onJson.TryGetProperty("success", out jsonElement) == true)
             {
