@@ -1312,11 +1312,11 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
         {
             //To:
             //- name: Setup MSBuild.exe
-            //  uses: microsoft/setup-msbuild@v1.0.0
+            //  uses: microsoft/setup-msbuild@v1.0.2
 
             GitHubActions.Step gitHubStep = new GitHubActions.Step
             {
-                uses = "microsoft/setup-msbuild@v1.0.0"
+                uses = "microsoft/setup-msbuild@v1.0.2"
             };
 
             return gitHubStep;
