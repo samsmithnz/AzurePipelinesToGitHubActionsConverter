@@ -1174,8 +1174,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
         {
             GitHubActions.Step gitHubStep = new GitHubActions.Step
             {
-                uses = "warrenbuckley/Setup-Nuget@v1",
-                step_message = "Note: This is a third party action: https://github.com/warrenbuckley/Setup-Nuget"
+                uses = "nuget/setup-nuget@v1"
             };
 
             //coming from:
@@ -1188,7 +1187,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
 
             //Going to:
             //- name: Setup Nuget.exe
-            //  uses: warrenbuckley/Setup-Nuget@v1
+            //  uses: nuget/setup-nuget@v1
 
             return gitHubStep;
         }

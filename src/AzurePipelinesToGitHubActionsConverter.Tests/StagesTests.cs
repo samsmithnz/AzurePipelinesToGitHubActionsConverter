@@ -129,7 +129,7 @@ jobs:
       ResourceGroupName: MyProjectFeatureFlags
       WebsiteName: featureflags-data-eu-web
       WebServiceName: featureflags-data-eu-service
-    if: and(success(), eq(github.ref, 'refs/heads/master'))
+    if: (success() && (github.ref == 'refs/heads/master'))
     continue-on-error: true
     steps:
     - uses: actions/checkout@v2

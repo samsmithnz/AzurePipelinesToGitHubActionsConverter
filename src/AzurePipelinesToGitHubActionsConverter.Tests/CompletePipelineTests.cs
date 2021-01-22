@@ -227,7 +227,6 @@ steps:
 
             //Assert
             string expected = @"
-#Note: This is a third party action: https://github.com/warrenbuckley/Setup-Nuget
 on:
   push:
     branches:
@@ -242,8 +241,7 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - uses: microsoft/setup-msbuild@v1.0.0
-    - # 'Note: This is a third party action: https://github.com/warrenbuckley/Setup-Nuget'
-      uses: warrenbuckley/Setup-Nuget@v1
+    - uses: nuget/setup-nuget@v1
     - run: nuget restore ${{ env.solution }}
     - run: msbuild '${{ env.solution }}' /p:configuration='${{ env.buildConfiguration }}' /p:platform='${{ env.buildPlatform }}'
 ";
@@ -880,7 +878,6 @@ steps:
 
             //Assert
             string expected = @"
-#Note: This is a third party action: https://github.com/warrenbuckley/Setup-Nuget
 on:
   push:
     branches:
@@ -893,8 +890,7 @@ jobs:
     runs-on: macos-latest
     steps:
     - uses: actions/checkout@v2
-    - # 'Note: This is a third party action: https://github.com/warrenbuckley/Setup-Nuget'
-      uses: warrenbuckley/Setup-Nuget@v1
+    - uses: nuget/setup-nuget@v1
     - run: nuget restore **/*.sln
     - run: |
         cd Blank
@@ -954,7 +950,6 @@ steps:
 
             //Assert
             string expected = @"
-#Note: This is a third party action: https://github.com/warrenbuckley/Setup-Nuget
 on:
   push:
     branches:
@@ -966,8 +961,7 @@ jobs:
     - uses: actions/checkout@v2
     - name: Select the Xamarin SDK version
       run: sudo $AGENT_HOMEDIRECTORY/scripts/select-xamarin-sdk.sh 5_12_0
-    - # 'Note: This is a third party action: https://github.com/warrenbuckley/Setup-Nuget'
-      uses: warrenbuckley/Setup-Nuget@v1
+    - uses: nuget/setup-nuget@v1
     - run: nuget restore **/*.sln
     - run: |
         cd Blank
@@ -1177,7 +1171,6 @@ stages:
 
             //Assert
             string expected = @"
-#Note: This is a third party action: https://github.com/warrenbuckley/Setup-Nuget
 #Note: Azure DevOps strategy>runOnce does not have an equivalent in GitHub Actions yet, and only the deploy steps are transferred to steps
 #Error (line 39): the step 'IISWebAppManagementOnMachineGroup@0' does not have a conversion path yet
 #Error (line 61): the step 'IISWebAppDeploymentOnMachineGroup@0' does not have a conversion path yet
@@ -1195,8 +1188,7 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - uses: microsoft/setup-msbuild@v1.0.0
-    - # 'Note: This is a third party action: https://github.com/warrenbuckley/Setup-Nuget'
-      uses: warrenbuckley/Setup-Nuget@v1
+    - uses: nuget/setup-nuget@v1
     - run: nuget restore ${{ env.solution }}
     - run: msbuild '${{ env.solution }}' /p:configuration='${{ env.buildConfiguration }}' /p:platform='${{ env.buildPlatform }}' /p:DeployOnBuild=true /p:WebPublishMethod=Package /p:PackageAsSingleFile=true /p:SkipInvalidConfigurations=true /p:PackageLocation=""${{ github.workspace }}""
     - uses: actions/upload-artifact@v2
@@ -1333,7 +1325,7 @@ jobs:
       prId: 000
       prUC: PR${{ env.prId }}
       prLC: pr${{ env.prId }}
-    if: and(success(), eq(variables['Build.Reason'], 'PullRequest'), ne(variables['System.PullRequest.PullRequestId'], 'Null'))
+    if: (success() && (variables['Build.Reason'] == 'PullRequest') && (variables['System.PullRequest.PullRequestId'] != 'Null'))
     steps:
     - uses: actions/checkout@v2
 ";
@@ -2009,7 +2001,7 @@ jobs:
         #  testresultsformat: NUnit
         #  testresultsfiles: output/testResults/NUnit*.xml
         #  testruntitle: HQRM
-      if: ne(${{ job.status }}, 'cancelled')
+      if: (${{ job.status }} != 'cancelled')
   Test_Stage_Test_Unit:
     name: Unit
     runs-on: windows-2019
@@ -2033,7 +2025,7 @@ jobs:
         #  testresultsformat: NUnit
         #  testresultsfiles: ${{ env.buildFolderName }}/${{ env.testResultFolderName }}/NUnit*.xml
         #  testruntitle: Unit (Windows Server Core)
-      if: ne(${{ job.status }}, 'cancelled')
+      if: (${{ job.status }} != 'cancelled')
     - name: Publish Test Artifact
       uses: actions/upload-artifact@v2
       with:
@@ -2102,7 +2094,7 @@ jobs:
         #  testresultsformat: NUnit
         #  testresultsfiles: ${{ env.buildFolderName }}/${{ env.testResultFolderName }}/NUnit*.xml
         #  testruntitle: Integration (SQL Server 2016 / Windows Server 2019)
-      if: ne(${{ job.status }}, 'cancelled')
+      if: (${{ job.status }} != 'cancelled')
   Test_Stage_Test_Integration_SQL2017:
     name: Integration (SQL2017)
     runs-on: windows-2019
@@ -2165,7 +2157,7 @@ jobs:
         #  testresultsformat: NUnit
         #  testresultsfiles: ${{ env.buildFolderName }}/${{ env.testResultFolderName }}/NUnit*.xml
         #  testruntitle: Integration (Windows Server Core)
-      if: ne(${{ job.status }}, 'cancelled')
+      if: (${{ job.status }} != 'cancelled')
   Test_Stage_Code_Coverage:
     name: Publish Code Coverage
     runs-on: ubuntu 16.04
@@ -2200,14 +2192,14 @@ jobs:
         #  codecoveragetool: JaCoCo
         #  summaryfilelocation: ${{ env.buildFolderName }}/${{ env.testResultFolderName }}/JaCoCo_coverage.xml
         #  pathtosources: ${{ github.workspace }}/${{ env.buildFolderName }}/${{ env.dscBuildVariable.RepositoryName }}
-      if: ne(${{ job.status }}, 'cancelled')
+      if: (${{ job.status }} != 'cancelled')
     - name: Upload to Codecov.io
       run: bash <(curl -s https://codecov.io/bash) -f ""./${{ env.buildFolderName }}/${{ env.testResultFolderName }}/JaCoCo_coverage.xml"" -F unit
-      if: ne(${{ job.status }}, 'cancelled')
+      if: (${{ job.status }} != 'cancelled')
   Deploy_Stage_Deploy_Module:
     name: Deploy Module
     runs-on: ubuntu 16.04
-    if: and(success(), or(eq(github.ref, 'refs/heads/master'), startsWith(github.ref, 'refs/tags/')), contains(variables['System.TeamFoundationCollectionUri'], 'dsccommunity'))
+    if: (success() && ((github.ref == 'refs/heads/master') || startsWith(github.ref, 'refs/tags/')) && contains(variables['System.TeamFoundationCollectionUri'], 'dsccommunity'))
     steps:
     - uses: actions/checkout@v2
     - name: Download Build Artifact
@@ -2304,7 +2296,7 @@ jobs:
       ArmTemplateResourceGroupLocation: eu
       ResourceGroupName: MyProjectRG
       WebsiteName: myproject-web
-    if: and(success(), eq(github.ref, 'refs/heads/master'))
+    if: (success() && (github.ref == 'refs/heads/master'))
     steps:
     - uses: actions/checkout@v2
     - # ""Note: 'AZURE_SP' secret is required to be setup and added into GitHub Secrets: https://help.github.com/en/actions/automating-your-workflow-with-github-actions/creating-and-using-encrypted-secrets""
