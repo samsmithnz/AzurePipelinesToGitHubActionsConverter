@@ -31,7 +31,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             string result = ConditionsProcessing.TranslateConditions(condition);
 
             //Assert
-            string expected = "ne(${{ job.status }}, 'cancelled')";
+            string expected = "(${{ job.status }} != 'cancelled')";
             Assert.AreEqual(expected, result);
         }
 
@@ -87,7 +87,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             string result = ConditionsProcessing.TranslateConditions(condition);
 
             //Assert
-            string expected = "not(contains('ABCDE', 'BCD'))";
+            string expected = "(contains('ABCDE', 'BCD') != true)";
             Assert.AreEqual(expected, result);
         }
 
@@ -101,7 +101,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             string result = ConditionsProcessing.TranslateConditions(condition);
 
             //Assert
-            string expected = "eq('ABCDE', 'BCD')";
+            string expected = "('ABCDE' == 'BCD')";
             Assert.AreEqual(expected, result);
         }
 
@@ -115,7 +115,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             string result = ConditionsProcessing.TranslateConditions(condition);
 
             //Assert
-            string expected = "and(eq('ABCDE', 'BCD'), ne(0, 1))";
+            string expected = "(('ABCDE' == 'BCD') && (0 != 1))";
             Assert.AreEqual(expected, result);
         }
 
@@ -129,7 +129,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             string result = ConditionsProcessing.TranslateConditions(condition);
 
             //Assert
-            string expected = "and(success(), eq(github.ref, 'refs/heads/master'))";
+            string expected = "(success() && (github.ref == 'refs/heads/master'))";
             Assert.AreEqual(expected, result);
         }
 
@@ -143,7 +143,8 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             string result = ConditionsProcessing.TranslateConditions(condition);
 
             //Assert
-            string expected = "and(success(), endsWith(github.ref, 'master'))";
+            //string expected = "(success() && endsWith(github.ref, 'master'))";
+            string expected = "(success() && (variables['Build.SourceBranchName'] == 'master'))";
             Assert.AreEqual(expected, result);
         }
 
@@ -165,7 +166,7 @@ contains(variables['System.TeamFoundationCollectionUri'], 'dsccommunity')
             string result = ConditionsProcessing.TranslateConditions(text);
 
             //Assert
-            string expected = "and(success(), or(eq(github.ref, 'refs/heads/master'), startsWith(github.ref, 'refs/tags/')), contains(variables['System.TeamFoundationCollectionUri'], 'dsccommunity'))";
+            string expected = "(success() && ((github.ref == 'refs/heads/master') || startsWith(github.ref, 'refs/tags/')) && contains(variables['System.TeamFoundationCollectionUri'], 'dsccommunity'))";
             Assert.AreEqual(expected, result);
         }
 
@@ -180,7 +181,22 @@ and(succeeded(),or(succeeded(),succeeded()))";
             string result = ConditionsProcessing.TranslateConditions(text);
 
             //Assert
-            string expected = "and(success(), or(success(), success()))";
+            string expected = "(success() && (success() || success()))";
+            Assert.AreEqual(expected, result);
+        }
+
+        [TestMethod]
+        public void AndComplexConditionTest()
+        {
+            //Arrange
+            string text = @"
+and(succeeded(),succeeded(),contains(variables['System.TeamFoundationCollectionUri'], 'dsccommunity'))";
+
+            //Act
+            string result = ConditionsProcessing.TranslateConditions(text);
+
+            //Assert
+            string expected = "(success() && success() && contains(variables['System.TeamFoundationCollectionUri'], 'dsccommunity'))";
             Assert.AreEqual(expected, result);
         }
 
@@ -195,7 +211,7 @@ and(succeeded(),OR(succeeded(),succeeded()))";
             string result = ConditionsProcessing.TranslateConditions(text);
 
             //Assert
-            string expected = "and(success(), OR(success(), success()))";
+            string expected = "(success() && (success() || success()))";
             Assert.AreEqual(expected, result);
         }
 
@@ -227,7 +243,7 @@ and(succeeded(), eq(variables['Build.Reason'], 'PullRequest'), ne(variables['Sys
             string result = ConditionsProcessing.TranslateConditions(text);
 
             //Assert
-            string expected = "and(success(), eq(variables['Build.Reason'], 'PullRequest'), ne(variables['System.PullRequest.PullRequestId'], 'Null'))";
+            string expected = "(success() && (variables['Build.Reason'] == 'PullRequest') && (variables['System.PullRequest.PullRequestId'] != 'Null'))";
             Assert.AreEqual(expected, result);
         }
 

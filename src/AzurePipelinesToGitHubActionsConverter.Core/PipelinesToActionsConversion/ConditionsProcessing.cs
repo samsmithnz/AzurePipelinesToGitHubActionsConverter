@@ -70,29 +70,41 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                 case "succeeded":
                     return "success(" + contents + ")";
                 case "succeededorfailed": //Essentially the same as "always", but not cancelled
-                    return "ne(${{ job.status }}, 'cancelled')";
+                    return "(${{ job.status }} != 'cancelled')";
 
                 //Functions: 
                 //Azure DevOps: https://docs.microsoft.com/en-us/azure/devops/pipelines/process/expressions?view=azure-devops#functions
                 //GitHub Actions: https://help.github.com/en/actions/reference/context-and-expression-syntax-for-github-actions#functions
-                case "le": //le
-                case "lt": //lt
-                case "ne": //ne
-                case "not": //not
-                case "ge": //ge
-                case "gt": //gt
-                case "eq": //eq
-                case "and": //and
-                case "or": //or
+                case "le": //<=
+                    return "(" + contents.Replace(",", " <=") + ")";
+                case "lt": //<
+                    return "(" + contents.Replace(",", " <") + ")";
+                case "ne": //!=
+                    return "(" + contents.Replace(",", " !=") + ")";
+                case "not": //!= true
+                    return "(" + contents + " != true)";                    
+                case "ge": //>=
+                    return "(" + contents.Replace(",", " >=") + ")";
+                case "gt": //>
+                    return "(" + contents.Replace(",", " >") + ")";
+                case "eq": //==
+                    return "(" + contents.Replace(",", " ==") + ")";
+                case "and": //&&
+                    return "(" + contents.Replace(",", " &&") + ")";
+                case "or": //|| 
+                    return "(" + contents.Replace(",", " ||") + ")";
+
+                //These are confirmed to be valid/documented
                 case "contains": //contains( search, item )
-                case "coalesce": //coalesce
-                case "containsvalue": //containsValue
+                case "startswith": //startsWith
                 case "endswith": //endsWith
                 case "format": //format
-                case "in": //in
                 case "join": //join
+                //TODO: Confirm if these are valid conditions
+                case "coalesce": //coalesce
+                case "containsvalue": //containsValue
+                case "in": //in
                 case "notin": //notin
-                case "startswith": //startsWith
                 case "xor": //xor
                 case "counter": //counter
                     return condition + "(" + contents + ")";

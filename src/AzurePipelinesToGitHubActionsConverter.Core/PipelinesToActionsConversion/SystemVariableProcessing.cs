@@ -22,7 +22,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
             input = Replace(input, "variables['Agent.OS']", "runner.os");
             //Create a rule to look for the branch name (e.g. "feature-branch-1" from "refs/heads/feature-branch-1"). 
             //Note that only the left brackets need to exist, so that the other side of the equation still exists
-            input = Replace(input, "eq(variables['Build.SourceBranchName']", "endsWith(github.ref");
+            //input = Replace(input, "eq(variables['Build.SourceBranchName']", "endsWith(github.ref");
 
             //System variables
             input = Replace(input, "$(Build.ArtifactStagingDirectory)", "${{ github.workspace }}");
