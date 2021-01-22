@@ -1,5 +1,5 @@
 # Convert Azure Pipelines YAML to GitHub Actions YAML 
-A project to create a conversion tool to make migrations between Azure Pipelines YAML and GitHub Actions YAML possible. As GitHub Actions becomes more popular, it's clear that a migration tool will be useful to move workloads to GitHub. 
+A project to create a conversion tool to make migrations between Azure Pipelines YAML and GitHub Actions YAML easier. As GitHub Actions becomes more popular, it's clear that a migration tool will be useful to move workloads to GitHub. 
 
 ![Current build](https://github.com/samsmithnz/AzurePipelinesToGitHubActionsConverter/workflows/CI/badge.svg)
 [![Coverage Status](https://coveralls.io/repos/github/samsmithnz/AzurePipelinesToGitHubActionsConverter/badge.svg?branch=main)](https://coveralls.io/github/samsmithnz/AzurePipelinesToGitHubActionsConverter?branch=main)
@@ -7,24 +7,8 @@ A project to create a conversion tool to make migrations between Azure Pipelines
 ![Current Release](https://img.shields.io/github/release/samsmithnz/AzurePipelinesToGitHubActionsConverter/all.svg)
 
 # How to use
-There is a website that consumes this module at: https://pipelinestoactions.azurewebsites.net/.  
+We built a website that uses this module at: https://pipelinestoactions.azurewebsites.net/.  
 You can also use the [NuGet package](https://www.nuget.org/packages/AzurePipelinesToGitHubActionsConverter.Core/)
-
-## System Variables
-This is our current table of how we are translating [Azure DevOps](https://docs.microsoft.com/en-us/azure/devops/pipelines/build/variables?view=azure-devops&tabs=yaml) system variables, to [GitHub Environment variables](https://docs.github.com/en/free-pro-team@latest/actions/reference/environment-variables#default-environment-variables).
-| Azure Pipelines | GitHub Actions |
-| -- | -- |
-| Build.ArtifactStagingDirectory | github.workspace | 
-| Build.BuildId | github.run_id |
-| Build.BuildNumber | github.run_number |
-| Build.SourceBranch | github.ref |
-| Build.Repository.Name | github.repository |
-| Build.SourcesDirectory | github.workspace |
-| Build.StagingDirectory | github.workspace |
-| System.DefaultWorkingDirectory | github.workspace |
-| Agent.OS | runner.os |
-<!-- | Build.SourceBranchName |  |-->
-<!-- | Build.Reason |  |-->
 
 ## Example: 
 The Azure Pipelines YAML to build a dotnet application on ubuntu:
@@ -267,6 +251,22 @@ jobs:
 #### **Conditions**
 Conditions are processing with about 98% accuracy. There are some system variables that still need conversions, but we've tried to handle the most popular combinations. 
 
+### System Variables
+This is our current table of how we are translating [Azure DevOps](https://docs.microsoft.com/en-us/azure/devops/pipelines/build/variables?view=azure-devops&tabs=yaml) system variables, to [GitHub Environment variables](https://docs.github.com/en/free-pro-team@latest/actions/reference/environment-variables#default-environment-variables).
+| Azure Pipelines | GitHub Actions |
+| -- | -- |
+| Build.ArtifactStagingDirectory | github.workspace | 
+| Build.BuildId | github.run_id |
+| Build.BuildNumber | github.run_number |
+| Build.SourceBranch | github.ref |
+| Build.Repository.Name | github.repository |
+| Build.SourcesDirectory | github.workspace |
+| Build.StagingDirectory | github.workspace |
+| System.DefaultWorkingDirectory | github.workspace |
+| Agent.OS | runner.os |
+<!-- | Build.SourceBranchName |  |-->
+<!-- | Build.Reason |  |-->
+
 ## Architecture
 The core functionality is contained in a .NET Standard 2.0 class, "AzurePipelinesToGitHubActionsConverter.Core".
 - In the [conversion object](https://github.com/samsmithnz/AzurePipelinesToGitHubActionsConverter/blob/master/AzurePipelinesToGitHubActionsConverter/AzurePipelinesToGitHubActionsConverter.Core/Conversion.cs), is a public call, "ConvertAzurePipelineToGitHubAction", to convert Azure DevOps yaml to GitHub Actions yaml: 
@@ -286,6 +286,7 @@ Made with help from https://github.com/aaubry/YamlDotNet and https://en.wikipedi
 - Azure Pipelines YAML docs: https://docs.microsoft.com/en-us/azure/devops/pipelines/yaml-schema?view=azure-devops&tabs=schema
 - GitHub Actions YAML docs: https://help.github.com/en/articles/workflow-syntax-for-github-actions
 - Software installed on GitHub Action runners: https://docs.github.com/en/free-pro-team@latest/actions/reference/specifications-for-github-hosted-runners#supported-software
+- Official documentation on best practices when moving from Azure Pipelines to GitHub Actions: https://docs.github.com/en/actions/learn-github-actions/migrating-from-azure-pipelines-to-github-actions
 
 ## Contributing
 Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change. Please use a consistent naming convention for your feature branches to identify the work done in the branch. Some suggestions for naming:
