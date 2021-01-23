@@ -407,5 +407,61 @@ contains(variables['System.TeamFoundationCollectionUri'], 'dsccommunity')
             Assert.AreEqual(expected, result);
         }
 
+        [TestMethod]
+        public void LessThanOrEqualsTest()
+        {
+            //Arrange
+            string condition = "le('ABCDE', 'BCD')";
+
+            //Act
+            string result = ConditionsProcessing.TranslateConditions(condition);
+
+            //Assert
+            string expected = "('ABCDE' <= 'BCD')";
+            Assert.AreEqual(expected, result);
+        }
+
+        [TestMethod]
+        public void LessThanTest()
+        {
+            //Arrange
+            string condition = "lt('ABCDE', 'BCD')";
+
+            //Act
+            string result = ConditionsProcessing.TranslateConditions(condition);
+
+            //Assert
+            string expected = "('ABCDE' < 'BCD')";
+            Assert.AreEqual(expected, result);
+        }
+
+        [TestMethod]
+        public void GreaterThanOrEqualsTest()
+        {
+            //Arrange
+            string condition = "ge('ABCDE', 'BCD')";
+
+            //Act
+            string result = ConditionsProcessing.TranslateConditions(condition);
+
+            //Assert
+            string expected = "('ABCDE' >= 'BCD')";
+            Assert.AreEqual(expected, result);
+        }
+
+        [TestMethod]
+        public void GreaterThanTest()
+        {
+            //Arrange
+            string condition = "gt('ABCDE', 'BCD')";
+
+            //Act
+            string result = ConditionsProcessing.TranslateConditions(condition);
+
+            //Assert
+            string expected = "('ABCDE' > 'BCD')";
+            Assert.AreEqual(expected, result);
+        }
+
     }
 }
