@@ -567,7 +567,7 @@ jobs:
     - name: Setup MSVC Environment
       run: scripts/azure-pipelines/setup_msvc_env.bat
       shell: cmd
-      if: eq(runner.os, 'Windows_NT')
+      if: (runner.os == 'Windows_NT')
     - name: Create Dependency md5sum
       run: scripts/azure-pipelines/create_deps_md5sum.sh
       shell: bash
@@ -580,7 +580,7 @@ jobs:
     - name: Build ParaView
       run: scripts/azure-pipelines/build_paraview.sh
       shell: bash
-      if: ne(variables.PARAVIEW_BUILD_RESTORED, 'true')
+      if: (variables.PARAVIEW_BUILD_RESTORED != 'true')
     - name: Build Tomviz
       run: scripts/azure-pipelines/build_tomviz.sh
       shell: bash

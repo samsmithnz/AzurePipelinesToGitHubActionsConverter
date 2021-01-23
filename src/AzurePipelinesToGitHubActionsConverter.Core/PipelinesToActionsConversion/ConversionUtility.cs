@@ -10,7 +10,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
     {
         public static string GenerateSpaces(int number)
         {
-            return new String(' ', number);
+            return new string(' ', number);
         }
 
         // https://stackoverflow.com/questions/20411812/count-the-spaces-at-start-of-a-string
@@ -85,7 +85,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
         // Some elements have a simple, same line string, we need to make into a list
         // for example "trigger:none", becomes "trigger:\n\r- none"
         // This is a lot simplier in JSON, as it's already only returning the none string.
-        public static string ProcessNoneJsonElement(string yaml)
+        public static string ProcessNoneJsonElement()
         {
             return "[ none ]";
         }

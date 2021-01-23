@@ -70,7 +70,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                     {
                         ConversionUtility.WriteLine($"Deserializing (simple) environment failed. Let's try a complex deserialization with JSON. Error: " + ex2.Message, _verbose);
                         JsonElement json = JsonSerialization.DeserializeStringToJsonElement(environmentYaml);
-                        JsonElement jsonElement = new JsonElement();
+                        JsonElement jsonElement;
                         if (json.TryGetProperty("name", out jsonElement) == true)
                         {
                             environment = new AzurePipelines.Environment
@@ -147,7 +147,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
             if (poolYaml != null)
             {
                 JsonElement poolJson = JsonSerialization.DeserializeStringToJsonElement(poolYaml);
-                JsonElement jsonElement = new JsonElement();
+                JsonElement jsonElement;
                 pool = new Pool();
                 //If it's a simple pool string, and has no json in it, assign it to the name
                 if (poolJson.ValueKind == JsonValueKind.String)

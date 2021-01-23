@@ -373,7 +373,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
 - name: Setup MSVC Environment
   run: scripts/azure-pipelines/setup_msvc_env.bat /w
   shell: cmd
-  if: eq(runner.os, 'Windows_NT')
+  if: (runner.os == 'Windows_NT')
 ";
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
@@ -529,7 +529,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
 - name: PowerShell test task
   run: Write-Host 'Hello World'
   shell: powershell
-  if: and(eq('ABCDE', 'BCD'), ne(0, 1))
+  if: (('ABCDE' == 'BCD') && (0 != 1))
 ";
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
@@ -1063,7 +1063,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             string expected = @"
 - name: Push to GitHub Packages
   run: dotnet nuget push ${{ github.workspace }}/*.nupkg --source ""github""
-  if: and(success(), startsWith(github.ref, 'refs/tags/'))
+  if: (success() && startsWith(github.ref, 'refs/tags/'))
 ";
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
