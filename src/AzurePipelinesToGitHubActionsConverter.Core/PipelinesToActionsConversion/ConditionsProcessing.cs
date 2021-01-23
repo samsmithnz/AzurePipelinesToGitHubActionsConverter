@@ -7,7 +7,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
     public static class ConditionsProcessing
     {
 
-        public static string TranslateConditions(string condition)
+        public static string TranslateConditions(string condition, bool isOuterContent = true)
         {
             if (string.IsNullOrEmpty(condition) == true)
             {
@@ -36,7 +36,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                     for (int i = 0; i < innerContents.Count; i++)
                     {
                         string innerContent = innerContents[i];
-                        innerContentsProcessed += TranslateConditions(innerContent);
+                        innerContentsProcessed += TranslateConditions(innerContent, false);
                         if (i != innerContents.Count - 1)
                         {
                             innerContentsProcessed += ", ";
@@ -51,6 +51,12 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
 
             //Translate any system variables
             processedCondition = SystemVariableProcessing.ProcessSystemVariables(processedCondition);
+
+            //Replace any temp comma holders
+            if (isOuterContent == true)
+            {
+                processedCondition = processedCondition.Replace("#=#", ",");
+            }
 
             return processedCondition;
         }
@@ -82,7 +88,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                 case "ne": //!=
                     return "(" + contents.Replace(",", " !=") + ")";
                 case "not": //!= true
-                    return "(" + contents + " != true)";                    
+                    return "(" + contents + " != true)";
                 case "ge": //>=
                     return "(" + contents.Replace(",", " >=") + ")";
                 case "gt": //>
@@ -107,7 +113,8 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                 case "notin": //notin
                 case "xor": //xor
                 case "counter": //counter
-                    return condition + "(" + contents + ")";
+                    //Add in the new condition, and add a #=# placeholder. This is a bit of a hack, but we will fix it later
+                    return condition + "(" + contents.Replace(",", "#=#") + ")";
 
                 default:
                     return "";

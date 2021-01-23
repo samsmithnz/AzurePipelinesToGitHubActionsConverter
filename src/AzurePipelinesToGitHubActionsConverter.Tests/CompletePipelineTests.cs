@@ -1172,8 +1172,8 @@ stages:
             //Assert
             string expected = @"
 #Note: Azure DevOps strategy>runOnce does not have an equivalent in GitHub Actions yet, and only the deploy steps are transferred to steps
-#Error (line 39): the step 'IISWebAppManagementOnMachineGroup@0' does not have a conversion path yet
-#Error (line 61): the step 'IISWebAppDeploymentOnMachineGroup@0' does not have a conversion path yet
+#Error (line 37): the step 'IISWebAppManagementOnMachineGroup@0' does not have a conversion path yet
+#Error (line 59): the step 'IISWebAppDeploymentOnMachineGroup@0' does not have a conversion path yet
 on:
   push:
     branches:
