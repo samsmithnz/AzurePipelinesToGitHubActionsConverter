@@ -131,6 +131,7 @@ resources:
     type: github
     endpoint: 'GitHub SamSmithNZ connection'
     name: SamSmithNZ/MandMCounter
+    ref: myfeaturebranch
 jobs:
   - job: BuildAndTestMandMProject
     pool:
@@ -151,7 +152,8 @@ jobs:
     - uses: actions/checkout@v2
     - uses: actions/checkout@v2
       with:
-        repository: MandMCounterRepo";
+        repository: MandMCounterRepo
+        ref: myfeaturebranch";
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
             //Assert.AreEqual(1, gitHubOutput.comments.Count);

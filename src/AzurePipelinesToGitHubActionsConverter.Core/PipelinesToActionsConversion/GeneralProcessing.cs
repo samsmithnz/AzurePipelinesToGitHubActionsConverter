@@ -380,14 +380,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                 //    //Actions can't work with these 
                 //}
             }
-            if (repositories != null)
-            {
-                return repositories;
-            }
-            else
-            {
-                return null;
-            }
+            return repositories;
         }
 
         //Repositories are set in Azure DevOps at the beginning of the pipeline, and then referenced later in checkouts. 
