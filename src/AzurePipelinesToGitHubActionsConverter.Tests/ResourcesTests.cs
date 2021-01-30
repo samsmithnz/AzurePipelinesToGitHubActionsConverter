@@ -76,8 +76,8 @@ steps:
 
             //Assert
             Assert.AreEqual(1, gitHubOutput.comments.Count);
-        }    
-        
+        }
+
         [TestMethod]
         public void ResourcesContainersDetailTest()
         {
@@ -117,10 +117,49 @@ steps:
 
             //Assert
             Assert.AreEqual(1, gitHubOutput.comments.Count);
-        }  
-        
+        }
+
         [TestMethod]
-        public void ResourcesRepositoriesTest()
+        public void ResourcesRepositoriesWithCheckoutTest()
+        {
+            //Arrange
+            Conversion conversion = new Conversion();
+            string yaml = @"
+resources:
+  repositories:
+  - repository: MandMCounterRepo 
+    type: github
+    endpoint: 'GitHub SamSmithNZ connection'
+    name: SamSmithNZ/MandMCounter
+jobs:
+  - job: BuildAndTestMandMProject
+    pool:
+      vmImage: windows-latest
+    steps:
+    - checkout: MandMCounterRepo
+";
+
+            //Act
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(yaml);
+
+            //Assert        
+            string expected = @"
+jobs:
+  BuildAndTestMandMProject:
+    runs-on: windows-latest
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/checkout@v2
+      with:
+        repository: MandMCounterRepo";
+            expected = UtilityTests.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+            //Assert.AreEqual(1, gitHubOutput.comments.Count);
+            //Assert.IsTrue(gitHubOutput.actionsYaml.IndexOf("Resource repositories conversion not yet done") > -1);
+        }
+
+        [TestMethod]
+        public void ResourcesRepositoriesNoCheckoutTest()
         {
             //Arrange
             Conversion conversion = new Conversion();
@@ -128,11 +167,10 @@ steps:
 resources:         
   repositories:
   - repository: secondaryRepo      
-    type: GitHub
+    type: github
     connection: myGitHubConnection
-    source: Microsoft/alphaworz
-    name: repo
-    ref: repoRef
+    name: samsmithnz/mandmcounter
+    ref: refs/heads/myfeaturebranch
     endpoint: github.com
 ";
 
@@ -140,8 +178,12 @@ resources:
             ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(yaml);
 
             //Assert
-            Assert.AreEqual(1, gitHubOutput.comments.Count);
-            Assert.IsTrue(gitHubOutput.actionsYaml.IndexOf("Resource repositories conversion not yet done") > -1);
+            string expected = @"
+";
+            expected = UtilityTests.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+            //Assert.AreEqual(1, gitHubOutput.comments.Count);
+            //Assert.IsTrue(gitHubOutput.actionsYaml.IndexOf("Resource repositories conversion not yet done") > -1);
         }
 
         [TestMethod]

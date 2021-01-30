@@ -1,9 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace AzurePipelinesToGitHubActionsConverter.Core.AzurePipelines
+﻿namespace AzurePipelinesToGitHubActionsConverter.Core.AzurePipelines
 {
+    //https://docs.microsoft.com/en-us/azure/devops/pipelines/yaml-schema?view=azure-devops&tabs=schema%2Cparameter-schema#resources
     //resources:
     //  repositories:
     //  - repository: string  # identifier (A-Z, a-z, 0-9, and underscore)
@@ -23,7 +20,6 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.AzurePipelines
     //        exclude: [ string ] # file paths which will not trigger a build
     public class Repositories
     {
-        //TODO: There is currently no conversion path for repositories
         public string repository { get; set; }
         public string type { get; set; }
         public string name { get; set; }

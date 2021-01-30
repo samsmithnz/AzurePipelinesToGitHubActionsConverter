@@ -143,24 +143,30 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
 
                 //Resources
                 string resourcesYaml = null;
+                AzurePipelines.Repositories[] repositories = null;
                 if (jsonObject.TryGetProperty("resources", out jsonElement) == true)
                 {
                     resourcesYaml = jsonElement.ToString();
-                }
-                //Resource Pipelines
-                if (resourcesYaml?.IndexOf("\"pipelines\"") >= 0)
-                {
-                    gitHubActions.messages.Add("TODO: Resource pipelines conversion not yet done: https://github.com/samsmithnz/AzurePipelinesToGitHubActionsConverter/issues/8");
-                }
-                //Resource Repositories
-                if (resourcesYaml?.IndexOf("\"repositories\"") >= 0)
-                {
-                    gitHubActions.messages.Add("TODO: Resource repositories conversion not yet done: https://github.com/samsmithnz/AzurePipelinesToGitHubActionsConverter/issues/8");
-                }
-                //Resource Container
-                if (resourcesYaml?.IndexOf("\"containers\"") >= 0)
-                {
-                    gitHubActions.messages.Add("TODO: Container conversion not yet done, we need help!: https://github.com/samsmithnz/AzurePipelinesToGitHubActionsConverter/issues/39");
+
+                    //Resource Pipelines
+                    if (resourcesYaml?.IndexOf("\"pipelines\"") >= 0)
+                    {
+                        gitHubActions.messages.Add("TODO: Resource pipelines conversion not yet done: https://github.com/samsmithnz/AzurePipelinesToGitHubActionsConverter/issues/8");
+                    }
+                    //Resource Repositories
+                    if (resourcesYaml?.IndexOf("\"repositories\"") >= 0)
+                    {
+                        if (jsonElement.TryGetProperty("repositories", out jsonElement) == true)
+                        {
+                            repositories = gp.ProcessRepositories(jsonElement.ToString());
+                        }
+                        //gitHubActions.messages.Add("TODO: Resource repositories conversion not yet done: https://github.com/samsmithnz/AzurePipelinesToGitHubActionsConverter/issues/8");
+                    }
+                    //Resource Container
+                    if (resourcesYaml?.IndexOf("\"containers\"") >= 0)
+                    {
+                        gitHubActions.messages.Add("TODO: Container conversion not yet done, we need help!: https://github.com/samsmithnz/AzurePipelinesToGitHubActionsConverter/issues/39");
+                    }
                 }
 
                 //Strategy
@@ -209,6 +215,12 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                     Resources resources = gp.ExtractResourcesV2(resourcesYaml);
                     gitHubActions.jobs = jp.ProcessJobsV2(pipelineJobs, resources);
                     _matrixVariableName = jp.MatrixVariableName;
+                }
+
+                //Process repositories
+                if (repositories != null)
+                {
+                    gitHubActions= gp.ProcessStepsWithRepositories(gitHubActions, repositories);
                 }
 
                 if (gitHubActions.jobs != null && gitHubActions.jobs.Count == 0)

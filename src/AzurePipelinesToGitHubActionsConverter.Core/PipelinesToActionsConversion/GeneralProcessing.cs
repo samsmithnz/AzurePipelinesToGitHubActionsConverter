@@ -1,4 +1,5 @@
 ﻿using AzurePipelinesToGitHubActionsConverter.Core.AzurePipelines;
+using AzurePipelinesToGitHubActionsConverter.Core.GitHubActions;
 using AzurePipelinesToGitHubActionsConverter.Core.Serialization;
 using System;
 using System.Collections.Generic;
@@ -329,6 +330,108 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
             }
         }
 
+        public Repositories[] ProcessRepositories(string repositoriesYaml)
+        {
+            //from: Azure DevOps YAML
+            //resources:
+            //  repositories:
+            //  - repository: string  # identifier (A-Z, a-z, 0-9, and underscore)
+            //    type: enum  # see the following "Type" topic
+            //    name: string  # repository name (format depends on `type`)
+            //    ref: string  # ref name to use; defaults to 'refs/heads/main'
+            //    endpoint: string  # name of the service connection to use (for types that aren't Azure Repos)
+            //    trigger:  # CI trigger for this repository, no CI trigger if skipped (only works for Azure Repos)
+            //      branches:
+            //        include: [ string ] # branch names which will trigger a build
+            //        exclude: [ string ] # branch names which will not
+            //      tags:
+            //        include: [ string ] # tag names which will trigger a build
+            //        exclude: [ string ] # tag names which will not
+            //      paths:
+            //        include: [ string ] # file paths which must match to trigger a build
+            //        exclude: [ string ] # file paths which will not trigger a build
 
+
+            //to: GitHub Actions
+            //- name: Checkout tools repo
+            //  uses: actions/checkout@v2
+            //  with:
+            //    repository: my-org/my-tools
+            //    path: my-tools
+
+
+            //This one needs two steps. 
+            //1. First we extract the respositories
+            //2. Next we create steps that we insert into the job
+
+            AzurePipelines.Repositories[] repositories = null;
+            if (repositoriesYaml != null)
+            {
+                repositoriesYaml = repositoriesYaml.Replace("\"ref\":", "\"_ref\":");
+                repositories = YamlSerialization.DeserializeYaml<AzurePipelines.Repositories[]>(repositoriesYaml);
+                //if (repositories.type == "github")
+                //{
+                //    //Actions can work with these
+                //}
+                //else
+                //{
+                //    //type: git
+                //    //type: bitbucket
+                //    //Actions can't work with these 
+                //}
+            }
+            if (repositories != null)
+            {
+                return repositories;
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        //Repositories are set in Azure DevOps at the beginning of the pipeline, and then referenced later in checkouts. 
+        //This changes in GitHub, to a model where they are only set and referenced the checkout. 
+        public GitHubActionsRoot ProcessStepsWithRepositories(GitHubActionsRoot gitHubActions, AzurePipelines.Repositories[] repositories)
+        {
+            if (gitHubActions.jobs == null)
+            {
+                return gitHubActions;
+            }
+            foreach (KeyValuePair<string, GitHubActions.Job> job in gitHubActions.jobs)
+            {
+                foreach (GitHubActions.Step step in job.Value.steps)
+                {
+                    if (step.uses == "actions/checkout@v2")
+                    {
+                        if (step.with != null && step.with.ContainsKey("repository") == true && step.with.TryGetValue("repository", out string value))
+                        {
+                            foreach (Repositories repo in repositories)
+                            {
+                                if (repo.type == "github" && repo.repository == value)
+                                {
+                                    //Update the checkout task to get data from a github repo
+                                    //repository: my-org/my-tools
+                                    //path: my-tools
+                                    //ref: my-branch
+                                    step.with["repository"] = repo.repository;
+                                    if (repo._ref != null)
+                                    {
+                                        //Add the ref if it's not already there
+                                        if (step.with.TryGetValue("ref", out string repoRef) == false)
+                                        {
+                                            step.with.Add("ref", "");
+                                        }
+                                        step.with["ref"] = repo._ref;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            return gitHubActions;
+        }
     }
 }
