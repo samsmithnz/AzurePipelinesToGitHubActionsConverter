@@ -129,7 +129,7 @@ resources:
   repositories:
   - repository: MandMCounterRepo 
     type: github
-    endpoint: 'GitHub SamSmithNZ connection'
+    endpoint: 'GitHub connection'
     name: SamSmithNZ/MandMCounter
     ref: myfeaturebranch
 jobs:
@@ -152,12 +152,10 @@ jobs:
     - uses: actions/checkout@v2
     - uses: actions/checkout@v2
       with:
-        repository: MandMCounterRepo
+        repository: SamSmithNZ/MandMCounter
         ref: myfeaturebranch";
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
-            //Assert.AreEqual(1, gitHubOutput.comments.Count);
-            //Assert.IsTrue(gitHubOutput.actionsYaml.IndexOf("Resource repositories conversion not yet done") > -1);
         }
 
         [TestMethod]
@@ -184,8 +182,68 @@ resources:
 ";
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
-            //Assert.AreEqual(1, gitHubOutput.comments.Count);
-            //Assert.IsTrue(gitHubOutput.actionsYaml.IndexOf("Resource repositories conversion not yet done") > -1);
+        }
+
+        [TestMethod]
+        public void ResourcesRepositoriesMultipleWithCheckoutTest()
+        {
+            //Arrange
+            Conversion conversion = new Conversion();
+            string yaml = @"
+resources:
+  repositories:
+  - repository: MandMCounterRepo 
+    type: github
+    endpoint: 'GitHub connection'
+    name: SamSmithNZ/MandMCounter
+    ref: myfeaturebranch
+  - repository: MandMCounterRepo2 
+    type: bitbucket
+    endpoint: 'Bitbucket connection'
+    name: SamSmithNZ/MandMCounter2
+    ref: myfeaturebranch
+  - repository: MandMCounterRepo3
+    type: git
+    name: MandMCounter3
+    ref: myfeaturebranch
+jobs:
+  - job: BuildAndTestMandMProject
+    pool:
+      vmImage: windows-latest
+    steps:
+    - checkout: MandMCounterRepo
+    - checkout: MandMCounterRepo2
+    - checkout: MandMCounterRepo3
+";
+
+            //Act
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(yaml);
+
+            //Assert        
+            string expected = @"
+#bitbucket repos don't currently have a conversion path in GitHub. This step was converted, but is unlikely to work.
+#Azure Repos don't currently have a conversion path in GitHub. This step was converted, but is unlikely to work.
+jobs:
+  BuildAndTestMandMProject:
+    runs-on: windows-latest
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/checkout@v2
+      with:
+        repository: SamSmithNZ/MandMCounter
+        ref: myfeaturebranch
+    - # bitbucket repos don't currently have a conversion path in GitHub. This step was converted, but is unlikely to work.
+      uses: actions/checkout@v2
+      with:
+        repository: SamSmithNZ/MandMCounter2
+        ref: myfeaturebranch
+    - # Azure Repos don't currently have a conversion path in GitHub. This step was converted, but is unlikely to work.
+      uses: actions/checkout@v2
+      with:
+        repository: MandMCounter3
+        ref: myfeaturebranch";
+            expected = UtilityTests.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
         }
 
         [TestMethod]

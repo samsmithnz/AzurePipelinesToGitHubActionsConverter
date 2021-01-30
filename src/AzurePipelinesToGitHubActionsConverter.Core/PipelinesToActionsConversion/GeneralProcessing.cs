@@ -369,16 +369,6 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
             {
                 repositoriesYaml = repositoriesYaml.Replace("\"ref\":", "\"_ref\":");
                 repositories = YamlSerialization.DeserializeYaml<AzurePipelines.Repositories[]>(repositoriesYaml);
-                //if (repositories.type == "github")
-                //{
-                //    //Actions can work with these
-                //}
-                //else
-                //{
-                //    //type: git
-                //    //type: bitbucket
-                //    //Actions can't work with these 
-                //}
             }
             return repositories;
         }
@@ -401,13 +391,22 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                         {
                             foreach (Repositories repo in repositories)
                             {
-                                if (repo.type == "github" && repo.repository == value)
+                                if (repo.repository == value)
                                 {
-                                    //Update the checkout task to get data from a github repo
-                                    //repository: my-org/my-tools
-                                    //path: my-tools
-                                    //ref: my-branch
-                                    step.with["repository"] = repo.repository;
+                                    if (repo.type != "github")
+                                    {
+                                        if (repo.type == "git")
+                                        {
+                                            repo.type = "Azure Repos";
+                                        }
+                                        else
+                                        {
+                                            //bitbucket
+                                            repo.type += " repos";
+                                        }
+                                        step.step_message += repo.type + " don't currently have a conversion path in GitHub. This step was converted, but is unlikely to work.";
+                                    }
+                                    step.with["repository"] = repo.name;
                                     if (repo._ref != null)
                                     {
                                         //Add the ref if it's not already there
