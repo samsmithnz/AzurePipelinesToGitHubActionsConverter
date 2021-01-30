@@ -1373,12 +1373,12 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
         }
 
-        //        [TestMethod]
-        //        public void IISWebManagementStepTest()
-        //        {
-        //            //Arrange
-        //            Conversion conversion = new Conversion();
-        //            string yaml = @"
+        //[TestMethod]
+        //public void IISWebManagementStepTest()
+        //{
+        //    //Arrange
+        //    Conversion conversion = new Conversion();
+        //    string yaml = @"
         //              - task: IISWebAppManagementOnMachineGroup@0
         //                inputs:
         //                  IISDeploymentType: 'IISWebsite'
@@ -1400,15 +1400,37 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
         //                  port: '80'
         //";
 
-        //            //Act
-        //            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineTaskToGitHubActionTask(yaml);
+        //    //Act
+        //    ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineTaskToGitHubActionTask(yaml);
 
-        //            //Assert
-        //            string expected = @"
+        //    //Assert
+        //    string expected = @"
         //";
-        //            expected = UtilityTests.TrimNewLines(expected);
-        //            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
-        //        }
+        //    expected = UtilityTests.TrimNewLines(expected);
+        //    Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+        //}
+        //[TestMethod]
+        //public void IISWebDeploymentStepTest()
+        //{
+        //    //Arrange
+        //    Conversion conversion = new Conversion();
+        //    string yaml = @"
+        //      - task: IISWebAppDeploymentOnMachineGroup@0
+        //        inputs:
+        //          WebSiteName: 'Spark'
+        //          Package: '$(Pipeline.Workspace)\Art.Web.zip'
+        //          XmlVariableSubstitution: true
+        //";
+
+        //    //Act
+        //    ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineTaskToGitHubActionTask(yaml);
+
+        //    //Assert
+        //    string expected = @"
+        //";
+        //    expected = UtilityTests.TrimNewLines(expected);
+        //    Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+        //}
 
         [TestMethod]
         public void SQLAzureDacPacDeployStepTest()
