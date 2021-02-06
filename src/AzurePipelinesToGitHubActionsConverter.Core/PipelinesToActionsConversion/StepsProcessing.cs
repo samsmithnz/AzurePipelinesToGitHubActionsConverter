@@ -1246,7 +1246,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
         private GitHubActions.Step CreateTerraformInstallerStep(AzurePipelines.Step step)
         {
 
-            //coming from:
+            //coming from (two known variations)
             //- task: terraformInstaller@0
             //  displayName: Install Terraform
             //  inputs:
@@ -1255,7 +1255,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
             //- task: ms-devlabs.custom-terraform-tasks.custom-terraform-installer-task.TerraformInstaller@0
             //  displayName: Install Terraform
             //  inputs:
-            //    terraformVersion: 0.14.2
+            //    terraformVersion: 0.12.12
 
             //Going to:
             //- uses: hashicorp/setup-terraform@v1
@@ -1280,33 +1280,45 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
         {
             //Note: requires the hashicorp/setup-terraform@v1 task to be run before
 
-            //coming from a few varations:
-            //TerraformTaskV1@0
+            //coming from a 3 known varations:
+//- task: TerraformTaskV1@0
+//  displayName: 'Terraform Init'
+//  inputs:
+//    provider: 'azurerm'
+//    command: 'init'
+//    backendServiceArm: '$(backendServiceArm)'
+//    backendAzureRmResourceGroupName: '$(backendAzureRmResourceGroupName)'
+//    backendAzureRmStorageAccountName: '$(backendAzureRmStorageAccountName)'
+//    backendAzureRmContainerName: '$(backendAzureRmContainerName)'
+//    backendAzureRmKey: '$(backendAzureRmKey)'
+
             //terraform@0
-            //- task: terraform@0
-            //  displayName: Terraform Plan
+//- task: terraform@0
+//  displayName: Terraform Init
+//  inputs:
+//    command: 'init'
+//    providerAzureConnectedServiceName: 'MTC Denver Sandbox'
+//    backendAzureProviderStorageAccountName: 'mtcdenterraformsandbox'
+
+            //- task: ms-devlabs.custom-terraform-tasks.custom-terraform-release-task.TerraformTaskV1@0
+            //  displayName: 'Terraform : init'
             //  inputs:
-            //    command: 'plan'
-            //    providerAzureConnectedServiceName: 'MTC Denver Sandbox'
-            //    args: -var=environment=demo -out=tfplan.out
+            //    command: init
+            //    workingDirectory: tf/env/dev
+            //    backendServiceArm: YAML Template Examples - Dev
+            //    backendAzureRmResourceGroupName: rg-terraformState-dev-eus
+            //    backendAzureRmStorageAccountName: #
+            //    backendAzureRmContainerName: terraform-state
+            //    backendAzureRmKey: terraformStorageExample.tfstate
 
             //going to:
-            //- id: plan
-            //  run: terraform plan -no-color
+            //- run: terraform init 
 
             string command = GetStepInput(step, "command");
             string args = GetStepInput(step, "args");
 
             GitHubActions.Step gitHubStep = CreateScriptStep("", step);
-
-            //GitHubActions.Step gitHubStep = new GitHubActions.Step
-            //{
-            //    uses = "hashicorp/setup-terraform@v1",
-            //    with = new Dictionary<string, string>
-            //    {
-            //        { "terraform_version", terraformVersion}
-            //    }
-            //};
+            gitHubStep.run = "terraform init";
 
             return gitHubStep;
         }
