@@ -141,6 +141,9 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                     case "SQLAZUREDACPACDEPLOYMENT@1":
                         gitHubStep = CreateSQLAzureDacPacDeployStep(step);
                         break;
+                    case "TERRAFORMINSTALLER@0":
+                        gitHubStep = CreateTerraformInstallerStep(step);
+                        break;
                     case "USEDOTNET@2":
                         gitHubStep = CreateUseDotNetStep(step);
                         break;
@@ -1230,6 +1233,35 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
             //    server-name: REPLACE_THIS_WITH_YOUR_SQL_SERVER_NAME
             //    connection-string: ${{ secrets.AZURE_SQL_CONNECTION_STRING }}
             //    dacpac-package: './yourdacpacfile.dacpac'
+
+            return gitHubStep;
+        }
+
+        //https://github.com/Azure/sql-action
+        private GitHubActions.Step CreateTerraformInstallerStep(AzurePipelines.Step step)
+        {
+
+            //coming from:
+            //- task: terraformInstaller@0
+            //  displayName: Install Terraform
+            //  inputs:
+            //    terraformVersion: '0.12.12'
+
+            //Going to:
+            //- uses: hashicorp/setup-terraform@v1
+            //  with:
+            //    terraform_version: 0.12.12
+
+            string terraformVersion = GetStepInput(step, "terraformversion");
+
+            GitHubActions.Step gitHubStep = new GitHubActions.Step
+            {
+                uses = "hashicorp/setup-terraform@v1",
+                with = new Dictionary<string, string>
+                {
+                    { "terraform_version", terraformVersion}
+                }
+            };
 
             return gitHubStep;
         }
