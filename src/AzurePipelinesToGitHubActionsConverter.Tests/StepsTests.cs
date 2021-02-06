@@ -1780,8 +1780,8 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
 
             //Assert
             string expected = @"
-- uses: hashicorp/setup-terraform@v1
-  displayName: Install Terraform
+- name: Install Terraform
+  uses: hashicorp/setup-terraform@v1
   with:
     terraform_version: 0.12.12
 ";
