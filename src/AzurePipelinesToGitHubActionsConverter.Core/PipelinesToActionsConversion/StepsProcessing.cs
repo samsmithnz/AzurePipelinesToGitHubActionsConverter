@@ -142,7 +142,13 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                         gitHubStep = CreateSQLAzureDacPacDeployStep(step);
                         break;
                     case "TERRAFORMINSTALLER@0":
+                    case "MS-DEVLABS.CUSTOM-TERRAFORM-TASKS.CUSTOM-TERRAFORM-INSTALLER-TASK.TERRAFORMINSTALLER@0":
                         gitHubStep = CreateTerraformInstallerStep(step);
+                        break;
+                    case "TERRAFORM@0":
+                    case "TERRAFORMTASKV1@0":
+                    case "MS-DEVLABS.CUSTOM-TERRAFORM-TASKS.CUSTOM-TERRAFORM-RELEASE-TASK.TERRAFORMTASKV1@0":
+                        gitHubStep = CreateTerraformActionStep(step);
                         break;
                     case "USEDOTNET@2":
                         gitHubStep = CreateUseDotNetStep(step);
@@ -1237,7 +1243,6 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
             return gitHubStep;
         }
 
-        //https://github.com/Azure/sql-action
         private GitHubActions.Step CreateTerraformInstallerStep(AzurePipelines.Step step)
         {
 
@@ -1246,6 +1251,11 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
             //  displayName: Install Terraform
             //  inputs:
             //    terraformVersion: '0.12.12'
+
+            //- task: ms-devlabs.custom-terraform-tasks.custom-terraform-installer-task.TerraformInstaller@0
+            //  displayName: Install Terraform
+            //  inputs:
+            //    terraformVersion: 0.14.2
 
             //Going to:
             //- uses: hashicorp/setup-terraform@v1
@@ -1265,6 +1275,43 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
 
             return gitHubStep;
         }
+
+        private GitHubActions.Step CreateTerraformActionStep(AzurePipelines.Step step)
+        {
+            //Note: requires the hashicorp/setup-terraform@v1 task to be run before
+
+            //coming from a few varations:
+            //TerraformTaskV1@0
+            //terraform@0
+            //- task: terraform@0
+            //  displayName: Terraform Plan
+            //  inputs:
+            //    command: 'plan'
+            //    providerAzureConnectedServiceName: 'MTC Denver Sandbox'
+            //    args: -var=environment=demo -out=tfplan.out
+
+            //going to:
+            //- id: plan
+            //  run: terraform plan -no-color
+
+            string command = GetStepInput(step, "command");
+            string args = GetStepInput(step, "args");
+
+            GitHubActions.Step gitHubStep = CreateScriptStep("", step);
+
+            //GitHubActions.Step gitHubStep = new GitHubActions.Step
+            //{
+            //    uses = "hashicorp/setup-terraform@v1",
+            //    with = new Dictionary<string, string>
+            //    {
+            //        { "terraform_version", terraformVersion}
+            //    }
+            //};
+
+            return gitHubStep;
+        }
+
+        //"Note that this task is in still in development by HashiCorp, and is not supported in production usage. More details: https://github.com/hashicorp/setup-terraform"
 
         private GitHubActions.Step CreateMSBuildStep(AzurePipelines.Step step)
         {
