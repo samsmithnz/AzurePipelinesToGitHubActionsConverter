@@ -406,7 +406,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
 
     # Set storageAccountName variable from terraform output
     echo ""##vso[task.setvariable variable=storageAccountName]$STORAGE_ACCOUNT""
-        ";
+";
 
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
