@@ -822,10 +822,6 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
             {
                 gitHubStep.shell = null;
             }
-            if (step.condition != null)
-            {
-                gitHubStep._if = ConditionsProcessing.TranslateConditions(step.condition);
-            }
 
             return gitHubStep;
         }
@@ -1281,24 +1277,24 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
             //Note: requires the hashicorp/setup-terraform@v1 task to be run before
 
             //coming from a 3 known varations:
-//- task: TerraformTaskV1@0
-//  displayName: 'Terraform Init'
-//  inputs:
-//    provider: 'azurerm'
-//    command: 'init'
-//    backendServiceArm: '$(backendServiceArm)'
-//    backendAzureRmResourceGroupName: '$(backendAzureRmResourceGroupName)'
-//    backendAzureRmStorageAccountName: '$(backendAzureRmStorageAccountName)'
-//    backendAzureRmContainerName: '$(backendAzureRmContainerName)'
-//    backendAzureRmKey: '$(backendAzureRmKey)'
+            //- task: TerraformTaskV1@0
+            //  displayName: 'Terraform Init'
+            //  inputs:
+            //    provider: 'azurerm'
+            //    command: 'init'
+            //    backendServiceArm: '$(backendServiceArm)'
+            //    backendAzureRmResourceGroupName: '$(backendAzureRmResourceGroupName)'
+            //    backendAzureRmStorageAccountName: '$(backendAzureRmStorageAccountName)'
+            //    backendAzureRmContainerName: '$(backendAzureRmContainerName)'
+            //    backendAzureRmKey: '$(backendAzureRmKey)'
 
             //terraform@0
-//- task: terraform@0
-//  displayName: Terraform Init
-//  inputs:
-//    command: 'init'
-//    providerAzureConnectedServiceName: 'MTC Denver Sandbox'
-//    backendAzureProviderStorageAccountName: 'mtcdenterraformsandbox'
+            //- task: terraform@0
+            //  displayName: Terraform Init
+            //  inputs:
+            //    command: 'init'
+            //    providerAzureConnectedServiceName: 'MTC Denver Sandbox'
+            //    backendAzureProviderStorageAccountName: 'mtcdenterraformsandbox'
 
             //- task: ms-devlabs.custom-terraform-tasks.custom-terraform-release-task.TerraformTaskV1@0
             //  displayName: 'Terraform : init'
@@ -1317,8 +1313,19 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
             string command = GetStepInput(step, "command");
             string args = GetStepInput(step, "args");
 
+            //initialize the step (copying over some 
             GitHubActions.Step gitHubStep = CreateScriptStep("", step);
-            gitHubStep.run = "terraform init";
+            
+            //build the run command
+            StringBuilder sb = new StringBuilder();
+            sb.Append("terraform ");
+            sb.Append(command);
+            if (args != null)
+            {
+                sb.Append(" ");
+                sb.Append(args);
+            }
+            gitHubStep.run = sb.ToString();
 
             return gitHubStep;
         }

@@ -1,6 +1,5 @@
 ﻿using AzurePipelinesToGitHubActionsConverter.Core;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
 
 namespace AzurePipelinesToGitHubActionsConverter.Tests
 {
@@ -74,7 +73,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
     command: 'init'
     providerAzureConnectedServiceName: 'MTC Denver Sandbox'
     backendAzureProviderStorageAccountName: 'mtcdenterraformsandbox'
-        ";
+";
 
             //Act
             ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineTaskToGitHubActionTask(yaml);
@@ -105,7 +104,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
     backendAzureRmStorageAccountName: '$(backendAzureRmStorageAccountName)'
     backendAzureRmContainerName: '$(backendAzureRmContainerName)'
     backendAzureRmKey: '$(backendAzureRmKey)'
-        ";
+";
 
             //Act
             ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineTaskToGitHubActionTask(yaml);
@@ -136,7 +135,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
         backendAzureRmStorageAccountName: #
         backendAzureRmContainerName: terraform-state
         backendAzureRmKey: terraformStorageExample.tfstate
-        ";
+";
 
             //Act
             ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineTaskToGitHubActionTask(yaml);
@@ -151,121 +150,224 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
         }
 
-        //        [TestMethod]
-        //        public void TerraformPlanTaskStepTest()
-        //        {
-        //            //Arrange
-        //            Conversion conversion = new Conversion();
-        //            string yaml = @"   
-        //- task: terraform@0
-        //  displayName: Terraform Plan
-        //  inputs:
-        //    command: 'plan'
-        //    providerAzureConnectedServiceName: 'MTC Denver Sandbox'
-        //    args: -var=environment=demo -out=tfplan.out
-        //        ";
+        [TestMethod]
+        public void TerraformPlanTaskStepTest()
+        {
+            //Arrange
+            Conversion conversion = new Conversion();
+            string yaml = @"   
+        - task: terraform@0
+          displayName: Terraform Plan
+          inputs:
+            command: 'plan'
+            providerAzureConnectedServiceName: 'MTC Denver Sandbox'
+            args: -var=environment=demo -out=tfplan.out
+        ";
 
-        //            //Act
-        //            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineTaskToGitHubActionTask(yaml);
+            //Act
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineTaskToGitHubActionTask(yaml);
 
-        //            //Assert
-        //            string expected = @"
-        //- name: Terraform Plan
-        //  id: plan
-        //  run: terraform plan -no-color
-        //  continue-on-error: true
-        //";
+            //Assert
+            string expected = @"
+- name: Terraform Plan
+  run: terraform plan -var=environment=demo -out=tfplan.out
+";
 
-        //            expected = UtilityTests.TrimNewLines(expected);
-        //            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
-        //        }
+            expected = UtilityTests.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+        }
 
-        //        [TestMethod]
-        //        public void TerraformApplyTaskStepTest()
-        //        {
-        //            //Arrange
-        //            Conversion conversion = new Conversion();
-        //            string yaml = @"   
-        //- task: terraform@0
-        //  displayName: Terraform Apply
-        //  inputs:
-        //    command: 'apply'
-        //    providerAzureConnectedServiceName: 'MTC Denver Sandbox'
-        //    args: tfplan.out
-        //        ";
+        [TestMethod]
+        public void TerraformPlanV1TaskStepTest()
+        {
+            //Arrange
+            Conversion conversion = new Conversion();
+            string yaml = @"
+- task: TerraformTaskV1@0
+  displayName: 'Terraform Plan'
+  inputs:
+    provider: 'azurerm'
+    command: 'plan'
+";
 
-        //            //Act
-        //            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineTaskToGitHubActionTask(yaml);
+            //Act
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineTaskToGitHubActionTask(yaml);
 
-        //            //Assert
-        //            string expected = @"
+            //Assert
+            string expected = @"
+- name: Terraform Plan
+  run: terraform plan
+";
 
-        //";
+            expected = UtilityTests.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+        }
 
-        //            expected = UtilityTests.TrimNewLines(expected);
-        //            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
-        //        }
+        [TestMethod]
+        public void TerraformApplyTaskStepTest()
+        {
+            //Arrange
+            Conversion conversion = new Conversion();
+            string yaml = @"   
+        - task: terraform@0
+          displayName: Terraform Apply
+          inputs:
+            command: 'apply'
+            providerAzureConnectedServiceName: 'MTC Denver Sandbox'
+            args: tfplan.out
+        ";
 
-        //        [TestMethod]
-        //        public void TerraformValidateTaskStepTest()
-        //        {
-        //            //Arrange
-        //            Conversion conversion = new Conversion();
-        //            string yaml = @"   
-        //- task: terraform@0
-        //  displayName: Terraform Validate
-        //  inputs:
-        //    command: 'validate'
-        //    providerAzureConnectedServiceName: 'MTC Denver Sandbox'
-        //    args: tfplan.out
-        //        ";
+            //Act
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineTaskToGitHubActionTask(yaml);
 
-        //            //Act
-        //            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineTaskToGitHubActionTask(yaml);
+            //Assert
+            string expected = @"
+- name: Terraform Apply
+  run: terraform apply tfplan.out
+";
 
-        //            //Assert
-        //            string expected = @"
-        //- name: Terraform Validate
-        //  id: validate
-        //  run: terraform validate -no-color
-        //";
+            expected = UtilityTests.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+        }
 
-        //            expected = UtilityTests.TrimNewLines(expected);
-        //            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
-        //        }
+        [TestMethod]
+        public void TerraformApplyV1TaskStepTest()
+        {
+            //Arrange
+            Conversion conversion = new Conversion();
+            string yaml = @"
+- task: TerraformTaskV1@0
+  displayName: 'Terraform Apply'
+  inputs:
+    provider: 'azurerm'
+    command: 'apply'
+";
 
-        //        [TestMethod]
-        //        public void TerraformDestroyTaskStepTest()
-        //        {
-        //            //Arrange
-        //            Conversion conversion = new Conversion();
-        //            string yaml = @"   
-        //- task: terraform@0
-        //  displayName: Terraform Destroy
-        //  inputs:
-        //    command: 'destroy'
-        //    providerAzureConnectedServiceName: 'MTC Denver Sandbox'
-        //    args: tfplan.out
-        //        ";
+            //Act
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineTaskToGitHubActionTask(yaml);
 
-        //            //Act
-        //            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineTaskToGitHubActionTask(yaml);
+            //Assert
+            string expected = @"
+- name: Terraform Apply
+  run: terraform apply
+";
 
-        //            //Assert
-        //            string expected = @"
+            expected = UtilityTests.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+        }
 
-        //";
+        [TestMethod]
+        public void TerraformValidateTaskStepTest()
+        {
+            //Arrange
+            Conversion conversion = new Conversion();
+            string yaml = @"   
+        - task: terraform@0
+          displayName: Terraform Validate
+          inputs:
+            command: 'validate'
+            providerAzureConnectedServiceName: 'MTC Denver Sandbox'
+            args: tfplan.out
+        ";
 
-        //            expected = UtilityTests.TrimNewLines(expected);
-        //            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
-        //        }
+            //Act
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineTaskToGitHubActionTask(yaml);
 
-        //        [TestMethod]
-        //        public void TerraformCLITaskStepTest()
-        //        {
-        //            //Arrange
-        //            Conversion conversion = new Conversion();
-        //            string yaml = @"   
+            //Assert
+            string expected = @"
+- name: Terraform Validate
+  run: terraform validate tfplan.out
+";
+
+            expected = UtilityTests.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+        }
+
+        [TestMethod]
+        public void TerraformValidateV1TaskStepTest()
+        {
+            //Arrange
+            Conversion conversion = new Conversion();
+            string yaml = @"
+- task: TerraformTaskV1@0
+  displayName: 'Terraform Validate'
+  inputs:
+    provider: 'azurerm'
+    command: 'validate'
+";
+
+            //Act
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineTaskToGitHubActionTask(yaml);
+
+            //Assert
+            string expected = @"
+- name: Terraform Validate
+  run: terraform validate
+";
+
+            expected = UtilityTests.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+        }
+
+        [TestMethod]
+        public void TerraformDestroyTaskStepTest()
+        {
+            //Arrange
+            Conversion conversion = new Conversion();
+            string yaml = @"   
+        - task: terraform@0
+          displayName: Terraform Destroy
+          inputs:
+            command: 'destroy'
+            providerAzureConnectedServiceName: 'MTC Denver Sandbox'
+            args: tfplan.out
+        ";
+
+            //Act
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineTaskToGitHubActionTask(yaml);
+
+            //Assert
+            string expected = @"
+- name: Terraform Destroy
+  run: terraform destroy tfplan.out
+";
+
+            expected = UtilityTests.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+        }
+
+        [TestMethod]
+        public void TerraformDestroyV1TaskStepTest()
+        {
+            //Arrange
+            Conversion conversion = new Conversion();
+            string yaml = @"
+- task: TerraformTaskV1@0
+  displayName: 'Terraform Destroy'
+  inputs:
+    provider: 'azurerm'
+    command: 'destroy'
+";
+
+            //Act
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineTaskToGitHubActionTask(yaml);
+
+            //Assert
+            string expected = @"
+- name: Terraform Destroy
+  run: terraform destroy
+";
+
+            expected = UtilityTests.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+        }
+
+        //[TestMethod]
+        //public void TerraformCLITaskStepTest()
+        //{
+        //    //Arrange
+        //    Conversion conversion = new Conversion();
+        //    string yaml = @"   
         //- task: terraform@0
         //  displayName: Execute Terraform CLI Script
         //  inputs:
@@ -284,19 +386,19 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
 
         //      # Set storageAccountName variable from terraform output
         //      echo ""##vso[task.setvariable variable=storageAccountName]$STORAGE_ACCOUNT""
-        //        ";
+        //";
 
-        //            //Act
-        //            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineTaskToGitHubActionTask(yaml);
+        //    //Act
+        //    ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineTaskToGitHubActionTask(yaml);
 
-        //            //Assert
-        //            string expected = @"
+        //    //Assert
+        //    string expected = @"
 
         //";
 
-        //            expected = UtilityTests.TrimNewLines(expected);
-        //            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
-        //        }
+        //    expected = UtilityTests.TrimNewLines(expected);
+        //    Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+        //}
 
     }
 }
