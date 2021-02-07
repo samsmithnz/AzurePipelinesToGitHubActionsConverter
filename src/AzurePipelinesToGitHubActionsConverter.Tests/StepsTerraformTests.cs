@@ -362,43 +362,55 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
         }
 
-        //[TestMethod]
-        //public void TerraformCLITaskStepTest()
-        //{
-        //    //Arrange
-        //    Conversion conversion = new Conversion();
-        //    string yaml = @"   
-        //- task: terraform@0
-        //  displayName: Execute Terraform CLI Script
-        //  inputs:
-        //    command: 'CLI'
-        //    providerAzureConnectedServiceName: 'MTC Denver Sandbox'
-        //    backendAzureProviderStorageAccountName: 'mtcdenterraformsandbox'
-        //    script: |
-        //      # Validate
-        //      terraform validate
+        [TestMethod]
+        public void TerraformCLITaskStepTest()
+        {
+            //Arrange
+            Conversion conversion = new Conversion();
+            string yaml = @"   
+        - task: terraform@0
+          displayName: Execute Terraform CLI Script
+          inputs:
+            command: 'CLI'
+            providerAzureConnectedServiceName: 'MTC Denver Sandbox'
+            backendAzureProviderStorageAccountName: 'mtcdenterraformsandbox'
+            script: |
+              # Validate
+              terraform validate
 
-        //      # Plan
-        //      terraform plan -input=false -out=testplan.tf
+              # Plan
+              terraform plan -input=false -out=testplan.tf
 
-        //      # Get output
-        //      STORAGE_ACCOUNT=`terraform output storage_account`
+              # Get output
+              STORAGE_ACCOUNT=`terraform output storage_account`
 
-        //      # Set storageAccountName variable from terraform output
-        //      echo ""##vso[task.setvariable variable=storageAccountName]$STORAGE_ACCOUNT""
-        //";
+              # Set storageAccountName variable from terraform output
+              echo ""##vso[task.setvariable variable=storageAccountName]$STORAGE_ACCOUNT""
+        ";
 
-        //    //Act
-        //    ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineTaskToGitHubActionTask(yaml);
+            //Act
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineTaskToGitHubActionTask(yaml);
 
-        //    //Assert
-        //    string expected = @"
+            //Assert
+            string expected = @"
+- name: Execute Terraform CLI Script
+  run: |
+    # Validate
+    terraform validate
 
-        //";
+    # Plan
+    terraform plan -input=false -out=testplan.tf
 
-        //    expected = UtilityTests.TrimNewLines(expected);
-        //    Assert.AreEqual(expected, gitHubOutput.actionsYaml);
-        //}
+    # Get output
+    STORAGE_ACCOUNT=`terraform output storage_account`
+
+    # Set storageAccountName variable from terraform output
+    echo ""##vso[task.setvariable variable=storageAccountName]$STORAGE_ACCOUNT""
+        ";
+
+            expected = UtilityTests.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+        }
 
     }
 }

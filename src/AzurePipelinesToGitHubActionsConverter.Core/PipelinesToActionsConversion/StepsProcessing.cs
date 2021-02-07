@@ -1312,20 +1312,33 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
 
             string command = GetStepInput(step, "command");
             string args = GetStepInput(step, "args");
+            string script = GetStepInput(step, "script");
+            //string backendServiceArm = GetStepInput(step, "backendServiceArm");
+            //string backendAzureRmResourceGroupName = GetStepInput(step, "backendAzureRmResourceGroupName");
+            //string backendAzureRmStorageAccountName = GetStepInput(step, "backendAzureRmStorageAccountName");
+            //string backendAzureRmContainerName = GetStepInput(step, "backendAzureRmContainerName");
+            //string backendAzureRmKey = GetStepInput(step, "backendAzureRmKey");
 
             //initialize the step (copying over some 
             GitHubActions.Step gitHubStep = CreateScriptStep("", step);
-            
+
             //build the run command
-            StringBuilder sb = new StringBuilder();
-            sb.Append("terraform ");
-            sb.Append(command);
-            if (args != null)
+            if (command == "CLI")
             {
-                sb.Append(" ");
-                sb.Append(args);
+                gitHubStep.run = script;
             }
-            gitHubStep.run = sb.ToString();
+            else
+            {
+                StringBuilder sb = new StringBuilder();
+                sb.Append("terraform ");
+                sb.Append(command);
+                if (args != null)
+                {
+                    sb.Append(" ");
+                    sb.Append(args);
+                }
+                gitHubStep.run = sb.ToString();
+            }
 
             return gitHubStep;
         }
