@@ -147,6 +147,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                         break;
                     case "TERRAFORM@0":
                     case "TERRAFORMTASKV1@0":
+                    case "TERRAFORMCLI@0":
                     case "MS-DEVLABS.CUSTOM-TERRAFORM-TASKS.CUSTOM-TERRAFORM-RELEASE-TASK.TERRAFORMTASKV1@0":
                         gitHubStep = CreateTerraformActionStep(step);
                         break;
@@ -1306,6 +1307,8 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
             //    backendAzureRmStorageAccountName: #
             //    backendAzureRmContainerName: terraform-state
             //    backendAzureRmKey: terraformStorageExample.tfstate
+
+            //TerraformCLI@0
 
             //going to:
             //- run: terraform init 

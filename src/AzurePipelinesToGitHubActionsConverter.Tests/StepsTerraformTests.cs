@@ -204,6 +204,36 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
         }
 
         [TestMethod]
+        public void TerraformCLIPlanTaskStepTest()
+        {
+            //Arrange
+            Conversion conversion = new Conversion();
+            string yaml = @"
+- task: TerraformCLI@0
+  displayName: 'Terraform Plan'
+  inputs:
+    command: plan
+    environmentServiceName: 'My Azure Service Connection'
+    # guid for the secure file to use. Can be standard terraform vars file or .env file.
+    secureVarsFile: 446e8878-994d-4069-ab56-5b302067a869
+    # specify a variable input via pipeline variable
+    commandOptions: '-var secret=$(mySecretPipelineVar)'
+";
+
+            //Act
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineTaskToGitHubActionTask(yaml);
+
+            //Assert
+            string expected = @"
+- name: Terraform Plan
+  run: terraform plan
+";
+
+            expected = UtilityTests.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+        }
+
+        [TestMethod]
         public void TerraformApplyTaskStepTest()
         {
             //Arrange
