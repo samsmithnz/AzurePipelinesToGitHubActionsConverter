@@ -41,6 +41,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                         gitHubStep = CreateAzurePowershellStep(step);
                         break;
                     case "AZURERESOURCEGROUPDEPLOYMENT@2":
+                    case "AZURERESOURCEMANAGERTEMPLATEDEPLOYMENT@3":
                         gitHubStep = CreateAzureManageResourcesStep(step);
                         break;
                     case "AZUREFUNCTIONAPP@1":
@@ -1005,15 +1006,39 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
             //    csmParametersFile: '$(build.artifactstagingdirectory)/drop/ARMTemplates/azuredeploy.parameters.json'
             //    overrideParameters: '-environment $(AppSettings.Environment) -locationShort $(ArmTemplateResourceGroupLocation)'
 
+
+            //or:
+            //- task: AzureResourceManagerTemplateDeployment@3
+            //  inputs:
+            //    deploymentScope: 'Resource Group'
+            //    azureResourceManagerConnection: 'copy-connection'
+            //    subscriptionId: '00000000-0000-0000-0000-000000000000'
+            //    action: 'Create Or Update Resource Group'
+            //    resourceGroupName: 'demogroup'
+            //    location: 'West US'
+            //    templateLocation: 'URL of the file'
+            //    csmFileLink: '$(AzureFileCopy.StorageContainerUri)templates/mainTemplate.json$(AzureFileCopy.StorageContainerSasToken)'
+            //    csmParametersFileLink: '$(AzureFileCopy.StorageContainerUri)templates/mainTemplate.parameters.json$(AzureFileCopy.StorageContainerSasToken)'
+            //    deploymentMode: 'Incremental'
+            //    deploymentName: 'deploy1'
+
             // https://docs.microsoft.com/en-us/azure/azure-resource-manager/templates/deploy-cli
             //- name: Swap web service staging slot to production
             //  uses: Azure/cli@v1.0.0
             //  with:
             //    inlineScript: az deployment group create --resource-group <resource-group-name> --template-file <path-to-template>
 
-            string resourceGroup = GetStepInput(step, "resourcegroupname");
-            string armTemplateFile = GetStepInput(step, "csmfile");
-            string armTemplateParametersFile = GetStepInput(step, "csmparametersfile");
+            string resourceGroup = GetStepInput(step, "resourceGroupName");
+            string armTemplateFile = GetStepInput(step, "csmFile");
+            string armTemplateParametersFile = GetStepInput(step, "csmParametersFile");
+            if (string.IsNullOrEmpty(armTemplateFile) == true)
+            {
+                armTemplateFile = GetStepInput(step, "csmFileLink");
+            }
+            if (string.IsNullOrEmpty(armTemplateFile) == true)
+            {
+                armTemplateParametersFile = GetStepInput(step, "csmParametersFileLink");
+            }
             string overrideParameters = GetStepInput(step, "overrideParameters");
 
             string script = "az deployment group create --resource-group " + resourceGroup +
@@ -2551,29 +2576,36 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                                 }
                                 break;
 
-                            //If we have an Azure step, we will need to add a Azure login step
-                            case "AZURECLI@2":
-                            case "AZUREPOWERSHELL@4":
-                            case "AZUREAPPSERVICEMANAGE@0":
-                            case "AZURERESOURCEGROUPDEPLOYMENT@2":
-                            case "AZUREFUNCTIONAPP@1":
-                            case "AZUREFUNCTIONAPPCONTAINER@1":
-                            case "AZURERMWEBAPPDEPLOYMENT@3":
-                            case "AZURERMWEBAPPDEPLOYMENT@4":
-                            case "AZUREWEBAPPCONTAINER@1":
-                            case "AZUREWEBAPP@1":
-                                if (addAzureLoginStep == false)
-                                {
-                                    addAzureLoginStep = true;
-                                    stepAdjustment++;
-                                }
-                                break;
 
                             case "VSBUILD@1":
                                 if (addMSSetupStep == false)
                                 {
                                     addMSSetupStep = true;
                                     stepAdjustment++;
+                                }
+                                break;
+
+                            default:
+                                //If we have an Azure step, we will need to add a Azure login step
+                                if (step.task.ToUpper().StartsWith("AZURE") == true)
+                                {
+                                    //case "AZURECLI@2":
+                                    //case "AZUREPOWERSHELL@4":
+                                    //case "AZUREAPPSERVICEMANAGE@0":
+                                    //case "AZURERESOURCEGROUPDEPLOYMENT@2":
+                                    //case "AZURERESOURCEMANAGERTEMPLATEDEPLOYMENT@3":
+                                    //case "AZUREFUNCTIONAPP@1":
+                                    //case "AZUREFUNCTIONAPPCONTAINER@1":
+                                    //case "AZURERMWEBAPPDEPLOYMENT@3":
+                                    //case "AZURERMWEBAPPDEPLOYMENT@4":
+                                    //case "AZUREWEBAPPCONTAINER@1":
+                                    //case "AZUREWEBAPP@1":
+                                    if (addAzureLoginStep == false)
+                                    {
+                                        addAzureLoginStep = true;
+                                        stepAdjustment++;
+                                    }
+                                    break;
                                 }
                                 break;
                         }
