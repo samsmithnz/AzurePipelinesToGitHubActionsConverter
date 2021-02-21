@@ -2325,5 +2325,82 @@ jobs:
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
         }
 
+
+
+        [TestMethod]
+        public void TerraformTest()
+        {
+            //Arrange
+            string input = @"
+trigger:
+- main
+
+pool:
+  vmImage: windows-latest
+
+steps:
+- task: ms-devlabs.custom-terraform-tasks.custom-terraform-installer-task.TerraformInstaller@0
+  displayName: 'Install Terraform 0.12.3'
+- task: ms-devlabs.custom-terraform-tasks.custom-terraform-release-task.TerraformTaskV1@0
+  displayName: 'Terraform : azure init'
+  inputs:
+    backendServiceArm: '[Azure connection]'
+    backendAzureRmResourceGroupName: Terraform
+    backendAzureRmStorageAccountName: ssterraformstorage
+    backendAzureRmContainerName: terraformcontainer
+    backendAzureRmKey: terraform.tfstate
+- task: ms-devlabs.custom-terraform-tasks.custom-terraform-release-task.TerraformTaskV1@0
+  displayName: 'Terraform : azure plan'
+  inputs:
+    command: plan
+    commandOptions: '-var-file=""terraform.tfvars""'
+    environmentServiceNameAzureRM: '[Azure connection]'
+    backendServiceArm: '[Azure connection]'
+    backendAzureRmResourceGroupName: Terraform
+    backendAzureRmStorageAccountName: ssterraformstorage
+    backendAzureRmContainerName: terraformcontainer
+    backendAzureRmKey: terraform.tfstate
+- task: ms-devlabs.custom-terraform-tasks.custom-terraform-release-task.TerraformTaskV1@0
+  displayName: 'Terraform : azure validate and apply'
+  inputs:
+    command: apply
+    commandOptions: '-var-file=""terraform.tfvars""'
+    environmentServiceNameAzureRM: '[Azure connection]'
+    backendServiceArm: '[Azure connection]'
+    backendAzureRmResourceGroupName: Terraform
+    backendAzureRmStorageAccountName: ssterraformstorage
+    backendAzureRmContainerName: terraformcontainer
+    backendAzureRmKey: terraform.tfstate
+";
+            Conversion conversion = new Conversion();
+
+            //Act
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(input);
+
+            //Assert
+            string expected = @"
+on:
+  push:
+    branches:
+    - main
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Install Terraform 0.12.3
+      uses: hashicorp/setup-terraform@v1
+    - name: 'Terraform : azure init'
+      run: terraform
+    - name: 'Terraform : azure plan'
+      run: terraform plan -var-file=""terraform.tfvars""
+    - name: 'Terraform : azure validate and apply'
+      run: terraform apply -var-file=""terraform.tfvars""
+";
+
+            expected = UtilityTests.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+        }
+
     }
 }

@@ -1340,6 +1340,10 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
 
             string command = GetStepInput(step, "command");
             string args = GetStepInput(step, "args");
+            if (string.IsNullOrEmpty(args) == true)
+            {
+                args = GetStepInput(step, "commandOptions");
+            }
             string script = GetStepInput(step, "script");
             //string backendServiceArm = GetStepInput(step, "backendServiceArm");
             //string backendAzureRmResourceGroupName = GetStepInput(step, "backendAzureRmResourceGroupName");

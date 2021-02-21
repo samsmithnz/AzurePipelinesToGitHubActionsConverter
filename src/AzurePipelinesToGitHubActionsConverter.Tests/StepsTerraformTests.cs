@@ -226,7 +226,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             //Assert
             string expected = @"
 - name: Terraform Plan
-  run: terraform plan
+  run: terraform plan -var secret=${{ env.mySecretPipelineVar }}
 ";
 
             expected = UtilityTests.TrimNewLines(expected);
