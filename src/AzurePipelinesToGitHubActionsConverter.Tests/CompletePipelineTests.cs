@@ -2379,6 +2379,7 @@ steps:
 
             //Assert
             string expected = @"
+#Note: 'AZURE_SP' secret is required to be setup and added into GitHub Secrets: https://help.github.com/en/actions/automating-your-workflow-with-github-actions/creating-and-using-encrypted-secrets
 on:
   push:
     branches:
@@ -2388,6 +2389,11 @@ jobs:
     runs-on: windows-latest
     steps:
     - uses: actions/checkout@v2
+    - # ""Note: 'AZURE_SP' secret is required to be setup and added into GitHub Secrets: https://help.github.com/en/actions/automating-your-workflow-with-github-actions/creating-and-using-encrypted-secrets""
+      name: Azure Login
+      uses: azure/login@v1
+      with:
+        creds: ${{ secrets.AZURE_SP }}
     - name: Install Terraform 0.12.3
       uses: hashicorp/setup-terraform@v1
     - name: 'Terraform : azure init'

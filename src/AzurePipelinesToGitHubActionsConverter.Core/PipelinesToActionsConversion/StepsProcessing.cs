@@ -1345,6 +1345,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                 args = GetStepInput(step, "commandOptions");
             }
             string script = GetStepInput(step, "script");
+
             //string backendServiceArm = GetStepInput(step, "backendServiceArm");
             //string backendAzureRmResourceGroupName = GetStepInput(step, "backendAzureRmResourceGroupName");
             //string backendAzureRmStorageAccountName = GetStepInput(step, "backendAzureRmStorageAccountName");
@@ -2640,8 +2641,6 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
         //For example, if we are deploying to Azure, we need to add an Azure Login step
         public GitHubActions.Step[] AddSupportingSteps(AzurePipelines.Step[] steps, bool addCheckoutStep = true)
         {
-            StepsProcessing stepsProcessing = new StepsProcessing();
-
             GitHubActions.Step[] newSteps = null;
             if (steps != null)
             {
@@ -2673,7 +2672,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                                 {
                                     addJavaSetupStep = true;
                                     stepAdjustment++;
-                                    javaVersion = stepsProcessing.GetStepInput(step, "jdkVersionOption");
+                                    javaVersion = GetStepInput(step, "jdkVersionOption");
                                 }
                                 break;
 
@@ -2700,6 +2699,27 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                                 {
                                     addMSSetupStep = true;
                                     stepAdjustment++;
+                                }
+                                break;
+
+                            case "TERRAFORM@0":
+                            case "TERRAFORMTASKV1@0":
+                            case "TERRAFORMCLI@0":
+                            case "MS-DEVLABS.CUSTOM-TERRAFORM-TASKS.CUSTOM-TERRAFORM-RELEASE-TASK.TERRAFORMTASKV1@0":
+
+                                //What cloud we are deploying too - as Terraform supports multiple clouds. 
+                                //Currently only supports Azure #NeedHelpForOtherClouds
+                                string provider = GetStepInput(step, "provider");
+                                string providerAzureConnectedServiceName = GetStepInput(step, "providerAzureConnectedServiceName");
+                                string backendAzureRmResourceGroupName = GetStepInput(step, "backendAzureRmResourceGroupName");
+
+                                if (provider == "azurerm" || string.IsNullOrEmpty(providerAzureConnectedServiceName)==false || string.IsNullOrEmpty(backendAzureRmResourceGroupName) == false)
+                                {
+                                    if (addAzureLoginStep == false)
+                                    {
+                                        addAzureLoginStep = true;
+                                        stepAdjustment++;
+                                    }
                                 }
                                 break;
 
@@ -2739,7 +2759,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                 if (addCheckoutStep == true)
                 {
                     //Add the check out step to get the code
-                    newSteps[adjustmentsUsed] = stepsProcessing.CreateCheckoutStep();
+                    newSteps[adjustmentsUsed] = CreateCheckoutStep();
                     adjustmentsUsed++;
                 }
                 if (addJavaSetupStep == true)
@@ -2747,33 +2767,33 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                     //Add the JavaSetup step to the code
                     if (javaVersion != null)
                     {
-                        newSteps[adjustmentsUsed] = stepsProcessing.CreateSetupJavaStep(javaVersion);
+                        newSteps[adjustmentsUsed] = CreateSetupJavaStep(javaVersion);
                         adjustmentsUsed++;
                     }
                 }
                 if (addGradleSetupStep == true)
                 {
                     //Add the Gradle setup step to the code
-                    newSteps[adjustmentsUsed] = stepsProcessing.CreateSetupGradleStep();
+                    newSteps[adjustmentsUsed] = CreateSetupGradleStep();
                     adjustmentsUsed++;
                 }
                 if (addAzureLoginStep == true)
                 {
                     //Add the Azure login step to the code
-                    newSteps[adjustmentsUsed] = stepsProcessing.CreateAzureLoginStep();
+                    newSteps[adjustmentsUsed] = CreateAzureLoginStep();
                     adjustmentsUsed++;
                 }
                 if (addMSSetupStep == true)
                 {
                     //Add the Azure login step to the code
-                    newSteps[adjustmentsUsed] = stepsProcessing.CreateMSBuildSetupStep();
+                    newSteps[adjustmentsUsed] = CreateMSBuildSetupStep();
                     //adjustmentsUsed++;
                 }
 
                 //Translate the other steps
                 for (int i = stepAdjustment; i < steps.Length + stepAdjustment; i++)
                 {
-                    newSteps[i] = stepsProcessing.ProcessStep(steps[i - stepAdjustment]);
+                    newSteps[i] = ProcessStep(steps[i - stepAdjustment]);
                 }
             }
 
