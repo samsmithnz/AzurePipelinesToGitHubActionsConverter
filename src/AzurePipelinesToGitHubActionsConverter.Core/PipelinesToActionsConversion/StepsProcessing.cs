@@ -1687,6 +1687,31 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
             return gitHubStep;
         }
 
+        private GitHubActions.Step CreateInnerPowershellStep(AzurePipelines.Step step)
+        {
+
+            //From: 
+            //- task: InlinePowershell@1                
+            //  displayName: 'old Powershell task'
+            //  inputs:
+            //    Script: |
+            //      Write-Host 'Hello World'
+
+            //To: 
+            //- name: old Powershell task
+            //  run: |
+            //    Write-Host 'Hello World'
+            //  shell: powershell
+
+
+            string script = GetStepInput(step, "script");
+            step.script = script;
+
+            GitHubActions.Step gitHubStep = CreateScriptStep("powershell", step);
+
+            return gitHubStep;
+        }
+
         //TODO: Finish this Kubernetes Step
         //public GitHubActions.Step CreateKubernetesStep(AzurePipelines.Step step)
         //{
@@ -2309,31 +2334,6 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
             {
                 gitHubStep.with.Add("failOnStandardError", failOnStandardError);
             }
-
-            return gitHubStep;
-        }
-
-        private GitHubActions.Step CreateInnerPowershellStep(AzurePipelines.Step step)
-        {
-
-            //From: 
-            //- task: InlinePowershell@1                
-            //  displayName: 'old Powershell task'
-            //  inputs:
-            //    Script: |
-            //      Write-Host 'Hello World'
-
-            //To: 
-            //- name: old Powershell task
-            //  run: |
-            //    Write-Host 'Hello World'
-            //  shell: powershell
-
-           
-            string script = GetStepInput(step, "script");
-            step.script = script;
-
-            GitHubActions.Step gitHubStep = CreateScriptStep("powershell", step);
 
             return gitHubStep;
         }
