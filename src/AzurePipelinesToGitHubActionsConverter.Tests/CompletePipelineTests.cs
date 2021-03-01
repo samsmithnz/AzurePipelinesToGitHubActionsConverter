@@ -2344,6 +2344,7 @@ steps:
 - task: ms-devlabs.custom-terraform-tasks.custom-terraform-release-task.TerraformTaskV1@0
   displayName: 'Terraform : azure init'
   inputs:
+    command: init
     backendServiceArm: '[Azure connection]'
     backendAzureRmResourceGroupName: Terraform
     backendAzureRmStorageAccountName: ssterraformstorage
@@ -2397,7 +2398,7 @@ jobs:
     - name: Install Terraform 0.12.3
       uses: hashicorp/setup-terraform@v1
     - name: 'Terraform : azure init'
-      run: terraform
+      run: terraform init
     - name: 'Terraform : azure plan'
       run: terraform plan -var-file=""terraform.tfvars""
     - name: 'Terraform : azure validate and apply'
