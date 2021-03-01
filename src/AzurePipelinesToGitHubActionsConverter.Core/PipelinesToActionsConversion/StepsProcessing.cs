@@ -99,6 +99,9 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                     case "HUGOTASK@1":
                         gitHubStep = CreateHugoStep(step);
                         break;
+                    case "INLINEPOWERSHELL@1":
+                        gitHubStep = CreateInnerPowershellStep(step);
+                        break;
                     //case "KUBERNETES@1":
                     //    gitHubStep = CreateKubernetesStep(step);
                     //    break;
@@ -2306,6 +2309,31 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
             {
                 gitHubStep.with.Add("failOnStandardError", failOnStandardError);
             }
+
+            return gitHubStep;
+        }
+
+        private GitHubActions.Step CreateInnerPowershellStep(AzurePipelines.Step step)
+        {
+
+            //From: 
+            //- task: InlinePowershell@1                
+            //  displayName: 'old Powershell task'
+            //  inputs:
+            //    Script: |
+            //      Write-Host 'Hello World'
+
+            //To: 
+            //- name: old Powershell task
+            //  run: |
+            //    Write-Host 'Hello World'
+            //  shell: powershell
+
+           
+            string script = GetStepInput(step, "script");
+            step.script = script;
+
+            GitHubActions.Step gitHubStep = CreateScriptStep("powershell", step);
 
             return gitHubStep;
         }
