@@ -1373,6 +1373,35 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
         }
 
+        [TestMethod]
+        public void InnerPowershellIndividualStepTest()
+        {
+            //Arrange
+            Conversion conversion = new Conversion();
+            string yaml = @"
+- task: InlinePowershell@1                
+  displayName: 'old Powershell task'
+  inputs:
+    Script: |
+      Write-Host 'Hello World'
+      Write-Host 'Hello World2'
+";
+
+            //Act
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineTaskToGitHubActionTask(yaml);
+
+            //Assert
+            string expected = @"
+- name: old Powershell task
+  run: |
+    Write-Host 'Hello World'
+    Write-Host 'Hello World2'
+  shell: powershell
+";
+            expected = UtilityTests.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+        }
+
         //[TestMethod]
         //public void IISWebManagementStepTest()
         //{
