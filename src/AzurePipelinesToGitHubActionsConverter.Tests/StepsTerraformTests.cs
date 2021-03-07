@@ -253,7 +253,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             //Assert
             string expected = @"
 - name: Terraform Apply
-  run: terraform apply tfplan.out
+  run: terraform apply tfplan.out -auto-approve
 ";
 
             expected = UtilityTests.TrimNewLines(expected);

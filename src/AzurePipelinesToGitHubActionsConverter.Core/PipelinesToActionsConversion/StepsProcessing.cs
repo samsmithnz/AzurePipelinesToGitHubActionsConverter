@@ -1339,7 +1339,11 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
             //TerraformCLI@0
 
             //going to:
-            //- run: terraform init 
+            //- name: 'Terraform : azure init'
+            //  uses: hashicorp/terraform-github-actions@master
+            //  with:
+            //    tf_actions_version: 0.12.13
+            //    tf_actions_subcommand: "init"
 
             string command = GetStepInput(step, "command");
             string args = GetStepInput(step, "args");
@@ -1372,6 +1376,11 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                 {
                     sb.Append(" ");
                     sb.Append(args);
+                    if (command.ToLower() == "apply")
+                    {
+                        //If we don't add an auto-approve, the apply command is stuck waiting for a confirmation
+                        sb.Append(" -auto-approve");
+                    }
                 }
                 gitHubStep.run = sb.ToString();
             }
@@ -2741,7 +2750,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                                 string providerAzureConnectedServiceName = GetStepInput(step, "providerAzureConnectedServiceName");
                                 string backendAzureRmResourceGroupName = GetStepInput(step, "backendAzureRmResourceGroupName");
 
-                                if (provider == "azurerm" || string.IsNullOrEmpty(providerAzureConnectedServiceName)==false || string.IsNullOrEmpty(backendAzureRmResourceGroupName) == false)
+                                if (provider == "azurerm" || string.IsNullOrEmpty(providerAzureConnectedServiceName) == false || string.IsNullOrEmpty(backendAzureRmResourceGroupName) == false)
                                 {
                                     if (addAzureLoginStep == false)
                                     {

@@ -2402,7 +2402,7 @@ jobs:
     - name: 'Terraform : azure plan'
       run: terraform plan -var-file=""terraform.tfvars""
     - name: 'Terraform : azure validate and apply'
-      run: terraform apply -var-file=""terraform.tfvars""
+      run: terraform apply -var-file=""terraform.tfvars"" -auto-approve
 ";
 
             expected = UtilityTests.TrimNewLines(expected);
