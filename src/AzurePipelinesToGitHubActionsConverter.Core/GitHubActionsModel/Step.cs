@@ -34,7 +34,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.GitHubActions
         public string _if { get; set; } //https://help.github.com/en/articles/workflow-syntax-for-github-actions#jobsjob_idif
         public bool continue_on_error { get; set; }
         public int timeout_minutes { get; set; }
-
+        public string additionalaction { get; set; }
 
         //This is used for tracking errors, so we don't want it to convert to YAML
         //[YamlIgnore]

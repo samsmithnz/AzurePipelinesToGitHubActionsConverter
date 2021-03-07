@@ -145,6 +145,16 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                     case "SQLAZUREDACPACDEPLOYMENT@1":
                         gitHubStep = CreateSQLAzureDacPacDeployStep(step);
                         break;
+                    case "TERRAFORMINSTALLER@0":
+                    case "MS-DEVLABS.CUSTOM-TERRAFORM-TASKS.CUSTOM-TERRAFORM-INSTALLER-TASK.TERRAFORMINSTALLER@0":
+                        gitHubStep = CreateTerraformInstallerStep(step);
+                        break;
+                    case "TERRAFORM@0":
+                    case "TERRAFORMTASKV1@0":
+                    case "TERRAFORMCLI@0":
+                    case "MS-DEVLABS.CUSTOM-TERRAFORM-TASKS.CUSTOM-TERRAFORM-RELEASE-TASK.TERRAFORMTASKV1@0":
+                        gitHubStep = CreateTerraformActionStep(step);
+                        break;
                     case "USEDOTNET@2":
                         gitHubStep = CreateUseDotNetStep(step);
                         break;
@@ -817,10 +827,6 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
             {
                 gitHubStep.shell = null;
             }
-            if (step.condition != null)
-            {
-                gitHubStep._if = ConditionsProcessing.TranslateConditions(step.condition);
-            }
 
             return gitHubStep;
         }
@@ -1261,6 +1267,128 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
 
             return gitHubStep;
         }
+
+        private GitHubActions.Step CreateTerraformInstallerStep(AzurePipelines.Step step)
+        {
+
+            //coming from (two known variations)
+            //- task: terraformInstaller@0
+            //  displayName: Install Terraform
+            //  inputs:
+            //    terraformVersion: '0.12.12'
+
+            //- task: ms-devlabs.custom-terraform-tasks.custom-terraform-installer-task.TerraformInstaller@0
+            //  displayName: Install Terraform
+            //  inputs:
+            //    terraformVersion: 0.12.12
+
+            //Going to:
+            //- uses: hashicorp/setup-terraform@v1
+            //  with:
+            //    terraform_version: 0.12.12
+
+            string terraformVersion = GetStepInput(step, "terraformversion");
+
+            GitHubActions.Step gitHubStep = new GitHubActions.Step
+            {
+                uses = "hashicorp/setup-terraform@v1",
+                with = new Dictionary<string, string>
+                {
+                    { "terraform_version", terraformVersion}
+                }
+            };
+
+            return gitHubStep;
+        }
+
+        private GitHubActions.Step CreateTerraformActionStep(AzurePipelines.Step step)
+        {
+            //Note: requires the hashicorp/setup-terraform@v1 task to be run before
+
+            //coming from a 3 known varations:
+            //- task: TerraformTaskV1@0
+            //  displayName: 'Terraform Init'
+            //  inputs:
+            //    provider: 'azurerm'
+            //    command: 'init'
+            //    backendServiceArm: '$(backendServiceArm)'
+            //    backendAzureRmResourceGroupName: '$(backendAzureRmResourceGroupName)'
+            //    backendAzureRmStorageAccountName: '$(backendAzureRmStorageAccountName)'
+            //    backendAzureRmContainerName: '$(backendAzureRmContainerName)'
+            //    backendAzureRmKey: '$(backendAzureRmKey)'
+
+            //terraform@0
+            //- task: terraform@0
+            //  displayName: Terraform Init
+            //  inputs:
+            //    command: 'init'
+            //    providerAzureConnectedServiceName: 'MTC Denver Sandbox'
+            //    backendAzureProviderStorageAccountName: 'mtcdenterraformsandbox'
+
+            //- task: ms-devlabs.custom-terraform-tasks.custom-terraform-release-task.TerraformTaskV1@0
+            //  displayName: 'Terraform : init'
+            //  inputs:
+            //    command: init
+            //    workingDirectory: tf/env/dev
+            //    backendServiceArm: YAML Template Examples - Dev
+            //    backendAzureRmResourceGroupName: rg-terraformState-dev-eus
+            //    backendAzureRmStorageAccountName: #
+            //    backendAzureRmContainerName: terraform-state
+            //    backendAzureRmKey: terraformStorageExample.tfstate
+
+            //TerraformCLI@0
+
+            //going to:
+            //- name: 'Terraform : azure init'
+            //  uses: hashicorp/terraform-github-actions@master
+            //  with:
+            //    tf_actions_version: 0.12.13
+            //    tf_actions_subcommand: "init"
+
+            string command = GetStepInput(step, "command");
+            string args = GetStepInput(step, "args");
+            if (string.IsNullOrEmpty(args) == true)
+            {
+                args = GetStepInput(step, "commandOptions");
+            }
+            string script = GetStepInput(step, "script");
+
+            //string backendServiceArm = GetStepInput(step, "backendServiceArm");
+            //string backendAzureRmResourceGroupName = GetStepInput(step, "backendAzureRmResourceGroupName");
+            //string backendAzureRmStorageAccountName = GetStepInput(step, "backendAzureRmStorageAccountName");
+            //string backendAzureRmContainerName = GetStepInput(step, "backendAzureRmContainerName");
+            //string backendAzureRmKey = GetStepInput(step, "backendAzureRmKey");
+
+            //initialize the step (copying over some 
+            GitHubActions.Step gitHubStep = CreateScriptStep("", step);
+
+            //build the run command
+            if (command == "CLI")
+            {
+                gitHubStep.run = script;
+            }
+            else
+            {
+                StringBuilder sb = new StringBuilder();
+                sb.Append("terraform ");
+                sb.Append(command);
+                if (args != null)
+                {
+                    sb.Append(" ");
+                    sb.Append(args);
+                    if (command.ToLower() == "apply")
+                    {
+                        //If we don't add an auto-approve, the apply command is stuck waiting for a confirmation
+                        sb.Append(" -auto-approve");
+                    }
+                }
+                gitHubStep.run = sb.ToString();
+            }
+
+            return gitHubStep;
+        }
+
+        //"Note that this task is in still in development by HashiCorp, and is not supported in production usage. More details: https://github.com/hashicorp/setup-terraform"
 
         private GitHubActions.Step CreateMSBuildStep(AzurePipelines.Step step)
         {
@@ -2550,8 +2678,6 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
         //For example, if we are deploying to Azure, we need to add an Azure Login step
         public GitHubActions.Step[] AddSupportingSteps(AzurePipelines.Step[] steps, bool addCheckoutStep = true)
         {
-            StepsProcessing stepsProcessing = new StepsProcessing();
-
             GitHubActions.Step[] newSteps = null;
             if (steps != null)
             {
@@ -2583,7 +2709,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                                 {
                                     addJavaSetupStep = true;
                                     stepAdjustment++;
-                                    javaVersion = stepsProcessing.GetStepInput(step, "jdkVersionOption");
+                                    javaVersion = GetStepInput(step, "jdkVersionOption");
                                 }
                                 break;
 
@@ -2610,6 +2736,27 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                                 {
                                     addMSSetupStep = true;
                                     stepAdjustment++;
+                                }
+                                break;
+
+                            case "TERRAFORM@0":
+                            case "TERRAFORMTASKV1@0":
+                            case "TERRAFORMCLI@0":
+                            case "MS-DEVLABS.CUSTOM-TERRAFORM-TASKS.CUSTOM-TERRAFORM-RELEASE-TASK.TERRAFORMTASKV1@0":
+
+                                //What cloud we are deploying too - as Terraform supports multiple clouds. 
+                                //Currently only supports Azure #NeedHelpForOtherClouds
+                                string provider = GetStepInput(step, "provider");
+                                string providerAzureConnectedServiceName = GetStepInput(step, "providerAzureConnectedServiceName");
+                                string backendAzureRmResourceGroupName = GetStepInput(step, "backendAzureRmResourceGroupName");
+
+                                if (provider == "azurerm" || string.IsNullOrEmpty(providerAzureConnectedServiceName) == false || string.IsNullOrEmpty(backendAzureRmResourceGroupName) == false)
+                                {
+                                    if (addAzureLoginStep == false)
+                                    {
+                                        addAzureLoginStep = true;
+                                        stepAdjustment++;
+                                    }
                                 }
                                 break;
 
@@ -2649,7 +2796,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                 if (addCheckoutStep == true)
                 {
                     //Add the check out step to get the code
-                    newSteps[adjustmentsUsed] = stepsProcessing.CreateCheckoutStep();
+                    newSteps[adjustmentsUsed] = CreateCheckoutStep();
                     adjustmentsUsed++;
                 }
                 if (addJavaSetupStep == true)
@@ -2657,33 +2804,33 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                     //Add the JavaSetup step to the code
                     if (javaVersion != null)
                     {
-                        newSteps[adjustmentsUsed] = stepsProcessing.CreateSetupJavaStep(javaVersion);
+                        newSteps[adjustmentsUsed] = CreateSetupJavaStep(javaVersion);
                         adjustmentsUsed++;
                     }
                 }
                 if (addGradleSetupStep == true)
                 {
                     //Add the Gradle setup step to the code
-                    newSteps[adjustmentsUsed] = stepsProcessing.CreateSetupGradleStep();
+                    newSteps[adjustmentsUsed] = CreateSetupGradleStep();
                     adjustmentsUsed++;
                 }
                 if (addAzureLoginStep == true)
                 {
                     //Add the Azure login step to the code
-                    newSteps[adjustmentsUsed] = stepsProcessing.CreateAzureLoginStep();
+                    newSteps[adjustmentsUsed] = CreateAzureLoginStep();
                     adjustmentsUsed++;
                 }
                 if (addMSSetupStep == true)
                 {
                     //Add the Azure login step to the code
-                    newSteps[adjustmentsUsed] = stepsProcessing.CreateMSBuildSetupStep();
+                    newSteps[adjustmentsUsed] = CreateMSBuildSetupStep();
                     //adjustmentsUsed++;
                 }
 
                 //Translate the other steps
                 for (int i = stepAdjustment; i < steps.Length + stepAdjustment; i++)
                 {
-                    newSteps[i] = stepsProcessing.ProcessStep(steps[i - stepAdjustment]);
+                    newSteps[i] = ProcessStep(steps[i - stepAdjustment]);
                 }
             }
 
