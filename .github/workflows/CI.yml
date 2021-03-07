@@ -48,7 +48,7 @@ jobs:
 
     #Pack the code into a NuGet package
     - name: Pack with dotnet
-      run: dotnet pack src/AzurePipelinesToGitHubActionsConverter.Core/AzurePipelinesToGitHubActionsConverter.Core.csproj --configuration Release /p:PackageVersion=${{ steps.gitversion.outputs.nuGetVersionV2 }}
+      run: dotnet pack src/AzurePipelinesToGitHubActionsConverter.Core/AzurePipelinesToGitHubActionsConverter.Core.csproj --configuration Release /p:PackageVersion=${{ steps.gitversion.outputs.nuGetVersionV2 }}e /p:AssemblyVersion=${{ steps.gitversion.outputs.majorMinorPatch }} /p:Version=${{ steps.gitversion.outputs.majorMinorPatch }}
     - name: Upload nuget package back to GitHub
       uses: actions/upload-artifact@v2
       if: runner.OS == 'Linux' #Only pack the Linux nuget package
