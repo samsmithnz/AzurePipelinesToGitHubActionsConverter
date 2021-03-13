@@ -1822,6 +1822,12 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
     #  testresultsfiles: '**/*.trx'
     #  failtaskonfailedtests: true
 ";
+            //Only for JUNIT... need .NET samples too.
+            //            string expected = @"
+            //- uses: EnricoMi/publish-unit-test-result-action@v1
+            //  if: always()
+            //  with:
+            //    files: '**/*.trx'
 
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
