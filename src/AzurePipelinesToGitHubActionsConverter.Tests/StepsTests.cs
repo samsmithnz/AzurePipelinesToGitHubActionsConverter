@@ -1124,6 +1124,38 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
         }
 
+        [TestMethod]
+        public void DotNetCoreCLIPublishMultiLineIndividualStepTest()
+        {
+            //Arrange
+            Conversion conversion = new Conversion();
+            string yaml = @"
+- task: DotNetCoreCLI@2
+  displayName: 'Publish dotnet projects'
+  inputs:
+    command: publish
+    publishWebProjects: false
+    projects: |
+      src/Project.Service/Project.Service.csproj
+      src/Project.Web/Project.Web.csproj
+    arguments: '--configuration Release --output $(build.artifactstagingdirectory) --runtime win-x64'
+    zipAfterPublish: true
+";
+
+            //Act
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineTaskToGitHubActionTask(yaml);
+
+            //Assert
+            string expected = @"
+- name: Publish dotnet projects
+  run: |
+    dotnet publish src/Project.Service/Project.Service.csproj --configuration Release --output ${{ github.workspace }} --runtime win-x64 
+    dotnet publish src/Project.Web/Project.Web.csproj --configuration Release --output ${{ github.workspace }} --runtime win-x64
+";
+            expected = UtilityTests.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+        }
+
 
 
         [TestMethod]
