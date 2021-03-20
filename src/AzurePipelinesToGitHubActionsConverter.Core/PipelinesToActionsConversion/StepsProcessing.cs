@@ -310,47 +310,83 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
 
         private GitHubActions.Step CreateDotNetCommandStep(AzurePipelines.Step step)
         {
+            string command = "";
+            string args = "";
+            List<string> projects = new List<string>();
             if (step.inputs != null)
             {
                 string runScript = "dotnet ";
                 if (step.inputs.ContainsKey("command") == true)
                 {
-                    string command = GetStepInput(step, "command");
+                    command = GetStepInput(step, "command");
                     if (command == "push")
                     {
                         command = "nuget " + command;
                     }
-                    runScript += command + " ";
+                    command += " ";
                 }
+                runScript += command;
                 if (step.inputs.ContainsKey("projects") == true)
                 {
-                    runScript += GetStepInput(step, "projects") + " ";
+                    //There can be multiple projects - if there are, we need to replicate the command on each line for each project
+                    string projectsString = GetStepInput(step, "projects");
+                    if (projectsString.Contains("\n") == true)
+                    {
+                        string[] projectList = projectsString.Split("\n");
+                        foreach (string item in projectList)
+                        {
+                            if (string.IsNullOrEmpty(item) == false)
+                            {
+                                projects.Add(item + " ");
+                            }
+                        }
+                    }
+                    else
+                    {
+                        projects.Add(projectsString + " ");
+                    }
                 }
                 if (step.inputs.ContainsKey("packagestopack") == true)
                 {
-                    runScript += GetStepInput(step, "packagesToPack") + " ";
+                    args += GetStepInput(step, "packagesToPack") + " ";
                 }
                 if (step.inputs.ContainsKey("packagestopush") == true)
                 {
-                    runScript += GetStepInput(step, "packagestopush") + " ";
+                    args += GetStepInput(step, "packagestopush") + " ";
                 }
                 if (step.inputs.ContainsKey("publishfeedcredentials") == true)
                 {
                     string publishFeedCredentials = GetStepInput(step, "publishFeedCredentials");
                     if (publishFeedCredentials == "GitHub Packages")
                     {
-                        runScript += "--source \"github\" ";
+                        args += "--source \"github\" ";
                     }
                 }
                 if (step.inputs.ContainsKey("arguments") == true)
                 {
-                    runScript += GetStepInput(step, "arguments") + " ";
+                    args += GetStepInput(step, "arguments") + " ";
                 }
-                //Remove the new line characters
-                runScript = runScript.Replace("\n", "");
+                //Build the final build script
+                string finalRunScript = "";
+                if (projects.Count == 1)
+                {
+                    finalRunScript = runScript + projects[0] + args;
+                }
+                else if (projects.Count > 1)
+                {
+                    foreach (string project in projects)
+                    {
+                        //Add each project with it's own command, project, args and new line
+                        finalRunScript += runScript + project + args + System.Environment.NewLine;
+                    }
+                }
+                else //there are no projects
+                {
+                    finalRunScript = runScript + args;
+                }
                 GitHubActions.Step gitHubStep = new GitHubActions.Step
                 {
-                    run = runScript
+                    run = finalRunScript
                 };
 
                 return gitHubStep;

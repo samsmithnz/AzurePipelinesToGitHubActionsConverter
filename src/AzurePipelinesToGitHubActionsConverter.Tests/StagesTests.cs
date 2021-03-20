@@ -115,7 +115,9 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: Publish dotnet core projects
-      run: dotnet publish FeatureFlags/FeatureFlags.Service/FeatureFlags.Service.csprojFeatureFlags/FeatureFlags.Web/FeatureFlags.Web.csproj --configuration ${{ env.buildConfiguration }} --output ${{ github.workspace }} -p:Version=${{ env.buildNumber }}
+      run: |
+        dotnet publish FeatureFlags/FeatureFlags.Service/FeatureFlags.Service.csproj --configuration ${{ env.buildConfiguration }} --output ${{ github.workspace }} -p:Version=${{ env.buildNumber }} 
+        dotnet publish FeatureFlags/FeatureFlags.Web/FeatureFlags.Web.csproj --configuration ${{ env.buildConfiguration }} --output ${{ github.workspace }} -p:Version=${{ env.buildNumber }}
     - name: Publish Artifact
       uses: actions/upload-artifact@v2
       with:
