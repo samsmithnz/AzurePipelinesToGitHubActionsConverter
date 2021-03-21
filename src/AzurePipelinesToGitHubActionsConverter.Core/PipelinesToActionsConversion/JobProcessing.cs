@@ -215,25 +215,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
 
                     if (jobJson.TryGetProperty("dependsOn", out jsonElement) == true)
                     {
-                        string[] jobDependsOn = gp.ProcessDependsOnV2(jsonElement.ToString());
-                        if (job.dependsOn != null && job.dependsOn.Length > 0)
-                        {
-                            //We need to combine the stage depends on top of the job depends, to ensure similar logic is transferred
-                            string[] newJobDependsOn = new string[job.dependsOn.Length + jobDependsOn.Length];
-                            for (int j = 0; j < job.dependsOn.Length; j++)
-                            {
-                                newJobDependsOn[j] = job.dependsOn[j];
-                            }
-                            for (int j = job.dependsOn.Length - 1; j < job.dependsOn.Length + jobDependsOn.Length; j++)
-                            {
-                                newJobDependsOn[j] = ConversionUtility.GenerateCombinedStageJobName(job.stageName, jobDependsOn[j - job.dependsOn.Length]);
-                            }
-                            job.dependsOn = newJobDependsOn;
-                        }
-                        else
-                        {
-                            job.dependsOn = jobDependsOn;
-                        }
+                        job.dependsOn = gp.ProcessDependsOnV2(jsonElement.ToString());
                     }
                     if (jobJson.TryGetProperty("condition", out jsonElement) == true)
                     {
