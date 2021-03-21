@@ -125,6 +125,8 @@ jobs:
   Deploy_Stage_Deploy:
     name: Deploy job
     runs-on: ${{ env.vmImage }}
+    needs:
+    - Build_Stage_Build
     env:
       AppSettings.Environment: data
       ArmTemplateResourceGroupLocation: eu
@@ -468,7 +470,7 @@ jobs:
     name: Build1 job
     runs-on: windows-latest
     needs:
-    - Build0
+    - Deploy_Stage_Build0
     steps:
     - uses: actions/checkout@v2
     - run: Write-Host ""Hello world 1!""
@@ -478,6 +480,67 @@ jobs:
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
             
+        }
+        [TestMethod]
+        public void StagingSimpleDependsOnWithParallelStagesPipelineTest()
+        {
+            //Arrange
+            Conversion conversion = new Conversion();
+            string yaml = @"
+stages:
+- stage: Deploy
+  jobs:
+  - job: Build1
+    displayName: 'Build1 job'
+    dependsOn: Build0
+    pool:
+      vmImage: windows-latest
+    steps:
+    - task: PowerShell@2
+      inputs:
+        targetType: 'inline'
+        script: Write-Host ""Hello world 1!""
+- stage: Deploy2
+  jobs:
+  - job: Build2
+    displayName: 'Build2 job'
+    dependsOn: []    # this removes the implicit dependency on previous stage and causes this to run in parallel
+    pool:
+      vmImage: windows-latest
+    steps:
+    - task: PowerShell@2
+      inputs:
+        targetType: 'inline'
+        script: Write-Host ""Hello world 2!""
+";
+
+            //Act
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(yaml);
+
+            //Assert
+            string expected = @"
+jobs:
+  Deploy_Stage_Build1:
+    name: Build1 job
+    runs-on: windows-latest
+    needs:
+    - Deploy_Stage_Build0
+    steps:
+    - uses: actions/checkout@v2
+    - run: Write-Host ""Hello world 1!""
+      shell: powershell
+  Deploy2_Stage_Build2:
+    name: Build2 job
+    runs-on: windows-latest
+    needs: []
+    steps:
+    - uses: actions/checkout@v2
+    - run: Write-Host ""Hello world 2!""
+      shell: powershell
+";
+
+            expected = UtilityTests.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);          
         }
 
 
@@ -514,8 +577,8 @@ jobs:
     name: Build1 job
     runs-on: windows-latest
     needs:
-    - Build0a
-    - Build0b
+    - Deploy_Stage_Build0a
+    - Deploy_Stage_Build0b
     steps:
     - uses: actions/checkout@v2
     - run: Write-Host ""Hello world 1!""
@@ -524,7 +587,126 @@ jobs:
 
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
-            
+
+        }
+        [TestMethod]
+        public void StagingComplexDependsOnInJobsPipelineTest()
+        {
+            //Arrange
+            Conversion conversion = new Conversion();
+            string yaml = @"
+stages:
+- stage: BuildStage
+  jobs:
+  - job: BuildJob1
+    pool:
+      vmImage: windows-latest
+    steps:
+    - task: PowerShell@2
+      inputs:
+        targetType: 'inline'
+        script: Write-Host ""Hello world build 1!""
+  - job: BuildJob2
+    displayName: 'Build2 job'
+    dependsOn: 
+    - BuildJob1 
+    pool:
+      vmImage: windows-latest
+    steps:
+    - task: PowerShell@2
+      inputs:
+        targetType: 'inline'
+        script: Write-Host ""Hello world build 2!""
+
+- stage: DeployStage
+  dependsOn: 
+  - BuildStage
+  jobs:
+  - job: DeployJob1
+    pool:
+      vmImage: windows-latest
+    steps:
+    - task: PowerShell@2
+      inputs:
+        targetType: 'inline'
+        script: Write-Host ""Hello world deploy 1!""
+  - job: DeployJob2
+    dependsOn: 
+    - DeployJob1 
+    pool:
+      vmImage: windows-latest
+    steps:
+    - task: PowerShell@2
+      inputs:
+        targetType: 'inline'
+        script: Write-Host ""Hello world deploy 2!""
+  - job: DeployJob3
+    dependsOn: 
+    - DeployJob1
+    pool:
+      vmImage: windows-latest
+    steps:
+    - task: PowerShell@2
+      inputs:
+        targetType: 'inline'
+        script: Write-Host ""Hello world deploy 3!""
+";
+
+            //Act
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(yaml);
+
+            //Assert
+            string expected = @"
+jobs:
+  BuildStage_Stage_BuildJob1:
+    runs-on: windows-latest
+    steps:
+    - uses: actions/checkout@v2
+    - run: Write-Host ""Hello world build 1!""
+      shell: powershell
+  BuildStage_Stage_BuildJob2:
+    name: Build2 job
+    runs-on: windows-latest
+    needs:
+    - BuildStage_Stage_BuildJob1
+    steps:
+    - uses: actions/checkout@v2
+    - run: Write-Host ""Hello world build 2!""
+      shell: powershell
+  DeployStage_Stage_DeployJob1:
+    runs-on: windows-latest
+    needs:
+    - BuildStage_Stage_BuildJob1
+    - BuildStage_Stage_BuildJob2
+    steps:
+    - uses: actions/checkout@v2
+    - run: Write-Host ""Hello world deploy 1!""
+      shell: powershell
+  DeployStage_Stage_DeployJob2:
+    runs-on: windows-latest
+    needs:
+    - BuildStage_Stage_BuildJob1
+    - BuildStage_Stage_BuildJob2
+    - DeployStage_Stage_DeployJob1
+    steps:
+    - uses: actions/checkout@v2
+    - run: Write-Host ""Hello world deploy 2!""
+      shell: powershell
+  DeployStage_Stage_DeployJob3:
+    runs-on: windows-latest
+    needs:
+    - BuildStage_Stage_BuildJob1
+    - BuildStage_Stage_BuildJob2
+    - DeployStage_Stage_DeployJob1
+    steps:
+    - uses: actions/checkout@v2
+    - run: Write-Host ""Hello world deploy 3!""
+      shell: powershell
+";
+
+            expected = UtilityTests.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+
         }
 
     }

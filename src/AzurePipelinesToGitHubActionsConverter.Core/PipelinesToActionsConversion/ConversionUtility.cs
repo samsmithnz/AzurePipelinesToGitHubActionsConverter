@@ -137,7 +137,6 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
             return input;
         }
 
-
         //Used by jobs and stages
         public static string GenerateJobName(AzurePipelines.Job job, int currentIndex)
         {
@@ -156,6 +155,12 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                 jobName = "job" + currentIndex.ToString();
             }
             return jobName;
+        }
+
+        //Used when stages exist
+        public static string GenerateCombinedStageJobName(string stageName, string jobName)
+        {
+            return stageName + "_Stage_" + jobName;
         }
 
         public static void WriteLine(string message, bool verbose)
