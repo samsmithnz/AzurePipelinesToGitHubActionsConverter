@@ -110,14 +110,41 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                                 //Get the job name
                                 string jobName = ConversionUtility.GenerateJobName(stage.jobs[i], jobIndex);
                                 //Rename the job, using the stage name as prefix, so that we keep the job names unique
-                                jobs[jobIndex].job = stage.stage + "_Stage_" + jobName;
+                                jobs[jobIndex].job = ConversionUtility.GenerateCombinedStageJobName(stage.stage, jobName);
+                                jobs[jobIndex].stageName = stage.stage;
 
-                                //TODO: Figure out how to do stage depends. I think we need need to keep track of previous stages and the jobs they transform into
-                                ////Process the stage depends on
-                                //if (stage.dependsOn != null && jobs[jobIndex].dependsOn == null)
-                                //{
-                                //    jobs[jobIndex].dependsOn = stage.dependsOn;
-                                //}
+                                //Process the stage depends on, incorporating the job depends on
+                                if (stage.dependsOn != null)
+                                {
+                                    List<string> stageDependsOn = new List<string>();
+                                    foreach (string item in stage.dependsOn)
+                                    {
+                                        //get every job from each of the depends on stages, and create the combined stage/job name
+                                        List<string> stageJobs = GetStageJobs(item, stages);
+                                        stageDependsOn.AddRange(stageJobs);
+                                    }
+
+                                    //then combine this new stage depends on list with the jobs depends on - being careful not to stomp on anything that already exists.
+                                    if (jobs[jobIndex].dependsOn != null)
+                                    {
+                                        foreach (string item in jobs[jobIndex].dependsOn)
+                                        {
+                                            stageDependsOn.Add(ConversionUtility.GenerateCombinedStageJobName(jobs[jobIndex].stageName, item));
+                                        }
+                                        jobs[jobIndex].dependsOn = stageDependsOn.ToArray();
+                                    }
+                                    else
+                                    {
+                                        jobs[jobIndex].dependsOn = stageDependsOn.ToArray();
+                                    }
+                                }
+                                else if (jobs[jobIndex].dependsOn != null)
+                                {
+                                    for (int j = 0; j < jobs[jobIndex].dependsOn.Length; j++)
+                                    {
+                                        jobs[jobIndex].dependsOn[j] = ConversionUtility.GenerateCombinedStageJobName(jobs[jobIndex].stageName, jobs[jobIndex].dependsOn[j]);
+                                    }
+                                }
                                 jobIndex++;
                             }
                         }
@@ -137,6 +164,26 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                 }
             }
             return gitHubJobs;
+        }
+
+        private List<string> GetStageJobs(string stage, List<Stage> stages)
+        {
+            List<string> jobs = new List<string>();
+            foreach (Stage item in stages)
+            {
+                if (item.stage == stage)
+                {
+                    //reinitialize the jobs array with the jobs length
+                    //jobs = new string[item.jobs.Length];
+                    //Add each job name to the list
+                    for (int i = 0; i < item.jobs.Length; i++)
+                    {
+                        Job job = item.jobs[i];
+                        jobs.Add(job.job);
+                    }
+                }
+            }
+            return jobs;
         }
 
     }

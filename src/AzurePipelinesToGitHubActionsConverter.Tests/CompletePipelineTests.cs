@@ -1321,6 +1321,7 @@ env:
 jobs:
   DeployPR_Stage_Template:
     # 'Note: Azure DevOps template does not have an equivalent in GitHub Actions yet'
+    needs: []
     env:
       prId: 000
       prUC: PR${{ env.prId }}
@@ -1941,11 +1942,11 @@ stages:
 
             //Assert
             string expected = @"
-#Error (line 50): the step 'PublishTestResults@2' does not have a conversion path yet
-#Error (line 53): the step 'PublishTestResults@2' does not have a conversion path yet
-#Error (line 74): the step 'PublishTestResults@2' does not have a conversion path yet
-#Error (line 77): the step 'PublishTestResults@2' does not have a conversion path yet
-#Error (line 241): the step 'PublishCodeCoverageResults@1' does not have a conversion path yet
+#Error (line 52): the step 'PublishTestResults@2' does not have a conversion path yet
+#Error (line 55): the step 'PublishTestResults@2' does not have a conversion path yet
+#Error (line 78): the step 'PublishTestResults@2' does not have a conversion path yet
+#Error (line 81): the step 'PublishTestResults@2' does not have a conversion path yet
+#Error (line 250): the step 'PublishCodeCoverageResults@1' does not have a conversion path yet
 on:
   push:
     branches:
@@ -1981,6 +1982,8 @@ jobs:
   Test_Stage_Test_HQRM:
     name: HQRM
     runs-on: windows-2019
+    needs:
+    - Build_Stage_Package_Module
     steps:
     - uses: actions/checkout@v2
     - name: Download Build Artifact
@@ -2005,6 +2008,8 @@ jobs:
   Test_Stage_Test_Unit:
     name: Unit
     runs-on: windows-2019
+    needs:
+    - Build_Stage_Package_Module
     steps:
     - uses: actions/checkout@v2
     - name: Download Build Artifact
@@ -2034,6 +2039,8 @@ jobs:
   Test_Stage_Test_Integration_SQL2016:
     name: Integration (SQL2016)
     runs-on: windows-2019
+    needs:
+    - Build_Stage_Package_Module
     env:
       CI: true
       configuration: Integration_SQL2016
@@ -2098,6 +2105,8 @@ jobs:
   Test_Stage_Test_Integration_SQL2017:
     name: Integration (SQL2017)
     runs-on: windows-2019
+    needs:
+    - Build_Stage_Package_Module
     env:
       CI: true
       configuration: Integration_SQL2017
@@ -2162,7 +2171,8 @@ jobs:
     name: Publish Code Coverage
     runs-on: ubuntu 16.04
     needs:
-    - Test_Unit
+    - Build_Stage_Package_Module
+    - Test_Stage_Test_Unit
     steps:
     - uses: actions/checkout@v2
     - name: Set Environment Variables
@@ -2199,6 +2209,12 @@ jobs:
   Deploy_Stage_Deploy_Module:
     name: Deploy Module
     runs-on: ubuntu 16.04
+    needs:
+    - Test_Stage_Test_HQRM
+    - Test_Stage_Test_Unit
+    - Test_Stage_Test_Integration_SQL2016
+    - Test_Stage_Test_Integration_SQL2017
+    - Test_Stage_Code_Coverage
     if: (success() && ((github.ref == 'refs/heads/master') || startsWith(github.ref, 'refs/tags/')) && contains(variables['System.TeamFoundationCollectionUri'], 'dsccommunity'))
     steps:
     - uses: actions/checkout@v2
