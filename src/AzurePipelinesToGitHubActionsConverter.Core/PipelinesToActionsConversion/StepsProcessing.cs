@@ -732,12 +732,13 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
             //- name: Build the Docker image
             //  run: docker build . --file MyDockerFile --tag my-image-name:$(date +%s)
 
+            //Docker@0 inputs
 
-            //Docker 1 inputs
+            //Docker@1 inputs
             //string azureSubscriptionEndpoint = GetStepInput(step, "azureSubscriptionEndpoint");
             //string azureContainerRegistry = GetStepInput(step, "azureContainerRegistry");
 
-            //Docker 2 inputs
+            //Docker@2 inputs
             string command = GetStepInput(step, "command");
             string containerRegistry = GetStepInput(step, "containerRegistry");
             string repository = GetStepInput(step, "repository");
@@ -750,6 +751,11 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
             //Very very simple. Needs more branches and logic
             string dockerScript = "";
             string stepMessage = "";
+            // build command is assumed 
+            if (string.IsNullOrEmpty(command) == true)
+            {
+                command = "build";
+            }
             switch (command)
             {
                 case "build":
@@ -816,6 +822,31 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
             {
                 gitHubStep.step_message = stepMessage;
             }
+            return gitHubStep;
+        }
+
+        private GitHubActions.Step CreateDockerLoginStep(string loginServer)
+        {
+            //- uses: azure/docker-login@v1
+            //  with:
+            //    login-server: contoso.azurecr.io
+            //    username: ${{ secrets.REGISTRY_USERNAME }}
+            //    password: ${{ secrets.REGISTRY_PASSWORD }}
+            GitHubActions.Step gitHubStep = new GitHubActions.Step
+            {
+                name = "Docker Login",
+                uses = "azure/docker-login@v1",
+                with = new Dictionary<string, string>
+                {
+                    {"login-server", loginServer },
+                    {"username", "${{ secrets.REGISTRY_USERNAME }}" },
+                    {"password", "${{ secrets.REGISTRY_PASSWORD }}" }
+                }
+            };
+
+            //Add note that 'REGISTRY_USERNAME' and 'REGISTRY_PASSWORD' secrets are required
+            gitHubStep.step_message = @"Note: the 'REGISTRY_USERNAME' and 'REGISTRY_PASSWORD' secrets are required to be added into GitHub Secrets. See these docs for details: https://github.com/Azure/docker-login";
+
             return gitHubStep;
         }
 
@@ -1007,7 +1038,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
             };
 
             //Add note that 'AZURE_SP' secret is required
-            gitHubStep.step_message = @"Note: 'AZURE_SP' secret is required to be setup and added into GitHub Secrets: https://help.github.com/en/actions/automating-your-workflow-with-github-actions/creating-and-using-encrypted-secrets";
+            gitHubStep.step_message = @"Note: the 'AZURE_SP' secret is required to be added into GitHub Secrets. See this blog post for details: https://samlearnsazure.blog/2019/12/13/github-actions/";
 
             return gitHubStep;
         }
@@ -2721,6 +2752,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                 int stepAdjustment = 0;
                 bool addJavaSetupStep = false;
                 bool addGradleSetupStep = false;
+                bool addDockerLoginStep = false;
                 bool addAzureLoginStep = false;
                 bool addMSSetupStep = false;
                 string javaVersion = null;
@@ -2796,6 +2828,16 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                                 }
                                 break;
 
+                            case "DOCKER@0":
+                            case "DOCKER@1":
+                            case "DOCKER@2":
+                                if (addDockerLoginStep == false)
+                                {
+                                    addDockerLoginStep = true;
+                                    stepAdjustment++;
+                                }
+                                break;
+
                             default:
                                 //If we have an Azure step, we will need to add a Azure login step
                                 if (step.task.ToUpper().StartsWith("AZURE") == true)
@@ -2854,6 +2896,12 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                 {
                     //Add the Azure login step to the code
                     newSteps[adjustmentsUsed] = CreateAzureLoginStep();
+                    adjustmentsUsed++;
+                }
+                if (addDockerLoginStep == true)
+                {
+                    //Add the Azure login step to the code
+                    newSteps[adjustmentsUsed] = CreateDockerLoginStep(""); //TODO: Fix login server
                     adjustmentsUsed++;
                 }
                 if (addMSSetupStep == true)

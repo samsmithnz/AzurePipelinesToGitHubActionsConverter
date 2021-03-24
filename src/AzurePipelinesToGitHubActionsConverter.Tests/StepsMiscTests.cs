@@ -6,7 +6,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
 {
     [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
     [TestClass]
-    public class StepsTests
+    public class StepsMiscTests
     {
         [TestMethod]
         public void AntStepTest()

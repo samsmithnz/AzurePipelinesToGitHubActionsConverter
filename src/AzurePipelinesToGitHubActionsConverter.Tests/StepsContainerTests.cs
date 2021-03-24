@@ -4,11 +4,65 @@ using System;
 
 namespace AzurePipelinesToGitHubActionsConverter.Tests
 {
-    //TODO: Docker is still in progress.
     [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
     [TestClass]
-    public class StepsDockerTests
+    public class StepsContainerTests
     {
+
+        [TestMethod]
+        public void Docker0BuildStepTest()
+        {
+            //Arrange
+            Conversion conversion = new Conversion();
+            string yaml = @"
+  - task: Docker@0
+    displayName: 'Build an image'
+    inputs:
+      azureSubscription: '[Azure DevOps service connection]'
+      azureContainerRegistry: '{""loginServer"":""[MyContainerRegistryName].azurecr.io"", ""id"" : ""/subscriptions/[MySubscriptionGuid]/resourceGroups/[MyResourceGroupName]/providers/Microsoft.ContainerRegistry/registries/[MyContainerRegistryName]""}'
+      defaultContext: false
+      context: ContainerPOC
+";
+
+            //Act
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineTaskToGitHubActionTask(yaml);
+
+            //Assert
+            string expected = @"
+- name: Build an image
+  run: docker build .
+";
+
+            expected = UtilityTests.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+        }
+
+        [TestMethod]
+        public void Docker0PushStepTest()
+        {
+            //Arrange
+            Conversion conversion = new Conversion();
+            string yaml = @"
+  - task: Docker@0
+    displayName: 'Push an image'
+    inputs:
+      azureSubscription: '[Azure DevOps service connection]'
+      azureContainerRegistry: '{""loginServer"":""[MyContainerRegistryName].azurecr.io"", ""id"" : ""/subscriptions/[MySubscriptionGuid]/resourceGroups/[MyResourceGroupName]/providers/Microsoft.ContainerRegistry/registries/[MyContainerRegistryName]""}'
+      action: 'Push an image'
+";
+
+            //Act
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineTaskToGitHubActionTask(yaml);
+
+            //Assert
+            string expected = @"
+- name: Push an image
+  run: docker build .
+";
+
+            expected = UtilityTests.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+        }
 
         [TestMethod]
         public void Docker1BuildStepTest()
@@ -21,8 +75,11 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
     inputs:
       azureSubscriptionEndpoint: '$(Azure.ServiceConnectionId)'
       azureContainerRegistry: '$(ACR.FullName)'
-      command: build
+      command: build 
       dockerFile: '**/Dockerfile'
+      useDefaultContext: false
+      buildContext: ContainerPOC
+
 ";
 
             //Act
@@ -32,34 +89,6 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             string expected = @"
 - name: Build an image
   run: docker build . --file **/Dockerfile
-";
-
-            expected = UtilityTests.TrimNewLines(expected);
-            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
-        }
-
-        [TestMethod]
-        public void Docker2BuildStepTest()
-        {
-            //Arrange
-            Conversion conversion = new Conversion();
-            string yaml = @"
-- task: Docker@2
-  displayName: Build
-  inputs:
-    command: build
-    repository: contosoRepository
-    Dockerfile: app/Dockerfile
-    arguments: --secret id=mysecret,src=mysecret.txt
-";
-
-            //Act
-            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineTaskToGitHubActionTask(yaml);
-
-            //Assert
-            string expected = @"
-- name: Build
-  run: docker build . --file app/Dockerfile contosoRepository --secret id=mysecret,src=mysecret.txt
 ";
 
             expected = UtilityTests.TrimNewLines(expected);
@@ -88,6 +117,34 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             string expected = @"
 - name: Push an image
   run: docker push ${{ env.ACR.ImageName }}
+";
+
+            expected = UtilityTests.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+        }
+
+        [TestMethod]
+        public void Docker2BuildStepTest()
+        {
+            //Arrange
+            Conversion conversion = new Conversion();
+            string yaml = @"
+- task: Docker@2
+  displayName: Build
+  inputs:
+    command: build
+    repository: contosoRepository
+    Dockerfile: app/Dockerfile
+    arguments: --secret id=mysecret,src=mysecret.txt
+";
+
+            //Act
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineTaskToGitHubActionTask(yaml);
+
+            //Assert
+            string expected = @"
+- name: Build
+  run: docker build . --file app/Dockerfile contosoRepository --secret id=mysecret,src=mysecret.txt
 ";
 
             expected = UtilityTests.TrimNewLines(expected);

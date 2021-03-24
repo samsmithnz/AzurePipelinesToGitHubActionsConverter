@@ -47,7 +47,7 @@ jobs:
 
             //Assert
             string expected = @"
-#Note: 'AZURE_SP' secret is required to be setup and added into GitHub Secrets: https://help.github.com/en/actions/automating-your-workflow-with-github-actions/creating-and-using-encrypted-secrets
+#Note: the 'AZURE_SP' secret is required to be added into GitHub Secrets. See this blog post for details: https://samlearnsazure.blog/2019/12/13/github-actions/
 jobs:
   Deploy:
     name: Deploy job
@@ -58,7 +58,7 @@ jobs:
       ResourceGroupName: MyProjectRG
     steps:
     - uses: actions/checkout@v2
-    - # ""Note: 'AZURE_SP' secret is required to be setup and added into GitHub Secrets: https://help.github.com/en/actions/automating-your-workflow-with-github-actions/creating-and-using-encrypted-secrets""
+    - # ""Note: the 'AZURE_SP' secret is required to be added into GitHub Secrets. See this blog post for details: https://samlearnsazure.blog/2019/12/13/github-actions/""
       name: Azure Login
       uses: azure/login@v1
       with:
@@ -2295,7 +2295,7 @@ jobs:
 
             //Assert
             string expected = @"
-#Note: 'AZURE_SP' secret is required to be setup and added into GitHub Secrets: https://help.github.com/en/actions/automating-your-workflow-with-github-actions/creating-and-using-encrypted-secrets
+#Note: the 'AZURE_SP' secret is required to be added into GitHub Secrets. See this blog post for details: https://samlearnsazure.blog/2019/12/13/github-actions/
 on:
   push:
     branches:
@@ -2315,7 +2315,7 @@ jobs:
     if: (success() && (github.ref == 'refs/heads/master'))
     steps:
     - uses: actions/checkout@v2
-    - # ""Note: 'AZURE_SP' secret is required to be setup and added into GitHub Secrets: https://help.github.com/en/actions/automating-your-workflow-with-github-actions/creating-and-using-encrypted-secrets""
+    - # ""Note: the 'AZURE_SP' secret is required to be added into GitHub Secrets. See this blog post for details: https://samlearnsazure.blog/2019/12/13/github-actions/""
       name: Azure Login
       uses: azure/login@v1
       with:
@@ -2396,7 +2396,7 @@ steps:
 
             //Assert
             string expected = @"
-#Note: 'AZURE_SP' secret is required to be setup and added into GitHub Secrets: https://help.github.com/en/actions/automating-your-workflow-with-github-actions/creating-and-using-encrypted-secrets
+#Note: the 'AZURE_SP' secret is required to be added into GitHub Secrets. See this blog post for details: https://samlearnsazure.blog/2019/12/13/github-actions/
 on:
   push:
     branches:
@@ -2406,7 +2406,7 @@ jobs:
     runs-on: windows-latest
     steps:
     - uses: actions/checkout@v2
-    - # ""Note: 'AZURE_SP' secret is required to be setup and added into GitHub Secrets: https://help.github.com/en/actions/automating-your-workflow-with-github-actions/creating-and-using-encrypted-secrets""
+    - # ""Note: the 'AZURE_SP' secret is required to be added into GitHub Secrets. See this blog post for details: https://samlearnsazure.blog/2019/12/13/github-actions/""
       name: Azure Login
       uses: azure/login@v1
       with:
