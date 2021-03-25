@@ -733,6 +733,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
             //  run: docker build . --file MyDockerFile --tag my-image-name:$(date +%s)
 
             //Docker@0 inputs
+            //docker build -f /home/vsts/work/1/s/ContainerPOC/ContainerPOC.Web/Dockerfile -t samsappdeveucontainerregistry.azurecr.io/containerpoc:9015 /home/vsts/work/1/s/ContainerPOC
 
             //Docker@1 inputs
             //string azureSubscriptionEndpoint = GetStepInput(step, "azureSubscriptionEndpoint");
@@ -744,22 +745,27 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
             string repository = GetStepInput(step, "repository");
             string tags = GetStepInput(step, "tags");
             string dockerFile = GetStepInput(step, "dockerfile");
-            //string buildContext = GetStepInput(step, "buildContext");
+            string context = GetStepInput(step, "context");
             string arguments = GetStepInput(step, "arguments");
             string imageName = GetStepInput(step, "imageName");
 
             //Very very simple. Needs more branches and logic
             string dockerScript = "";
             string stepMessage = "";
-            // build command is assumed 
+            // build command is assumed - if this is blank, set command to "build"
             if (string.IsNullOrEmpty(command) == true)
             {
                 command = "build";
             }
+            //docker file is assumed to be DockerFile - if this is blank, set dockerfile to "DockerFile"
+            if (string.IsNullOrEmpty(dockerFile) == true)
+            {
+                dockerFile = "Dockerfile";
+            }
             switch (command)
             {
                 case "build":
-                    dockerScript += "docker build .";
+                    dockerScript += "docker build";
                     break;
                 case "push":
                     dockerScript += "docker push";
@@ -814,7 +820,10 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
             {
                 dockerScript += " " + arguments;
             }
-
+            if (context != null)
+            {
+                dockerScript += " " + context;
+            }
 
             step.script = dockerScript;
             GitHubActions.Step gitHubStep = CreateScriptStep("", step);

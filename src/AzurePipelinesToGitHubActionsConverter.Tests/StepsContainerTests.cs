@@ -30,7 +30,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             //Assert
             string expected = @"
 - name: Build an image
-  run: docker build .
+  run: docker build --file Dockerfile ContainerPOC
 ";
 
             expected = UtilityTests.TrimNewLines(expected);
