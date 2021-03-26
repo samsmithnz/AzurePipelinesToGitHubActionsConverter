@@ -746,6 +746,11 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
             string tags = GetStepInput(step, "tags");
             string dockerFile = GetStepInput(step, "dockerfile");
             string context = GetStepInput(step, "context");
+            string buildContext = GetStepInput(step, "buildContext");
+            if (string.IsNullOrEmpty(buildContext) == false)
+            {
+                context = buildContext;
+            }
             string arguments = GetStepInput(step, "arguments");
             string imageName = GetStepInput(step, "imageName");
 
@@ -758,10 +763,6 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                 command = "build";
             }
             //docker file is assumed to be DockerFile - if this is blank, set dockerfile to "DockerFile"
-            if (string.IsNullOrEmpty(dockerFile) == true)
-            {
-                dockerFile = "Dockerfile";
-            }
             switch (command)
             {
                 case "build":
@@ -770,16 +771,29 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                 case "push":
                     dockerScript += "docker push";
                     break;
-                case "buildAndPush":
-                    dockerScript += "docker build-push .";
-                    stepMessage = "Note: No conversion path currently exists for build-push (does it need two tasks in GitHub?)";
-                    break;
+                //case "buildAndPush":
+                //    dockerScript += "docker build-push .";
+                //    stepMessage = "Note: No conversion path currently exists for build-push (does it need two tasks in GitHub?)";
+                //    break;
                 case "login":
                     dockerScript += "docker login";
                     break;
                 case "logout":
                     dockerScript += "docker logout";
                     break;
+            }
+
+            //Add the docker file default if it doesn't exist
+            if (string.IsNullOrEmpty(dockerFile) == true)
+            {
+                switch (command)
+                {
+                    case "build":
+                    case "push":
+                    case "buildAndPush":
+                        dockerFile = "Dockerfile";
+                        break;
+                }
             }
 
             if (dockerFile != null)

@@ -57,7 +57,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             //Assert
             string expected = @"
 - name: Push an image
-  run: docker build .
+  run: docker push [MyContainerRegistryName].azurecr.io
 ";
 
             expected = UtilityTests.TrimNewLines(expected);
@@ -88,7 +88,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             //Assert
             string expected = @"
 - name: Build an image
-  run: docker build . --file **/Dockerfile
+  run: docker build --file **/Dockerfile ContainerPOC
 ";
 
             expected = UtilityTests.TrimNewLines(expected);
@@ -144,7 +144,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             //Assert
             string expected = @"
 - name: Build
-  run: docker build . --file app/Dockerfile contosoRepository --secret id=mysecret,src=mysecret.txt
+  run: docker build --file app/Dockerfile contosoRepository --secret id=mysecret,src=mysecret.txt
 ";
 
             expected = UtilityTests.TrimNewLines(expected);
@@ -206,7 +206,9 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             string expected = @"
 - # 'Note: No conversion path currently exists for build-push (does it need two tasks in GitHub?)'
   name: Build and Push
-  run: docker build-push . dockerRegistryServiceConnection1 contosoRepository --tags tag1,tag2
+  run: | 
+    docker build --file Dockerfile dockerRegistryServiceConnection1 contosoRepository --tags tag1,tag2
+    docker push --file Dockerfile dockerRegistryServiceConnection1 contosoRepository --tags tag1,tag2
 ";
 
             expected = UtilityTests.TrimNewLines(expected);
