@@ -16,7 +16,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             Conversion conversion = new Conversion();
             string yaml = @"
 trigger:
-- master
+- main
 variables:
   vmImage: 'windows-latest'
   buildConfiguration: 'Release'
@@ -102,7 +102,7 @@ stages:
 on:
   push:
     branches:
-    - master
+    - main
 env:
   vmImage: windows-latest
   buildConfiguration: Release

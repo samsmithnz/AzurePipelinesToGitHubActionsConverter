@@ -13,7 +13,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             //Arrange
             string input = @"
 trigger:
-- master
+- main
 ";
             Conversion conversion = new Conversion();
 
@@ -25,7 +25,7 @@ trigger:
 on:
   push:
     branches:
-    - master
+    - main
 "; 
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
@@ -67,7 +67,7 @@ on:
             //Arrange
             string input = @"
 trigger:
-- master
+- main
 - develop
 ";
             Conversion conversion = new Conversion();
@@ -80,7 +80,7 @@ trigger:
 on:
   push:
     branches:
-    - master
+    - main
     - develop
 ";
             expected = UtilityTests.TrimNewLines(expected);
@@ -412,7 +412,7 @@ on:
             //Arrange
             string input = @"
 trigger:
-- master
+- main
 schedules:
 - cron: '0 0 3/4 ? * * *'
 ";
@@ -426,7 +426,7 @@ schedules:
 on:
   push:
     branches:
-    - master
+    - main
   schedule:
   - cron: '0 0 3/4 ? * * *'
 ";

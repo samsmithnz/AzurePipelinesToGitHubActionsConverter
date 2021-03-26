@@ -14,7 +14,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             //Arrange
             string input = @"
 trigger:
-- master
+- main
 variables:
   buildConfiguration: Release
 jobs:
@@ -37,7 +37,7 @@ jobs:
 on:
   push:
     branches:
-    - master
+    - main
 env:
   buildConfiguration: Release
 jobs:
@@ -61,7 +61,7 @@ jobs:
             //Arrange
             string input = @"
 trigger:
-- master
+- main
 variables:
   buildConfiguration: Release
 jobs:
@@ -85,7 +85,7 @@ jobs:
 on:
   push:
     branches:
-    - master
+    - main
 env:
   buildConfiguration: Release
 jobs:
@@ -181,7 +181,7 @@ variables:";
             //Arrange
             string input = @"
 trigger:
-- master
+- main
 - develop
 variables:
   myVariable: myValue
@@ -196,7 +196,7 @@ variables:
 on:
   push:
     branches:
-    - master
+    - main
     - develop
 env:
   myVariable: myValue

@@ -3,7 +3,7 @@
     public class TriggerDetail
     {
         //    branches:    
-        //    - Master
+        //    - main
         //    - Develop
         //    branches-ignore:
         //    - 'mona/octocat'

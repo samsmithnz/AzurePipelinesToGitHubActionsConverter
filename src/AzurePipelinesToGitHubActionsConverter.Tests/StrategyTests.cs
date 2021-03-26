@@ -24,7 +24,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             Conversion conversion = new Conversion();
             string yaml = @"
 trigger:
-- master
+- main
 strategy:
   maxParallel: 3
   parallel: 1
@@ -56,7 +56,7 @@ jobs:
 on:
   push:
     branches:
-    - master
+    - main
 jobs:
   Build:
     name: Build job
@@ -97,7 +97,7 @@ jobs:
             Conversion conversion = new Conversion();
             string yaml = @"
 trigger:
-- master
+- main
 strategy:
   maxParallel: 3
 jobs:
@@ -121,7 +121,7 @@ jobs:
 on:
   push:
     branches:
-    - master
+    - main
 jobs:
   Build:
     name: Build job
@@ -427,7 +427,7 @@ jobs:
             Conversion conversion = new Conversion();
             string yaml = @"
 trigger:
-- master
+- main
 
 variables:
   # It's important to put these in a path that won't change
@@ -534,7 +534,7 @@ jobs:
 on:
   push:
     branches:
-    - master
+    - main
 env:
   PARAVIEW_SOURCE_FOLDER: /tmp/paraview_source
   PARAVIEW_BUILD_FOLDER: /tmp/paraview_build

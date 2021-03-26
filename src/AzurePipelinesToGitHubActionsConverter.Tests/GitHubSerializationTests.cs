@@ -20,7 +20,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
 on:
   push:
     branches:
-    - master
+    - main
 jobs:
   build:
     runs-on: ubuntu-latest

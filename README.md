@@ -14,7 +14,7 @@ You can also use the [NuGet package](https://www.nuget.org/packages/AzurePipelin
 The Azure Pipelines YAML to build a dotnet application on ubuntu:
 ```YAML
 trigger:
-- master
+- main
 variables:
   buildConfiguration: Release
 jobs:
@@ -33,7 +33,7 @@ In GitHub Actions:
 on: 
   push:
     branches:
-    - master
+    - main
 env:
   buildConfiguration: Release
 jobs:
@@ -72,7 +72,7 @@ Yaml can be challenging. The [yaml wikipedia](https://en.wikipedia.org/wiki/YAML
 trigger: [master,develop]
 
 trigger:
-- master
+- main
 - develop
 ```
 3. The dictonary object (dictonary<string,string>) is useful for dynamic key value pairs, for example, variables

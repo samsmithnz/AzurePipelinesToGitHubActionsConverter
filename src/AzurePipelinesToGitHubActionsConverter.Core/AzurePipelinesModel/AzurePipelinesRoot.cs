@@ -2,7 +2,7 @@
 
 ////#Example Pipeline YAML:
 ////trigger:
-////- master
+////- main
 
 ////pool:
 ////  vmImage: ubuntu-latest
