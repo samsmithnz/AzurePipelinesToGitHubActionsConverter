@@ -5,7 +5,7 @@
         //on:
         //  push:
         //    branches:    
-        //    - Master
+        //    - main
         //    - Develop
         //    branches-ignore:
         //    - 'mona/octocat'
@@ -15,7 +15,7 @@
         //    - 'docs/**'
         //  pull-request
         //    branches:    
-        //    - Master
+        //    - main
         //    - Develop
         //    branches-ignore:
         //    - 'mona/octocat'

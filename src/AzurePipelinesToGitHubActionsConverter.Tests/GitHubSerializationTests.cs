@@ -20,7 +20,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
 on:
   push:
     branches:
-    - master
+    - main
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -48,7 +48,7 @@ jobs:
             Assert.AreEqual(null, gitHubAction.on.pull_request);
             Assert.AreNotEqual(null, gitHubAction.on.push);
             Assert.AreEqual(1, gitHubAction.on.push.branches.Length);
-            Assert.AreEqual("master", gitHubAction.on.push.branches[0]);
+            Assert.AreEqual("main", gitHubAction.on.push.branches[0]);
             Assert.AreEqual(null, gitHubAction.on.push.branches_ignore);
             Assert.AreEqual(null, gitHubAction.on.push.paths);
             Assert.AreEqual(null, gitHubAction.on.push.paths_ignore);

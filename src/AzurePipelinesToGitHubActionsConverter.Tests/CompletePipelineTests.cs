@@ -93,7 +93,7 @@ jobs:
 # https://docs.microsoft.com/azure/devops/pipelines/languages/android
 
 trigger:
-- master
+- main
 
 pool:
   vmImage: 'macos-latest'
@@ -117,7 +117,7 @@ steps:
 on:
   push:
     branches:
-    - master
+    - main
 jobs:
   build:
     runs-on: macos-latest
@@ -144,7 +144,7 @@ jobs:
             Conversion conversion = new Conversion();
             string yaml = @"
 trigger:
-- master
+- main
 
 pool:
   vmImage: 'ubuntu-latest'
@@ -169,7 +169,7 @@ steps:
 on:
   push:
     branches:
-    - master
+    - main
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -200,7 +200,7 @@ jobs:
 # https://docs.microsoft.com/azure/devops/pipelines/apps/windows/dot-net
 
 trigger:
-- master
+- main
 
 pool:
   vmImage: 'windows-latest'
@@ -230,7 +230,7 @@ steps:
 on:
   push:
     branches:
-    - master
+    - main
 env:
   solution: WindowsFormsApp1.sln
   buildPlatform: Any CPU
@@ -264,7 +264,7 @@ jobs:
 # https://docs.microsoft.com/azure/devops/pipelines/languages/go
 
 trigger:
-- master
+- main
 
 pool:
   vmImage: 'ubuntu-latest'
@@ -307,7 +307,7 @@ steps:
 on:
   push:
     branches:
-    - master
+    - main
 env:
   GOBIN: ${{ env.GOPATH }}/bin
   GOROOT: /usr/local/go1.11
@@ -353,7 +353,7 @@ jobs:
             //Source is: https://raw.githubusercontent.com/microsoft/azure-pipelines-yaml/master/templates/python-django.yml
             string yaml = @"
 trigger:
-- master
+- main
 
 pool:
   vmImage: 'ubuntu-latest'
@@ -379,7 +379,7 @@ steps:
 on:
   push:
     branches:
-    - master
+    - main
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -406,7 +406,7 @@ jobs:
             //Source is: https://raw.githubusercontent.com/microsoft/azure-pipelines-yaml/master/templates/python-django.yml
             string yaml = @"
 trigger:
-- master
+- main
 
 pool:
   vmImage: 'ubuntu-latest'
@@ -431,7 +431,7 @@ steps:
 on:
   push:
     branches:
-    - master
+    - main
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -465,7 +465,7 @@ resources:
   - endpoint: endpointA
 
 trigger:
-- master
+- main
 
 pool:
   vmImage: 'windows-latest'
@@ -520,7 +520,7 @@ steps:
 on:
   push:
     branches:
-    - master
+    - main
 env:
   BuildConfiguration: Release
   BuildPlatform: Any CPU
@@ -558,7 +558,7 @@ jobs:
             //Source is: https://raw.githubusercontent.com/microsoft/azure-pipelines-yaml/master/templates/python-django.yml
             string yaml = @"
 trigger:
-- master
+- main
 
 pool:
   vmImage: 'ubuntu-latest'
@@ -592,7 +592,7 @@ steps:
 on:
   push:
     branches:
-    - master
+    - main
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -625,7 +625,7 @@ jobs:
             Conversion conversion = new Conversion();
             string yaml = @"
 trigger:
-- master
+- main
 
 pool:
   vmImage: 'ubuntu-16.04'
@@ -647,7 +647,7 @@ resources:
 on:
   push:
     branches:
-    - master
+    - main
 jobs:
   build:
     runs-on: ubuntu-16.04
@@ -668,7 +668,7 @@ jobs:
             Conversion conversion = new Conversion();
             string yaml = @"
 trigger:
-- master
+- main
 
 pool:
   vmImage: 'ubuntu-latest'
@@ -688,7 +688,7 @@ steps:
 on:
   push:
     branches:
-    - master
+    - main
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -716,7 +716,7 @@ jobs:
 # Archive your static HTML project and save it with the build record.
 
 trigger:
-- master
+- main
 
 pool:
   vmImage: 'ubuntu-latest'
@@ -737,7 +737,7 @@ steps:
 on:
   push:
     branches:
-    - master
+    - main
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -762,7 +762,7 @@ jobs:
             Conversion conversion = new Conversion();
             string yaml = @"
 trigger:
-- master
+- main
 variables:
   buildConfiguration: Release
   vmImage: ubuntu-latest
@@ -800,7 +800,7 @@ jobs:
 on:
   push:
     branches:
-    - master
+    - main
 env:
   buildConfiguration: Release
   vmImage: ubuntu-latest
@@ -850,7 +850,7 @@ jobs:
 # https://docs.microsoft.com/azure/devops/pipelines/languages/xamarin
 
 trigger:
-- master
+- main
 
 pool:
   vmImage: 'macos-latest'
@@ -881,7 +881,7 @@ steps:
 on:
   push:
     branches:
-    - master
+    - main
 env:
   buildConfiguration: Release
   outputDirectory: ${{ env.build.binariesDirectory }}/${{ env.buildConfiguration }}
@@ -917,7 +917,7 @@ jobs:
 # https://docs.microsoft.com/azure/devops/pipelines/languages/xamarin
 
 trigger:
-- master
+- main
 
 pool:
   vmImage: 'macos-latest'
@@ -953,7 +953,7 @@ steps:
 on:
   push:
     branches:
-    - master
+    - main
 jobs:
   build:
     runs-on: macos-latest
@@ -1070,7 +1070,7 @@ jobs:
             //Source is: https://github.com/samsmithnz/AzurePipelinesToGitHubActionsConverter/issues/128
             string yaml = @"
 trigger:
-- master
+- main
 
 pool: 'Pipeline-Demo-Windows'
 
@@ -1177,7 +1177,7 @@ stages:
 on:
   push:
     branches:
-    - master
+    - main
 env:
   solution: '**/*.sln'
   buildPlatform: Any CPU
@@ -1262,9 +1262,9 @@ stages:
   condition: and(succeeded(), eq(variables['Build.Reason'], 'PullRequest'), ne(variables['System.PullRequest.PullRequestId'], 'Null'))
   dependsOn: Build
   variables:
-    ${{ if ne(variables['Build.SourceBranchName'], 'master') }}:
+    ${{ if ne(variables['Build.SourceBranchName'], 'main') }}:
       prId: ""$(System.PullRequest.PullRequestId)""
-    ${{ if eq(variables['Build.SourceBranchName'], 'master') }}:
+    ${{ if eq(variables['Build.SourceBranchName'], 'main') }}:
       prId: '000'
     prUC: ""PR$(prId)""
     prLC: ""pr$(prId)""
@@ -1606,7 +1606,7 @@ jobs:
 trigger:
   branches:
     include:
-    - master
+    - main
   paths:
     include:
     - source/*
@@ -1898,7 +1898,7 @@ stages:
       and(
         succeeded(),
         or(
-          eq(variables['Build.SourceBranch'], 'refs/heads/master'),
+          eq(variables['Build.SourceBranch'], 'refs/heads/main'),
           startsWith(variables['Build.SourceBranch'], 'refs/tags/')
         ),
         contains(variables['System.TeamFoundationCollectionUri'], 'dsccommunity')
@@ -1950,7 +1950,7 @@ stages:
 on:
   push:
     branches:
-    - master
+    - main
     paths:
     - source/*
     tags:
@@ -2215,7 +2215,7 @@ jobs:
     - Test_Stage_Test_Integration_SQL2016
     - Test_Stage_Test_Integration_SQL2017
     - Test_Stage_Code_Coverage
-    if: (success() && ((github.ref == 'refs/heads/master') || startsWith(github.ref, 'refs/tags/')) && contains(variables['System.TeamFoundationCollectionUri'], 'dsccommunity'))
+    if: (success() && ((github.ref == 'refs/heads/main') || startsWith(github.ref, 'refs/tags/')) && contains(variables['System.TeamFoundationCollectionUri'], 'dsccommunity'))
     steps:
     - uses: actions/checkout@v2
     - name: Download Build Artifact
@@ -2245,7 +2245,7 @@ jobs:
             //Arrange
             string input = @"
 trigger:
-- master
+- main
 
 variables:
   buildConfiguration: 'Release'
@@ -2256,7 +2256,7 @@ jobs:
   displayName: ""Deploy job""
   pool:
     vmImage: ubuntu-latest
-  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
+  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
   variables:
     AppSettings.Environment: 'data'
     ArmTemplateResourceGroupLocation: 'eu'
@@ -2299,7 +2299,7 @@ jobs:
 on:
   push:
     branches:
-    - master
+    - main
 env:
   buildConfiguration: Release
   buildPlatform: Any CPU
@@ -2312,7 +2312,7 @@ jobs:
       ArmTemplateResourceGroupLocation: eu
       ResourceGroupName: MyProjectRG
       WebsiteName: myproject-web
-    if: (success() && (github.ref == 'refs/heads/master'))
+    if: (success() && (github.ref == 'refs/heads/main'))
     steps:
     - uses: actions/checkout@v2
     - # ""Note: the 'AZURE_SP' secret is required to be added into GitHub Secrets. See this blog post for details: https://samlearnsazure.blog/2019/12/13/github-actions/""

@@ -488,7 +488,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
             //    #pipeline: # Required when source == Specific
             //    #preferTriggeringPipeline: false # Optional
             //    #runVersion: 'latest' # Required when source == Specific# Options: latest, latestFromBranch, specific
-            //    #runBranch: 'refs/heads/master' # Required when source == Specific && RunVersion == LatestFromBranch
+            //    #runBranch: 'refs/heads/main' # Required when source == Specific && RunVersion == LatestFromBranch
             //    #runId: # Required when source == Specific && RunVersion == Specific
             //    #tags: # Optional
             //    #artifact: # Optional

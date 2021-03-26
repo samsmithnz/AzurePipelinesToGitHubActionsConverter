@@ -123,13 +123,13 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
         public void BranchVariableTest()
         {
             //Arrange
-            string condition = "and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))";
+            string condition = "and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))";
 
             //Act
             string result = ConditionsProcessing.TranslateConditions(condition);
 
             //Assert
-            string expected = "(success() && (github.ref == 'refs/heads/master'))";
+            string expected = "(success() && (github.ref == 'refs/heads/main'))";
             Assert.AreEqual(expected, result);
         }
 
@@ -137,14 +137,14 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
         public void BranchNameVariableTest()
         {
             //Arrange
-            string condition = "and(succeeded(), eq(variables['Build.SourceBranchName'], 'master'))";
+            string condition = "and(succeeded(), eq(variables['Build.SourceBranchName'], 'main'))";
 
             //Act
             string result = ConditionsProcessing.TranslateConditions(condition);
 
             //Assert
-            //string expected = "(success() && endsWith(github.ref, 'master'))";
-            string expected = "(success() && (variables['Build.SourceBranchName'] == 'master'))";
+            //string expected = "(success() && endsWith(github.ref, 'main'))";
+            string expected = "(success() && (variables['Build.SourceBranchName'] == 'main'))";
             Assert.AreEqual(expected, result);
         }
 
@@ -156,7 +156,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
 and(
 succeeded(),
 or(
-    eq(variables['Build.SourceBranch'], 'refs/heads/master'),
+    eq(variables['Build.SourceBranch'], 'refs/heads/main'),
     startsWith(variables['Build.SourceBranch'], 'refs/tags/')
 ),
 contains(variables['System.TeamFoundationCollectionUri'], 'dsccommunity')
@@ -166,7 +166,7 @@ contains(variables['System.TeamFoundationCollectionUri'], 'dsccommunity')
             string result = ConditionsProcessing.TranslateConditions(text);
 
             //Assert
-            string expected = "(success() && ((github.ref == 'refs/heads/master') || startsWith(github.ref, 'refs/tags/')) && contains(variables['System.TeamFoundationCollectionUri'], 'dsccommunity'))";
+            string expected = "(success() && ((github.ref == 'refs/heads/main') || startsWith(github.ref, 'refs/tags/')) && contains(variables['System.TeamFoundationCollectionUri'], 'dsccommunity'))";
             Assert.AreEqual(expected, result);
         }
 
@@ -285,7 +285,7 @@ and(succeeded(), eq(variables['Build.Reason'], 'PullRequest'), ne(variables['Sys
 and(
 succeeded(),
 or(
-    eq(variables['Build.SourceBranch'], 'refs/heads/master'),
+    eq(variables['Build.SourceBranch'], 'refs/heads/main'),
     startsWith(variables['Build.SourceBranch'], 'refs/tags/')
 ),
 contains(variables['System.TeamFoundationCollectionUri'], 'dsccommunity')
@@ -343,7 +343,7 @@ contains(variables['System.TeamFoundationCollectionUri'], 'dsccommunity')
         public void SimpleThreeSplitTest()
         {
             //Arrange
-            string condition = "succeeded(), variables['Build.SourceBranch'], 'refs/heads/master'";
+            string condition = "succeeded(), variables['Build.SourceBranch'], 'refs/heads/main'";
 
             //Act
             List<string> results = ConditionsProcessing.SplitContents(condition);

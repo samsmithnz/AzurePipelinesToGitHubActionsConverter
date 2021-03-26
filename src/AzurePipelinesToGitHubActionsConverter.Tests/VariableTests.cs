@@ -14,7 +14,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             //Arrange
             string input = @"
 trigger:
-- master
+- main
 variables:
   buildConfiguration: Release
 jobs:
@@ -37,7 +37,7 @@ jobs:
 on:
   push:
     branches:
-    - master
+    - main
 env:
   buildConfiguration: Release
 jobs:
@@ -52,7 +52,7 @@ jobs:
       run: dotnet build WebApplication1/WebApplication1.Service/WebApplication1.Service.csproj --configuration ${{ env.buildConfiguration }}";
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
-            
+
         }
 
         [TestMethod]
@@ -61,7 +61,7 @@ jobs:
             //Arrange
             string input = @"
 trigger:
-- master
+- main
 variables:
   buildConfiguration: Release
 jobs:
@@ -85,7 +85,7 @@ jobs:
 on:
   push:
     branches:
-    - master
+    - main
 env:
   buildConfiguration: Release
 jobs:
@@ -102,7 +102,7 @@ jobs:
 
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
-            
+
         }
 
         [TestMethod]
@@ -125,7 +125,7 @@ env:
   platform: x64";
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
-            
+
         }
 
 
@@ -181,7 +181,7 @@ variables:";
             //Arrange
             string input = @"
 trigger:
-- master
+- main
 - develop
 variables:
   myVariable: myValue
@@ -196,14 +196,14 @@ variables:
 on:
   push:
     branches:
-    - master
+    - main
     - develop
 env:
   myVariable: myValue
   myVariable2: myValue2";
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
-            
+
         }
 
         [TestMethod]
@@ -254,7 +254,7 @@ env:
   group: myVariablegroup";
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
-            
+
         }
 
         [TestMethod]
@@ -286,9 +286,9 @@ env:
             //Arrange
             string input = @"
 variables:
-  ${{ if ne(variables['Build.SourceBranchName'], 'master') }}:
+  ${{ if ne(variables['Build.SourceBranchName'], 'main') }}:
     prId: ""$(System.PullRequest.PullRequestId)""
-  ${{ if eq(variables['Build.SourceBranchName'], 'master') }}:
+  ${{ if eq(variables['Build.SourceBranchName'], 'main') }}:
     prId: '000'
   prName: ""PR$(prId)""
 ";
@@ -305,7 +305,7 @@ env:
 ";
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
-            
+
         }
 
 
@@ -334,7 +334,7 @@ env:
   k8sNamespaceForPR: inconditionalstatement";
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
-            
+
         }
 
 
@@ -344,9 +344,9 @@ env:
             //Arrange
             string input = @"
   variables:
-    ${{ if ne(variables['Build.SourceBranchName'], 'master') }}:
+    ${{ if ne(variables['Build.SourceBranchName'], 'main') }}:
       prId: '00A'
-    ${{ if eq(variables['Build.SourceBranchName'], 'master') }}:
+    ${{ if eq(variables['Build.SourceBranchName'], 'main') }}:
       prId: '00B'
     prUC: '002'
     prLC: '003'";
@@ -363,10 +363,10 @@ env:
   prLC: 003";
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
-            
+
         }
 
-        
+
         [TestMethod]
         public void ParametersReservedWordTest()
         {
@@ -403,10 +403,10 @@ env:
 ";
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
-            
+
         }
 
-        
+
         [TestMethod]
         public void ParametersAndVariablesComplexTest()
         {
@@ -458,10 +458,10 @@ env:
 ";
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
-            
+
         }
 
-        
+
         [TestMethod]
         public void VariablesWithTemplateTest()
         {
@@ -491,7 +491,7 @@ jobs:
 ";
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
-            
+
         }
 
     }
