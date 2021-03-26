@@ -1262,9 +1262,9 @@ stages:
   condition: and(succeeded(), eq(variables['Build.Reason'], 'PullRequest'), ne(variables['System.PullRequest.PullRequestId'], 'Null'))
   dependsOn: Build
   variables:
-    ${{ if ne(variables['Build.SourceBranchName'], 'master') }}:
+    ${{ if ne(variables['Build.SourceBranchName'], 'main') }}:
       prId: ""$(System.PullRequest.PullRequestId)""
-    ${{ if eq(variables['Build.SourceBranchName'], 'master') }}:
+    ${{ if eq(variables['Build.SourceBranchName'], 'main') }}:
       prId: '000'
     prUC: ""PR$(prId)""
     prLC: ""pr$(prId)""
@@ -1898,7 +1898,7 @@ stages:
       and(
         succeeded(),
         or(
-          eq(variables['Build.SourceBranch'], 'refs/heads/master'),
+          eq(variables['Build.SourceBranch'], 'refs/heads/main'),
           startsWith(variables['Build.SourceBranch'], 'refs/tags/')
         ),
         contains(variables['System.TeamFoundationCollectionUri'], 'dsccommunity')
@@ -2215,7 +2215,7 @@ jobs:
     - Test_Stage_Test_Integration_SQL2016
     - Test_Stage_Test_Integration_SQL2017
     - Test_Stage_Code_Coverage
-    if: (success() && ((github.ref == 'refs/heads/master') || startsWith(github.ref, 'refs/tags/')) && contains(variables['System.TeamFoundationCollectionUri'], 'dsccommunity'))
+    if: (success() && ((github.ref == 'refs/heads/main') || startsWith(github.ref, 'refs/tags/')) && contains(variables['System.TeamFoundationCollectionUri'], 'dsccommunity'))
     steps:
     - uses: actions/checkout@v2
     - name: Download Build Artifact
@@ -2256,7 +2256,7 @@ jobs:
   displayName: ""Deploy job""
   pool:
     vmImage: ubuntu-latest
-  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
+  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
   variables:
     AppSettings.Environment: 'data'
     ArmTemplateResourceGroupLocation: 'eu'
@@ -2312,7 +2312,7 @@ jobs:
       ArmTemplateResourceGroupLocation: eu
       ResourceGroupName: MyProjectRG
       WebsiteName: myproject-web
-    if: (success() && (github.ref == 'refs/heads/master'))
+    if: (success() && (github.ref == 'refs/heads/main'))
     steps:
     - uses: actions/checkout@v2
     - # ""Note: the 'AZURE_SP' secret is required to be added into GitHub Secrets. See this blog post for details: https://samlearnsazure.blog/2019/12/13/github-actions/""

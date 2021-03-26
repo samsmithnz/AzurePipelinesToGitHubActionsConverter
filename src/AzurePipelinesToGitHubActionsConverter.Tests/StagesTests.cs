@@ -51,7 +51,7 @@ stages:
 
 - stage: Deploy
   displayName: 'Deploy Prod'
-  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
+  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
   dependsOn: Build
   jobs:
   - job: Deploy
@@ -133,7 +133,7 @@ jobs:
       ResourceGroupName: MyProjectFeatureFlags
       WebsiteName: featureflags-data-eu-web
       WebServiceName: featureflags-data-eu-service
-    if: (success() && (github.ref == 'refs/heads/master'))
+    if: (success() && (github.ref == 'refs/heads/main'))
     continue-on-error: true
     steps:
     - uses: actions/checkout@v2
@@ -296,9 +296,9 @@ jobs: {}
 stages:
 - stage: Deploy
   variables:
-    ${{ if ne(variables['Build.SourceBranchName'], 'master') }}:
+    ${{ if ne(variables['Build.SourceBranchName'], 'main') }}:
       prId: '00A'
-    ${{ if eq(variables['Build.SourceBranchName'], 'master') }}:
+    ${{ if eq(variables['Build.SourceBranchName'], 'main') }}:
       prId: '00B'
     prUC: '002'
     prLC: '003'
@@ -347,9 +347,9 @@ jobs:
 stages:
 - stage: Deploy
   variables:
-    ${{ if ne(variables['Build.SourceBranchName'], 'master') }}:
+    ${{ if ne(variables['Build.SourceBranchName'], 'main') }}:
       prId: ""$(System.PullRequest.PullRequestId)""
-    ${{ if eq(variables['Build.SourceBranchName'], 'master') }}:
+    ${{ if eq(variables['Build.SourceBranchName'], 'main') }}:
       prId: '000'
     prUC: ""PR$(prId)""
     prLC: ""pr$(prId)""
@@ -398,7 +398,7 @@ jobs:
 stages:
 - stage: Deploy
   variables:
-    ${{ if ne(variables['Build.SourceBranchName'], 'master') }}:
+    ${{ if ne(variables['Build.SourceBranchName'], 'main') }}:
       prId: '000'
     var1: ""value1""
     var2: ""value2""

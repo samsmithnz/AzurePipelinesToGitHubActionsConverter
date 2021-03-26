@@ -384,7 +384,7 @@ schedules:
 - cron: '0 0 * **'
   displayName: Test schedule
   branches:
-    include: [ master ] 
+    include: [ main ] 
     exclude: 
     - 'features/experimental/*'
   always: true";
