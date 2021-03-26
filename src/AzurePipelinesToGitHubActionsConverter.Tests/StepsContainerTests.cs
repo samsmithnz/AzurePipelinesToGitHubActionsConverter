@@ -57,7 +57,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             //Assert
             string expected = @"
 - name: Push an image
-  run: docker push [MyContainerRegistryName].azurecr.io
+  run: docker push --file Dockerfile [MyContainerRegistryName].azurecr.io
 ";
 
             expected = UtilityTests.TrimNewLines(expected);
@@ -116,7 +116,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             //Assert
             string expected = @"
 - name: Push an image
-  run: docker push ${{ env.ACR.ImageName }}
+  run: docker push --file Dockerfile ${{ env.ACR.FullName }} ${{ env.ACR.ImageName }}
 ";
 
             expected = UtilityTests.TrimNewLines(expected);
@@ -175,7 +175,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             //Assert
             string expected = @"
 - name: Push image
-  run: docker push ${{ env.dockerHub }} ${{ env.imageName }} --tags test1,test2
+  run: docker push --file Dockerfile ${{ env.dockerHub }} ${{ env.imageName }} --tags test1,test2
 ";
 
             expected = UtilityTests.TrimNewLines(expected);
@@ -204,9 +204,8 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
 
             //Assert
             string expected = @"
-- # 'Note: No conversion path currently exists for build-push (does it need two tasks in GitHub?)'
-  name: Build and Push
-  run: | 
+- name: Build and Push
+  run: |
     docker build --file Dockerfile dockerRegistryServiceConnection1 contosoRepository --tags tag1,tag2
     docker push --file Dockerfile dockerRegistryServiceConnection1 contosoRepository --tags tag1,tag2
 ";
@@ -226,7 +225,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
   inputs:
     command: login
     containerRegistry: dockerRegistryServiceConnection1
-        ";
+";
 
             //Act
             ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineTaskToGitHubActionTask(yaml);
@@ -252,7 +251,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
   inputs:
     command: logout
     containerRegistry: dockerRegistryServiceConnection1
-        ";
+";
 
             //Act
             ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineTaskToGitHubActionTask(yaml);
