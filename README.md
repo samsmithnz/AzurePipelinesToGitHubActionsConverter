@@ -22,11 +22,9 @@ jobs:
   displayName: Build job
   pool: 
     vmImage: ubuntu-latest
-  variables:
-    myJobVariable: data
   steps: 
   - script: dotnet build WebApplication1/WebApplication1.Service/WebApplication1.Service.csproj --configuration $(buildConfiguration) 
-    displayName: dotnet build $(myJobVariable)
+    displayName: dotnet build webapp
 ```
 In GitHub Actions:
 ```YAML
@@ -40,11 +38,9 @@ jobs:
   Build:
     name: Build job
     runs-on: ubuntu-latest
-    env:
-      myJobVariable: data
     steps:
     - uses: actions/checkout@v1
-    - name: dotnet build ${{ env.myJobVariable }}
+    - name: dotnet build webapp
       run: dotnet build WebApplication1/WebApplication1.Service/WebApplication1.Service.csproj --configuration ${{ env.buildConfiguration }}";
 ```
 

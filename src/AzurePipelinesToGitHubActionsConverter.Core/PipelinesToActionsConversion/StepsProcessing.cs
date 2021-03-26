@@ -3,6 +3,7 @@ using AzurePipelinesToGitHubActionsConverter.Core.Extensions;
 using AzurePipelinesToGitHubActionsConverter.Core.Serialization;
 using System.Collections.Generic;
 using System.Text;
+using System.Text.Json;
 
 namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversion
 {
@@ -709,6 +710,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
             return gitHubStep;
         }
 
+        //Very very simple. Needs more branches and logic
         private GitHubActions.Step CreateDockerStep(AzurePipelines.Step step)
         {
             //From: https://docs.microsoft.com/en-us/azure/devops/pipelines/tasks/build/docker?view=azure-devops
@@ -735,59 +737,117 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
             //- name: Build the Docker image
             //  run: docker build . --file MyDockerFile --tag my-image-name:$(date +%s)
 
+            //Docker@0 inputs
+            //docker build -f /home/vsts/work/1/s/ContainerPOC/ContainerPOC.Web/Dockerfile -t samsappdeveucontainerregistry.azurecr.io/containerpoc:9015 /home/vsts/work/1/s/ContainerPOC
 
-            //Docker 1 inputs
+            //Docker@1 inputs
             //string azureSubscriptionEndpoint = GetStepInput(step, "azureSubscriptionEndpoint");
             //string azureContainerRegistry = GetStepInput(step, "azureContainerRegistry");
 
-            //Docker 2 inputs
+            //Docker@2 inputs
             string command = GetStepInput(step, "command");
+            if (string.IsNullOrEmpty(command)==true)
+            {
+                command = GetStepInput(step, "action");
+            }
             string containerRegistry = GetStepInput(step, "containerRegistry");
+            string azureContainerRegistry = GetStepInput(step, "azureContainerRegistry");
+            if (string.IsNullOrEmpty(containerRegistry) == true & string.IsNullOrEmpty(azureContainerRegistry) == false)
+            {
+                JsonElement containerJson = JsonSerialization.DeserializeStringToJsonElement(azureContainerRegistry);
+                if (containerJson.ValueKind == JsonValueKind.String)
+                {
+                    containerRegistry = containerJson.ToString();
+                }
+                else
+                {
+                    JsonElement jsonElement;
+                    if (containerJson.TryGetProperty("loginServer", out jsonElement) == true)
+                    {
+                        containerRegistry = jsonElement.ToString();
+                    }
+                }
+            }
             string repository = GetStepInput(step, "repository");
             string tags = GetStepInput(step, "tags");
             string dockerFile = GetStepInput(step, "dockerfile");
-            //string buildContext = GetStepInput(step, "buildContext");
+            string context = GetStepInput(step, "context");
+            string buildContext = GetStepInput(step, "buildContext");
+            if (string.IsNullOrEmpty(buildContext) == false)
+            {
+                context = buildContext;
+            }
             string arguments = GetStepInput(step, "arguments");
             string imageName = GetStepInput(step, "imageName");
 
-            //Very very simple. Needs more branches and logic
-            string dockerScript = "";
+            //We use a list as docker can have multiple lines we need to build
+            List<string> dockerLines = new List<string>();
             string stepMessage = "";
+            // build command is assumed - if this is blank, set command to "build"
+            if (string.IsNullOrEmpty(command) == true)
+            {
+                command = "build";
+            }
+            else if (command == "Push an image")
+            { 
+                command = "push"; 
+            }
             switch (command)
             {
                 case "build":
-                    dockerScript += "docker build .";
-                    break;
-                case "push":
-                    dockerScript += "docker push";
+                    dockerLines.Add("docker build");
+                    break;                    
+                case "push":         
+                    dockerLines.Add("docker push");
                     break;
                 case "buildAndPush":
-                    dockerScript += "docker build-push .";
-                    stepMessage = "Note: No conversion path currently exists for build-push (does it need two tasks in GitHub?)";
+                    dockerLines.Add("docker build");
+                    dockerLines.Add("docker push");
                     break;
                 case "login":
-                    dockerScript += "docker login";
+                    dockerLines.Add("docker login");
                     break;
                 case "logout":
-                    dockerScript += "docker logout";
+                    dockerLines.Add("docker logout");
                     break;
+            }
+
+            //docker file is assumed to be DockerFile - if this is blank, set dockerfile to "DockerFile"
+            if (string.IsNullOrEmpty(dockerFile) == true)
+            {
+                switch (command)
+                {
+                    case "build":
+                    case "push":
+                    case "buildAndPush":
+                        dockerFile = "Dockerfile";
+                        break;
+                }
             }
 
             if (dockerFile != null)
             {
-                dockerScript += " --file " + dockerFile;
+                dockerLines = AppendStringToListItems(dockerLines, " --file " + dockerFile);
             }
             if (containerRegistry != null)
             {
-                dockerScript += " " + containerRegistry.Replace("\n", " ").Trim();
+                switch (command)
+                {
+                    case "push":
+                    case "buildAndPush":
+                    case "login":
+                    case "logout":
+                        dockerLines = AppendStringToListItems(dockerLines, " " + containerRegistry.Replace("\n", " ").Trim());
+                        break;
+                }
             }
             if (repository != null)
             {
-                dockerScript += " " + repository;
+                dockerLines = AppendStringToListItems(dockerLines, " " + repository);
             }
             if (imageName != null)
             {
-                dockerScript += " " + imageName;
+                dockerLines = AppendStringToListItems(dockerLines, " " + imageName);
             }
 
             if (tags != null)
@@ -801,24 +861,73 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                         newTags += item.Trim() + ",";
                     }
                 }
-                dockerScript += " --tags " + newTags;//tags.Replace("\n", ",").Trim();
-                if (dockerScript[dockerScript.Length - 1] == ',')
+                dockerLines = AppendStringToListItems(dockerLines, " --tags " + newTags); //tags.Replace("\n", ",").Trim();
+                for (int i = 0; i < dockerLines.Count; i++)
                 {
-                    dockerScript = dockerScript.Substring(0, dockerScript.Length - 1);
+                    if (dockerLines[i][dockerLines[i].Length - 1] == ',')
+                    {
+                        dockerLines[i] = dockerLines[i].Substring(0, dockerLines[i].Length - 1);
+                    }
                 }
             }
             if (arguments != null)
             {
-                dockerScript += " " + arguments;
+                dockerLines = AppendStringToListItems(dockerLines, " " + arguments);
+            }
+            if (context != null)
+            {
+                dockerLines = AppendStringToListItems(dockerLines, " " + context);
             }
 
-
-            step.script = dockerScript;
+            string script = "";
+            if (dockerLines.Count > 1)
+            {
+                script = System.Environment.NewLine;
+            }
+            foreach (string item in dockerLines)
+            {
+                script += item + System.Environment.NewLine;
+            }
+            step.script = script;
             GitHubActions.Step gitHubStep = CreateScriptStep("", step);
-            if (stepMessage != "")
+            if (string.IsNullOrEmpty(stepMessage) == false)
             {
                 gitHubStep.step_message = stepMessage;
             }
+            return gitHubStep;
+        }
+
+        private List<string> AppendStringToListItems(List<string> lines, string suffix)
+        {
+            for (int i = 0; i < lines.Count; i++)
+            {
+                lines[i] += suffix;
+            }
+            return lines;
+        }
+
+        private GitHubActions.Step CreateDockerLoginStep(string loginServer)
+        {
+            //- uses: azure/docker-login@v1
+            //  with:
+            //    login-server: contoso.azurecr.io
+            //    username: ${{ secrets.REGISTRY_USERNAME }}
+            //    password: ${{ secrets.REGISTRY_PASSWORD }}
+            GitHubActions.Step gitHubStep = new GitHubActions.Step
+            {
+                name = "Docker Login",
+                uses = "azure/docker-login@v1",
+                with = new Dictionary<string, string>
+                {
+                    {"login-server", loginServer },
+                    {"username", "${{ secrets.REGISTRY_USERNAME }}" },
+                    {"password", "${{ secrets.REGISTRY_PASSWORD }}" }
+                }
+            };
+
+            //Add note that 'REGISTRY_USERNAME' and 'REGISTRY_PASSWORD' secrets are required
+            gitHubStep.step_message = @"Note: login-server needs to be manually set, and the 'REGISTRY_USERNAME' and 'REGISTRY_PASSWORD' secrets are required to be added into GitHub Secrets. See these docs for details: https://github.com/Azure/docker-login";
+
             return gitHubStep;
         }
 
@@ -1010,7 +1119,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
             };
 
             //Add note that 'AZURE_SP' secret is required
-            gitHubStep.step_message = @"Note: 'AZURE_SP' secret is required to be setup and added into GitHub Secrets: https://help.github.com/en/actions/automating-your-workflow-with-github-actions/creating-and-using-encrypted-secrets";
+            gitHubStep.step_message = @"Note: the 'AZURE_SP' secret is required to be added into GitHub Secrets. See this blog post for details: https://samlearnsazure.blog/2019/12/13/github-actions/";
 
             return gitHubStep;
         }
@@ -2724,6 +2833,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                 int stepAdjustment = 0;
                 bool addJavaSetupStep = false;
                 bool addGradleSetupStep = false;
+                bool addDockerLoginStep = false;
                 bool addAzureLoginStep = false;
                 bool addMSSetupStep = false;
                 string javaVersion = null;
@@ -2799,6 +2909,16 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                                 }
                                 break;
 
+                            case "DOCKER@0":
+                            case "DOCKER@1":
+                            case "DOCKER@2":
+                                if (addDockerLoginStep == false)
+                                {
+                                    addDockerLoginStep = true;
+                                    stepAdjustment++;
+                                }
+                                break;
+
                             default:
                                 //If we have an Azure step, we will need to add a Azure login step
                                 if (step.task.ToUpper().StartsWith("AZURE") == true)
@@ -2857,6 +2977,12 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                 {
                     //Add the Azure login step to the code
                     newSteps[adjustmentsUsed] = CreateAzureLoginStep();
+                    adjustmentsUsed++;
+                }
+                if (addDockerLoginStep == true)
+                {
+                    //Add the Azure login step to the code
+                    newSteps[adjustmentsUsed] = CreateDockerLoginStep(""); //TODO: Fix login server
                     adjustmentsUsed++;
                 }
                 if (addMSSetupStep == true)
