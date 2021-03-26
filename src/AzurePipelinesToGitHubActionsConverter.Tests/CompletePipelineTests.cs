@@ -2425,5 +2425,88 @@ jobs:
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
         }
 
+        [TestMethod]
+        public void DockerTest()
+        {
+            //Arrange
+            string input = @"
+trigger:
+- main
+
+resources:
+- repo: self
+
+variables:
+  # Container registry service connection established during pipeline creation
+  dockerRegistryServiceConnection: '{{ containerRegistryConnection.Id }}'
+  imageRepository: '{{#toAlphaNumericString imageRepository 50}}{{/toAlphaNumericString}}'
+  containerRegistry: '{{ containerRegistryConnection.Authorization.Parameters.loginServer }}'
+  dockerfilePath: '{{ dockerfilePath }}'
+  tag: '$(Build.BuildId)'
+
+  # Agent VM image name
+  vmImageName: 'ubuntu-latest'
+
+stages:
+- stage: Build
+  displayName: Build and push stage
+  jobs:
+  - job: Build
+    displayName: Build
+    pool:
+      vmImage: ubuntu-latest
+    steps:
+    - task: Docker@2
+      displayName: Build and push an image to container registry
+      inputs:
+        command: buildAndPush
+        repository: $(imageRepository)
+        dockerfile: $(dockerfilePath)
+        containerRegistry: $(dockerRegistryServiceConnection)
+        tags: |
+          $(tag)
+";
+            Conversion conversion = new Conversion();
+
+            //Act
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(input);
+
+            //Assert
+            string expected = @"
+#Note: login-server needs to be manually set, and the 'REGISTRY_USERNAME' and 'REGISTRY_PASSWORD' secrets are required to be added into GitHub Secrets. See these docs for details: https://github.com/Azure/docker-login
+on:
+  push:
+    branches:
+    - main
+env:
+  dockerRegistryServiceConnection: '{{ containerRegistryConnection.Id }}'
+  imageRepository: '{{#toAlphaNumericString imageRepository 50}}{{/toAlphaNumericString}}'
+  containerRegistry: '{{ containerRegistryConnection.Authorization.Parameters.loginServer }}'
+  dockerfilePath: '{{ dockerfilePath }}'
+  tag: ${{ github.run_id }}
+  vmImageName: ubuntu-latest
+jobs:
+  Build_Stage_Build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - # ""Note: login-server needs to be manually set, and the 'REGISTRY_USERNAME' and 'REGISTRY_PASSWORD' secrets are required to be added into GitHub Secrets. See these docs for details: https://github.com/Azure/docker-login""
+      name: Docker Login
+      uses: azure/docker-login@v1
+      with:
+        login-server: ''
+        username: ${{ secrets.REGISTRY_USERNAME }}
+        password: ${{ secrets.REGISTRY_PASSWORD }}
+    - name: Build and push an image to container registry
+      run: |
+        docker build --file ${{ env.dockerfilePath }} ${{ env.dockerRegistryServiceConnection }} ${{ env.imageRepository }} --tags ${{ env.tag }}
+        docker push --file ${{ env.dockerfilePath }} ${{ env.dockerRegistryServiceConnection }} ${{ env.imageRepository }} --tags ${{ env.tag }}
+";
+
+            expected = UtilityTests.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+        }
+
     }
 }

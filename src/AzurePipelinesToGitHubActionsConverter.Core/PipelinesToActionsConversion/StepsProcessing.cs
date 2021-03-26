@@ -923,7 +923,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
             };
 
             //Add note that 'REGISTRY_USERNAME' and 'REGISTRY_PASSWORD' secrets are required
-            gitHubStep.step_message = @"Note: the 'REGISTRY_USERNAME' and 'REGISTRY_PASSWORD' secrets are required to be added into GitHub Secrets. See these docs for details: https://github.com/Azure/docker-login";
+            gitHubStep.step_message = @"Note: login-server needs to be manually set, and the 'REGISTRY_USERNAME' and 'REGISTRY_PASSWORD' secrets are required to be added into GitHub Secrets. See these docs for details: https://github.com/Azure/docker-login";
 
             return gitHubStep;
         }
