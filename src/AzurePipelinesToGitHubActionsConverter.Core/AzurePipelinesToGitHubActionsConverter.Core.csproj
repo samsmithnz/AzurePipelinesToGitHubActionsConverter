@@ -12,7 +12,7 @@
 
   <ItemGroup>
     <PackageReference Include="System.Text.Json" Version="5.0.1" />
-    <PackageReference Include="YamlDotNet" Version="10.0.0" />
+    <PackageReference Include="YamlDotNet" Version="11.0.1" />
   </ItemGroup>
 
 </Project>
