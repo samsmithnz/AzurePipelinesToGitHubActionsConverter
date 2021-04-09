@@ -807,6 +807,33 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
         }
 
+        [TestMethod]
+        public void UseNodeStepTest()
+        {
+            //Arrange
+            Conversion conversion = new Conversion();
+            string yaml = @"
+- task: UseNode@1
+  displayName: 'Use Node.js 8.10.0'
+  inputs:
+    version: '8.10.0'
+";
+
+            //Act
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineTaskToGitHubActionTask(yaml);
+
+            //Assert
+            string expected = @"
+- name: Use Node.js 8.10.0
+  uses: actions/setup-node@v2
+  with:
+    node-version: 8.10.0
+";
+
+            expected = UtilityTests.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+        }
+
         //        [TestMethod]
         //        public void KubernetesStepTest()
         //        {

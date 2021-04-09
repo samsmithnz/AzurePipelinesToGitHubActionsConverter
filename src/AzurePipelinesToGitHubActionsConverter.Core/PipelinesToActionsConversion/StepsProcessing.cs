@@ -162,6 +162,9 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                     case "USEDOTNET@2":
                         gitHubStep = CreateUseDotNetStep(step);
                         break;
+                    case "USENODE@1":
+                        gitHubStep = CreateUseNodeStep(step);
+                        break;
                     case "USEPYTHONVERSION@0":
                         gitHubStep = CreateUsePythonStep(step);
                         break;
@@ -747,7 +750,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
 
             //Docker@2 inputs
             string command = GetStepInput(step, "command");
-            if (string.IsNullOrEmpty(command)==true)
+            if (string.IsNullOrEmpty(command) == true)
             {
                 command = GetStepInput(step, "action");
             }
@@ -790,15 +793,15 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                 command = "build";
             }
             else if (command == "Push an image")
-            { 
-                command = "push"; 
+            {
+                command = "push";
             }
             switch (command)
             {
                 case "build":
                     dockerLines.Add("docker build");
-                    break;                    
-                case "push":         
+                    break;
+                case "push":
                     dockerLines.Add("docker push");
                     break;
                 case "buildAndPush":
@@ -1127,14 +1130,6 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
 
         private GitHubActions.Step CreateUseDotNetStep(AzurePipelines.Step step)
         {
-            GitHubActions.Step gitHubStep = new GitHubActions.Step
-            {
-                uses = "actions/setup-dotnet@v1",
-                with = new Dictionary<string, string>
-                {
-                    {"dotnet-version", GetStepInput(step, "version")}
-                }
-            };
             //Pipelines
             //- task: UseDotNet@2
             //  displayName: 'Use .NET Core sdk'
@@ -1147,6 +1142,41 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
             //- uses: actions/setup-dotnet@v1
             //  with:
             //    dotnet-version: '2.2.103' # SDK Version to use.
+
+            GitHubActions.Step gitHubStep = new GitHubActions.Step
+            {
+                uses = "actions/setup-dotnet@v1",
+                with = new Dictionary<string, string>
+                {
+                    {"dotnet-version", GetStepInput(step, "version")}
+                }
+            };
+
+            return gitHubStep;
+        }
+
+        private GitHubActions.Step CreateUseNodeStep(AzurePipelines.Step step)
+        {
+            //Pipelines
+            //- task: UseNode@1
+            //  displayName: 'Use Node.js 8.10.0'
+            //  inputs:
+            //    version: '8.10.0'
+
+            //Actions
+            //- uses: actions/setup-node@v2
+            //  with:
+            //    node-version: '14'
+
+            GitHubActions.Step gitHubStep = new GitHubActions.Step
+            {
+                uses = "actions/setup-node@v2",
+                with = new Dictionary<string, string>
+                {
+                    {"node-version", GetStepInput(step, "version")}
+                }
+            };
+
             return gitHubStep;
         }
 
