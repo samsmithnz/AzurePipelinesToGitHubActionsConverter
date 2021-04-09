@@ -77,6 +77,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                     case "DOCKER@2":
                         gitHubStep = CreateDockerStep(step);
                         break;
+                    case "DOTNETCORECLI@1":
                     case "DOTNETCORECLI@2":
                         gitHubStep = CreateDotNetCommandStep(step);
                         break;
