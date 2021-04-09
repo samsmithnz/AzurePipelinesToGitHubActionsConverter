@@ -824,7 +824,10 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
 
             //Assert
             string expected = @"
-
+- name: Use Node.js 8.10.0
+  uses: actions/setup-node@v2
+  with:
+    node-version: 8.10.0
 ";
 
             expected = UtilityTests.TrimNewLines(expected);
