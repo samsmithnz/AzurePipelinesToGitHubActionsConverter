@@ -446,6 +446,56 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             string expected = @"
 - name: Evaluate Next Version
   uses: gittools/actions/gitversion/execute@v0.9.7
+  with:
+    configFilePath: GitVersion.yml
+";
+            expected = UtilityTests.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+        }
+
+        [TestMethod]
+        public void GitVersionSetupIndividualStepTest()
+        {
+            //Arrange
+            Conversion conversion = new Conversion();
+            string yaml = @"
+- task: gitversion/setup@0
+  displayName: 'Install GitVersion'
+  inputs:
+    versionSpec: '5.x'
+";
+
+            //Act
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineTaskToGitHubActionTask(yaml);
+
+            //Assert
+            string expected = @"
+- name: Install GitVersion
+  uses: gittools/actions/gitversion/setup@v0.9.7
+  with:
+    versionSpec: 5.x
+";
+            expected = UtilityTests.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+        }
+
+        [TestMethod]
+        public void GitVersionExecuteIndividualStepTest()
+        {
+            //Arrange
+            Conversion conversion = new Conversion();
+            string yaml = @"
+- task: gitversion/execute@0
+  displayName: 'Evaluate Next Version'
+";
+
+            //Act
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineTaskToGitHubActionTask(yaml);
+
+            //Assert
+            string expected = @"
+- name: Evaluate Next Version
+  uses: gittools/actions/gitversion/execute@v0.9.7
 ";
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);

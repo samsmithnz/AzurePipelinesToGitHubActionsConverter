@@ -1336,7 +1336,7 @@ jobs:
 
         }
 
-        
+
         [TestMethod]
         public void SSDeploymentPipelineTest()
         {
@@ -1942,11 +1942,11 @@ stages:
 
             //Assert
             string expected = @"
-#Error (line 52): the step 'PublishTestResults@2' does not have a conversion path yet
-#Error (line 55): the step 'PublishTestResults@2' does not have a conversion path yet
-#Error (line 78): the step 'PublishTestResults@2' does not have a conversion path yet
-#Error (line 81): the step 'PublishTestResults@2' does not have a conversion path yet
-#Error (line 250): the step 'PublishCodeCoverageResults@1' does not have a conversion path yet
+#Error (line 58): the step 'PublishTestResults@2' does not have a conversion path yet
+#Error (line 61): the step 'PublishTestResults@2' does not have a conversion path yet
+#Error (line 84): the step 'PublishTestResults@2' does not have a conversion path yet
+#Error (line 87): the step 'PublishTestResults@2' does not have a conversion path yet
+#Error (line 256): the step 'PublishCodeCoverageResults@1' does not have a conversion path yet
 on:
   push:
     branches:
@@ -1968,8 +1968,14 @@ jobs:
     runs-on: ubuntu 16.04
     steps:
     - uses: actions/checkout@v2
+    - name: Install GitVersion
+      uses: gittools/actions/gitversion/setup@v0.9.7
+      with:
+        versionSpec: 5.x
     - name: Evaluate Next Version
       uses: gittools/actions/gitversion/execute@v0.9.7
+      with:
+        configFilePath: GitVersion.yml
     - name: Build & Package Module
       shell: powershell
       env:
@@ -2502,6 +2508,55 @@ jobs:
       run: |
         docker build --file ${{ env.dockerfilePath }} ${{ env.dockerRegistryServiceConnection }} ${{ env.imageRepository }} --tags ${{ env.tag }}
         docker push --file ${{ env.dockerfilePath }} ${{ env.dockerRegistryServiceConnection }} ${{ env.imageRepository }} --tags ${{ env.tag }}
+";
+
+            expected = UtilityTests.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+        }
+
+        [TestMethod]
+        public void GitHubVersionTest()
+        {
+            //Arrange
+            string input = @"
+trigger:
+- main
+
+vmImageName: 'ubuntu-latest'
+
+jobs:
+- job: Build
+  displayName: Build
+  pool:
+    vmImage: ubuntu-latest
+  steps:
+  - task: GitVersion@5
+    name: gitVersion
+    displayName: 'Evaluate Next Version'
+";
+            Conversion conversion = new Conversion();
+
+            //Act
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(input);
+
+            //Assert
+            string expected = @"
+on:
+  push:
+    branches:
+    - main
+jobs:
+  Build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Install GitVersion
+      uses: gittools/actions/gitversion/setup@v0.9.7
+      with:
+        versionSpec: 5.x
+    - name: Evaluate Next Version
+      uses: gittools/actions/gitversion/execute@v0.9.7
 ";
 
             expected = UtilityTests.TrimNewLines(expected);

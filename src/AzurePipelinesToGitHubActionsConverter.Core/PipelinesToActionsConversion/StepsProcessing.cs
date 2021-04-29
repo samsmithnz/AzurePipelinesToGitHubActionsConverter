@@ -94,7 +94,11 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                         gitHubStep = CreateGitHubReleaseStep(step);
                         break;
                     case "GITVERSION@5":
-                        gitHubStep = CreateGitVersionStep(step);
+                    case "GITVERSION/EXECUTE@0":
+                        gitHubStep = CreateGitVersionExecuteStep(step);
+                        break;
+                    case "GITVERSION/SETUP@0":
+                        gitHubStep = CreateGitVersionSetupStep(step);
                         break;
                     case "GRADLE@2":
                         gitHubStep = CreateGradleStep(step);
@@ -1909,9 +1913,9 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
         }
 
 
-        public GitHubActions.Step CreateGitVersionStep(AzurePipelines.Step step)
+        public GitHubActions.Step CreateGitVersionExecuteStep(AzurePipelines.Step step)
         {
-            //From: https://marketplace.visualstudio.com/items?itemName=gittools.gitversion
+            //From: https://github.com/GitTools/actions/blob/main/docs/examples/azure/gitversion/execute/usage-examples.md
             //- task: GitVersion@5
             //  name: gitVersion
             //  displayName: 'Evaluate Next Version'
@@ -1919,16 +1923,82 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
             //    runtime: 'core'
             //    configFilePath: 'GitVersion.yml'
 
-            //To: https://github.com/GitTools/actions/blob/master/docs/examples/github/gitversion/execute/usage-examples.md
+            //To: https://github.com/GitTools/actions/blob/main/docs/examples/github/gitversion/execute/usage-examples.md
             //- name: Determine Version
             //  uses: gittools/actions/gitversion/execute@v0.9.7
 
+            string targetPath = GetStepInput(step, "targetPath");
+            string useConfigFile = GetStepInput(step, "useConfigFile");
+            string configFilePath = GetStepInput(step, "configFilePath");
+            string updateAssemblyInfo = GetStepInput(step, "updateAssemblyInfo");
+            string updateAssemblyInfoFilename = GetStepInput(step, "updateAssemblyInfoFilename");
+            string additionalArguments = GetStepInput(step, "additionalArguments");
 
             GitHubActions.Step gitHubStep = new GitHubActions.Step
             {
                 name = step.name,
-                uses = "gittools/actions/gitversion/execute@v0.9.7"
+                uses = "gittools/actions/gitversion/execute@v0.9.7",
+                with = new Dictionary<string, string>()
             };
+
+            if (targetPath != null)
+            {
+                gitHubStep.with.Add("targetPath", targetPath);
+            }
+            if (useConfigFile != null)
+            {
+                gitHubStep.with.Add("useConfigFile", useConfigFile);
+            }
+            if (configFilePath != null)
+            {
+                gitHubStep.with.Add("configFilePath", configFilePath);
+            }
+            if (updateAssemblyInfo != null)
+            {
+                gitHubStep.with.Add("updateAssemblyInfo", updateAssemblyInfo);
+            }
+            if (updateAssemblyInfoFilename != null)
+            {
+                gitHubStep.with.Add("updateAssemblyInfoFilename", updateAssemblyInfoFilename);
+            }
+            if (additionalArguments != null)
+            {
+                gitHubStep.with.Add("additionalArguments", additionalArguments);
+            }
+
+            return gitHubStep;
+        }
+
+        public GitHubActions.Step CreateGitVersionSetupStep(AzurePipelines.Step step)
+        {
+            //From: https://github.com/GitTools/actions/blob/main/docs/examples/azure/gitversion/setup/usage-examples.md
+            //- task: gitversion/setup@0
+            //  displayName: 'Install GitVersion'
+            //  inputs:
+            //    versionSpec: '5.x'
+
+            //To: https://github.com/GitTools/actions/blob/main/docs/examples/github/gitversion/setup/usage-examples.md
+            //- name: Install GitVersion
+            //  uses: gittools/actions/gitversion/setup@v0.9.7
+            //  with:
+            //    versionSpec: '5.x'
+
+            string versionSpec = GetStepInput(step, "versionSpec");
+            string includePrerelease = GetStepInput(step, "includePrerelease");
+
+            GitHubActions.Step gitHubStep = new GitHubActions.Step
+            {
+                name = step.name,
+                uses = "gittools/actions/gitversion/setup@v0.9.7",
+                with = new Dictionary<string, string>
+                {
+                   { "versionSpec", versionSpec }
+                }
+            };
+            if (includePrerelease != null)
+            {
+                gitHubStep.with.Add("includePrerelease", includePrerelease);
+            }
 
             return gitHubStep;
         }
@@ -2867,6 +2937,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                 bool addDockerLoginStep = false;
                 bool addAzureLoginStep = false;
                 bool addMSSetupStep = false;
+                bool addGitHubVersionSetupStep = false;
                 string javaVersion = null;
 
                 //If the code needs a Checkout step, add it first
@@ -2950,6 +3021,15 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                                 }
                                 break;
 
+                            case "GITVERSION@5":
+                            case "GITVERSION/EXECUTE@0":
+                                if (addGitHubVersionSetupStep == false)
+                                {
+                                    addGitHubVersionSetupStep = true;
+                                    stepAdjustment++;
+                                }
+                                break;
+
                             default:
                                 //If we have an Azure step, we will need to add a Azure login step
                                 if (step.task.ToUpper().StartsWith("AZURE") == true)
@@ -3020,7 +3100,21 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                 {
                     //Add the Azure login step to the code
                     newSteps[adjustmentsUsed] = CreateMSBuildSetupStep();
-                    //adjustmentsUsed++;
+                    adjustmentsUsed++;
+                }
+                if (addGitHubVersionSetupStep == true)
+                {
+                    //Add the GitVersion setup step to the code
+                    AzurePipelines.Step step = new AzurePipelines.Step
+                    {
+                        name = "Install GitVersion",
+                        inputs = new Dictionary<string, string>
+                        {
+                            { "versionSpec", "5.x" }
+                        }
+                    };
+                    newSteps[adjustmentsUsed] = CreateGitVersionSetupStep(step);
+                    //adjustmentsUsed++; //don't need to update the adjustment on the last item
                 }
 
                 //Translate the other steps
