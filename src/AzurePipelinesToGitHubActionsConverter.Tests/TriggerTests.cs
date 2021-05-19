@@ -433,5 +433,57 @@ on:
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
         }
+
+
+        [TestMethod]
+        public void TriggerWorkflowDispatchTest()
+        {
+            //Arrange
+            string input = @"
+trigger:
+- main
+";
+            bool addWorkFlowDispatch = true;
+            Conversion conversion = new Conversion();
+
+            //Act
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(input, addWorkFlowDispatch);
+
+            //Assert
+            string expected = @"
+on:
+  push:
+    branches:
+    - main
+  workflow_dispatch:
+";
+            expected = UtilityTests.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+
+        }
+
+        [TestMethod]
+        public void TriggerWorkflowDispatchNoTriggerTest()
+        {
+            //Arrange
+            string input = @"
+name: test trigger pipelines
+";
+            bool addWorkFlowDispatch = true;
+            Conversion conversion = new Conversion();
+
+            //Act
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(input, addWorkFlowDispatch);
+
+            //Assert
+            string expected = @"
+name: test trigger pipelines
+on:
+  workflow_dispatch:
+";
+            expected = UtilityTests.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+        }
+
     }
 }

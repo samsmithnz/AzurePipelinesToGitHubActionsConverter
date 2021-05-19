@@ -135,6 +135,9 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Serialization
             yaml = yaml.Replace(": >", ": ");
             yaml = yaml.Replace("#: \n      ", ": ");
 
+            //Fix the workflow dispatch empty string to be [nothing]
+            yaml = yaml.Replace("workflow_dispatch: ''", "workflow_dispatch:");
+
             return yaml;
         }
 
