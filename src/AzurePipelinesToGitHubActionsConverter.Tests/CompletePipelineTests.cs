@@ -2294,10 +2294,11 @@ jobs:
       WebAppName: $(WebsiteName)
       ResourceGroupName: $(ResourceGroupName)
       SourceSlot: 'staging'";
+            bool addWorkFlowDispatch = true;
             Conversion conversion = new Conversion();
 
             //Act
-            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(input);
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(input, addWorkFlowDispatch);
 
             //Assert
             string expected = @"
@@ -2306,6 +2307,7 @@ on:
   push:
     branches:
     - main
+  workflow_dispatch:
 env:
   buildConfiguration: Release
   buildPlatform: Any CPU
