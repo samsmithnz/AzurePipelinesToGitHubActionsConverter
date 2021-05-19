@@ -26,9 +26,9 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
         /// </summary>
         /// <param name="yaml">Yaml to convert</param>
         /// <returns>Converion object, with original yaml, processed yaml, comments on the conversion, and which conversion method was used</returns>
-        public ConversionResponse ConvertAzurePipelineToGitHubAction(string yaml)
+        public ConversionResponse ConvertAzurePipelineToGitHubAction(string yaml, bool addWorkFlowDispatch = false)
         {
-            return ConvertAzurePipelineToGitHubActionV2(yaml);
+            return ConvertAzurePipelineToGitHubActionV2(yaml, addWorkFlowDispatch);
         }
 
         /// <summary>
@@ -42,7 +42,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
         /// <param name="yaml"></param>
         /// <returns></returns>
 
-        private ConversionResponse ConvertAzurePipelineToGitHubActionV2(string yaml)
+        private ConversionResponse ConvertAzurePipelineToGitHubActionV2(string yaml, bool addWorkFlowDispatch)
         {
             string gitHubYaml = "";
             List<string> variableList = new List<string>();
@@ -120,6 +120,20 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                     else
                     {
                         gitHubActions.on.schedule = schedules.schedule;
+                    }
+                }
+                // Allows you to run this workflow manually from the Actions tab
+                if (addWorkFlowDispatch == true)
+                {
+                    GitHubActions.Trigger workflowDispatch = new GitHubActions.Trigger();
+                    workflowDispatch.workflow_dispatch = "";
+                    if (gitHubActions.on == null)
+                    {
+                        gitHubActions.on = workflowDispatch;
+                    }
+                    else
+                    {
+                        gitHubActions.on.workflow_dispatch = workflowDispatch.workflow_dispatch;
                     }
                 }
 
@@ -220,7 +234,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                 //Process repositories
                 if (repositories != null)
                 {
-                    gitHubActions= gp.ProcessStepsWithRepositories(gitHubActions, repositories);
+                    gitHubActions = gp.ProcessStepsWithRepositories(gitHubActions, repositories);
                 }
 
                 if (gitHubActions.jobs != null && gitHubActions.jobs.Count == 0)
