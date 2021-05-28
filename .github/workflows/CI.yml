@@ -12,7 +12,7 @@ jobs:
         os: [windows-latest, ubuntu-latest]
     runs-on: ${{matrix.os}}
     outputs: # https://stackoverflow.com/questions/59175332/using-output-from-a-previous-job-in-a-new-one-in-a-github-action
-      semVer: ${{ steps.gitversion.outputs.semVer }}
+      SemVer: ${{ steps.gitversion.outputs.SemVer }}
       CommitsSinceVersionSource: ${{ steps.gitversion.outputs.CommitsSinceVersionSource }}  
     steps:
 
@@ -32,14 +32,14 @@ jobs:
 
     - name: Display GitVersion outputs
       run: |
-        echo "semVer: ${{ steps.gitversion.outputs.semVer }}"
+        echo "SemVer: ${{ steps.gitversion.outputs.SemVer }}"
         echo "CommitsSinceVersionSource: ${{ steps.gitversion.outputs.CommitsSinceVersionSource }}"
     
     - name: dotnet restore
       run: dotnet restore --verbosity minimal --configfile nuget.config
 
     - name: dotnet build
-      run: dotnet build -c Release --nologo --no-restore -p:Version='${{ steps.gitversion.outputs.semVer }}' -p:SourceRevisionId=${{ github.sha }}
+      run: dotnet build -c Release --nologo --no-restore -p:Version='${{ steps.gitversion.outputs.SemVer }}' -p:SourceRevisionId=${{ github.sha }}
 
     - name: dotnet test
       run: dotnet test -c Release --nologo --no-restore --no-build -p:CollectCoverage=true -p:CoverletOutput=TestResults/ -p:CoverletOutputFormat=lcov
@@ -49,11 +49,11 @@ jobs:
       if: runner.OS == 'Linux' #Only push the Linux coverage
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
-        path-to-lcov: src/AzurePipelinesToGitHubActionsConverter.Tests/TestResults/coverage.info 
+        path-to-lcov: src/AzurePipelinesToGitHubActionsConverter.Tests/TestResults/coverage.info
 
     #Pack the code into a NuGet package
     - name: dotnet pack
-      run: dotnet pack -c Release --nologo --no-build --include-symbols -p:Version='${{ steps.gitversion.outputs.semVer }}'
+      run: dotnet pack -c Release --nologo --no-build --include-symbols -p:Version='${{ steps.gitversion.outputs.SemVer }}'
 
     #the remainder of steps only execute under a Linux runner
     - name: Upload nuget package back to GitHub
@@ -63,22 +63,24 @@ jobs:
         name: nugetPackage
         path: src/AzurePipelinesToGitHubActionsConverter.Core/bin/Release
 
-    - name: dotnet nuget push
+    - name: dotnet push (nuget)
       if: runner.OS == 'Linux' && github.ref == 'refs/heads/main' && needs.build.outputs.CommitsSinceVersionSource > 0 #Only publish a NuGet package if there has been a commit/version change
       run: dotnet nuget push nugetPackage/*.nupkg --skip-duplicate -k ${{ secrets.GHPackagesToken }} -s https://api.nuget.org/v3/index.json
 
     - name: dotnet push (github)
+      run: |
+        dotnet tool update -g gpr
+        gpr push ${{ github.workspace }}/nugetPackage/**/*.nupkg -k ${{ secrets.GITHUB_TOKEN }}
       if: runner.OS == 'Linux' && github.ref == 'refs/heads/main' && needs.build.outputs.CommitsSinceVersionSource > 0 #Only publish a NuGet package if there has been a commit/version change
-      run: dotnet nuget push nugetPackage/**/*.nupkg --skip-duplicate -k ${{ secrets.GITHUB_TOKEN }} -s https://nuget.pkg.github.com/${{ github.actor }}/index.json
-
+  
     - name: Create Release
       uses: actions/create-release@v1
       if: runner.OS == 'Linux' && github.ref == 'refs/heads/main' && needs.build.outputs.CommitsSinceVersionSource > 0 #Only create a release if there has been a commit/version change
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
       with:
-        tag_name: ${{ needs.build.outputs.semVer }}
-        release_name: Release ${{ needs.build.outputs.semVer }}
+        tag_name: ${{ needs.build.outputs.SemVer }}
+        release_name: Release ${{ needs.build.outputs.SemVer }}
 
   SonarCloud:
     name: SonarCloud
