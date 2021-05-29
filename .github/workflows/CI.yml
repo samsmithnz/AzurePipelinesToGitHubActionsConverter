@@ -35,14 +35,8 @@ jobs:
         echo "SemVer: ${{ steps.gitversion.outputs.SemVer }}"
         echo "CommitsSinceVersionSource: ${{ steps.gitversion.outputs.CommitsSinceVersionSource }}"
     
-    - name: dotnet restore
-      run: dotnet restore --verbosity minimal --configfile nuget.config
-
-    - name: dotnet build
-      run: dotnet build -c Release --nologo --no-restore -p:Version='${{ steps.gitversion.outputs.SemVer }}' -p:SourceRevisionId=${{ github.sha }}
-
     - name: dotnet test
-      run: dotnet test -c Release --nologo --no-restore --no-build -p:CollectCoverage=true -p:CoverletOutput=TestResults/ -p:CoverletOutputFormat=lcov
+      run: dotnet test -c Release --nologo -p:CollectCoverage=true -p:CoverletOutput=TestResults/ -p:CoverletOutputFormat=lcov 
 
     - name: Publish coverage report to coveralls.io
       uses: coverallsapp/github-action@master
@@ -53,7 +47,7 @@ jobs:
 
     #Pack the code into a NuGet package
     - name: dotnet pack
-      run: dotnet pack -c Release --nologo --no-build --include-symbols -p:Version='${{ steps.gitversion.outputs.SemVer }}'
+      run: dotnet pack -c Release --nologo --include-symbols -p:Version='${{ steps.gitversion.outputs.SemVer }}'
 
     #the remainder of steps only execute under a Linux runner
     - name: Upload nuget package back to GitHub
