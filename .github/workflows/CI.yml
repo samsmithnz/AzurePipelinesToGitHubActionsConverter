@@ -58,23 +58,23 @@ jobs:
         path: src/AzurePipelinesToGitHubActionsConverter.Core/bin/Release
 
     - name: dotnet push (nuget)
-      if: runner.OS == 'Linux' && github.ref == 'refs/heads/main' && needs.build.outputs.CommitsSinceVersionSource > 0 #Only publish a NuGet package if there has been a commit/version change
+      if: runner.OS == 'Linux' && github.ref == 'refs/heads/main' && steps.gitversion.outputs.CommitsSinceVersionSource > 0 #Only publish a NuGet package if there has been a commit/version change
       run: dotnet nuget push nugetPackage/*.nupkg --skip-duplicate -k ${{ secrets.GHPackagesToken }} -s https://api.nuget.org/v3/index.json
 
     - name: dotnet push (github)
       run: |
         dotnet tool update -g gpr
         gpr push ${{ github.workspace }}/nugetPackage/**/*.nupkg -k ${{ secrets.GITHUB_TOKEN }}
-      if: runner.OS == 'Linux' && github.ref == 'refs/heads/main' && needs.build.outputs.CommitsSinceVersionSource > 0 #Only publish a NuGet package if there has been a commit/version change
+      if: runner.OS == 'Linux' && github.ref == 'refs/heads/main' && steps.gitversion.outputs.CommitsSinceVersionSource > 0 #Only publish a NuGet package if there has been a commit/version change
   
     - name: Create Release
       uses: actions/create-release@v1
-      if: runner.OS == 'Linux' && github.ref == 'refs/heads/main' && needs.build.outputs.CommitsSinceVersionSource > 0 #Only create a release if there has been a commit/version change
+      if: runner.OS == 'Linux' && github.ref == 'refs/heads/main' && steps.gitversion.outputs.CommitsSinceVersionSource > 0 #Only create a release if there has been a commit/version change
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
       with:
-        tag_name: ${{ needs.build.outputs.SemVer }}
-        release_name: Release ${{ needs.build.outputs.SemVer }}
+        tag_name: ${{ steps.gitversion.outputs.SemVer }}
+        release_name: Release ${{ steps.gitversion.outputs.SemVer }}
 
   SonarCloud:
     name: SonarCloud
