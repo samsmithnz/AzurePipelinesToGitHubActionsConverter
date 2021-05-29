@@ -271,24 +271,21 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                 //Double check the with. Sometimes we start to add a property, but for various reasons, we don't use it, and have to null out the with so it doesn't display an empty node in the final yaml
                 if (gitHubStep.with != null)
                 {
-                    if (gitHubStep.with.Count >= 0)
+                    //Look to see if there is non-null data in the collection
+                    bool foundData = false;
+                    foreach (KeyValuePair<string, string> item in gitHubStep.with)
                     {
-                        //Look to see if there is non-null data in the collection
-                        bool foundData = false;
-                        foreach (KeyValuePair<string, string> item in gitHubStep.with)
+                        //If data was found, break out of the loop, we don't need to look anymore
+                        if (item.Value != null)
                         {
-                            //If data was found, break out of the loop, we don't need to look anymore
-                            if (item.Value != null)
-                            {
-                                foundData = true;
-                                break;
-                            }
+                            foundData = true;
+                            break;
                         }
-                        //If no data was found, null out the with property
-                        if (foundData == false)
-                        {
-                            gitHubStep.with = null;
-                        }
+                    }
+                    //If no data was found, null out the with property
+                    if (foundData == false)
+                    {
+                        gitHubStep.with = null;
                     }
                 }
                 gitHubStep.continue_on_error = step.continueOnError;
@@ -2842,11 +2839,6 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                 gitHubStep.with.Add("name", name);
             }
 
-            //In publish task, I we need to delete any usage of build.artifactstagingdirectory variable as it's implied in github actions, and therefore not needed (Adding it adds the path twice)
-            if (gitHubStep.with.ContainsKey("path") == true & gitHubStep.with["path"] != null)
-            {
-                gitHubStep.with["path"].Replace("$(build.artifactstagingdirectory)", "");
-            }
             return gitHubStep;
         }
 
