@@ -65,12 +65,12 @@ jobs:
 
     - name: dotnet push (nuget)
       if: runner.OS == 'Linux' && github.ref == 'refs/heads/main' && needs.build.outputs.CommitsSinceVersionSource > 0 #Only publish a NuGet package if there has been a commit/version change
-      run: dotnet nuget push nugetPackage/*.nupkg --skip-duplicate -k ${{ secrets.GHPackagesToken }} -s https://api.nuget.org/v3/index.json
+      run: dotnet nuget push ${{ github.workspace }}/src/**/*.nupkg --skip-duplicate -k ${{ secrets.GHPackagesToken }} -s https://api.nuget.org/v3/index.json
 
     - name: dotnet push (github)
       run: |
         dotnet tool update -g gpr
-        gpr push ${{ github.workspace }}/nugetPackage/**/*.nupkg -k ${{ secrets.GITHUB_TOKEN }}
+        gpr push ${{ github.workspace }}/src/**/*.nupkg -k ${{ secrets.GITHUB_TOKEN }}
       if: runner.OS == 'Linux' && github.ref == 'refs/heads/main' && needs.build.outputs.CommitsSinceVersionSource > 0 #Only publish a NuGet package if there has been a commit/version change
   
     - name: Create Release
