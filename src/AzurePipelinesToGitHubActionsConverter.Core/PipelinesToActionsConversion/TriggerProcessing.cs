@@ -57,14 +57,14 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                         push.tags_ignore = trigger.tags.exclude;
                     }
                 }
-            }
-            if (trigger.batch != null)
-            {
-                ConversionUtility.WriteLine($"This trigger contains a batch property, that Actions does not currently have a conversion path for", _verbose);
-            }
-            if (trigger.autoCancel != null)
-            {
-                ConversionUtility.WriteLine($"This trigger contains a autoCancel property, that Actions does not currently have a conversion path for", _verbose);
+                if (trigger.batch != null)
+                {
+                    ConversionUtility.WriteLine($"This trigger contains a batch property, that Actions does not currently have a conversion path for", _verbose);
+                }
+                if (trigger.autoCancel != null)
+                {
+                    ConversionUtility.WriteLine($"This trigger contains a autoCancel property, that Actions does not currently have a conversion path for", _verbose);
+                }
             }
 
             return new GitHubActions.Trigger
