@@ -4,7 +4,6 @@ on:
   push:
     branches: [main]
   pull_request:
-    
 
 jobs:
   build:
@@ -13,9 +12,10 @@ jobs:
         os: [windows-latest, ubuntu-latest]
     runs-on: ${{matrix.os}}
     outputs: # https://stackoverflow.com/questions/59175332/using-output-from-a-previous-job-in-a-new-one-in-a-github-action
-      Version: ${{ steps.gitversion.outputs.nuGetVersionV2 }}
+      SemVer: ${{ steps.gitversion.outputs.SemVer }}
       CommitsSinceVersionSource: ${{ steps.gitversion.outputs.CommitsSinceVersionSource }}  
     steps:
+
     - uses: actions/checkout@v2
       with:
         fetch-depth: 0 #fetch-depth is needed for GitVersion
@@ -24,37 +24,57 @@ jobs:
     - name: Install GitVersion
       uses: gittools/actions/gitversion/setup@v0.9.7
       with:
-        versionSpec: '5.x'
+        versionSpec: 5.x
+
     - name: Determine Version
       uses: gittools/actions/gitversion/execute@v0.9.7
       id: gitversion # step id used as reference for output values
+
     - name: Display GitVersion outputs
       run: |
-        echo "MajorMinorPatch: ${{ steps.gitversion.outputs.majorMinorPatch }}"
-        echo "NuGetVersionV2: ${{ steps.gitversion.outputs.nuGetVersionV2 }}"
+        echo "SemVer: ${{ steps.gitversion.outputs.SemVer }}"
         echo "CommitsSinceVersionSource: ${{ steps.gitversion.outputs.CommitsSinceVersionSource }}"
     
-    #Build and test code, then upload code coverage to coverall.io
-    #- name: Build with dotnet
-    #  run: dotnet build src/AzurePipelinesToGitHubActionsConverter.Tests/AzurePipelinesToGitHubActionsConverter.Tests.csproj --configuration Release /p:AssemblyVersion=${{ steps.gitversion.outputs.majorMinorPatch }} /p:Version=${{ steps.gitversion.outputs.majorMinorPatch }}
-    - name: Test with dotnet
-      run: dotnet test src/AzurePipelinesToGitHubActionsConverter.Tests/AzurePipelinesToGitHubActionsConverter.Tests.csproj --configuration Release /p:CollectCoverage=true /p:CoverletOutput=TestResults/ /p:CoverletOutputFormat=lcov
+    - name: dotnet test
+      run: dotnet test src/AzurePipelinesToGitHubActionsConverter.Tests/AzurePipelinesToGitHubActionsConverter.Tests.csproj -c Release --nologo -p:CollectCoverage=true -p:CoverletOutput=TestResults/ -p:CoverletOutputFormat=lcov 
+
     - name: Publish coverage report to coveralls.io
       uses: coverallsapp/github-action@master
       if: runner.OS == 'Linux' #Only push the Linux coverage
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
-        path-to-lcov: src/AzurePipelinesToGitHubActionsConverter.Tests/TestResults/coverage.info 
+        path-to-lcov: src/AzurePipelinesToGitHubActionsConverter.Tests/TestResults/coverage.info
 
     #Pack the code into a NuGet package
-    - name: Pack with dotnet
-      run: dotnet pack src/AzurePipelinesToGitHubActionsConverter.Core/AzurePipelinesToGitHubActionsConverter.Core.csproj --configuration Release /p:PackageVersion=${{ steps.gitversion.outputs.nuGetVersionV2 }} /p:AssemblyVersion=${{ steps.gitversion.outputs.majorMinorPatch }} /p:Version=${{ steps.gitversion.outputs.majorMinorPatch }}
+    - name: dotnet pack
+      run: dotnet pack src/AzurePipelinesToGitHubActionsConverter.Core/AzurePipelinesToGitHubActionsConverter.Core.csproj -c Release --nologo --include-symbols -p:Version='${{ steps.gitversion.outputs.SemVer }}'
+
+    #the remainder of steps only execute under a Linux runner
     - name: Upload nuget package back to GitHub
       uses: actions/upload-artifact@v2
-      if: runner.OS == 'Linux' #Only pack the Linux nuget package
+      if: runner.OS == 'Linux'
       with:
         name: nugetPackage
-        path: src/AzurePipelinesToGitHubActionsConverter.Core/bin/Release      
+        path: src/AzurePipelinesToGitHubActionsConverter.Core/bin/Release
+
+    - name: dotnet push (nuget)
+      if: runner.OS == 'Linux' && github.ref == 'refs/heads/main' && needs.build.outputs.CommitsSinceVersionSource > 0 #Only publish a NuGet package if there has been a commit/version change
+      run: dotnet nuget push nugetPackage/*.nupkg --skip-duplicate -k ${{ secrets.GHPackagesToken }} -s https://api.nuget.org/v3/index.json
+
+    - name: dotnet push (github)
+      run: |
+        dotnet tool update -g gpr
+        gpr push ${{ github.workspace }}/nugetPackage/**/*.nupkg -k ${{ secrets.GITHUB_TOKEN }}
+      if: runner.OS == 'Linux' && github.ref == 'refs/heads/main' && needs.build.outputs.CommitsSinceVersionSource > 0 #Only publish a NuGet package if there has been a commit/version change
+  
+    - name: Create Release
+      uses: actions/create-release@v1
+      if: runner.OS == 'Linux' && github.ref == 'refs/heads/main' && needs.build.outputs.CommitsSinceVersionSource > 0 #Only create a release if there has been a commit/version change
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
+      with:
+        tag_name: ${{ needs.build.outputs.SemVer }}
+        release_name: Release ${{ needs.build.outputs.SemVer }}
 
   SonarCloud:
     name: SonarCloud
@@ -64,15 +84,18 @@ jobs:
         uses: actions/setup-java@v1
         with:
           java-version: 1.11
+
       - uses: actions/checkout@v2
         with:
           fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
+
       - name: Cache SonarCloud packages
         uses: actions/cache@v1
         with:
           path: ~\sonar\cache
           key: ${{ runner.os }}-sonar
           restore-keys: ${{ runner.os }}-sonar
+
       - name: Cache SonarCloud scanner
         id: cache-sonar-scanner
         uses: actions/cache@v1
@@ -80,12 +103,14 @@ jobs:
           path: .\.sonar\scanner
           key: ${{ runner.os }}-sonar-scanner
           restore-keys: ${{ runner.os }}-sonar-scanner
+
       - name: Install SonarCloud scanner
         if: steps.cache-sonar-scanner.outputs.cache-hit != 'true'
         shell: powershell
         run: |
           New-Item -Path .\.sonar\scanner -ItemType Directory
           dotnet tool update dotnet-sonarscanner --tool-path .\.sonar\scanner
+
       - name: Build and analyze
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
@@ -95,32 +120,3 @@ jobs:
           .\.sonar\scanner\dotnet-sonarscanner begin /k:"samsmithnz_AzurePipelinesToGitHubActionsConverter" /o:"samsmithnz-github" /d:sonar.login="${{ secrets.SONAR_TOKEN }}" /d:sonar.host.url="https://sonarcloud.io"
           dotnet build src/AzurePipelinesToGitHubActionsConverter.Core/AzurePipelinesToGitHubActionsConverter.Core.csproj
           .\.sonar\scanner\dotnet-sonarscanner end /d:sonar.login="${{ secrets.SONAR_TOKEN }}"
-
-
-  NuGetPush:
-    runs-on: ubuntu-latest
-    needs: build
-    if: github.ref == 'refs/heads/main'      
-    steps:
-    - name: Display GitVersion outputs
-      run: |
-        echo "Version: ${{ needs.build.outputs.Version }}" 
-        echo "CommitsSinceVersionSource: ${{ needs.build.outputs.CommitsSinceVersionSource }}" 
-    - name: Download nuget package artifact
-      uses: actions/download-artifact@v1.0.0
-      with:
-        name: nugetPackage  
-    - name: Publish nuget package to nuget.org
-      if: needs.build.outputs.CommitsSinceVersionSource > 0 #Only publish a NuGet package if there has been a commit/version change
-      run: dotnet nuget push nugetPackage\*.nupkg --api-key "${{ secrets.GHPackagesToken }}" --source "https://www.nuget.org/"
-      shell: pwsh
-    - name: Create Release
-      id: create_release
-      uses: actions/create-release@v1
-      if: needs.build.outputs.CommitsSinceVersionSource > 0 #Only create a release if there has been a commit/version change
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
-      with:
-        tag_name: ${{ needs.build.outputs.Version }}
-        release_name: Release ${{ needs.build.outputs.Version }}
-

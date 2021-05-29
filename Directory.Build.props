@@ -1,0 +1,13 @@
+<Project>
+
+  <PropertyGroup>
+    <LangVersion>9.0</LangVersion>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <!-- https://docs.microsoft.com/en-us/dotnet/core/tools/csproj -->
+    <!-- default for IsPackable is true, we change this to false here so that we must be explicit in each project when creating NuGet packages -->
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+</Project>
