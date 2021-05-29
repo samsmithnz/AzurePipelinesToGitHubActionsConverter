@@ -12,7 +12,7 @@ jobs:
         os: [windows-latest, ubuntu-latest]
     runs-on: ${{matrix.os}}
     outputs: # https://stackoverflow.com/questions/59175332/using-output-from-a-previous-job-in-a-new-one-in-a-github-action
-      SemVer: ${{ steps.gitversion.outputs.SemVer }}
+      Version: ${{ steps.gitversion.outputs.SemVer }}
       CommitsSinceVersionSource: ${{ steps.gitversion.outputs.CommitsSinceVersionSource }}  
     steps:
 
@@ -32,7 +32,7 @@ jobs:
 
     - name: Display GitVersion outputs
       run: |
-        echo "SemVer: ${{ steps.gitversion.outputs.SemVer }}"
+        echo "Version: ${{ steps.gitversion.outputs.SemVer }}"
         echo "CommitsSinceVersionSource: ${{ steps.gitversion.outputs.CommitsSinceVersionSource }}"
     
     - name: dotnet test
@@ -49,32 +49,13 @@ jobs:
     - name: dotnet pack
       run: dotnet pack src/AzurePipelinesToGitHubActionsConverter.Core/AzurePipelinesToGitHubActionsConverter.Core.csproj -c Release --nologo --include-symbols -p:Version='${{ steps.gitversion.outputs.SemVer }}'
 
-    #the remainder of steps only execute under a Linux runner
     - name: Upload nuget package back to GitHub
       uses: actions/upload-artifact@v2
-      if: runner.OS == 'Linux'
+      if: runner.OS == 'Linux' #Only pack the Linux nuget package
       with:
         name: nugetPackage
-        path: src/AzurePipelinesToGitHubActionsConverter.Core/bin/Release
+        path: src/AzurePipelinesToGitHubActionsConverter.Core/bin/Release      
 
-    - name: dotnet push (nuget)
-      if: runner.OS == 'Linux' && github.ref == 'refs/heads/main' && steps.gitversion.outputs.CommitsSinceVersionSource > 0 #Only publish a NuGet package if there has been a commit/version change
-      run: dotnet nuget push nugetPackage/*.nupkg --skip-duplicate -k ${{ secrets.GHPackagesToken }} -s https://api.nuget.org/v3/index.json
-
-    - name: dotnet push (github)
-      run: |
-        dotnet tool update -g gpr
-        gpr push ${{ github.workspace }}/nugetPackage/**/*.nupkg -k ${{ secrets.GITHUB_TOKEN }}
-      if: runner.OS == 'Linux' && github.ref == 'refs/heads/main' && steps.gitversion.outputs.CommitsSinceVersionSource > 0 #Only publish a NuGet package if there has been a commit/version change
-  
-    - name: Create Release
-      uses: actions/create-release@v1
-      if: runner.OS == 'Linux' && github.ref == 'refs/heads/main' && steps.gitversion.outputs.CommitsSinceVersionSource > 0 #Only create a release if there has been a commit/version change
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
-      with:
-        tag_name: ${{ steps.gitversion.outputs.SemVer }}
-        release_name: Release ${{ steps.gitversion.outputs.SemVer }}
 
   SonarCloud:
     name: SonarCloud
@@ -120,3 +101,30 @@ jobs:
           .\.sonar\scanner\dotnet-sonarscanner begin /k:"samsmithnz_AzurePipelinesToGitHubActionsConverter" /o:"samsmithnz-github" /d:sonar.login="${{ secrets.SONAR_TOKEN }}" /d:sonar.host.url="https://sonarcloud.io"
           dotnet build src/AzurePipelinesToGitHubActionsConverter.Core/AzurePipelinesToGitHubActionsConverter.Core.csproj
           .\.sonar\scanner\dotnet-sonarscanner end /d:sonar.login="${{ secrets.SONAR_TOKEN }}"
+
+  NuGetPush:
+    runs-on: ubuntu-latest
+    needs: build
+    if: github.ref == 'refs/heads/main'      
+    steps:
+    - name: Display GitVersion outputs
+      run: |
+        echo "Version: ${{ needs.build.outputs.Version }}" 
+        echo "CommitsSinceVersionSource: ${{ needs.build.outputs.CommitsSinceVersionSource }}" 
+    - name: Download nuget package artifact
+      uses: actions/download-artifact@v1.0.0
+      with:
+        name: nugetPackage  
+    - name: Publish nuget package to nuget.org
+      if: needs.build.outputs.CommitsSinceVersionSource > 0 #Only publish a NuGet package if there has been a commit/version change
+      run: dotnet nuget push nugetPackage\*.nupkg --api-key "${{ secrets.GHPackagesToken }}" --source "https://www.nuget.org/"
+      shell: pwsh
+    - name: Create Release
+      id: create_release
+      uses: actions/create-release@v1
+      if: needs.build.outputs.CommitsSinceVersionSource > 0 #Only create a release if there has been a commit/version change
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
+      with:
+        tag_name: ${{ needs.build.outputs.Version }}
+        release_name: Release ${{ needs.build.outputs.Version }}
