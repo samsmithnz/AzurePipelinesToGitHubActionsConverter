@@ -136,7 +136,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
             }
             else
             {
-                return null;
+                return steps; //effectively return null
             }
         }
 
