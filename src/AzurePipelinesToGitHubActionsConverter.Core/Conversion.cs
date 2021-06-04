@@ -65,7 +65,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
             {
                 JsonElement jsonElement;
                 //Name
-                if (jsonObject.TryGetProperty("name", out jsonElement) )
+                if (jsonObject.TryGetProperty("name", out jsonElement))
                 {
                     string nameYaml = jsonElement.ToString();
                     gitHubActions.name = gp.ProcessNameV2(nameYaml);
@@ -73,7 +73,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
 
                 //Trigger
                 TriggerProcessing tp = new TriggerProcessing(_verbose);
-                if (jsonObject.TryGetProperty("trigger", out jsonElement) )
+                if (jsonObject.TryGetProperty("trigger", out jsonElement))
                 {
                     string triggerYaml;
                     if (jsonElement.ToString() == "none")
@@ -87,7 +87,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                     gitHubActions.on = tp.ProcessTriggerV2(triggerYaml);
                 }
                 //PR
-                if (jsonObject.TryGetProperty("pr", out jsonElement) )
+                if (jsonObject.TryGetProperty("pr", out jsonElement))
                 {
                     string prYaml;
                     if (jsonElement.ToString() == "none")
@@ -109,7 +109,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                     }
                 }
                 //Schedules
-                if (jsonObject.TryGetProperty("schedules", out jsonElement) )
+                if (jsonObject.TryGetProperty("schedules", out jsonElement))
                 {
                     string schedulesYaml = jsonElement.ToString();
                     GitHubActions.Trigger schedules = tp.ProcessSchedulesV2(schedulesYaml);
@@ -123,7 +123,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                     }
                 }
                 // Allows you to run this workflow manually from the Actions tab
-                if (addWorkFlowDispatch )
+                if (addWorkFlowDispatch)
                 {
                     GitHubActions.Trigger workflowDispatch = new();
                     workflowDispatch.workflow_dispatch = "";
@@ -139,13 +139,13 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
 
                 //Parameters 
                 string parametersYaml = null;
-                if (jsonObject.TryGetProperty("parameters", out jsonElement) )
+                if (jsonObject.TryGetProperty("parameters", out jsonElement))
                 {
                     parametersYaml = jsonElement.ToString();
                 }
                 //Variables
                 string variablesYaml = null;
-                if (jsonObject.TryGetProperty("variables", out jsonElement) )
+                if (jsonObject.TryGetProperty("variables", out jsonElement))
                 {
                     variablesYaml = jsonElement.ToString();
                 }
@@ -158,7 +158,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                 //Resources
                 string resourcesYaml = null;
                 AzurePipelines.Repositories[] repositories = null;
-                if (jsonObject.TryGetProperty("resources", out jsonElement) )
+                if (jsonObject.TryGetProperty("resources", out jsonElement))
                 {
                     resourcesYaml = jsonElement.ToString();
 
@@ -168,7 +168,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                         gitHubActions.messages.Add("TODO: Resource pipelines conversion not yet done: https://github.com/samsmithnz/AzurePipelinesToGitHubActionsConverter/issues/8");
                     }
                     //Resource Repositories
-                    if (resourcesYaml?.IndexOf("\"repositories\"") >= 0 && jsonElement.TryGetProperty("repositories", out jsonElement) )
+                    if (resourcesYaml?.IndexOf("\"repositories\"") >= 0 && jsonElement.TryGetProperty("repositories", out jsonElement))
                     {
                         repositories = gp.ProcessRepositories(jsonElement.ToString());
                     }
@@ -181,30 +181,30 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
 
                 //Strategy
                 JsonElement strategy = new JsonElement();
-                if (jsonObject.TryGetProperty("strategy", out jsonElement) )
+                if (jsonObject.TryGetProperty("strategy", out jsonElement))
                 {
                     strategy = jsonElement;
                 }
 
                 //If we have stages, convert them into jobs first:
-                if (jsonObject.TryGetProperty("stages", out jsonElement) )
+                if (jsonObject.TryGetProperty("stages", out jsonElement))
                 {
                     StagesProcessing sp = new StagesProcessing(_verbose);
                     gitHubActions.jobs = sp.ProcessStagesV2(jsonElement, strategy);
                 }
                 //If we don't have stages, but have jobs:
-                else if (jsonObject.TryGetProperty("stages", out jsonElement) == false && jsonObject.TryGetProperty("jobs", out jsonElement) )
+                else if (!jsonObject.TryGetProperty("stages", out jsonElement) && jsonObject.TryGetProperty("jobs", out jsonElement))
                 {
                     JobProcessing jp = new JobProcessing(_verbose);
                     gitHubActions.jobs = jp.ProcessJobsV2(jp.ExtractAzurePipelinesJobsV2(jsonElement, strategy), gp.ExtractResourcesV2(resourcesYaml));
                     _matrixVariableName = jp.MatrixVariableName;
                 }
                 //Otherwise, if we don't have stages or jobs, we just have steps, and need to load them into a new job
-                else if (jsonObject.TryGetProperty("stages", out jsonElement) == false && jsonObject.TryGetProperty("jobs", out jsonElement) == false)
+                else if (!jsonObject.TryGetProperty("stages", out jsonElement) && !jsonObject.TryGetProperty("jobs", out jsonElement))
                 {
                     //Pool
                     string poolYaml = null;
-                    if (jsonObject.TryGetProperty("pool", out jsonElement) )
+                    if (jsonObject.TryGetProperty("pool", out jsonElement))
                     {
                         poolYaml = jsonElement.ToString();
                     }
@@ -216,7 +216,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
 
                     //Steps
                     string stepsYaml = null;
-                    if (jsonObject.TryGetProperty("steps", out jsonElement) )
+                    if (jsonObject.TryGetProperty("steps", out jsonElement))
                     {
                         stepsYaml = jsonElement.ToString();
                     }
@@ -264,7 +264,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                             }
                             foreach (GitHubActions.Step step in job.Value.steps)
                             {
-                                if (step != null && string.IsNullOrEmpty(step.step_message) == false)
+                                if (step != null && !string.IsNullOrEmpty(step.step_message))
                                 {
                                     stepComments.Add(ConversionUtility.ConvertMessageToYamlComment(step.step_message));
                                 }
@@ -331,7 +331,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                         if (line.IndexOf(stepComment.Replace("#", "")) >= 0)
                         {
                             //The zero indexed current line + 1, number of comments //, and summary line 
-                            int lineNumber = i + 1 + stepComments.Count; 
+                            int lineNumber = i + 1 + stepComments.Count;
                             stepCommentWithLines.Add(new KeyValuePair<int, string>(lineNumber, stepComment));
                             currentLine = i + 1;
                             foundStepComment = true;
@@ -339,7 +339,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                         }
                     }
                     //If a comment wasn't found, its a misc comment and should just be appended
-                    if (foundStepComment == false)
+                    if (!foundStepComment)
                     {
                         stepCommentWithLines.Add(new KeyValuePair<int, string>(0, stepComment));
                     }

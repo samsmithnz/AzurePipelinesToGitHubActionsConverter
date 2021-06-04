@@ -408,7 +408,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                                 if (repo._ref != null)
                                 {
                                     //Add the ref if it's not already there
-                                    if (step.with.TryGetValue("ref", out string repoRef) == false)
+                                    if (!step.with.TryGetValue("ref", out string repoRef))
                                     {
                                         step.with.Add("ref", repoRef);
                                     }

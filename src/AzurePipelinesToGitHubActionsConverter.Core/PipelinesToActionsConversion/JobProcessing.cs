@@ -126,7 +126,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                 int index = 0;
                 for (int i = 0; i < steps.Length; i++)
                 {
-                    if (indexesToRemove.Contains(i) == false)
+                    if (!indexesToRemove.Contains(i))
                     {
                         newSteps[index] = steps[i];
                         index++;

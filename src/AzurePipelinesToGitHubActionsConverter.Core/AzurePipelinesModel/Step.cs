@@ -21,7 +21,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.AzurePipelines
             set
             {
                 //Spaces on the beginning or end seem to be a problem for the YAML serialization
-                if (string.IsNullOrEmpty(value) == false)
+                if (!string.IsNullOrEmpty(value))
                 {
                     value = value.Trim();
                 }
@@ -38,7 +38,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.AzurePipelines
             set
             {
                 //Spaces on the beginning or end seem to be a problem for the YAML serialization
-                if (string.IsNullOrEmpty(value) == false)
+                if (!string.IsNullOrEmpty(value))
                 {
                     value = value.Trim();
                 }
@@ -55,7 +55,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.AzurePipelines
             set
             {
                 //Spaces on the beginning or end seem to be a problem for the YAML serialization
-                if (string.IsNullOrEmpty(value) == false)
+                if (!string.IsNullOrEmpty(value))
                 {
                     value = value.Trim();
                 }
@@ -72,7 +72,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.AzurePipelines
             set
             {
                 //Spaces on the beginning or end seem to be a problem for the YAML serialization
-                if (string.IsNullOrEmpty(value) == false)
+                if (!string.IsNullOrEmpty(value))
                 {
                     value = value.Trim();
                 }

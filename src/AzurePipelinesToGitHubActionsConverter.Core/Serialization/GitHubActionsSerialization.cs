@@ -201,7 +201,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Serialization
                         StringBuilder newInput = new StringBuilder();
                         foreach (string line in stepLines)
                         {
-                            if (line.Trim().StartsWith("steps:") == false)
+                            if (!line.Trim().StartsWith("steps:"))
                             {
                                 newInput.Append(buffer);
                                 newInput.Append(line);

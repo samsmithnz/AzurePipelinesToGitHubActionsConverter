@@ -97,7 +97,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                                     foreach (KeyValuePair<string, string> stageVariable in stage.variables)
                                     {
                                         //Add the stage variable if it doesn't already exist
-                                        if (jobs[jobIndex].variables.ContainsKey(stageVariable.Key) == false)
+                                        if (!jobs[jobIndex].variables.ContainsKey(stageVariable.Key))
                                         {
                                             jobs[jobIndex].variables.Add(stageVariable.Key, stageVariable.Value);
                                         }
