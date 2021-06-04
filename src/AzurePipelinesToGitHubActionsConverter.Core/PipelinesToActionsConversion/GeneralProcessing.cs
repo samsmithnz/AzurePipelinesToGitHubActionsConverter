@@ -11,7 +11,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
 {
     public class GeneralProcessing
     {
-        public string MatrixVariableName;
+        public string MatrixVariableName { get; set; }
         private readonly bool _verbose;
         public GeneralProcessing(bool verbose)
         {
