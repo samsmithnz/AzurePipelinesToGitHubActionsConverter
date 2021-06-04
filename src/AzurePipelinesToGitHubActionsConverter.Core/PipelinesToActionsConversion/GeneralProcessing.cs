@@ -385,37 +385,34 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
             {
                 foreach (GitHubActions.Step step in job.Value.steps)
                 {
-                    if (step.uses == "actions/checkout@v2")
+                    if (step.uses == "actions/checkout@v2" && step.with != null && step.with.ContainsKey("repository") == true && step.with.TryGetValue("repository", out string value))
                     {
-                        if (step.with != null && step.with.ContainsKey("repository") == true && step.with.TryGetValue("repository", out string value))
+                        foreach (Repositories repo in repositories)
                         {
-                            foreach (Repositories repo in repositories)
+                            if (repo.repository == value)
                             {
-                                if (repo.repository == value)
+                                if (repo.type != "github")
                                 {
-                                    if (repo.type != "github")
+                                    if (repo.type == "git")
                                     {
-                                        if (repo.type == "git")
-                                        {
-                                            repo.type = "Azure Repos";
-                                        }
-                                        else
-                                        {
-                                            //bitbucket
-                                            repo.type += " repos";
-                                        }
-                                        step.step_message += repo.type + " don't currently have a conversion path in GitHub. This step was converted, but is unlikely to work.";
+                                        repo.type = "Azure Repos";
                                     }
-                                    step.with["repository"] = repo.name;
-                                    if (repo._ref != null)
+                                    else
                                     {
-                                        //Add the ref if it's not already there
-                                        if (step.with.TryGetValue("ref", out string repoRef) == false)
-                                        {
-                                            step.with.Add("ref", repoRef);
-                                        }
-                                        step.with["ref"] = repo._ref;
+                                        //bitbucket
+                                        repo.type += " repos";
                                     }
+                                    step.step_message += repo.type + " don't currently have a conversion path in GitHub. This step was converted, but is unlikely to work.";
+                                }
+                                step.with["repository"] = repo.name;
+                                if (repo._ref != null)
+                                {
+                                    //Add the ref if it's not already there
+                                    if (step.with.TryGetValue("ref", out string repoRef) == false)
+                                    {
+                                        step.with.Add("ref", repoRef);
+                                    }
+                                    step.with["ref"] = repo._ref;
                                 }
                             }
                         }

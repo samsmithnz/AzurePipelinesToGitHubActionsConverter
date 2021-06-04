@@ -168,13 +168,9 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                         gitHubActions.messages.Add("TODO: Resource pipelines conversion not yet done: https://github.com/samsmithnz/AzurePipelinesToGitHubActionsConverter/issues/8");
                     }
                     //Resource Repositories
-                    if (resourcesYaml?.IndexOf("\"repositories\"") >= 0)
+                    if (resourcesYaml?.IndexOf("\"repositories\"") >= 0 && jsonElement.TryGetProperty("repositories", out jsonElement) == true)
                     {
-                        if (jsonElement.TryGetProperty("repositories", out jsonElement) == true)
-                        {
-                            repositories = gp.ProcessRepositories(jsonElement.ToString());
-                        }
-                        //gitHubActions.messages.Add("TODO: Resource repositories conversion not yet done: https://github.com/samsmithnz/AzurePipelinesToGitHubActionsConverter/issues/8");
+                        repositories = gp.ProcessRepositories(jsonElement.ToString());
                     }
                     //Resource Container
                     if (resourcesYaml?.IndexOf("\"containers\"") >= 0)
@@ -335,7 +331,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                         if (line.IndexOf(stepComment.Replace("#", "")) >= 0)
                         {
                             //The zero indexed current line + 1, number of comments //, and summary line 
-                            int lineNumber = i + 1 + stepComments.Count(); // + 1;
+                            int lineNumber = i + 1 + stepComments.Count; 
                             stepCommentWithLines.Add(new KeyValuePair<int, string>(lineNumber, stepComment));
                             currentLine = i + 1;
                             foundStepComment = true;
