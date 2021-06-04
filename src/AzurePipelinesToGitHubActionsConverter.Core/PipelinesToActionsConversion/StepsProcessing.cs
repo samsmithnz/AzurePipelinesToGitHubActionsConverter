@@ -2993,13 +2993,10 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                                 string providerAzureConnectedServiceName = GetStepInput(step, "providerAzureConnectedServiceName");
                                 string backendAzureRmResourceGroupName = GetStepInput(step, "backendAzureRmResourceGroupName");
 
-                                if (provider == "azurerm" || string.IsNullOrEmpty(providerAzureConnectedServiceName) == false || string.IsNullOrEmpty(backendAzureRmResourceGroupName) == false)
+                                if (provider == "azurerm" || string.IsNullOrEmpty(providerAzureConnectedServiceName) == false || string.IsNullOrEmpty(backendAzureRmResourceGroupName) == false && addAzureLoginStep == false)
                                 {
-                                    if (addAzureLoginStep == false)
-                                    {
-                                        addAzureLoginStep = true;
-                                        stepAdjustment++;
-                                    }
+                                    addAzureLoginStep = true;
+                                    stepAdjustment++;
                                 }
                                 break;
 
@@ -3061,14 +3058,11 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                     newSteps[adjustmentsUsed] = CreateCheckoutStep();
                     adjustmentsUsed++;
                 }
-                if (addJavaSetupStep == true)
+                if (addJavaSetupStep == true && javaVersion != null)
                 {
                     //Add the JavaSetup step to the code
-                    if (javaVersion != null)
-                    {
-                        newSteps[adjustmentsUsed] = CreateSetupJavaStep(javaVersion);
-                        adjustmentsUsed++;
-                    }
+                    newSteps[adjustmentsUsed] = CreateSetupJavaStep(javaVersion);
+                    adjustmentsUsed++;
                 }
                 if (addGradleSetupStep == true)
                 {

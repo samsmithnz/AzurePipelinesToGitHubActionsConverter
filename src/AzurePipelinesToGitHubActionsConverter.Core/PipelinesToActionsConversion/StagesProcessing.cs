@@ -22,7 +22,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                 foreach (JsonElement stageJson in stagesJson.EnumerateArray())
                 {
                     AzurePipelines.Stage stage = new AzurePipelines.Stage();
-                    JsonElement jsonElement = new JsonElement();
+                    JsonElement jsonElement;
                     if (stageJson.TryGetProperty("stage", out jsonElement) == true)
                     {
                         stage.stage = jsonElement.ToString();
