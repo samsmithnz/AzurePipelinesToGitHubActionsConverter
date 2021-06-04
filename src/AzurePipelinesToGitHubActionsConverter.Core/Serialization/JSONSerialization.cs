@@ -12,7 +12,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Serialization
             //first we convert the yaml to a object 
             StringReader sr = new StringReader(yaml);
             Deserializer deserializer = new Deserializer();
-            var yamlObject = deserializer.Deserialize(sr);
+            object yamlObject = deserializer.Deserialize(sr);
             //then convert the object back to yaml again to format the yaml
             string processedYaml = JsonSerializer.Serialize(yamlObject);
             //Finally we can return a JsonElement object from the processed Yaml. 

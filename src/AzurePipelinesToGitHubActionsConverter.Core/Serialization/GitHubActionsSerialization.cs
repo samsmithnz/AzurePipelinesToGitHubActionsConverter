@@ -186,7 +186,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Serialization
                 {
                     int i = 0;
                     //Search for the first non empty line
-                    while (string.IsNullOrEmpty(stepLines[i].Trim()) == true | stepLines[i].Trim().StartsWith("steps:") == true)
+                    while (string.IsNullOrEmpty(stepLines[i].Trim()) == true || stepLines[i].Trim().StartsWith("steps:") == true)
                     {
                         i++;
                     }

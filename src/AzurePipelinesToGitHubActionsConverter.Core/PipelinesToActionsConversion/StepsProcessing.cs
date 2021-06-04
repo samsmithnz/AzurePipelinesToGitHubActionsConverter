@@ -757,7 +757,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
             }
             string containerRegistry = GetStepInput(step, "containerRegistry");
             string azureContainerRegistry = GetStepInput(step, "azureContainerRegistry");
-            if (string.IsNullOrEmpty(containerRegistry) == true & string.IsNullOrEmpty(azureContainerRegistry) == false)
+            if (string.IsNullOrEmpty(containerRegistry) == true && string.IsNullOrEmpty(azureContainerRegistry) == false)
             {
                 JsonElement containerJson = JsonSerialization.DeserializeStringToJsonElement(azureContainerRegistry);
                 if (containerJson.ValueKind == JsonValueKind.String)
@@ -1078,7 +1078,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                 //    submodules: false
 
 
-                if (step.checkout != null & step.checkout != "self")
+                if (step.checkout != null && step.checkout != "self")
                 {
                     gitHubStep.with.Add("repository", step.checkout);
                 }

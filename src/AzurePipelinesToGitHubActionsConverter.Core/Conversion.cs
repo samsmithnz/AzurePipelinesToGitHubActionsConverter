@@ -125,7 +125,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                 // Allows you to run this workflow manually from the Actions tab
                 if (addWorkFlowDispatch == true)
                 {
-                    GitHubActions.Trigger workflowDispatch = new GitHubActions.Trigger();
+                    GitHubActions.Trigger workflowDispatch = new();
                     workflowDispatch.workflow_dispatch = "";
                     if (gitHubActions.on == null)
                     {
@@ -197,14 +197,14 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                     gitHubActions.jobs = sp.ProcessStagesV2(jsonElement, strategy);
                 }
                 //If we don't have stages, but have jobs:
-                else if (jsonObject.TryGetProperty("stages", out jsonElement) == false & jsonObject.TryGetProperty("jobs", out jsonElement) == true)
+                else if (jsonObject.TryGetProperty("stages", out jsonElement) == false && jsonObject.TryGetProperty("jobs", out jsonElement) == true)
                 {
                     JobProcessing jp = new JobProcessing(_verbose);
                     gitHubActions.jobs = jp.ProcessJobsV2(jp.ExtractAzurePipelinesJobsV2(jsonElement, strategy), gp.ExtractResourcesV2(resourcesYaml));
                     _matrixVariableName = jp.MatrixVariableName;
                 }
                 //Otherwise, if we don't have stages or jobs, we just have steps, and need to load them into a new job
-                else if (jsonObject.TryGetProperty("stages", out jsonElement) == false & jsonObject.TryGetProperty("jobs", out jsonElement) == false)
+                else if (jsonObject.TryGetProperty("stages", out jsonElement) == false && jsonObject.TryGetProperty("jobs", out jsonElement) == false)
                 {
                     //Pool
                     string poolYaml = null;
