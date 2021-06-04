@@ -9,7 +9,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
 
         public static string TranslateConditions(string condition, bool isOuterContent = true)
         {
-            if (string.IsNullOrEmpty(condition) == true)
+            if (string.IsNullOrEmpty(condition) )
             {
                 return null;
             }
@@ -53,7 +53,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
             processedCondition = SystemVariableProcessing.ProcessSystemVariables(processedCondition);
 
             //Replace any temp comma holders
-            if (isOuterContent == true)
+            if (isOuterContent )
             {
                 processedCondition = processedCondition.Replace("#=#", ",");
             }

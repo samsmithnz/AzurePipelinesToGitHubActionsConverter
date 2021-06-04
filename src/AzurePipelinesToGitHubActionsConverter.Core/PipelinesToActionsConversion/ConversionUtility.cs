@@ -112,11 +112,11 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                 {
                     int i = 0;
                     //Search for the first non empty line
-                    while (string.IsNullOrEmpty(stepLines[i].Trim()) == true)
+                    while (string.IsNullOrEmpty(stepLines[i].Trim()) )
                     {
                         i++;
                     }
-                    if (stepLines[i].Trim().StartsWith("-") == true)
+                    if (stepLines[i].Trim().StartsWith("-") )
                     {
                         int indentLevel = stepLines[i].IndexOf("-");
                         indentLevel += 2;
@@ -150,7 +150,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
             {
                 jobName = "Template";
             }
-            if (string.IsNullOrEmpty(jobName) == true)
+            if (string.IsNullOrEmpty(jobName) )
             {
                 jobName = "job" + currentIndex.ToString();
             }
@@ -165,7 +165,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
 
         public static void WriteLine(string message, bool verbose)
         {
-            if (verbose == true)
+            if (verbose )
             {
                 Debug.WriteLine(message);
             }

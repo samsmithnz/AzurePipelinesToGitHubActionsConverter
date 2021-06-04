@@ -72,29 +72,29 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                         ConversionUtility.WriteLine($"Deserializing (simple) environment failed. Let's try a complex deserialization with JSON. Error: " + ex2.Message, _verbose);
                         JsonElement json = JsonSerialization.DeserializeStringToJsonElement(environmentYaml);
                         JsonElement jsonElement;
-                        if (json.TryGetProperty("name", out jsonElement) == true)
+                        if (json.TryGetProperty("name", out jsonElement) )
                         {
                             environment = new AzurePipelines.Environment
                             {
                                 name = jsonElement.ToString()
                             };
                         }
-                        if (json.TryGetProperty("resourceName", out jsonElement) == true)
+                        if (json.TryGetProperty("resourceName", out jsonElement) )
                         {
                             environment.resourceName = jsonElement.ToString();
                             ConversionUtility.WriteLine($"No conversion for resourceName at this time: " + environment.resourceName, _verbose);
                         }
-                        if (json.TryGetProperty("resourceId", out jsonElement) == true)
+                        if (json.TryGetProperty("resourceId", out jsonElement) )
                         {
                             environment.resourceId = jsonElement.ToString();
                             ConversionUtility.WriteLine($"No conversion for resourceId at this time: " + environment.resourceId, _verbose);
                         }
-                        if (json.TryGetProperty("resourceType", out jsonElement) == true)
+                        if (json.TryGetProperty("resourceType", out jsonElement) )
                         {
                             environment.resourceType = jsonElement.ToString();
                             ConversionUtility.WriteLine($"No conversion for resourceType at this time: " + environment.resourceType, _verbose);
                         }
-                        if (json.TryGetProperty("tags", out jsonElement) == true)
+                        if (json.TryGetProperty("tags", out jsonElement) )
                         {
                             //Move the single string demands to an array
                             environment.tags = new string[1];
@@ -157,15 +157,15 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                 }
                 else //otherwise, demands is probably a string, instead of string[], let's fix it
                 {
-                    if (poolJson.TryGetProperty("name", out jsonElement) == true)
+                    if (poolJson.TryGetProperty("name", out jsonElement) )
                     {
                         pool.name = jsonElement.ToString();
                     }
-                    if (poolJson.TryGetProperty("vmImage", out jsonElement) == true)
+                    if (poolJson.TryGetProperty("vmImage", out jsonElement) )
                     {
                         pool.vmImage = jsonElement.ToString();
                     }
-                    if (poolJson.TryGetProperty("demands", out jsonElement) == true)
+                    if (poolJson.TryGetProperty("demands", out jsonElement) )
                     {
                         string demands = jsonElement.ToString();
                         if (demands != null)
@@ -385,7 +385,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
             {
                 foreach (GitHubActions.Step step in job.Value.steps)
                 {
-                    if (step.uses == "actions/checkout@v2" && step.with != null && step.with.ContainsKey("repository") == true && step.with.TryGetValue("repository", out string value))
+                    if (step.uses == "actions/checkout@v2" && step.with != null && step.with.ContainsKey("repository")  && step.with.TryGetValue("repository", out string value))
                     {
                         foreach (Repositories repo in repositories)
                         {

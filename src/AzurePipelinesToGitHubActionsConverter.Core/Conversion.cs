@@ -65,7 +65,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
             {
                 JsonElement jsonElement;
                 //Name
-                if (jsonObject.TryGetProperty("name", out jsonElement) == true)
+                if (jsonObject.TryGetProperty("name", out jsonElement) )
                 {
                     string nameYaml = jsonElement.ToString();
                     gitHubActions.name = gp.ProcessNameV2(nameYaml);
@@ -73,7 +73,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
 
                 //Trigger
                 TriggerProcessing tp = new TriggerProcessing(_verbose);
-                if (jsonObject.TryGetProperty("trigger", out jsonElement) == true)
+                if (jsonObject.TryGetProperty("trigger", out jsonElement) )
                 {
                     string triggerYaml;
                     if (jsonElement.ToString() == "none")
@@ -87,7 +87,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                     gitHubActions.on = tp.ProcessTriggerV2(triggerYaml);
                 }
                 //PR
-                if (jsonObject.TryGetProperty("pr", out jsonElement) == true)
+                if (jsonObject.TryGetProperty("pr", out jsonElement) )
                 {
                     string prYaml;
                     if (jsonElement.ToString() == "none")
@@ -109,7 +109,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                     }
                 }
                 //Schedules
-                if (jsonObject.TryGetProperty("schedules", out jsonElement) == true)
+                if (jsonObject.TryGetProperty("schedules", out jsonElement) )
                 {
                     string schedulesYaml = jsonElement.ToString();
                     GitHubActions.Trigger schedules = tp.ProcessSchedulesV2(schedulesYaml);
@@ -123,7 +123,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                     }
                 }
                 // Allows you to run this workflow manually from the Actions tab
-                if (addWorkFlowDispatch == true)
+                if (addWorkFlowDispatch )
                 {
                     GitHubActions.Trigger workflowDispatch = new();
                     workflowDispatch.workflow_dispatch = "";
@@ -139,13 +139,13 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
 
                 //Parameters 
                 string parametersYaml = null;
-                if (jsonObject.TryGetProperty("parameters", out jsonElement) == true)
+                if (jsonObject.TryGetProperty("parameters", out jsonElement) )
                 {
                     parametersYaml = jsonElement.ToString();
                 }
                 //Variables
                 string variablesYaml = null;
-                if (jsonObject.TryGetProperty("variables", out jsonElement) == true)
+                if (jsonObject.TryGetProperty("variables", out jsonElement) )
                 {
                     variablesYaml = jsonElement.ToString();
                 }
@@ -158,7 +158,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                 //Resources
                 string resourcesYaml = null;
                 AzurePipelines.Repositories[] repositories = null;
-                if (jsonObject.TryGetProperty("resources", out jsonElement) == true)
+                if (jsonObject.TryGetProperty("resources", out jsonElement) )
                 {
                     resourcesYaml = jsonElement.ToString();
 
@@ -168,7 +168,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                         gitHubActions.messages.Add("TODO: Resource pipelines conversion not yet done: https://github.com/samsmithnz/AzurePipelinesToGitHubActionsConverter/issues/8");
                     }
                     //Resource Repositories
-                    if (resourcesYaml?.IndexOf("\"repositories\"") >= 0 && jsonElement.TryGetProperty("repositories", out jsonElement) == true)
+                    if (resourcesYaml?.IndexOf("\"repositories\"") >= 0 && jsonElement.TryGetProperty("repositories", out jsonElement) )
                     {
                         repositories = gp.ProcessRepositories(jsonElement.ToString());
                     }
@@ -181,19 +181,19 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
 
                 //Strategy
                 JsonElement strategy = new JsonElement();
-                if (jsonObject.TryGetProperty("strategy", out jsonElement) == true)
+                if (jsonObject.TryGetProperty("strategy", out jsonElement) )
                 {
                     strategy = jsonElement;
                 }
 
                 //If we have stages, convert them into jobs first:
-                if (jsonObject.TryGetProperty("stages", out jsonElement) == true)
+                if (jsonObject.TryGetProperty("stages", out jsonElement) )
                 {
                     StagesProcessing sp = new StagesProcessing(_verbose);
                     gitHubActions.jobs = sp.ProcessStagesV2(jsonElement, strategy);
                 }
                 //If we don't have stages, but have jobs:
-                else if (jsonObject.TryGetProperty("stages", out jsonElement) == false && jsonObject.TryGetProperty("jobs", out jsonElement) == true)
+                else if (jsonObject.TryGetProperty("stages", out jsonElement) == false && jsonObject.TryGetProperty("jobs", out jsonElement) )
                 {
                     JobProcessing jp = new JobProcessing(_verbose);
                     gitHubActions.jobs = jp.ProcessJobsV2(jp.ExtractAzurePipelinesJobsV2(jsonElement, strategy), gp.ExtractResourcesV2(resourcesYaml));
@@ -204,7 +204,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                 {
                     //Pool
                     string poolYaml = null;
-                    if (jsonObject.TryGetProperty("pool", out jsonElement) == true)
+                    if (jsonObject.TryGetProperty("pool", out jsonElement) )
                     {
                         poolYaml = jsonElement.ToString();
                     }
@@ -216,7 +216,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
 
                     //Steps
                     string stepsYaml = null;
-                    if (jsonObject.TryGetProperty("steps", out jsonElement) == true)
+                    if (jsonObject.TryGetProperty("steps", out jsonElement) )
                     {
                         stepsYaml = jsonElement.ToString();
                     }
