@@ -13,7 +13,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
     public class VariablesProcessing
     {
         private readonly bool _verbose;
-        public List<string> VariableList;
+        public List<string> VariableList { get; set; }
         public VariablesProcessing(bool verbose)
         {
             _verbose = verbose;
@@ -52,7 +52,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                     //groups
                     if (variables[i].group != null)
                     {
-                        if (processedVariables.ContainsKey("group") == false)
+                        if (!processedVariables.ContainsKey("group"))
                         {
                             processedVariables.Add("group", variables[i].group);
                         }
@@ -148,14 +148,14 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
             Dictionary<string, string> processedVariables = ProcessComplexVariablesV2(variables);
             foreach (KeyValuePair<string, string> item in processedParameters)
             {
-                if (env.ContainsKey(item.Key) == false)
+                if (!env.ContainsKey(item.Key))
                 {
                     env.Add(item.Key, item.Value);
                 }
             }
             foreach (KeyValuePair<string, string> item in processedVariables)
             {
-                if (env.ContainsKey(item.Key) == false)
+                if (!env.ContainsKey(item.Key))
                 {
                     env.Add(item.Key, item.Value);
                 }

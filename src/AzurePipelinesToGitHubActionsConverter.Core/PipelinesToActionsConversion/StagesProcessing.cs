@@ -22,35 +22,35 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                 foreach (JsonElement stageJson in stagesJson.EnumerateArray())
                 {
                     AzurePipelines.Stage stage = new AzurePipelines.Stage();
-                    JsonElement jsonElement = new JsonElement();
-                    if (stageJson.TryGetProperty("stage", out jsonElement) == true)
+                    JsonElement jsonElement;
+                    if (stageJson.TryGetProperty("stage", out jsonElement) )
                     {
                         stage.stage = jsonElement.ToString();
                     }
-                    if (stageJson.TryGetProperty("displayName", out jsonElement) == true)
+                    if (stageJson.TryGetProperty("displayName", out jsonElement) )
                     {
                         stage.displayName = jsonElement.ToString();
                     }
-                    if (stageJson.TryGetProperty("condition", out jsonElement) == true)
+                    if (stageJson.TryGetProperty("condition", out jsonElement) )
                     {
                         stage.condition = jsonElement.ToString();
                     }
-                    if (stageJson.TryGetProperty("dependsOn", out jsonElement) == true)
+                    if (stageJson.TryGetProperty("dependsOn", out jsonElement) )
                     {
                         GeneralProcessing gp = new GeneralProcessing(_verbose);
                         stage.dependsOn = gp.ProcessDependsOnV2(jsonElement.ToString());
                     }
-                    if (stageJson.TryGetProperty("variables", out jsonElement) == true)
+                    if (stageJson.TryGetProperty("variables", out jsonElement) )
                     {
                         VariablesProcessing vp = new VariablesProcessing(_verbose);
                         stage.variables = vp.ProcessParametersAndVariablesV2(null, jsonElement.ToString());
                     }
-                    if (stageJson.TryGetProperty("jobs", out jsonElement) == true)
+                    if (stageJson.TryGetProperty("jobs", out jsonElement) )
                     {
                         JobProcessing jp = new JobProcessing(_verbose);
                         stage.jobs = jp.ExtractAzurePipelinesJobsV2(jsonElement, strategyJson);
                     }
-                    if (stageJson.TryGetProperty("pool", out jsonElement) == true && stage.jobs != null)
+                    if (stageJson.TryGetProperty("pool", out jsonElement)  && stage.jobs != null)
                     {
                         GeneralProcessing gp = new GeneralProcessing(_verbose);
                         stage.pool = gp.ProcessPoolV2(jsonElement.ToString());
@@ -97,7 +97,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                                     foreach (KeyValuePair<string, string> stageVariable in stage.variables)
                                     {
                                         //Add the stage variable if it doesn't already exist
-                                        if (jobs[jobIndex].variables.ContainsKey(stageVariable.Key) == false)
+                                        if (!jobs[jobIndex].variables.ContainsKey(stageVariable.Key))
                                         {
                                             jobs[jobIndex].variables.Add(stageVariable.Key, stageVariable.Value);
                                         }

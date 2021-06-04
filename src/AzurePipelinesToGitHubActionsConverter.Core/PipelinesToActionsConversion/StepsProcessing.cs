@@ -283,7 +283,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                         }
                     }
                     //If no data was found, null out the with property
-                    if (foundData == false)
+                    if (!foundData)
                     {
                         gitHubStep.with = null;
                     }
@@ -325,7 +325,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
             if (step.inputs != null)
             {
                 string runScript = "dotnet ";
-                if (step.inputs.ContainsKey("command") == true)
+                if (step.inputs.ContainsKey("command"))
                 {
                     command = GetStepInput(step, "command");
                     if (command == "push")
@@ -335,16 +335,16 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                     command += " ";
                 }
                 runScript += command;
-                if (step.inputs.ContainsKey("projects") == true)
+                if (step.inputs.ContainsKey("projects"))
                 {
                     //There can be multiple projects - if there are, we need to replicate the command on each line for each project
                     string projectsString = GetStepInput(step, "projects");
-                    if (projectsString.Contains("\n") == true)
+                    if (projectsString.Contains("\n"))
                     {
                         string[] projectList = projectsString.Split("\n");
                         foreach (string item in projectList)
                         {
-                            if (string.IsNullOrEmpty(item) == false)
+                            if (!string.IsNullOrEmpty(item))
                             {
                                 projects.Add(item + " ");
                             }
@@ -355,15 +355,15 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                         projects.Add(projectsString + " ");
                     }
                 }
-                if (step.inputs.ContainsKey("packagestopack") == true)
+                if (step.inputs.ContainsKey("packagestopack"))
                 {
                     args += GetStepInput(step, "packagesToPack") + " ";
                 }
-                if (step.inputs.ContainsKey("packagestopush") == true)
+                if (step.inputs.ContainsKey("packagestopush"))
                 {
                     args += GetStepInput(step, "packagestopush") + " ";
                 }
-                if (step.inputs.ContainsKey("publishfeedcredentials") == true)
+                if (step.inputs.ContainsKey("publishfeedcredentials"))
                 {
                     string publishFeedCredentials = GetStepInput(step, "publishFeedCredentials");
                     if (publishFeedCredentials == "GitHub Packages")
@@ -371,31 +371,37 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                         args += "--source \"github\" ";
                     }
                 }
-                if (step.inputs.ContainsKey("arguments") == true)
+                if (step.inputs.ContainsKey("arguments"))
                 {
                     args += GetStepInput(step, "arguments") + " ";
                 }
                 //Build the final build script
-                string finalRunScript = "";
+                StringBuilder finalRunScript = new();
                 if (projects.Count == 1)
                 {
-                    finalRunScript = runScript + projects[0] + args;
+                    finalRunScript.Append(runScript);
+                    finalRunScript.Append(projects[0]);
+                    finalRunScript.Append(args);
                 }
                 else if (projects.Count > 1)
                 {
                     foreach (string project in projects)
                     {
                         //Add each project with it's own command, project, args and new line
-                        finalRunScript += runScript + project + args + System.Environment.NewLine;
+                        finalRunScript.Append(runScript);
+                        finalRunScript.Append(project);
+                        finalRunScript.Append(args);
+                        finalRunScript.Append(System.Environment.NewLine);
                     }
                 }
                 else //there are no projects
                 {
-                    finalRunScript = runScript + args;
+                    finalRunScript.Append(runScript);
+                    finalRunScript.Append(args);
                 }
                 GitHubActions.Step gitHubStep = new GitHubActions.Step
                 {
-                    run = finalRunScript
+                    run = finalRunScript.ToString()
                 };
 
                 return gitHubStep;
@@ -751,13 +757,13 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
 
             //Docker@2 inputs
             string command = GetStepInput(step, "command");
-            if (string.IsNullOrEmpty(command) == true)
+            if (string.IsNullOrEmpty(command))
             {
                 command = GetStepInput(step, "action");
             }
             string containerRegistry = GetStepInput(step, "containerRegistry");
             string azureContainerRegistry = GetStepInput(step, "azureContainerRegistry");
-            if (string.IsNullOrEmpty(containerRegistry) == true & string.IsNullOrEmpty(azureContainerRegistry) == false)
+            if (string.IsNullOrEmpty(containerRegistry) && !string.IsNullOrEmpty(azureContainerRegistry))
             {
                 JsonElement containerJson = JsonSerialization.DeserializeStringToJsonElement(azureContainerRegistry);
                 if (containerJson.ValueKind == JsonValueKind.String)
@@ -767,7 +773,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                 else
                 {
                     JsonElement jsonElement;
-                    if (containerJson.TryGetProperty("loginServer", out jsonElement) == true)
+                    if (containerJson.TryGetProperty("loginServer", out jsonElement))
                     {
                         containerRegistry = jsonElement.ToString();
                     }
@@ -778,7 +784,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
             string dockerFile = GetStepInput(step, "dockerfile");
             string context = GetStepInput(step, "context");
             string buildContext = GetStepInput(step, "buildContext");
-            if (string.IsNullOrEmpty(buildContext) == false)
+            if (!string.IsNullOrEmpty(buildContext))
             {
                 context = buildContext;
             }
@@ -789,7 +795,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
             List<string> dockerLines = new List<string>();
             string stepMessage = "";
             // build command is assumed - if this is blank, set command to "build"
-            if (string.IsNullOrEmpty(command) == true)
+            if (string.IsNullOrEmpty(command))
             {
                 command = "build";
             }
@@ -818,7 +824,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
             }
 
             //docker file is assumed to be DockerFile - if this is blank, set dockerfile to "DockerFile"
-            if (string.IsNullOrEmpty(dockerFile) == true)
+            if (string.IsNullOrEmpty(dockerFile))
             {
                 switch (command)
                 {
@@ -858,15 +864,16 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
             if (tags != null)
             {
                 string[] splitTags = tags.Split("\n");
-                string newTags = "";
+                StringBuilder newTags = new();
                 foreach (string item in splitTags)
                 {
                     if (item.Trim().Length > 0)
                     {
-                        newTags += item.Trim() + ",";
+                        newTags.Append(item.Trim());
+                        newTags.Append(",");
                     }
                 }
-                dockerLines = AppendStringToListItems(dockerLines, " --tags " + newTags); //tags.Replace("\n", ",").Trim();
+                dockerLines = AppendStringToListItems(dockerLines, " --tags " + newTags.ToString()); //tags.Replace("\n", ",").Trim();
                 for (int i = 0; i < dockerLines.Count; i++)
                 {
                     if (dockerLines[i][dockerLines[i].Length - 1] == ',')
@@ -884,18 +891,19 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                 dockerLines = AppendStringToListItems(dockerLines, " " + context);
             }
 
-            string script = "";
+            StringBuilder script = new();
             if (dockerLines.Count > 1)
             {
-                script = System.Environment.NewLine;
+                script.Append(System.Environment.NewLine);
             }
             foreach (string item in dockerLines)
             {
-                script += item + System.Environment.NewLine;
+                script.Append(item);
+                script.Append(System.Environment.NewLine);
             }
-            step.script = script;
+            step.script = script.ToString();
             GitHubActions.Step gitHubStep = CreateScriptStep("", step);
-            if (string.IsNullOrEmpty(stepMessage) == false)
+            if (!string.IsNullOrEmpty(stepMessage))
             {
                 gitHubStep.step_message = stepMessage;
             }
@@ -1078,7 +1086,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                 //    submodules: false
 
 
-                if (step.checkout != null & step.checkout != "self")
+                if (step.checkout != null && step.checkout != "self")
                 {
                     gitHubStep.with.Add("repository", step.checkout);
                 }
@@ -1220,11 +1228,11 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
             string resourceGroup = GetStepInput(step, "resourceGroupName");
             string armTemplateFile = GetStepInput(step, "csmFile");
             string armTemplateParametersFile = GetStepInput(step, "csmParametersFile");
-            if (string.IsNullOrEmpty(armTemplateFile) == true)
+            if (string.IsNullOrEmpty(armTemplateFile))
             {
                 armTemplateFile = GetStepInput(step, "csmFileLink");
             }
-            if (string.IsNullOrEmpty(armTemplateFile) == true)
+            if (string.IsNullOrEmpty(armTemplateFile))
             {
                 armTemplateParametersFile = GetStepInput(step, "csmParametersFileLink");
             }
@@ -1234,14 +1242,14 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                 " --template-file " + armTemplateFile;
 
             //Add parameters
-            if (string.IsNullOrEmpty(armTemplateParametersFile) == false || string.IsNullOrEmpty(overrideParameters) == false)
+            if (!string.IsNullOrEmpty(armTemplateParametersFile) || !string.IsNullOrEmpty(overrideParameters))
             {
                 string parameters = " --parameters ";
-                if (string.IsNullOrEmpty(armTemplateParametersFile) == false)
+                if (!string.IsNullOrEmpty(armTemplateParametersFile))
                 {
                     parameters += " " + armTemplateParametersFile;
                 }
-                if (string.IsNullOrEmpty(overrideParameters) == false)
+                if (!string.IsNullOrEmpty(overrideParameters))
                 {
                     parameters += " " + overrideParameters;
                 }
@@ -1327,7 +1335,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
         private GitHubActions.Step CreateNuGetCommandStep(AzurePipelines.Step step)
         {
             string command = GetStepInput(step, "command");
-            if (string.IsNullOrEmpty(command) == true)
+            if (string.IsNullOrEmpty(command))
             {
                 command = "restore";
             }
@@ -1527,7 +1535,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
 
             string command = GetStepInput(step, "command");
             string args = GetStepInput(step, "args");
-            if (string.IsNullOrEmpty(args) == true)
+            if (string.IsNullOrEmpty(args))
             {
                 args = GetStepInput(step, "commandOptions");
             }
@@ -1724,7 +1732,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                                 if (i % 2 == 0)
                                 {
                                     //Sometimes the first item has an extra -, remove this.
-                                    if (items[i].ToString().StartsWith("-") == true)
+                                    if (items[i].ToString().StartsWith("-"))
                                     {
                                         items[i] = items[i].TrimStart('-');
                                     }
@@ -1850,7 +1858,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
             //    #isDraft: false # Optional
             //    #isPreRelease: false # Optional
             //    #addChangeLog: true # Optional
-            //    #compareWith: 'lastFullRelease' # Required when addChangeLog == True. Options: lastFullRelease, lastRelease, lastReleaseByTag
+            //    #compareWith: 'lastFullRelease' # Required when addChangeLog . Options: lastFullRelease, lastRelease, lastReleaseByTag
             //    #releaseTag: # Required when compareWith == LastReleaseByTag
 
             //To: https://github.com/actions/create-release
@@ -2309,7 +2317,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
             {
                 step.script = "npm " + command;
             }
-            if (string.IsNullOrEmpty(workingDir) == false)
+            if (!string.IsNullOrEmpty(workingDir))
             {
                 step.script += " " + workingDir;
             }
@@ -2521,7 +2529,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
             string webAppName = GetStepInput(step, "webappname");
             string sourceSlot = GetStepInput(step, "sourceslot");
             string targetSlot = GetStepInput(step, "targetslot");
-            if (string.IsNullOrEmpty(targetSlot) == true)
+            if (string.IsNullOrEmpty(targetSlot))
             {
                 targetSlot = "production";
             }
@@ -2803,7 +2811,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
             //    path: /home/runner/work/AzurePipelinesToGitHubActionsConverter/AzurePipelinesToGitHubActionsConverter/AzurePipelinesToGitHubActionsConverter/AzurePipelinesToGitHubActionsConverter.ConsoleApp/bin/Release/netcoreapp3.0
 
             string name = "";
-            if (step.inputs != null && step.inputs.ContainsKey("artifactname") == true)
+            if (step.inputs != null && step.inputs.ContainsKey("artifactname"))
             {
                 name = GetStepInput(step, "artifactname");
             }
@@ -2834,7 +2842,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                     {"path", path}
                 }
             };
-            if (string.IsNullOrEmpty(name) == false)
+            if (!string.IsNullOrEmpty(name))
             {
                 gitHubStep.with.Add("name", name);
             }
@@ -2853,7 +2861,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
 
 
             //string name = "";
-            //if (step.inputs != null && step.inputs.ContainsKey("artifactname") == true)
+            //if (step.inputs != null && step.inputs.ContainsKey("artifactname") )
             //{
             //    name = GetStepInput(step, "artifactname");
             //}
@@ -2879,17 +2887,20 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
             };
 
 
-            string stepParameters = "";
+            StringBuilder stepParameters = new();
             if (step.parameters != null)
             {
                 foreach (KeyValuePair<string, string> item in step.parameters)
                 {
-                    stepParameters += item.Key + ": " + item.Value + System.Environment.NewLine;
+                    stepParameters.Append(item.Key);
+                    stepParameters.Append(": ");
+                    stepParameters.Append(item.Value);
+                    stepParameters.Append(System.Environment.NewLine);
                 }
             }
-            if (stepParameters != "")
+            if (stepParameters.Length > 0)
             {
-                gitHubStep.run += System.Environment.NewLine + stepParameters;
+                gitHubStep.run += System.Environment.NewLine + stepParameters.ToString();
             }
 
             return gitHubStep;
@@ -2933,7 +2944,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                 string javaVersion = null;
 
                 //If the code needs a Checkout step, add it first
-                if (addCheckoutStep == true)
+                if (addCheckoutStep)
                 {
                     stepAdjustment++; // we are inserting a step and need to start moving steps 1 place into the array
                 }
@@ -2948,7 +2959,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                             //If we have an Java based step, we will need to add a Java setup step
                             case "ANT@1":
                             case "MAVEN@3":
-                                if (addJavaSetupStep == false)
+                                if (!addJavaSetupStep)
                                 {
                                     addJavaSetupStep = true;
                                     stepAdjustment++;
@@ -2959,14 +2970,14 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                             //Needs a the Java step and an additional Gradle step
                             case "GRADLE@2":
 
-                                if (addJavaSetupStep == false)
+                                if (!addJavaSetupStep)
                                 {
                                     addJavaSetupStep = true;
                                     stepAdjustment++;
                                     //Create the java step, as it doesn't exist
                                     javaVersion = "1.8";
                                 }
-                                if (addGradleSetupStep == false)
+                                if (!addGradleSetupStep)
                                 {
                                     addGradleSetupStep = true;
                                     stepAdjustment++;
@@ -2975,7 +2986,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
 
 
                             case "VSBUILD@1":
-                                if (addMSSetupStep == false)
+                                if (!addMSSetupStep)
                                 {
                                     addMSSetupStep = true;
                                     stepAdjustment++;
@@ -2993,20 +3004,17 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                                 string providerAzureConnectedServiceName = GetStepInput(step, "providerAzureConnectedServiceName");
                                 string backendAzureRmResourceGroupName = GetStepInput(step, "backendAzureRmResourceGroupName");
 
-                                if (provider == "azurerm" || string.IsNullOrEmpty(providerAzureConnectedServiceName) == false || string.IsNullOrEmpty(backendAzureRmResourceGroupName) == false)
+                                if (provider == "azurerm" || !string.IsNullOrEmpty(providerAzureConnectedServiceName) || !string.IsNullOrEmpty(backendAzureRmResourceGroupName) && !addAzureLoginStep)
                                 {
-                                    if (addAzureLoginStep == false)
-                                    {
-                                        addAzureLoginStep = true;
-                                        stepAdjustment++;
-                                    }
+                                    addAzureLoginStep = true;
+                                    stepAdjustment++;
                                 }
                                 break;
 
                             case "DOCKER@0":
                             case "DOCKER@1":
                             case "DOCKER@2":
-                                if (addDockerLoginStep == false)
+                                if (!addDockerLoginStep)
                                 {
                                     addDockerLoginStep = true;
                                     stepAdjustment++;
@@ -3015,7 +3023,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
 
                             case "GITVERSION@5":
                             case "GITVERSION/EXECUTE@0":
-                                if (addGitHubVersionSetupStep == false)
+                                if (!addGitHubVersionSetupStep)
                                 {
                                     addGitHubVersionSetupStep = true;
                                     stepAdjustment++;
@@ -3024,7 +3032,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
 
                             default:
                                 //If we have an Azure step, we will need to add a Azure login step
-                                if (step.task.ToUpper().StartsWith("AZURE") == true)
+                                if (step.task.ToUpper().StartsWith("AZURE"))
                                 {
                                     //case "AZURECLI@2":
                                     //case "AZUREPOWERSHELL@4":
@@ -3037,7 +3045,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                                     //case "AZURERMWEBAPPDEPLOYMENT@4":
                                     //case "AZUREWEBAPPCONTAINER@1":
                                     //case "AZUREWEBAPP@1":
-                                    if (addAzureLoginStep == false)
+                                    if (!addAzureLoginStep)
                                     {
                                         addAzureLoginStep = true;
                                         stepAdjustment++;
@@ -3055,46 +3063,43 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                 int adjustmentsUsed = 0;
 
                 //Add the steps array
-                if (addCheckoutStep == true)
+                if (addCheckoutStep)
                 {
                     //Add the check out step to get the code
                     newSteps[adjustmentsUsed] = CreateCheckoutStep();
                     adjustmentsUsed++;
                 }
-                if (addJavaSetupStep == true)
+                if (addJavaSetupStep && javaVersion != null)
                 {
                     //Add the JavaSetup step to the code
-                    if (javaVersion != null)
-                    {
-                        newSteps[adjustmentsUsed] = CreateSetupJavaStep(javaVersion);
-                        adjustmentsUsed++;
-                    }
+                    newSteps[adjustmentsUsed] = CreateSetupJavaStep(javaVersion);
+                    adjustmentsUsed++;
                 }
-                if (addGradleSetupStep == true)
+                if (addGradleSetupStep)
                 {
                     //Add the Gradle setup step to the code
                     newSteps[adjustmentsUsed] = CreateSetupGradleStep();
                     adjustmentsUsed++;
                 }
-                if (addAzureLoginStep == true)
+                if (addAzureLoginStep)
                 {
                     //Add the Azure login step to the code
                     newSteps[adjustmentsUsed] = CreateAzureLoginStep();
                     adjustmentsUsed++;
                 }
-                if (addDockerLoginStep == true)
+                if (addDockerLoginStep)
                 {
                     //Add the Azure login step to the code
                     newSteps[adjustmentsUsed] = CreateDockerLoginStep(""); //TODO: Fix login server
                     adjustmentsUsed++;
                 }
-                if (addMSSetupStep == true)
+                if (addMSSetupStep)
                 {
                     //Add the Azure login step to the code
                     newSteps[adjustmentsUsed] = CreateMSBuildSetupStep();
                     adjustmentsUsed++;
                 }
-                if (addGitHubVersionSetupStep == true)
+                if (addGitHubVersionSetupStep)
                 {
                     //Add the GitVersion setup step to the code
                     AzurePipelines.Step step = new AzurePipelines.Step

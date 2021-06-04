@@ -178,7 +178,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Serialization
         //Strip the steps off to focus on just the individual step
         private static string StepsPostProcessing(string input)
         {
-            if (input.Trim().StartsWith("steps:") == true)
+            if (input.Trim().StartsWith("steps:") )
             {
                 //we need to remove steps, before we do, we need to see if the task needs to remove indent
                 string[] stepLines = input.Split(Environment.NewLine);
@@ -186,11 +186,11 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Serialization
                 {
                     int i = 0;
                     //Search for the first non empty line
-                    while (string.IsNullOrEmpty(stepLines[i].Trim()) == true | stepLines[i].Trim().StartsWith("steps:") == true)
+                    while (string.IsNullOrEmpty(stepLines[i].Trim())  || stepLines[i].Trim().StartsWith("steps:") )
                     {
                         i++;
                     }
-                    if (stepLines[i].StartsWith("-") == true)
+                    if (stepLines[i].StartsWith("-") )
                     {
                         int indentLevel = stepLines[i].IndexOf("-");
                         //if (indentLevel >= 2)
@@ -201,7 +201,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Serialization
                         StringBuilder newInput = new StringBuilder();
                         foreach (string line in stepLines)
                         {
-                            if (line.Trim().StartsWith("steps:") == false)
+                            if (!line.Trim().StartsWith("steps:"))
                             {
                                 newInput.Append(buffer);
                                 newInput.Append(line);

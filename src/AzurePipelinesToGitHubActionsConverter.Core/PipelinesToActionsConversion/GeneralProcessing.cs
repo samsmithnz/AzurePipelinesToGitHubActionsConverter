@@ -11,7 +11,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
 {
     public class GeneralProcessing
     {
-        public string MatrixVariableName;
+        public string MatrixVariableName { get; set; }
         private readonly bool _verbose;
         public GeneralProcessing(bool verbose)
         {
@@ -72,29 +72,29 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                         ConversionUtility.WriteLine($"Deserializing (simple) environment failed. Let's try a complex deserialization with JSON. Error: " + ex2.Message, _verbose);
                         JsonElement json = JsonSerialization.DeserializeStringToJsonElement(environmentYaml);
                         JsonElement jsonElement;
-                        if (json.TryGetProperty("name", out jsonElement) == true)
+                        if (json.TryGetProperty("name", out jsonElement) )
                         {
                             environment = new AzurePipelines.Environment
                             {
                                 name = jsonElement.ToString()
                             };
                         }
-                        if (json.TryGetProperty("resourceName", out jsonElement) == true)
+                        if (json.TryGetProperty("resourceName", out jsonElement) )
                         {
                             environment.resourceName = jsonElement.ToString();
                             ConversionUtility.WriteLine($"No conversion for resourceName at this time: " + environment.resourceName, _verbose);
                         }
-                        if (json.TryGetProperty("resourceId", out jsonElement) == true)
+                        if (json.TryGetProperty("resourceId", out jsonElement) )
                         {
                             environment.resourceId = jsonElement.ToString();
                             ConversionUtility.WriteLine($"No conversion for resourceId at this time: " + environment.resourceId, _verbose);
                         }
-                        if (json.TryGetProperty("resourceType", out jsonElement) == true)
+                        if (json.TryGetProperty("resourceType", out jsonElement) )
                         {
                             environment.resourceType = jsonElement.ToString();
                             ConversionUtility.WriteLine($"No conversion for resourceType at this time: " + environment.resourceType, _verbose);
                         }
-                        if (json.TryGetProperty("tags", out jsonElement) == true)
+                        if (json.TryGetProperty("tags", out jsonElement) )
                         {
                             //Move the single string demands to an array
                             environment.tags = new string[1];
@@ -157,15 +157,15 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                 }
                 else //otherwise, demands is probably a string, instead of string[], let's fix it
                 {
-                    if (poolJson.TryGetProperty("name", out jsonElement) == true)
+                    if (poolJson.TryGetProperty("name", out jsonElement) )
                     {
                         pool.name = jsonElement.ToString();
                     }
-                    if (poolJson.TryGetProperty("vmImage", out jsonElement) == true)
+                    if (poolJson.TryGetProperty("vmImage", out jsonElement) )
                     {
                         pool.vmImage = jsonElement.ToString();
                     }
-                    if (poolJson.TryGetProperty("demands", out jsonElement) == true)
+                    if (poolJson.TryGetProperty("demands", out jsonElement) )
                     {
                         string demands = jsonElement.ToString();
                         if (demands != null)
@@ -385,37 +385,34 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
             {
                 foreach (GitHubActions.Step step in job.Value.steps)
                 {
-                    if (step.uses == "actions/checkout@v2")
+                    if (step.uses == "actions/checkout@v2" && step.with != null && step.with.ContainsKey("repository")  && step.with.TryGetValue("repository", out string value))
                     {
-                        if (step.with != null && step.with.ContainsKey("repository") == true && step.with.TryGetValue("repository", out string value))
+                        foreach (Repositories repo in repositories)
                         {
-                            foreach (Repositories repo in repositories)
+                            if (repo.repository == value)
                             {
-                                if (repo.repository == value)
+                                if (repo.type != "github")
                                 {
-                                    if (repo.type != "github")
+                                    if (repo.type == "git")
                                     {
-                                        if (repo.type == "git")
-                                        {
-                                            repo.type = "Azure Repos";
-                                        }
-                                        else
-                                        {
-                                            //bitbucket
-                                            repo.type += " repos";
-                                        }
-                                        step.step_message += repo.type + " don't currently have a conversion path in GitHub. This step was converted, but is unlikely to work.";
+                                        repo.type = "Azure Repos";
                                     }
-                                    step.with["repository"] = repo.name;
-                                    if (repo._ref != null)
+                                    else
                                     {
-                                        //Add the ref if it's not already there
-                                        if (step.with.TryGetValue("ref", out string repoRef) == false)
-                                        {
-                                            step.with.Add("ref", repoRef);
-                                        }
-                                        step.with["ref"] = repo._ref;
+                                        //bitbucket
+                                        repo.type += " repos";
                                     }
+                                    step.step_message += repo.type + " don't currently have a conversion path in GitHub. This step was converted, but is unlikely to work.";
+                                }
+                                step.with["repository"] = repo.name;
+                                if (repo._ref != null)
+                                {
+                                    //Add the ref if it's not already there
+                                    if (!step.with.TryGetValue("ref", out string repoRef))
+                                    {
+                                        step.with.Add("ref", repoRef);
+                                    }
+                                    step.with["ref"] = repo._ref;
                                 }
                             }
                         }
