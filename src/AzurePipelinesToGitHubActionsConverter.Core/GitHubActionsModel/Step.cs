@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using YamlDotNet.Serialization;
+﻿using System.Collections.Generic;
 
 namespace AzurePipelinesToGitHubActionsConverter.Core.GitHubActions
 {
@@ -36,8 +34,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.GitHubActions
         public int timeout_minutes { get; set; }
         public string additionalaction { get; set; }
 
-        //This is used for tracking errors, so we don't want it to convert to YAML
-        //[YamlIgnore]
+        //This is used for tracking errors
         public string step_message;
     }
 }
