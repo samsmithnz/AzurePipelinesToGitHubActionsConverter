@@ -325,7 +325,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
             if (step.inputs != null)
             {
                 string runScript = "dotnet ";
-                if (step.inputs.ContainsKey("command") )
+                if (step.inputs.ContainsKey("command"))
                 {
                     command = GetStepInput(step, "command");
                     if (command == "push")
@@ -335,11 +335,11 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                     command += " ";
                 }
                 runScript += command;
-                if (step.inputs.ContainsKey("projects") )
+                if (step.inputs.ContainsKey("projects"))
                 {
                     //There can be multiple projects - if there are, we need to replicate the command on each line for each project
                     string projectsString = GetStepInput(step, "projects");
-                    if (projectsString.Contains("\n") )
+                    if (projectsString.Contains("\n"))
                     {
                         string[] projectList = projectsString.Split("\n");
                         foreach (string item in projectList)
@@ -355,15 +355,15 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                         projects.Add(projectsString + " ");
                     }
                 }
-                if (step.inputs.ContainsKey("packagestopack") )
+                if (step.inputs.ContainsKey("packagestopack"))
                 {
                     args += GetStepInput(step, "packagesToPack") + " ";
                 }
-                if (step.inputs.ContainsKey("packagestopush") )
+                if (step.inputs.ContainsKey("packagestopush"))
                 {
                     args += GetStepInput(step, "packagestopush") + " ";
                 }
-                if (step.inputs.ContainsKey("publishfeedcredentials") )
+                if (step.inputs.ContainsKey("publishfeedcredentials"))
                 {
                     string publishFeedCredentials = GetStepInput(step, "publishFeedCredentials");
                     if (publishFeedCredentials == "GitHub Packages")
@@ -371,7 +371,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                         args += "--source \"github\" ";
                     }
                 }
-                if (step.inputs.ContainsKey("arguments") )
+                if (step.inputs.ContainsKey("arguments"))
                 {
                     args += GetStepInput(step, "arguments") + " ";
                 }
@@ -757,13 +757,13 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
 
             //Docker@2 inputs
             string command = GetStepInput(step, "command");
-            if (string.IsNullOrEmpty(command) )
+            if (string.IsNullOrEmpty(command))
             {
                 command = GetStepInput(step, "action");
             }
             string containerRegistry = GetStepInput(step, "containerRegistry");
             string azureContainerRegistry = GetStepInput(step, "azureContainerRegistry");
-            if (string.IsNullOrEmpty(containerRegistry)  && string.IsNullOrEmpty(azureContainerRegistry) == false)
+            if (string.IsNullOrEmpty(containerRegistry) && string.IsNullOrEmpty(azureContainerRegistry) == false)
             {
                 JsonElement containerJson = JsonSerialization.DeserializeStringToJsonElement(azureContainerRegistry);
                 if (containerJson.ValueKind == JsonValueKind.String)
@@ -773,7 +773,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                 else
                 {
                     JsonElement jsonElement;
-                    if (containerJson.TryGetProperty("loginServer", out jsonElement) )
+                    if (containerJson.TryGetProperty("loginServer", out jsonElement))
                     {
                         containerRegistry = jsonElement.ToString();
                     }
@@ -795,7 +795,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
             List<string> dockerLines = new List<string>();
             string stepMessage = "";
             // build command is assumed - if this is blank, set command to "build"
-            if (string.IsNullOrEmpty(command) )
+            if (string.IsNullOrEmpty(command))
             {
                 command = "build";
             }
@@ -824,7 +824,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
             }
 
             //docker file is assumed to be DockerFile - if this is blank, set dockerfile to "DockerFile"
-            if (string.IsNullOrEmpty(dockerFile) )
+            if (string.IsNullOrEmpty(dockerFile))
             {
                 switch (command)
                 {
@@ -864,15 +864,16 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
             if (tags != null)
             {
                 string[] splitTags = tags.Split("\n");
-                string newTags = "";
+                StringBuilder newTags = new();
                 foreach (string item in splitTags)
                 {
                     if (item.Trim().Length > 0)
                     {
-                        newTags += item.Trim() + ",";
+                        newTags.Append(item.Trim());
+                        newTags.Append(",");
                     }
                 }
-                dockerLines = AppendStringToListItems(dockerLines, " --tags " + newTags); //tags.Replace("\n", ",").Trim();
+                dockerLines = AppendStringToListItems(dockerLines, " --tags " + newTags.ToString()); //tags.Replace("\n", ",").Trim();
                 for (int i = 0; i < dockerLines.Count; i++)
                 {
                     if (dockerLines[i][dockerLines[i].Length - 1] == ',')
@@ -890,16 +891,17 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                 dockerLines = AppendStringToListItems(dockerLines, " " + context);
             }
 
-            string script = "";
+            StringBuilder script = new();
             if (dockerLines.Count > 1)
             {
-                script = System.Environment.NewLine;
+                script.Append(System.Environment.NewLine);
             }
             foreach (string item in dockerLines)
             {
-                script += item + System.Environment.NewLine;
+                script.Append(item);
+                script.Append(System.Environment.NewLine);
             }
-            step.script = script;
+            step.script = script.ToString();
             GitHubActions.Step gitHubStep = CreateScriptStep("", step);
             if (string.IsNullOrEmpty(stepMessage) == false)
             {
@@ -1226,11 +1228,11 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
             string resourceGroup = GetStepInput(step, "resourceGroupName");
             string armTemplateFile = GetStepInput(step, "csmFile");
             string armTemplateParametersFile = GetStepInput(step, "csmParametersFile");
-            if (string.IsNullOrEmpty(armTemplateFile) )
+            if (string.IsNullOrEmpty(armTemplateFile))
             {
                 armTemplateFile = GetStepInput(step, "csmFileLink");
             }
-            if (string.IsNullOrEmpty(armTemplateFile) )
+            if (string.IsNullOrEmpty(armTemplateFile))
             {
                 armTemplateParametersFile = GetStepInput(step, "csmParametersFileLink");
             }
@@ -1333,7 +1335,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
         private GitHubActions.Step CreateNuGetCommandStep(AzurePipelines.Step step)
         {
             string command = GetStepInput(step, "command");
-            if (string.IsNullOrEmpty(command) )
+            if (string.IsNullOrEmpty(command))
             {
                 command = "restore";
             }
@@ -1533,7 +1535,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
 
             string command = GetStepInput(step, "command");
             string args = GetStepInput(step, "args");
-            if (string.IsNullOrEmpty(args) )
+            if (string.IsNullOrEmpty(args))
             {
                 args = GetStepInput(step, "commandOptions");
             }
@@ -1730,7 +1732,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                                 if (i % 2 == 0)
                                 {
                                     //Sometimes the first item has an extra -, remove this.
-                                    if (items[i].ToString().StartsWith("-") )
+                                    if (items[i].ToString().StartsWith("-"))
                                     {
                                         items[i] = items[i].TrimStart('-');
                                     }
@@ -2527,7 +2529,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
             string webAppName = GetStepInput(step, "webappname");
             string sourceSlot = GetStepInput(step, "sourceslot");
             string targetSlot = GetStepInput(step, "targetslot");
-            if (string.IsNullOrEmpty(targetSlot) )
+            if (string.IsNullOrEmpty(targetSlot))
             {
                 targetSlot = "production";
             }
@@ -2809,7 +2811,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
             //    path: /home/runner/work/AzurePipelinesToGitHubActionsConverter/AzurePipelinesToGitHubActionsConverter/AzurePipelinesToGitHubActionsConverter/AzurePipelinesToGitHubActionsConverter.ConsoleApp/bin/Release/netcoreapp3.0
 
             string name = "";
-            if (step.inputs != null && step.inputs.ContainsKey("artifactname") )
+            if (step.inputs != null && step.inputs.ContainsKey("artifactname"))
             {
                 name = GetStepInput(step, "artifactname");
             }
@@ -2885,17 +2887,20 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
             };
 
 
-            string stepParameters = "";
+            StringBuilder stepParameters = new();
             if (step.parameters != null)
             {
                 foreach (KeyValuePair<string, string> item in step.parameters)
                 {
-                    stepParameters += item.Key + ": " + item.Value + System.Environment.NewLine;
+                    stepParameters.Append(item.Key);
+                    stepParameters.Append(": ");
+                    stepParameters.Append(item.Value);
+                    stepParameters.Append(System.Environment.NewLine);
                 }
             }
-            if (stepParameters != "")
+            if (stepParameters.Length > 0)
             {
-                gitHubStep.run += System.Environment.NewLine + stepParameters;
+                gitHubStep.run += System.Environment.NewLine + stepParameters.ToString();
             }
 
             return gitHubStep;
@@ -2939,7 +2944,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                 string javaVersion = null;
 
                 //If the code needs a Checkout step, add it first
-                if (addCheckoutStep )
+                if (addCheckoutStep)
                 {
                     stepAdjustment++; // we are inserting a step and need to start moving steps 1 place into the array
                 }
@@ -3027,7 +3032,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
 
                             default:
                                 //If we have an Azure step, we will need to add a Azure login step
-                                if (step.task.ToUpper().StartsWith("AZURE") )
+                                if (step.task.ToUpper().StartsWith("AZURE"))
                                 {
                                     //case "AZURECLI@2":
                                     //case "AZUREPOWERSHELL@4":
@@ -3058,43 +3063,43 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                 int adjustmentsUsed = 0;
 
                 //Add the steps array
-                if (addCheckoutStep )
+                if (addCheckoutStep)
                 {
                     //Add the check out step to get the code
                     newSteps[adjustmentsUsed] = CreateCheckoutStep();
                     adjustmentsUsed++;
                 }
-                if (addJavaSetupStep  && javaVersion != null)
+                if (addJavaSetupStep && javaVersion != null)
                 {
                     //Add the JavaSetup step to the code
                     newSteps[adjustmentsUsed] = CreateSetupJavaStep(javaVersion);
                     adjustmentsUsed++;
                 }
-                if (addGradleSetupStep )
+                if (addGradleSetupStep)
                 {
                     //Add the Gradle setup step to the code
                     newSteps[adjustmentsUsed] = CreateSetupGradleStep();
                     adjustmentsUsed++;
                 }
-                if (addAzureLoginStep )
+                if (addAzureLoginStep)
                 {
                     //Add the Azure login step to the code
                     newSteps[adjustmentsUsed] = CreateAzureLoginStep();
                     adjustmentsUsed++;
                 }
-                if (addDockerLoginStep )
+                if (addDockerLoginStep)
                 {
                     //Add the Azure login step to the code
                     newSteps[adjustmentsUsed] = CreateDockerLoginStep(""); //TODO: Fix login server
                     adjustmentsUsed++;
                 }
-                if (addMSSetupStep )
+                if (addMSSetupStep)
                 {
                     //Add the Azure login step to the code
                     newSteps[adjustmentsUsed] = CreateMSBuildSetupStep();
                     adjustmentsUsed++;
                 }
-                if (addGitHubVersionSetupStep )
+                if (addGitHubVersionSetupStep)
                 {
                     //Add the GitVersion setup step to the code
                     AzurePipelines.Step step = new AzurePipelines.Step
