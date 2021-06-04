@@ -376,26 +376,32 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                     args += GetStepInput(step, "arguments") + " ";
                 }
                 //Build the final build script
-                string finalRunScript = "";
+                StringBuilder finalRunScript = new();
                 if (projects.Count == 1)
                 {
-                    finalRunScript = runScript + projects[0] + args;
+                    finalRunScript.Append(runScript);
+                    finalRunScript.Append(projects[0]);
+                    finalRunScript.Append(args);
                 }
                 else if (projects.Count > 1)
                 {
                     foreach (string project in projects)
                     {
                         //Add each project with it's own command, project, args and new line
-                        finalRunScript += runScript + project + args + System.Environment.NewLine;
+                        finalRunScript.Append(runScript);
+                        finalRunScript.Append(project);
+                        finalRunScript.Append(args);
+                        finalRunScript.Append(System.Environment.NewLine);
                     }
                 }
                 else //there are no projects
                 {
-                    finalRunScript = runScript + args;
+                    finalRunScript.Append(runScript);
+                    finalRunScript.Append(args);
                 }
                 GitHubActions.Step gitHubStep = new GitHubActions.Step
                 {
-                    run = finalRunScript
+                    run = finalRunScript.ToString()
                 };
 
                 return gitHubStep;

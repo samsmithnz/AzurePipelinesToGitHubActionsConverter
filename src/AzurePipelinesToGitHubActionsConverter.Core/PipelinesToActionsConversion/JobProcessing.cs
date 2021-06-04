@@ -9,8 +9,8 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
 {
     public class JobProcessing
     {
-        public List<string> VariableList;
-        public string MatrixVariableName;
+        public List<string> VariableList { get; set; }
+        public string MatrixVariableName { get; set; }
         private readonly bool _verbose;
         public JobProcessing(bool verbose)
         {
