@@ -125,13 +125,10 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
         {
             JsonElement jsonElement;
             Rolling rolling = new Rolling();
-            if (strategyJson.TryGetProperty("maxParallel", out jsonElement) == true)
+            if (strategyJson.TryGetProperty("maxParallel", out jsonElement) == true && int.TryParse(jsonElement.ToString(), out int maxParallel) == true)
             {
-                if (int.TryParse(jsonElement.ToString(), out int maxParallel) == true)
-                {
-                    rolling.maxParallel = maxParallel;
-                    ConversionUtility.WriteLine("Note that rolling>maxParallel isn't currently processed: " + rolling.maxParallel.ToString(), _verbose);
-                }
+                rolling.maxParallel = maxParallel;
+                ConversionUtility.WriteLine("Note that rolling>maxParallel isn't currently processed: " + rolling.maxParallel.ToString(), _verbose);
             }
             if (strategyJson.TryGetProperty("preDeploy", out jsonElement) == true)
             {
