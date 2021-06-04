@@ -9,7 +9,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
 
         public static string TranslateConditions(string condition, bool isOuterContent = true)
         {
-            if (string.IsNullOrEmpty(condition) )
+            if (string.IsNullOrEmpty(condition))
             {
                 return null;
             }
@@ -32,17 +32,17 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                 {
                     //Split the strings by "," - but also respecting brackets
                     List<string> innerContents = SplitContents(contents);
-                    string innerContentsProcessed = "";
+                    StringBuilder innerContentsProcessed = new();
                     for (int i = 0; i < innerContents.Count; i++)
                     {
                         string innerContent = innerContents[i];
-                        innerContentsProcessed += TranslateConditions(innerContent, false);
+                        innerContentsProcessed.Append(TranslateConditions(innerContent, false));
                         if (i != innerContents.Count - 1)
                         {
-                            innerContentsProcessed += ", ";
+                            innerContentsProcessed.Append(", ");
                         }
                     }
-                    contents = innerContentsProcessed;
+                    contents = innerContentsProcessed.ToString();
                 }
             }
 
@@ -53,7 +53,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
             processedCondition = SystemVariableProcessing.ProcessSystemVariables(processedCondition);
 
             //Replace any temp comma holders
-            if (isOuterContent )
+            if (isOuterContent)
             {
                 processedCondition = processedCondition.Replace("#=#", ",");
             }
