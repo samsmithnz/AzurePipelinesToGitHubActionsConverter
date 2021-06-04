@@ -8,6 +8,11 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
 {
     public static class ConversionUtility
     {
+        // Some elements have a simple, same line string, we need to make into a list
+        // for example "trigger:none", becomes "trigger:\n\r- none"
+        // This is a lot simplier in JSON, as it's already only returning the none string.
+        public const string ProcessNoneJsonElement = "[ none ]";
+
         public static string GenerateSpaces(int number)
         {
             return new string(' ', number);
@@ -82,14 +87,6 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
 
         }
 
-        // Some elements have a simple, same line string, we need to make into a list
-        // for example "trigger:none", becomes "trigger:\n\r- none"
-        // This is a lot simplier in JSON, as it's already only returning the none string.
-        public static string ProcessNoneJsonElement()
-        {
-            return "[ none ]";
-        }
-
         public static string ConvertMessageToYamlComment(string message)
         {
             //Append a comment to the message if one doesn't already exist
@@ -112,11 +109,11 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                 {
                     int i = 0;
                     //Search for the first non empty line
-                    while (string.IsNullOrEmpty(stepLines[i].Trim()) )
+                    while (string.IsNullOrEmpty(stepLines[i].Trim()))
                     {
                         i++;
                     }
-                    if (stepLines[i].Trim().StartsWith("-") )
+                    if (stepLines[i].Trim().StartsWith("-"))
                     {
                         int indentLevel = stepLines[i].IndexOf("-");
                         indentLevel += 2;
@@ -150,7 +147,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
             {
                 jobName = "Template";
             }
-            if (string.IsNullOrEmpty(jobName) )
+            if (string.IsNullOrEmpty(jobName))
             {
                 jobName = "job" + currentIndex.ToString();
             }
@@ -165,7 +162,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
 
         public static void WriteLine(string message, bool verbose)
         {
-            if (verbose )
+            if (verbose)
             {
                 Debug.WriteLine(message);
             }

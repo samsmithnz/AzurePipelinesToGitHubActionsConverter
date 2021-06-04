@@ -78,7 +78,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                     string triggerYaml;
                     if (jsonElement.ToString() == "none")
                     {
-                        triggerYaml = ConversionUtility.ProcessNoneJsonElement();
+                        triggerYaml = ConversionUtility.ProcessNoneJsonElement;
                     }
                     else
                     {
@@ -92,7 +92,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core
                     string prYaml;
                     if (jsonElement.ToString() == "none")
                     {
-                        prYaml = ConversionUtility.ProcessNoneJsonElement();
+                        prYaml = ConversionUtility.ProcessNoneJsonElement;
                     }
                     else
                     {
