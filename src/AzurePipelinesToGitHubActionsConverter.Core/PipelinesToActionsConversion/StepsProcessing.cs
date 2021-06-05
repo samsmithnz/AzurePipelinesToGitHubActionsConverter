@@ -1534,6 +1534,10 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
             //    tf_actions_subcommand: "init"
 
             string command = GetStepInput(step, "command");
+            if (command == null)
+            {
+                command = "";
+            }
             string args = GetStepInput(step, "args");
             if (string.IsNullOrEmpty(args))
             {
@@ -1551,10 +1555,6 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
             GitHubActions.Step gitHubStep = CreateScriptStep("", step);
 
             //build the run command
-            if (command == null)
-            {
-                command = "";
-            }
             if (command == "CLI")
             {
                 gitHubStep.run = script;
