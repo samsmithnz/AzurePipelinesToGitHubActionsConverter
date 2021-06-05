@@ -287,6 +287,31 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
         }
 
         [TestMethod]
+        public void DownloadBuildArtifactsNullDownloadIndividualStepTest()
+        {
+            //Arrange
+            Conversion conversion = new Conversion();
+            string yaml = @"
+          - task: DownloadBuildArtifacts@0
+            displayName: 'Download Build Artifact'
+            inputs:
+              buildType: 'current'
+              artifactName: $(buildArtifactName)
+";
+
+            //Act
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineTaskToGitHubActionTask(yaml);
+
+            //Assert
+            string expected = @"
+- name: Download Build Artifact
+  uses: actions/download-artifact@v2
+";
+            expected = UtilityTests.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+        }
+
+        [TestMethod]
         public void DownloadPipelineArtifactsIndividualStepTest()
         {
             //Arrange
