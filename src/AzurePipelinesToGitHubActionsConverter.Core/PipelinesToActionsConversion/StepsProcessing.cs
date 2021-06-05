@@ -1551,6 +1551,10 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
             GitHubActions.Step gitHubStep = CreateScriptStep("", step);
 
             //build the run command
+            if (command == null)
+            {
+                command = "";
+            }
             if (command == "CLI")
             {
                 gitHubStep.run = script;
