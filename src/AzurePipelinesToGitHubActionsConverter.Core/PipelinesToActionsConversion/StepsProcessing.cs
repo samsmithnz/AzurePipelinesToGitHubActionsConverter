@@ -476,7 +476,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                 uses = "actions/download-artifact@v2",
                 with = new Dictionary<string, string>()
             };
-            if (downloadType.ToLower() == "single")
+            if (downloadType != null && downloadType.ToLower() == "single")
             {
                 gitHubStep.with.Add("name", artifactName);
             }
@@ -2682,7 +2682,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                 }
             }
             string azPSVersion = "latest";
-            if (azurePowerShellVersion.ToLower() == "otherversion")
+            if (azurePowerShellVersion != null && azurePowerShellVersion.ToLower() == "otherversion")
             {
                 //There are a couple aliases for power shell version in this task
                 if (preferredAzurePowerShellVersion != null)
