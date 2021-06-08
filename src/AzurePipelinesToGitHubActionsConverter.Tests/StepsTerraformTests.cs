@@ -89,6 +89,33 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
         }
 
         [TestMethod]
+        public void TerraformNullCommandTaskStepTest()
+        {
+            //Arrange
+            Conversion conversion = new Conversion();
+            string yaml = @"
+- task: terraform@0
+  displayName: Terraform Init
+  inputs:
+    providerAzureConnectedServiceName: 'MTC Denver Sandbox'
+    backendAzureProviderStorageAccountName: 'mtcdenterraformsandbox'
+    args: -var=environment=demo -out=tfplan.out
+";
+
+            //Act
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineTaskToGitHubActionTask(yaml);
+
+            //Assert
+            string expected = @"
+- name: Terraform Init
+  run: terraform  -var=environment=demo -out=tfplan.out
+";
+
+            expected = UtilityTests.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+        }
+
+        [TestMethod]
         public void TerraformInitV1TaskStepTest()
         {
             //Arrange
