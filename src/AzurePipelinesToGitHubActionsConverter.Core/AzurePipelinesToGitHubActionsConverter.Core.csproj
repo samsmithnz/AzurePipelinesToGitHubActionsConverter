@@ -24,7 +24,7 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All" />
     <PackageReference Include="System.Text.Json" Version="5.0.2" />
-    <PackageReference Include="YamlDotNet" Version="11.1.1" />
+    <PackageReference Include="YamlDotNet" Version="11.2.0" />
   </ItemGroup>
 
 </Project>
