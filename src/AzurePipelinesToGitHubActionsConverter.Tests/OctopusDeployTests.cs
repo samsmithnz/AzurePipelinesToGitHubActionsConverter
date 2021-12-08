@@ -197,13 +197,53 @@ steps:
 
             //Assert
             string expected = @"
-
+#Note: GitHub Actions does not have a 'demands' command on 'runs-on' yet
+#Note: requires secrets OCTOPUSSERVERURL and OCTOPUSSERVERAPIKEY to be configured
+on:
+  push:
+    branches:
+    - master
+env:
+  solution: '**/*.sln'
+  buildPlatform: Any CPU
+  buildConfiguration: Release
+jobs:
+  build:
+    runs-on: windows-2019
+    steps:
+    - uses: actions/checkout@v2
+    - uses: OctopusDeploy/install-octocli@v1
+      with:
+        version: 7.4.2
+    - name: Restore
+      run: dotnet restore **/*.csproj
+    - name: Build
+      run: dotnet **/*.csproj --configuration ${{ env.BuildConfiguration }}
+    - name: Test
+      run: dotnet test **/*[Tt]ests/*.csproj --configuration ${{ env.BuildConfiguration }}
+    - name: Publish Web
+      run: dotnet publish ${{ github.workspace }}\OctopusSamples.OctoPetShop.Web/OctopusSamples.OctoPetShop.Web.csproj --configuration ${{ env.BuildConfiguration }} --output ${{ github.workspace }}\output\OctoPetShop.Web\
+    - name: Publish Product Service API
+      run: dotnet publish ${{ github.workspace }}\OctopusSamples.OctoPetShop.ProductService/OctopusSamples.OctoPetShop.ProductService.csproj --configuration ${{ env.BuildConfiguration }} --output ${{ github.workspace }}\output\OctoPetShop.ProductService\
+    - name: Publish database
+      run: dotnet publish ${{ github.workspace }}\OctopusSamples.OctoPetShop.Database\OctopusSamples.OctoPetShop.Database.csproj --configuration ${{ env.BuildConfiguration }} --output ${{ github.workspace }}\output\OctoPetShop.Database\ --runtime win-x64
+    - name: Publish Shopping Cart Service
+      run: dotnet publish ${{ github.workspace }}\OctopusSamples.OctoPetShop.ShoppingCartService\OctopusSamples.OctoPetShop.ShoppingCartService.csproj --configuration ${{ env.BuildConfiguration }} --output ${{ github.workspace }}\output\OctoPetShop.ShoppingCartService\
+    - name: Package OctopusSamples.OctoPetShop.Database
+      run: octo pack --id=OctopusSamples.OctoPetShop.Database --format=Zip --version=${{ github.run_number }} --basePath=${{ github.workspace }}\output\OctoPetShop.Database\ --outFolder=${{ github.workspace }}\output
+    - name: Package OctopusSamples.OctoPetShop.Web
+      run: octo pack --id=OctopusSamples.OctoPetShop.Web --format=Zip --version=${{ github.run_number }} --basePath=${{ github.workspace }}\output\OctoPetShop.Web\ --outFolder=${{ github.workspace }}\output
+    - name: Package OctopusSamples.OctoPetShop.ProductService
+      run: octo pack --id=OctopusSamples.OctoPetShop.ProductService --format=Zip --version=${{ github.run_number }} --basePath=${{ github.workspace }}\output\OctoPetShop.ProductService\ --outFolder=${{ github.workspace }}\output
+    - name: Package OctopusSamples.Octopetshop.ShoppingCartService
+      run: octo pack --id=OctopusSamples.OctoPetShop.ShoppingCartService --format=Zip --version=${{ github.run_number }} --basePath=${{ github.workspace }}\output\OctoPetShop.ShoppingCartService\ --outFolder=${{ github.workspace }}\output
+    - # 'Note: requires secrets OCTOPUSSERVERURL and OCTOPUSSERVERAPIKEY to be configured'
+      name: Push Packages to Octopus
+      run: octo push --package=${{ github.workspace }}/output/*.zip --space=Spaces-222 --server=""${{ secrets.OCTOPUSSERVERURL }}"" --apiKey=""${{ secrets.OCTOPUSSERVERAPIKEY }}""
 ";
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
         }
-
-    
 
     }
 }
