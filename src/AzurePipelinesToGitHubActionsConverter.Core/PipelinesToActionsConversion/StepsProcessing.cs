@@ -132,6 +132,12 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                     case "NUGETTOOLINSTALLER@1":
                         gitHubStep = CreateNuGetToolInstallerStep();
                         break;
+                    case "OCTOPUSDEPLOY.OCTOPUS-DEPLOY-BUILD-RELEASE-TASKS.OCTOPUS-PACK.OCTOPUSPACK@4":
+                        gitHubStep = CreateOctopusPackStep(step);
+                        break;
+                    case "OCTOPUSDEPLOY.OCTOPUS-DEPLOY-BUILD-RELEASE-TASKS.OCTOPUS-PUSH.OCTOPUSPUSH@4":
+                        gitHubStep = CreateOctopusPushStep(step);
+                        break;
                     case "POWERSHELL@1":
                     case "POWERSHELL@2":
                         gitHubStep = CreateScriptStep("powershell", step);
@@ -1410,6 +1416,36 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
             //Going to:
             //- name: Setup Nuget.exe
             //  uses: nuget/setup-nuget@v1
+
+            return gitHubStep;
+        }
+
+        private GitHubActions.Step CreateOctopusPackStep()
+        {
+
+            return gitHubStep;
+        }
+
+        private GitHubActions.Step CreateOctopusPushStep()
+        {
+
+            return gitHubStep;
+        }
+
+        private GitHubActions.Step CreateOctopusInstallerStep()
+        {
+            // - name: Install Octopus CLI
+            //   uses: OctopusDeploy/install-octocli@v1
+            //   with:
+            //     version: 7.4.2
+            GitHubActions.Step gitHubStep = new GitHubActions.Step
+            {
+                uses = "OctopusDeploy/install-octocli@v1",
+                with = new Dictionary<string, string>
+                {
+                    { "version", "7.4.2"}
+                },
+            };
 
             return gitHubStep;
         }
