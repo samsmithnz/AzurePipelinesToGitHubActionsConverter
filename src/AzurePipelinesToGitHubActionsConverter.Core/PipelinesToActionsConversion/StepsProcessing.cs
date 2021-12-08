@@ -1437,9 +1437,34 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
             //  run: |
             //    octo pack --id="OctoPetShop.Database" --format="Zip" --version="$PACKAGE_VERSION" --basePath="$GITHUB_WORKSPACE/artifacts/OctopusSamples.OctoPetShop.Database" --outFolder="$GITHUB_WORKSPACE/artifacts"
 
+            string packageId = GetStepInput(step, "packageid");
+            string packageFormat = GetStepInput(step, "packageformat");
+            string packageVersion = GetStepInput(step, "packageversion");
+            string sourcePath = GetStepInput(step, "sourcepath");
+            string outputPath = GetStepInput(step, "outputpath");
+            if (!string.IsNullOrEmpty(packageId))
+            {
+                packageId = "--id=" + packageId + " ";
+            }
+            if (!string.IsNullOrEmpty(packageFormat))
+            {
+                packageFormat = "--format=" + packageFormat + " ";
+            }
+            if (!string.IsNullOrEmpty(packageVersion))
+            {
+                packageVersion = "--version=" + packageVersion + " ";
+            }
+            if (!string.IsNullOrEmpty(sourcePath))
+            {
+                sourcePath = "--basePath=" + sourcePath + " ";
+            }
+            if (!string.IsNullOrEmpty(outputPath))
+            {
+                outputPath = "--outFolder=" + outputPath + " ";
+            }
 
             GitHubActions.Step gitHubStep = CreateScriptStep("", step);
-            //gitHubStep.run = "octo pack " + command + " " + restoresolution;
+            gitHubStep.run = "octo pack " + packageId + packageFormat + packageVersion + sourcePath + outputPath;
 
             return gitHubStep;
         }
@@ -1464,7 +1489,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
             if (!string.IsNullOrEmpty(package))
             {
                 package = "--package=" + package + " ";
-            } 
+            }
             if (!string.IsNullOrEmpty(space))
             {
                 space = "--space=" + space + " ";

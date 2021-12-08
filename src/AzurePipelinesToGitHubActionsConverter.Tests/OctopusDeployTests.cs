@@ -29,9 +29,8 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
 
             //Assert
             string expected = @"
-    - name: Package OctopusSamples.OctoPetShop.Database
-      run: |
-        octo pack --id=OctopusSamples.OctoPetShop.Database --format=Zip --version=$PACKAGE_VERSION --basePath=""$GITHUB_WORKSPACE\output\OctoPetShop.Database\"" --outFolder=""$GITHUB_WORKSPACE\output""
+- name: Package OctopusSamples.OctoPetShop.Database
+  run: octo pack --id=OctopusSamples.OctoPetShop.Database --format=Zip --version=${{ github.run_number }} --basePath=${{ github.workspace }}\output\OctoPetShop.Database\ --outFolder=${{ github.workspace }}\output
 ";
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
