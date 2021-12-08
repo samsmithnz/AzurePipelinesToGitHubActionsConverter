@@ -20,6 +20,7 @@
 	// Add the IDs of extensions you want installed when the container is created.
 	"extensions": [
 		"ms-dotnettools.csharp",
+		"ms-vscode.test-adapter-converter",
 		"formulahendry.dotnet-test-explorer",
 		"GitHub.copilot"
 	],
