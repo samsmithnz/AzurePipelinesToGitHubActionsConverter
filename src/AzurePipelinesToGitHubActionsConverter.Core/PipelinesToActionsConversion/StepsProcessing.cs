@@ -1467,7 +1467,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
             } 
             if (!string.IsNullOrEmpty(space))
             {
-                package = "--space=" + space + " ";
+                space = "--space=" + space + " ";
             }
             string secrets = @"--server=""${{ secrets.OCTOPUSSERVERURL }}"" --apiKey=""${{ secrets.OCTOPUSSERVERAPIKEY }}"" ";
 

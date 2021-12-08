@@ -29,9 +29,9 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
 
             //Assert
             string expected = @"
-    - name: Package OctoPetShopDatabase
+    - name: Package OctopusSamples.OctoPetShop.Database
       run: |
-        octo pack --id=""OctoPetShop.Database"" --format=""Zip"" --version=""$PACKAGE_VERSION"" --basePath=""$GITHUB_WORKSPACE/artifacts/OctopusSamples.OctoPetShop.Database"" --outFolder=""$GITHUB_WORKSPACE/artifacts""
+        octo pack --id=OctopusSamples.OctoPetShop.Database --format=Zip --version=$PACKAGE_VERSION --basePath=""$GITHUB_WORKSPACE\output\OctoPetShop.Database\"" --outFolder=""$GITHUB_WORKSPACE\output""
 ";
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
@@ -43,14 +43,12 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             //Arrange
             Conversion conversion = new Conversion();
             string yaml = @"
-- task: octopusdeploy.octopus-deploy-build-release-tasks.octopus-pack.OctopusPack@4
-  displayName: 'Package OctopusSamples.Octopetshop.ShoppingCartService'
+- task: octopusdeploy.octopus-deploy-build-release-tasks.octopus-push.OctopusPush@4
+  displayName: 'Push Packages to Octopus'
   inputs:
-    PackageId: OctopusSamples.OctoPetShop.ShoppingCartService
-    PackageFormat: Zip
-    PackageVersion: '$(Build.BuildNumber)'
-    SourcePath: '$(build.artifactstagingdirectory)\output\OctoPetShop.ShoppingCartService\'
-    OutputPath: '$(Build.SourcesDirectory)\output' 
+    OctoConnectedServiceName: OctopusWebinars
+    Space: 'Spaces-222'
+    Package: '$(Build.SourcesDirectory)/output/*.zip'
 ";
 
             //Act
@@ -58,9 +56,9 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
 
             //Assert
             string expected = @"
-- name: Push OctoPetShop Database
-  run: |
-    octo push --package=""$GITHUB_WORKSPACE/artifacts/OctoPetShop.Database.$PACKAGE_VERSION.zip"" --server=""${{ secrets.OCTOPUSSERVERURL }}"" --apiKey=""${{ secrets.OCTOPUSSERVERAPIKEY }}"" --space=""${{ secrets.OCTOPUSSERVER_SPACE }}""
+- # 'Note: requires secrets OCTOPUSSERVERURL and OCTOPUSSERVERAPIKEY to be configured'
+  name: Push Packages to Octopus
+  run: octo push --package=${{ github.workspace }}/output/*.zip --space=Spaces-222 --server=""${{ secrets.OCTOPUSSERVERURL }}"" --apiKey=""${{ secrets.OCTOPUSSERVERAPIKEY }}""
 ";
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
