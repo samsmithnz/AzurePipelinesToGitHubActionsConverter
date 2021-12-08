@@ -5,7 +5,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
 {
     [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
     [TestClass]
-    public class OctopusTests
+    public class OctopusDeployTests
     {
 
         [TestMethod]

@@ -1432,8 +1432,14 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
             //    SourcePath: '$(build.artifactstagingdirectory)\output\OctoPetShop.Database\'
             //    OutputPath: '$(Build.SourcesDirectory)\output'
 
+            //Going to:
+            //- name: Package OctoPetShopDatabase
+            //  run: |
+            //    octo pack --id="OctoPetShop.Database" --format="Zip" --version="$PACKAGE_VERSION" --basePath="$GITHUB_WORKSPACE/artifacts/OctopusSamples.OctoPetShop.Database" --outFolder="$GITHUB_WORKSPACE/artifacts"
+
+
             GitHubActions.Step gitHubStep = CreateScriptStep("", step);
-            //gitHubStep.run = "nuget " + command + " " + restoresolution;
+            //gitHubStep.run = "octo pack " + command + " " + restoresolution;
 
             return gitHubStep;
         }
@@ -1448,8 +1454,26 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
             //    Space: 'Spaces-222'
             //    Package: '$(Build.SourcesDirectory)/output/*.zip'
 
+            //Going to:
+            //- name: Push OctoPetShop Database
+            //  run: |
+            //    octo push --package="$GITHUB_WORKSPACE/artifacts/OctoPetShop.Database.$PACKAGE_VERSION.zip" --server="${{ secrets.OCTOPUSSERVERURL }}" --apiKey="${{ secrets.OCTOPUSSERVERAPIKEY }}" --space="${{ secrets.OCTOPUSSERVER_SPACE }}"
+
+            string package = GetStepInput(step, "package");
+            string space = GetStepInput(step, "space");
+            if (!string.IsNullOrEmpty(package))
+            {
+                package = "--package=" + package + " ";
+            } 
+            if (!string.IsNullOrEmpty(space))
+            {
+                package = "--space=" + space + " ";
+            }
+            string secrets = @"--server=""${{ secrets.OCTOPUSSERVERURL }}"" --apiKey=""${{ secrets.OCTOPUSSERVERAPIKEY }}"" ";
+
             GitHubActions.Step gitHubStep = CreateScriptStep("", step);
-            //gitHubStep.run = "nuget " + command + " " + restoresolution;
+            gitHubStep.run = "octo push " + package + space + secrets;
+            gitHubStep.step_message = "Note: requires secrets OCTOPUSSERVERURL and OCTOPUSSERVERAPIKEY to be configured";
 
             return gitHubStep;
         }
@@ -3100,7 +3124,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                                     addOctopusSetupStep = true;
                                     stepAdjustment++;
                                 }
-                                break;                         
+                                break;
 
                             default:
                                 //If we have an Azure step, we will need to add a Azure login step
