@@ -132,6 +132,12 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                     case "NUGETTOOLINSTALLER@1":
                         gitHubStep = CreateNuGetToolInstallerStep();
                         break;
+                    case "OCTOPUSDEPLOY.OCTOPUS-DEPLOY-BUILD-RELEASE-TASKS.OCTOPUS-PACK.OCTOPUSPACK@4":
+                        gitHubStep = CreateOctopusPackStep(step);
+                        break;
+                    case "OCTOPUSDEPLOY.OCTOPUS-DEPLOY-BUILD-RELEASE-TASKS.OCTOPUS-PUSH.OCTOPUSPUSH@4":
+                        gitHubStep = CreateOctopusPushStep(step);
+                        break;
                     case "POWERSHELL@1":
                     case "POWERSHELL@2":
                         gitHubStep = CreateScriptStep("powershell", step);
@@ -1410,6 +1416,107 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
             //Going to:
             //- name: Setup Nuget.exe
             //  uses: nuget/setup-nuget@v1
+
+            return gitHubStep;
+        }
+
+        private GitHubActions.Step CreateOctopusPackStep(AzurePipelines.Step step)
+        {
+            //Coming from: 
+            //- task: octopusdeploy.octopus-deploy-build-release-tasks.octopus-pack.OctopusPack@4
+            //  displayName: 'Package OctopusSamples.OctoPetShop.Database'
+            //  inputs:
+            //    PackageId: OctopusSamples.OctoPetShop.Database
+            //    PackageFormat: Zip
+            //    PackageVersion: '$(Build.BuildNumber)'
+            //    SourcePath: '$(build.artifactstagingdirectory)\output\OctoPetShop.Database\'
+            //    OutputPath: '$(Build.SourcesDirectory)\output'
+
+            //Going to:
+            //- name: Package OctoPetShopDatabase
+            //  run: |
+            //    octo pack --id="OctoPetShop.Database" --format="Zip" --version="$PACKAGE_VERSION" --basePath="$GITHUB_WORKSPACE/artifacts/OctopusSamples.OctoPetShop.Database" --outFolder="$GITHUB_WORKSPACE/artifacts"
+
+            string packageId = GetStepInput(step, "packageid");
+            string packageFormat = GetStepInput(step, "packageformat");
+            string packageVersion = GetStepInput(step, "packageversion");
+            string sourcePath = GetStepInput(step, "sourcepath");
+            string outputPath = GetStepInput(step, "outputpath");
+            if (!string.IsNullOrEmpty(packageId))
+            {
+                packageId = "--id=" + packageId + " ";
+            }
+            if (!string.IsNullOrEmpty(packageFormat))
+            {
+                packageFormat = "--format=" + packageFormat + " ";
+            }
+            if (!string.IsNullOrEmpty(packageVersion))
+            {
+                packageVersion = "--version=" + packageVersion + " ";
+            }
+            if (!string.IsNullOrEmpty(sourcePath))
+            {
+                sourcePath = "--basePath=" + sourcePath + " ";
+            }
+            if (!string.IsNullOrEmpty(outputPath))
+            {
+                outputPath = "--outFolder=" + outputPath + " ";
+            }
+
+            GitHubActions.Step gitHubStep = CreateScriptStep("", step);
+            gitHubStep.run = "octo pack " + packageId + packageFormat + packageVersion + sourcePath + outputPath;
+
+            return gitHubStep;
+        }
+
+        private GitHubActions.Step CreateOctopusPushStep(AzurePipelines.Step step)
+        {
+            //Coming from: 
+            //- task: octopusdeploy.octopus-deploy-build-release-tasks.octopus-push.OctopusPush@4
+            //  displayName: 'Push Packages to Octopus'
+            //  inputs:
+            //    OctoConnectedServiceName: OctopusWebinars
+            //    Space: 'Spaces-222'
+            //    Package: '$(Build.SourcesDirectory)/output/*.zip'
+
+            //Going to:
+            //- name: Push OctoPetShop Database
+            //  run: |
+            //    octo push --package="$GITHUB_WORKSPACE/artifacts/OctoPetShop.Database.$PACKAGE_VERSION.zip" --server="${{ secrets.OCTOPUSSERVERURL }}" --apiKey="${{ secrets.OCTOPUSSERVERAPIKEY }}" --space="${{ secrets.OCTOPUSSERVER_SPACE }}"
+
+            string package = GetStepInput(step, "package");
+            string space = GetStepInput(step, "space");
+            if (!string.IsNullOrEmpty(package))
+            {
+                package = "--package=" + package + " ";
+            }
+            if (!string.IsNullOrEmpty(space))
+            {
+                space = "--space=" + space + " ";
+            }
+            string secrets = @"--server=""${{ secrets.OCTOPUSSERVERURL }}"" --apiKey=""${{ secrets.OCTOPUSSERVERAPIKEY }}"" ";
+
+            GitHubActions.Step gitHubStep = CreateScriptStep("", step);
+            gitHubStep.run = "octo push " + package + space + secrets;
+            gitHubStep.step_message = "Note: requires secrets OCTOPUSSERVERURL and OCTOPUSSERVERAPIKEY to be configured";
+
+            return gitHubStep;
+        }
+
+        private GitHubActions.Step CreateOctopusInstallerStep()
+        {
+            // - name: Install Octopus CLI
+            //   uses: OctopusDeploy/install-octocli@v1
+            //   with:
+            //     version: 7.4.2
+            GitHubActions.Step gitHubStep = new GitHubActions.Step
+            {
+                uses = "OctopusDeploy/install-octocli@v1",
+                with = new Dictionary<string, string>
+                {
+                    { "version", "7.4.2"}
+                },
+            };
 
             return gitHubStep;
         }
@@ -2944,6 +3051,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                 bool addDockerLoginStep = false;
                 bool addAzureLoginStep = false;
                 bool addMSSetupStep = false;
+                bool addOctopusSetupStep = false;
                 bool addGitHubVersionSetupStep = false;
                 string javaVersion = null;
 
@@ -3034,6 +3142,15 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                                 }
                                 break;
 
+                            case "OCTOPUSDEPLOY.OCTOPUS-DEPLOY-BUILD-RELEASE-TASKS.OCTOPUS-PACK.OCTOPUSPACK@4":
+                            case "OCTOPUSDEPLOY.OCTOPUS-DEPLOY-BUILD-RELEASE-TASKS.OCTOPUS-PUSH.OCTOPUSPUSH@4":
+                                if (!addOctopusSetupStep)
+                                {
+                                    addOctopusSetupStep = true;
+                                    stepAdjustment++;
+                                }
+                                break;
+
                             default:
                                 //If we have an Azure step, we will need to add a Azure login step
                                 if (step.task.ToUpper().StartsWith("AZURE"))
@@ -3101,6 +3218,12 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                 {
                     //Add the Azure login step to the code
                     newSteps[adjustmentsUsed] = CreateMSBuildSetupStep();
+                    adjustmentsUsed++;
+                }
+                if (addOctopusSetupStep)
+                {
+                    //Add the Azure login step to the code
+                    newSteps[adjustmentsUsed] = CreateOctopusInstallerStep();
                     adjustmentsUsed++;
                 }
                 if (addGitHubVersionSetupStep)
