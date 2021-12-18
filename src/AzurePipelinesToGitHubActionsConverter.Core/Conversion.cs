@@ -1,13 +1,10 @@
 ﻿using AzurePipelinesToGitHubActionsConverter.Core.AzurePipelines;
-using AzurePipelinesToGitHubActionsConverter.Core.Extensions;
-using AzurePipelinesToGitHubActionsConverter.Core.GitHubActions;
 using AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversion;
 using AzurePipelinesToGitHubActionsConverter.Core.Serialization;
-using System;
+using GitHubActionsDotNet.Models;
 using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.InteropServices.ComTypes;
 using System.Text.Json;
+using GitHubActions = GitHubActionsDotNet.Models;
 
 namespace AzurePipelinesToGitHubActionsConverter.Core
 {

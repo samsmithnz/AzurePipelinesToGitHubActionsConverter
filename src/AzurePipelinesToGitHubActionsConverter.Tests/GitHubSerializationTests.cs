@@ -1,9 +1,6 @@
-﻿using AzurePipelinesToGitHubActionsConverter.Core.Serialization;
-using AzurePipelinesToGitHubActionsConverter.Core.GitHubActions;
+﻿using GitHubActionsDotNet.Models;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
-using System.Collections.Generic;
-using System.Text;
+using AzurePipelinesToGitHubActionsConverterCore = AzurePipelinesToGitHubActionsConverter.Core;
 
 namespace AzurePipelinesToGitHubActionsConverter.Tests
 {
@@ -33,7 +30,7 @@ jobs:
 ";
 
             //Act
-            GitHubActionsRoot gitHubAction = GitHubActionsSerialization.Deserialize(yaml);
+            GitHubActionsRoot gitHubAction = AzurePipelinesToGitHubActionsConverter.Core.Serialization.GitHubActionsSerialization.Deserialize(yaml);
 
             //Assert
             Assert.AreNotEqual(null, gitHubAction);
@@ -82,7 +79,7 @@ on:
 ";
 
             //Act
-            object yamlObject = YamlSerialization.DeserializeYaml<object>(yaml);
+            object yamlObject = AzurePipelinesToGitHubActionsConverterCore.Serialization.YamlSerialization.DeserializeYaml<object>(yaml);
 
             //Assert
             Assert.AreNotEqual(null, yamlObject);

@@ -1,12 +1,10 @@
 ﻿using AzurePipelinesToGitHubActionsConverter.Core.AzurePipelines;
 using AzurePipelinesToGitHubActionsConverter.Core.Serialization;
-using AzurePipelinesToGitHubActionsConverter.Core.Extensions;
-using AzurePipelinesToGitHubActionsConverter.Core.GitHubActions;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Text.RegularExpressions;
+using GitHubActions = GitHubActionsDotNet.Models;
 
 namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversion
 {
@@ -193,7 +191,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
         }
 
         //Search GitHub object for all environment variables
-        public List<string> SearchForVariablesV2(GitHubActionsRoot gitHubActions)
+        public List<string> SearchForVariablesV2(GitHubActions.GitHubActionsRoot gitHubActions)
         {
             List<string> variables = new List<string>();
             if (gitHubActions.env != null)

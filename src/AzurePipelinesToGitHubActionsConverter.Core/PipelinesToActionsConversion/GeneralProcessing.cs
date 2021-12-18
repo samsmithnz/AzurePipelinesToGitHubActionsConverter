@@ -1,11 +1,11 @@
 ﻿using AzurePipelinesToGitHubActionsConverter.Core.AzurePipelines;
-using AzurePipelinesToGitHubActionsConverter.Core.GitHubActions;
 using AzurePipelinesToGitHubActionsConverter.Core.Serialization;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text.Json;
+using GitHubActions = GitHubActionsDotNet.Models;
 
 namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversion
 {
@@ -375,13 +375,13 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
 
         //Repositories are set in Azure DevOps at the beginning of the pipeline, and then referenced later in checkouts. 
         //This changes in GitHub, to a model where they are only set and referenced the checkout. 
-        public GitHubActionsRoot ProcessStepsWithRepositories(GitHubActionsRoot gitHubActions, AzurePipelines.Repositories[] repositories)
+        public GitHubActions.GitHubActionsRoot ProcessStepsWithRepositories(GitHubActions.GitHubActionsRoot gitHubActions, AzurePipelines.Repositories[] repositories)
         {
             if (gitHubActions.jobs == null)
             {
                 return gitHubActions;
             }
-            foreach (KeyValuePair<string, GitHubActions.Job> job in gitHubActions.jobs)
+            foreach (KeyValuePair<string, GitHubActions.Job > job in gitHubActions.jobs)
             {
                 foreach (GitHubActions.Step step in job.Value.steps)
                 {
