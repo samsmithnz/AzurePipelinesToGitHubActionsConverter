@@ -65,7 +65,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
 
         [TestMethod]
         public void OctopusPipelineTest()
-        {           
+        {
             //Arrange
             Conversion conversion = new Conversion();
             string yaml = @"

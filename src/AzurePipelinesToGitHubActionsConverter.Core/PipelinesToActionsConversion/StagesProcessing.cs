@@ -24,34 +24,34 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                 {
                     AzurePipelines.Stage stage = new AzurePipelines.Stage();
                     JsonElement jsonElement;
-                    if (stageJson.TryGetProperty("stage", out jsonElement) )
+                    if (stageJson.TryGetProperty("stage", out jsonElement))
                     {
                         stage.stage = jsonElement.ToString();
                     }
-                    if (stageJson.TryGetProperty("displayName", out jsonElement) )
+                    if (stageJson.TryGetProperty("displayName", out jsonElement))
                     {
                         stage.displayName = jsonElement.ToString();
                     }
-                    if (stageJson.TryGetProperty("condition", out jsonElement) )
+                    if (stageJson.TryGetProperty("condition", out jsonElement))
                     {
                         stage.condition = jsonElement.ToString();
                     }
-                    if (stageJson.TryGetProperty("dependsOn", out jsonElement) )
+                    if (stageJson.TryGetProperty("dependsOn", out jsonElement))
                     {
                         GeneralProcessing gp = new GeneralProcessing(_verbose);
                         stage.dependsOn = gp.ProcessDependsOnV2(jsonElement.ToString());
                     }
-                    if (stageJson.TryGetProperty("variables", out jsonElement) )
+                    if (stageJson.TryGetProperty("variables", out jsonElement))
                     {
                         VariablesProcessing vp = new VariablesProcessing(_verbose);
                         stage.variables = vp.ProcessParametersAndVariablesV2(null, jsonElement.ToString());
                     }
-                    if (stageJson.TryGetProperty("jobs", out jsonElement) )
+                    if (stageJson.TryGetProperty("jobs", out jsonElement))
                     {
                         JobProcessing jp = new JobProcessing(_verbose);
                         stage.jobs = jp.ExtractAzurePipelinesJobsV2(jsonElement, strategyJson);
                     }
-                    if (stageJson.TryGetProperty("pool", out jsonElement)  && stage.jobs != null)
+                    if (stageJson.TryGetProperty("pool", out jsonElement) && stage.jobs != null)
                     {
                         GeneralProcessing gp = new GeneralProcessing(_verbose);
                         stage.pool = gp.ProcessPoolV2(jsonElement.ToString());

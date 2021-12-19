@@ -1,6 +1,5 @@
 ﻿using AzurePipelinesToGitHubActionsConverter.Core;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
 
 namespace AzurePipelinesToGitHubActionsConverter.Tests
 {
@@ -665,7 +664,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
         }
-     
+
         //        [TestMethod]
         //        public void MSBuildStepTest()
         //        {

@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace AzurePipelinesToGitHubActionsConverter.Core.AzurePipelines
+﻿namespace AzurePipelinesToGitHubActionsConverter.Core.AzurePipelines
 {
     //variables:
     //# a regular variable

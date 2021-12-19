@@ -1,4 +1,3 @@
-using AzurePipelinesToGitHubActionsConverter.Core;
 using AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversion;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -24,10 +23,10 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             string results9 = ConversionUtility.GenerateSpaces(number9);
 
             //Assert
-            Assert.AreEqual( "", results0);
-            Assert.AreEqual( " ", results1);
-            Assert.AreEqual( "    ", results4);
-            Assert.AreEqual( "         ", results9);
+            Assert.AreEqual("", results0);
+            Assert.AreEqual(" ", results1);
+            Assert.AreEqual("    ", results4);
+            Assert.AreEqual("         ", results9);
         }
 
         public static string TrimNewLines(string input)

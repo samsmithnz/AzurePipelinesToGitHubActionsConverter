@@ -32,7 +32,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
 
             return variables;
         }
-    
+
         public Dictionary<string, string> ProcessComplexVariablesV2(List<AzurePipelines.Variable> variables)
         {
             Dictionary<string, string> processedVariables = new Dictionary<string, string>();
@@ -78,7 +78,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                 for (int i = 0; i < parameter.Count; i++)
                 {
                     //name/value pairs
-                    if (parameter[i].name != null )
+                    if (parameter[i].name != null)
                     {
                         if (parameter[i].@default == null)
                         {

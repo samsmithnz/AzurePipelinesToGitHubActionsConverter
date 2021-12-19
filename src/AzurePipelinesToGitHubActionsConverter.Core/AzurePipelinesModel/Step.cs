@@ -12,14 +12,11 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.AzurePipelines
         //steps: [script | bash | pwsh | powershell | checkout | task | templateReference]
 
         private string _script = null;
-        public string script
-        {
-            get
-            {
+        public string script {
+            get {
                 return _script;
             }
-            set
-            {
+            set {
                 //Spaces on the beginning or end seem to be a problem for the YAML serialization
                 if (!string.IsNullOrEmpty(value))
                 {
@@ -29,14 +26,11 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.AzurePipelines
             }
         }
         private string _bash = null;
-        public string bash
-        {
-            get
-            {
+        public string bash {
+            get {
                 return _bash;
             }
-            set
-            {
+            set {
                 //Spaces on the beginning or end seem to be a problem for the YAML serialization
                 if (!string.IsNullOrEmpty(value))
                 {
@@ -46,14 +40,11 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.AzurePipelines
             }
         }
         private string _pwsh = null;
-        public string pwsh
-        {
-            get
-            {
+        public string pwsh {
+            get {
                 return _pwsh;
             }
-            set
-            {
+            set {
                 //Spaces on the beginning or end seem to be a problem for the YAML serialization
                 if (!string.IsNullOrEmpty(value))
                 {
@@ -63,14 +54,11 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.AzurePipelines
             }
         }
         private string _powershell = null;
-        public string powershell
-        {
-            get
-            {
+        public string powershell {
+            get {
                 return _powershell;
             }
-            set
-            {
+            set {
                 //Spaces on the beginning or end seem to be a problem for the YAML serialization
                 if (!string.IsNullOrEmpty(value))
                 {
@@ -106,6 +94,6 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.AzurePipelines
         public string submodules { get; set; }
         public string path { get; set; }
         public string persistCredentials { get; set; }
-        
+
     }
 }

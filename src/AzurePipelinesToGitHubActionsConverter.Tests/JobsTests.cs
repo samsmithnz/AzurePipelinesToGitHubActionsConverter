@@ -44,7 +44,7 @@ jobs:
 
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
-            
+
         }
 
         [TestMethod]
@@ -85,11 +85,11 @@ jobs:
 
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
-            
+
         }
 
 
-        
+
         [TestMethod]
         public void ComplexVariablesWithComplexDependsOnJobTest()
         {
@@ -141,10 +141,10 @@ jobs:
 ";
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
-            
+
         }
 
-        
+
         [TestMethod]
         public void ComplexVariablesWithSimpleDependsOnJobTest()
         {
@@ -195,12 +195,12 @@ jobs:
 ";
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
-            
+
         }
 
 
 
-       [TestMethod]
+        [TestMethod]
         public void SimpleVariablesWithSimpleDependsOnJobTest()
         {
             //Arrange
@@ -241,12 +241,12 @@ jobs:
 
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
-            
+
         }
 
 
 
-       [TestMethod]
+        [TestMethod]
         public void SimpleVariablesWithComplexDependsOnJobTest()
         {
             //Arrange
@@ -288,10 +288,10 @@ jobs:
 
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
-            
+
         }
 
-       [TestMethod]
+        [TestMethod]
         public void CheckoutJobTest()
         {
             //Arrange
@@ -327,10 +327,10 @@ jobs:
 
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
-            
+
         }
 
-       [TestMethod]
+        [TestMethod]
         public void CheckoutSimpleJobTest()
         {
             //Arrange
@@ -359,10 +359,10 @@ jobs:
 
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
-            
+
         }
 
-       [TestMethod]
+        [TestMethod]
         public void EnvironmentJobTest()
         {
             //Arrange
@@ -405,7 +405,7 @@ jobs:
 
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
-            
+
         }
 
     }

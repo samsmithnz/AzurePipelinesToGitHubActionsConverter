@@ -61,7 +61,7 @@ jobs:
             Assert.AreEqual(null, gitHubJob._if);
             Assert.AreEqual("Build 1", gitHubJob.name);
             Assert.AreEqual("windows-latest", gitHubJob.runs_on);
-          
+
             //Test that steps exist
             Assert.AreNotEqual(null, gitHubJob.steps);
             Assert.AreEqual(2, gitHubJob.steps.Length);

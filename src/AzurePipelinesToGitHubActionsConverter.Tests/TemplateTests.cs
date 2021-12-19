@@ -33,7 +33,7 @@ jobs:
     - uses: actions/checkout@v2";
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
-            
+
         }
 
         [TestMethod]
@@ -78,8 +78,8 @@ jobs:
       shell: powershell";
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
-            
-        }    
+
+        }
 
     }
 }
