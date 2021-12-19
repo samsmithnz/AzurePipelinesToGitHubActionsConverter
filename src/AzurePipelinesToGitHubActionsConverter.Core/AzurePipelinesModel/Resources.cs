@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace AzurePipelinesToGitHubActionsConverter.Core.AzurePipelines
+﻿namespace AzurePipelinesToGitHubActionsConverter.Core.AzurePipelines
 {
     //https://docs.microsoft.com/en-us/azure/devops/pipelines/yaml-schema?view=azure-devops&tabs=schema#resources
     public class Resources

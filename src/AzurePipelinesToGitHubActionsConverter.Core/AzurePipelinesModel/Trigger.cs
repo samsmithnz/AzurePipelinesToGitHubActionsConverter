@@ -1,6 +1,4 @@
-﻿using System.ComponentModel;
-
-namespace AzurePipelinesToGitHubActionsConverter.Core.AzurePipelines
+﻿namespace AzurePipelinesToGitHubActionsConverter.Core.AzurePipelines
 {
     //trigger:
     //  batch: boolean # batch changes if true (the default); start a new build for every push if false

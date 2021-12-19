@@ -1,5 +1,5 @@
-﻿using System.Text.Json;
-using System.IO;
+﻿using System.IO;
+using System.Text.Json;
 using YamlDotNet.Serialization;
 
 namespace AzurePipelinesToGitHubActionsConverter.Core.Serialization

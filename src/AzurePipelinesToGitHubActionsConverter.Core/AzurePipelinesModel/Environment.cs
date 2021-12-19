@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace AzurePipelinesToGitHubActionsConverter.Core.AzurePipelines
+﻿namespace AzurePipelinesToGitHubActionsConverter.Core.AzurePipelines
 {
     //https://docs.microsoft.com/en-us/azure/devops/pipelines/yaml-schema?view=azure-devops&tabs=schema%2Cparameter-schema#environment
     //environment:                # create environment and/or record deployments

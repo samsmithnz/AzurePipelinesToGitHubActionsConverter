@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-namespace AzurePipelinesToGitHubActionsConverter.Core.AzurePipelines
+﻿namespace AzurePipelinesToGitHubActionsConverter.Core.AzurePipelines
 {
     public class Parameter
     {

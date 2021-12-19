@@ -160,7 +160,7 @@ jobs:
 ";
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
-            
+
         }
 
         //Test that stages translate to jobs correctly.
@@ -258,7 +258,7 @@ jobs:
 
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
-            
+
         }
 
         //Test that stages translate to jobs correctly.
@@ -284,7 +284,7 @@ jobs: {}
 
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
-            
+
         }
 
 
@@ -335,7 +335,7 @@ jobs:
 ";
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
-            
+
         }
 
         [TestMethod]
@@ -386,7 +386,7 @@ jobs:
 
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
-            
+
         }
 
         [TestMethod]
@@ -435,7 +435,7 @@ jobs:
 
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
-            
+
         }
 
 
@@ -479,7 +479,7 @@ jobs:
 
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
-            
+
         }
         [TestMethod]
         public void StagingSimpleDependsOnWithParallelStagesPipelineTest()
@@ -540,7 +540,7 @@ jobs:
 ";
 
             expected = UtilityTests.TrimNewLines(expected);
-            Assert.AreEqual(expected, gitHubOutput.actionsYaml);          
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
         }
 
 

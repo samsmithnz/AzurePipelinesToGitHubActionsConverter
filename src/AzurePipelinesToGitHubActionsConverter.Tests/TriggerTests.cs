@@ -26,13 +26,13 @@ on:
   push:
     branches:
     - main
-"; 
+";
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
-            
+
         }
 
-        
+
         [TestMethod]
         public void TriggerAndPRNoneSimpleStringTest()
         {
@@ -58,7 +58,7 @@ on:
 ";
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
-            
+
         }
 
         [TestMethod]
@@ -85,7 +85,7 @@ on:
 ";
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
-            
+
         }
 
         [TestMethod]
@@ -126,7 +126,7 @@ on:
 ";
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
-            
+
         }
 
         [TestMethod]
@@ -166,7 +166,7 @@ pr:
 ";
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
-            
+
         }
 
         [TestMethod]
@@ -205,7 +205,7 @@ trigger:
 ";
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
-            
+
         }
 
         [TestMethod]
@@ -245,7 +245,7 @@ on:
 ";
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
-            
+
         }
 
         [TestMethod]
@@ -299,7 +299,7 @@ on:
 ";
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
-            
+
         }
 
         [TestMethod]
@@ -322,7 +322,7 @@ on:
   - cron: '0 0 3/4 ? * * *'
 ";
             expected = UtilityTests.TrimNewLines(expected);
-            Assert.AreEqual(expected, gitHubOutput.actionsYaml);           
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
         }
 
         [TestMethod]
@@ -346,7 +346,7 @@ on:
 ";
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
-            
+
         }
 
         [TestMethod]
@@ -372,7 +372,7 @@ on:
 ";
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
-            
+
         }
 
         [TestMethod]
@@ -401,7 +401,7 @@ on:
 ";
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
-            
+
         }
 
 

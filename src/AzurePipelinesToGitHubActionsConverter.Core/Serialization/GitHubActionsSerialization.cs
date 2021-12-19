@@ -1,9 +1,10 @@
-﻿using AzurePipelinesToGitHubActionsConverter.Core.GitHubActions;
-using AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversion;
+﻿using AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversion;
+using GitHubActionsDotNet.Models;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using Environment = System.Environment;
+using GitHubActions = GitHubActionsDotNet.Models;
 
 namespace AzurePipelinesToGitHubActionsConverter.Core.Serialization
 {
@@ -177,7 +178,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Serialization
         //Strip the steps off to focus on just the individual step
         private static string StepsPostProcessing(string input)
         {
-            if (input.Trim().StartsWith("steps:") )
+            if (input.Trim().StartsWith("steps:"))
             {
                 //we need to remove steps, before we do, we need to see if the task needs to remove indent
                 string[] stepLines = input.Split(Environment.NewLine);
@@ -185,11 +186,11 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Serialization
                 {
                     int i = 0;
                     //Search for the first non empty line
-                    while (string.IsNullOrEmpty(stepLines[i].Trim())  || stepLines[i].Trim().StartsWith("steps:") )
+                    while (string.IsNullOrEmpty(stepLines[i].Trim()) || stepLines[i].Trim().StartsWith("steps:"))
                     {
                         i++;
                     }
-                    if (stepLines[i].StartsWith("-") )
+                    if (stepLines[i].StartsWith("-"))
                     {
                         int indentLevel = stepLines[i].IndexOf("-");
                         //if (indentLevel >= 2)

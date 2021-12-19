@@ -1,8 +1,5 @@
 using AzurePipelinesToGitHubActionsConverter.Core;
-using AzurePipelinesToGitHubActionsConverter.Core.Serialization;
-using AzurePipelinesToGitHubActionsConverter.Core.GitHubActions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
 
 namespace AzurePipelinesToGitHubActionsConverter.Tests
 {
@@ -38,7 +35,7 @@ jobs:
     runs-on: ubuntu-latest";
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
-            
+
         }
 
         [TestMethod]
@@ -81,7 +78,7 @@ jobs:
     runs-on: windows-latest";
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
-            
+
         }
 
         [TestMethod]
@@ -102,7 +99,7 @@ jobs:
     runs-on: windows-latest";
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
-            
+
         }
 
         [TestMethod]
@@ -126,7 +123,7 @@ jobs:
     runs-on: Hosted VS2017";
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
-            
+
         }
 
         [TestMethod]
@@ -138,8 +135,8 @@ pool:
   name: Hosted VS2017
   demands: 
   - npm
-  - Agent.OS -equals Windows_NT";    
-      
+  - Agent.OS -equals Windows_NT";
+
             Conversion conversion = new Conversion();
 
             //Act
@@ -153,7 +150,7 @@ jobs:
     runs-on: Hosted VS2017";
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
-            
+
         }
 
 
@@ -226,9 +223,9 @@ jobs:
     runs-on: Pipeline-Demo-Windows";
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
-            
-        }     
-        
+
+        }
+
         [TestMethod]
         public void PoolMultipleInstancesWithDemandsTest()
         {
@@ -257,9 +254,9 @@ jobs:
     runs-on: Pipeline-Demo-Windows";
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
-            
+
         }
-        
+
         [TestMethod]
         public void PoolInStageTest()
         {
@@ -310,7 +307,7 @@ jobs:
 ";
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
-            
+
         }
 
     }

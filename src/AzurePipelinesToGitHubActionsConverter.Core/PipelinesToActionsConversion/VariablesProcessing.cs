@@ -1,10 +1,10 @@
 ﻿using AzurePipelinesToGitHubActionsConverter.Core.AzurePipelines;
-using AzurePipelinesToGitHubActionsConverter.Core.GitHubActions;
 using AzurePipelinesToGitHubActionsConverter.Core.Serialization;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
+using GitHubActions = GitHubActionsDotNet.Models;
 
 namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversion
 {
@@ -32,7 +32,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
 
             return variables;
         }
-    
+
         public Dictionary<string, string> ProcessComplexVariablesV2(List<AzurePipelines.Variable> variables)
         {
             Dictionary<string, string> processedVariables = new Dictionary<string, string>();
@@ -78,7 +78,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                 for (int i = 0; i < parameter.Count; i++)
                 {
                     //name/value pairs
-                    if (parameter[i].name != null )
+                    if (parameter[i].name != null)
                     {
                         if (parameter[i].@default == null)
                         {
@@ -191,7 +191,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
         }
 
         //Search GitHub object for all environment variables
-        public List<string> SearchForVariablesV2(GitHubActionsRoot gitHubActions)
+        public List<string> SearchForVariablesV2(GitHubActions.GitHubActionsRoot gitHubActions)
         {
             List<string> variables = new List<string>();
             if (gitHubActions.env != null)
