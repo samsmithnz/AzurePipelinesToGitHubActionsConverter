@@ -1,8 +1,10 @@
 ﻿using AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversion;
+using GitHubActionsDotNet.Common;
 using GitHubActionsDotNet.Models;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using ConversionUtility = AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversion.ConversionUtility;
 using Environment = System.Environment;
 using GitHubActions = GitHubActionsDotNet.Models;
 
@@ -193,10 +195,6 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.Serialization
                     if (stepLines[i].StartsWith("-"))
                     {
                         int indentLevel = stepLines[i].IndexOf("-");
-                        //if (indentLevel >= 2)
-                        //{
-                        //    indentLevel -= 2;
-                        //}
                         string buffer = ConversionUtility.GenerateSpaces(indentLevel);
                         StringBuilder newInput = new StringBuilder();
                         foreach (string line in stepLines)
