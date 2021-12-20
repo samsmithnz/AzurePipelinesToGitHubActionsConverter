@@ -1,7 +1,7 @@
 # Convert Azure Pipelines YAML to GitHub Actions YAML 
 A project to create a conversion tool to make migrations between Azure Pipelines YAML and GitHub Actions YAML easier. As GitHub Actions becomes more popular, it's clear that a migration tool will be useful to move workloads to GitHub. 
 
-![Current build](https://github.com/samsmithnz/AzurePipelinesToGitHubActionsConverter/workflows/CI/badge.svg)
+[![Current build](https://github.com/samsmithnz/AzurePipelinesToGitHubActionsConverter/actions/workflows/CI.yml/badge.svg)](https://github.com/samsmithnz/AzurePipelinesToGitHubActionsConverter/actions/workflows/CI.yml)
 [![Coverage Status](https://coveralls.io/repos/github/samsmithnz/AzurePipelinesToGitHubActionsConverter/badge.svg?branch=main)](https://coveralls.io/github/samsmithnz/AzurePipelinesToGitHubActionsConverter?branch=main)
 [![Latest NuGet package](https://img.shields.io/nuget/v/AzurePipelinesToGitHubActionsConverter.Core)](https://www.nuget.org/packages/AzurePipelinesToGitHubActionsConverter.Core/)
 ![Current Release](https://img.shields.io/github/release/samsmithnz/AzurePipelinesToGitHubActionsConverter/all.svg)
