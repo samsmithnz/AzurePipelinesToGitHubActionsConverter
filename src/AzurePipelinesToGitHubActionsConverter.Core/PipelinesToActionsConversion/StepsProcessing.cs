@@ -1,5 +1,6 @@
 ﻿using AzurePipelinesToGitHubActionsConverter.Core.AzurePipelines;
 using AzurePipelinesToGitHubActionsConverter.Core.Serialization;
+using GitHubActionsDotNet.Common;
 using System.Collections.Generic;
 using System.Text;
 using System.Text.Json;
