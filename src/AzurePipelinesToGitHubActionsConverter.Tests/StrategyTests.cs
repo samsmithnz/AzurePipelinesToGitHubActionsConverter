@@ -60,7 +60,6 @@ on:
 jobs:
   Build:
     name: Build job
-    runs-on: ${{ matrix.imageName }}
     strategy:
       matrix:
         imageName:
@@ -68,6 +67,7 @@ jobs:
         - macos-10.13
         - vs2017-win2016
       max-parallel: 3
+    runs-on: ${{ matrix.imageName }}
     env:
       buildConfiguration: Debug
     steps:
