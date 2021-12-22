@@ -540,13 +540,13 @@ env:
   PARAVIEW_BUILD_FOLDER: /tmp/paraview_build
 jobs:
   Build:
-    runs-on: ${{ matrix.imageName }}
     strategy:
       matrix:
         imageName:
         - ubuntu-18.04
         - macos-10.14
         - vs2017-win2016
+    runs-on: ${{ matrix.imageName }}
     steps:
     - uses: actions/checkout@v2
     - name: Enable Python 3.8
