@@ -591,26 +591,26 @@ jobs:
       run: scripts/azure-pipelines/run_pytest.sh
       shell: bash
   clang_format:
-    runs-on: ubuntu-18.04
     strategy:
       matrix:
         imageName:
         - ubuntu-18.04
         - macos-10.14
         - vs2017-win2016
+    runs-on: ubuntu-18.04
     steps:
     - uses: actions/checkout@v2
     - name: Run clang-format
       run: scripts/azure-pipelines/run_clang_format_diff.sh
       shell: bash
   flake8:
-    runs-on: ubuntu-18.04
     strategy:
       matrix:
         imageName:
         - ubuntu-18.04
         - macos-10.14
         - vs2017-win2016
+    runs-on: ubuntu-18.04
     steps:
     - uses: actions/checkout@v2
     - name: Run flake8
