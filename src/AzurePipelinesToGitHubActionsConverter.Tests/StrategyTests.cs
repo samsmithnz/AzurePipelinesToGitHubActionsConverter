@@ -125,9 +125,9 @@ on:
 jobs:
   Build:
     name: Build job
-    runs-on: ${{ env.imageName }}
     strategy:
       max-parallel: 3
+    runs-on: ${{ env.imageName }}
     env:
       buildConfiguration: Debug
     steps:
