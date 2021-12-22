@@ -595,7 +595,6 @@ on:
     - main
 jobs:
   build:
-    runs-on: ubuntu-latest
     strategy:
       matrix:
         PYTHON_VERSION:
@@ -603,6 +602,7 @@ jobs:
         - 3.6
         - 3.7
       max-parallel: 3
+    runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
     - name: Setup Python ${{ matrix.PYTHON_VERSION }}
