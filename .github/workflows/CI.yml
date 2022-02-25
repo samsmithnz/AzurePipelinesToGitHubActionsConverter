@@ -36,7 +36,7 @@ jobs:
         echo "CommitsSinceVersionSource: ${{ steps.gitversion.outputs.CommitsSinceVersionSource }}"
     
     - name: Setup .NET
-      uses: actions/setup-dotnet@v1
+      uses: actions/setup-dotnet@v2
       with:
         dotnet-version: 6.0.x
     - name: .NET test
@@ -92,7 +92,7 @@ jobs:
           restore-keys: ${{ runner.os }}-sonar-scanner
 
       - name: Setup .NET
-        uses: actions/setup-dotnet@v1
+        uses: actions/setup-dotnet@v2
         with:
           dotnet-version: 6.0.x
       - name: Install SonarCloud scanner
@@ -127,7 +127,7 @@ jobs:
         name: nugetPackage 
         path: nugetPackage 
     - name: Setup .NET
-      uses: actions/setup-dotnet@v1
+      uses: actions/setup-dotnet@v2
       with:
         dotnet-version: 6.0.x   
     - name: Create Release
