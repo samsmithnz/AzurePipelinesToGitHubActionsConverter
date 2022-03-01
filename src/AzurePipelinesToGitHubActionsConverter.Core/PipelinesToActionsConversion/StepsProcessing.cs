@@ -2042,7 +2042,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
 
             //To: https://github.com/GitTools/actions/blob/main/docs/examples/github/gitversion/execute/usage-examples.md
             //- name: Determine Version
-            //  uses: gittools/actions/gitversion/execute@v0.9.7
+            //  uses: gittools/actions/gitversion/execute@v0.9.11
 
             string targetPath = GetStepInput(step, "targetPath");
             string useConfigFile = GetStepInput(step, "useConfigFile");
@@ -2054,7 +2054,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
             GitHubActions.Step gitHubStep = new GitHubActions.Step
             {
                 name = step.name,
-                uses = "gittools/actions/gitversion/execute@v0.9.7",
+                uses = "gittools/actions/gitversion/execute@v0.9.11",
                 with = new Dictionary<string, string>()
             };
 
@@ -2096,7 +2096,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
 
             //To: https://github.com/GitTools/actions/blob/main/docs/examples/github/gitversion/setup/usage-examples.md
             //- name: Install GitVersion
-            //  uses: gittools/actions/gitversion/setup@v0.9.7
+            //  uses: gittools/actions/gitversion/setup@v0.9.11
             //  with:
             //    versionSpec: '5.x'
 
@@ -2106,7 +2106,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
             GitHubActions.Step gitHubStep = new GitHubActions.Step
             {
                 name = step.name,
-                uses = "gittools/actions/gitversion/setup@v0.9.7",
+                uses = "gittools/actions/gitversion/setup@v0.9.11",
                 with = new Dictionary<string, string>
                 {
                    { "versionSpec", versionSpec }
