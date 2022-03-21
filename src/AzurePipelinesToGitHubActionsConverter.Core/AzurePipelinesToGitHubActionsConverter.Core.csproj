@@ -22,7 +22,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="GitHubActionsDotNet" Version="0.9.0" />
+    <PackageReference Include="GitHubActionsDotNet" Version="0.10.0" />
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1" PrivateAssets="All" />
     <PackageReference Include="System.Text.Json" Version="6.0.2" />
     <PackageReference Include="YamlDotNet" Version="11.2.1" />
