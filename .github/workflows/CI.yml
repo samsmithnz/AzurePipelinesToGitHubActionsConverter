@@ -54,7 +54,7 @@ jobs:
       run: dotnet pack src/AzurePipelinesToGitHubActionsConverter.Core/AzurePipelinesToGitHubActionsConverter.Core.csproj -c Release --nologo --include-symbols -p:Version='${{ steps.gitversion.outputs.SemVer }}'
 
     - name: Upload nuget package back to GitHub
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       if: runner.OS == 'Linux' #Only pack the Linux nuget package
       with:
         name: nugetPackage
