@@ -1969,11 +1969,11 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: Install GitVersion
-      uses: gittools/actions/gitversion/setup@v0.9.7
+      uses: gittools/actions/gitversion/setup@v0.9.11
       with:
         versionSpec: 5.x
     - name: Evaluate Next Version
-      uses: gittools/actions/gitversion/execute@v0.9.7
+      uses: gittools/actions/gitversion/execute@v0.9.11
       with:
         configFilePath: GitVersion.yml
     - name: Build & Package Module
@@ -2554,11 +2554,11 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: Install GitVersion
-      uses: gittools/actions/gitversion/setup@v0.9.7
+      uses: gittools/actions/gitversion/setup@v0.9.11
       with:
         versionSpec: 5.x
     - name: Evaluate Next Version
-      uses: gittools/actions/gitversion/execute@v0.9.7
+      uses: gittools/actions/gitversion/execute@v0.9.11
 ";
 
             expected = UtilityTests.TrimNewLines(expected);
