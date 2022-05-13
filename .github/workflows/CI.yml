@@ -40,8 +40,19 @@ jobs:
       with:
         dotnet-version: 6.0.x
     - name: .NET test
-      run: dotnet test src/AzurePipelinesToGitHubActionsConverter.Tests/AzurePipelinesToGitHubActionsConverter.Tests.csproj -c Release --nologo -p:CollectCoverage=true -p:CoverletOutput=TestResults/ -p:CoverletOutputFormat=lcov 
-
+      run: dotnet test src/AzurePipelinesToGitHubActionsConverter.Tests/AzurePipelinesToGitHubActionsConverter.Tests.csproj -c Release --nologo -p:CollectCoverage=true -p:CoverletOutput=TestResults/ -p:CoverletOutputFormat=lcov -l:trx;LogFileName=TestOutput.xml
+    - name: Output results
+      if: runner.OS == 'Windows'
+      shell: powershell
+      run: |
+        [xml]$result = Get-Content -Path TestOutput.xml
+        $result.TestRun.ResultSummary.Counters.passed
+        $result.TestRun.ResultSummary.Counters.failed
+        echo "Test results" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY # this is a blank line
+        echo "- Total: $(result.TestRun.ResultSummary.Counters.total)" >> $GITHUB_STEP_SUMMARY
+        echo "- Passed:"$(result.TestRun.ResultSummary.Counters.passed) >> $GITHUB_STEP_SUMMARY
+        echo "- Failed: $(result.TestRun.ResultSummary.Counters.failed)" >> $GITHUB_STEP_SUMMARY
     - name: Publish coverage report to coveralls.io
       uses: coverallsapp/github-action@master
       if: runner.OS == 'Linux' #Only push the Linux coverage
