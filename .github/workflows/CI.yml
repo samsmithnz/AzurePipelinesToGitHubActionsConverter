@@ -41,6 +41,7 @@ jobs:
         dotnet-version: 6.0.x
     - name: .NET test
       run: dotnet test src/AzurePipelinesToGitHubActionsConverter.Tests/AzurePipelinesToGitHubActionsConverter.Tests.csproj -c Release --nologo -p:CollectCoverage=true -p:CoverletOutput=TestResults/ -p:CoverletOutputFormat=lcov -l:trx;LogFileName=src/TestOutput.xml
+    - run: ls src/
     - name: Output results
       if: runner.OS == 'Linux'
       shell: pwsh
