@@ -40,12 +40,12 @@ jobs:
       with:
         dotnet-version: 6.0.x
     - name: .NET test
-      run: dotnet test src/AzurePipelinesToGitHubActionsConverter.Tests/AzurePipelinesToGitHubActionsConverter.Tests.csproj -c Release --nologo -p:CollectCoverage=true -p:CoverletOutput=TestResults/ -p:CoverletOutputFormat=lcov -l:trx;LogFileName=TestOutput.xml
+      run: dotnet test src/AzurePipelinesToGitHubActionsConverter.Tests/AzurePipelinesToGitHubActionsConverter.Tests.csproj -c Release --nologo -p:CollectCoverage=true -p:CoverletOutput=TestResults/ -p:CoverletOutputFormat=lcov -l:trx;LogFileName=/TestOutput.xml
     - name: Output results
       if: runner.OS == 'Windows'
       shell: powershell
       run: |
-        [xml]$result = Get-Content -Path TestOutput.xml
+        [xml]$result = Get-Content -Path /TestOutput.xml
         $result.TestRun.ResultSummary.Counters.passed
         $result.TestRun.ResultSummary.Counters.failed
         echo "Test results" >> $GITHUB_STEP_SUMMARY
