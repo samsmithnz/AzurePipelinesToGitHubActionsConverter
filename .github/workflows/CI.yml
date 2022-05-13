@@ -42,8 +42,8 @@ jobs:
     - name: .NET test
       run: dotnet test src/AzurePipelinesToGitHubActionsConverter.Tests/AzurePipelinesToGitHubActionsConverter.Tests.csproj -c Release --nologo -p:CollectCoverage=true -p:CoverletOutput=TestResults/ -p:CoverletOutputFormat=lcov -l:trx;LogFileName=/TestOutput.xml
     - name: Output results
-      if: runner.OS == 'Windows'
-      shell: powershell
+      if: runner.OS == 'Linux'
+      shell: pwsh
       run: |
         [xml]$result = Get-Content -Path /TestOutput.xml
         $result.TestRun.ResultSummary.Counters.passed
