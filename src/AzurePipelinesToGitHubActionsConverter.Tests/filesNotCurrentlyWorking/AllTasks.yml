@@ -1,0 +1,106 @@
+﻿trigger:
+- main
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+steps:
+- task: Ant@1
+  inputs:
+    workingDirectory: ''
+    buildFile: 'build.xml'
+    javaHomeOption: 'JDKVersion'
+    jdkVersionOption: '1.8'
+    jdkArchitectureOption: 'x64'
+    publishJUnitResults: true
+    testResultsFiles: '**/TEST-*.xml'
+- task: ArchiveFiles@2
+  displayName: 'Archive files'
+  inputs:
+    rootFolderOrFile: '$(System.DefaultWorkingDirectory)/publish_output'
+    includeRootFolder: false
+    archiveType: zip
+    archiveFile: $(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip
+    replaceExistingArchive: true
+- task: AzureAppServiceManage@0
+  displayName: 'Swap Slots: website'
+  inputs:
+    azureSubscription: 'connection to Azure Portal'
+    WebAppName: $(WebsiteName)
+    ResourceGroupName: $(ResourceGroupName)
+    SourceSlot: 'staging'
+- task: AzureCLI@2
+  displayName: 'Deploy infrastructure with ARM templates'
+  inputs:
+    azureSubscription: 'Service Connection to Azure Portal'
+    scriptType: ps
+    scriptPath: $(build.artifactstagingdirectory)\drop\EnvironmentARMTemplate\PowerShell\DeployInfrastructureCore.ps1
+    arguments: -ResourceGroupName "$(ResourceGroupName)" 
+  enabled: true
+- task: AzureKeyVault@1
+  displayName: 'Get Azure Keyvault secrets' 
+  inputs:
+    azureSubscription: 'Service Connection to Azure Portal'
+    keyVaultName: myKeyvaultName
+    secretsFilter: '*'
+- task: AzurePowerShell@4 
+  displayName: 'Run Azure PowerShell' 
+  inputs:
+    azureSubscription: 'Service Connection to Azure Portal'
+    ScriptPath: '$(build.artifactstagingdirectory)/drop/EnvironmentARMTemplate/PowerShell/Cleanup.ps1'
+    ScriptArguments: '-ResourceGroupName "$(ResourceGroupName)"'
+    azurePowerShellVersion: LatestVersion
+- task: AzureResourceGroupDeployment@2
+  displayName: 'Azure Deployment:Create Azure Container Registry, Azure WebApp Service'
+  inputs:
+    azureSubscription: '$(Azure.ServiceConnectionId)'
+    resourceGroupName: '$(Azure.ResourceGroupName)'
+    location: '$(Azure.Location)'
+    templateLocation: 'URL of the file'
+    csmFileLink: 'https://raw.githubusercontent.com/Microsoft/azure-pipelines-yaml/master/templates/resources/arm/functionapp.json'
+    overrideParameters: '-registryName "$(ACR.Name)" -registryLocation "$(Azure.Location)" -functionAppName "$(FunctionApp.Name)" -hostingPlanName "$(ServicePlan.Name)" -storageAccountName "$(StorageAccount.Name)"'
+- task: AzureResourceManagerTemplateDeployment@3
+  inputs:
+    deploymentScope: 'Resource Group'
+    azureResourceManagerConnection: 'copy-connection'
+    subscriptionId: '00000000-0000-0000-0000-000000000000'
+    action: 'Create Or Update Resource Group'
+    resourceGroupName: $(ResourceGroupName)
+    location: 'West US'
+    templateLocation: 'URL of the file'
+    csmFileLink: '$(AzureFileCopy.StorageContainerUri)templates/mainTemplate.json$(AzureFileCopy.StorageContainerSasToken)'
+    csmParametersFileLink: '$(AzureFileCopy.StorageContainerUri)templates/mainTemplate.parameters.json$(AzureFileCopy.StorageContainerSasToken)'
+    deploymentMode: 'Incremental'
+    deploymentName: 'deploy1'
+    overrideParameters: '-environment $(AppSettings.Environment) -locationShort $(ArmTemplateResourceGroupLocation)' 
+- task: AzureFunctionApp@1
+  displayName: 'Azure functions app deploy'
+  inputs:
+    azureSubscription: '$(azureSubscription)'
+    appType: functionApp
+    appName: $(functionAppName)
+    package: '$(Pipeline.Workspace)/drop/$(Build.BuildId).zip'
+- task: AzureFunctionAppContainer@1
+  displayName: 'Azure Function App on Container Deploy'
+  inputs:
+    azureSubscription: '$(AzureServiceConnectionId)'
+    appName: $(AppName)
+    imageName: '$(ACRFullName)/$(ACRImageName)'
+- task: AzureRmWebAppDeployment@4
+  inputs:
+    connectionType: 'AzureRM'
+    azureSubscription: "$(azureSubscription)"
+    appType: 'functionApp'
+    webAppName: "$(functionappName)"
+- task: AzureWebAppContainer@1
+  displayName: 'Azure Web App on Container Deploy'
+  inputs:
+    azureSubscription: '$(AzureServiceConnectionId)'
+    appName: $(AppName)
+    imageName: '$(ACRFullName)/$(ACRImageName)'
+- task: AzureWebApp@1
+  displayName: 'Deploy Azure Web App- app1'
+  inputs:
+    azureSubscription: $(azureServiceConnectionId)
+    appName: $(webAppName)
+    package: $(build.artifactstagingdirectory)/drop/MyProject.Web.zip
