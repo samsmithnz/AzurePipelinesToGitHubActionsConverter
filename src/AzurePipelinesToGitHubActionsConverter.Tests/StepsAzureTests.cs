@@ -163,6 +163,35 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
         }
 
         [TestMethod]
+        public void AzureKeyVault2IndividualStepTest()
+        {
+            //Arrange
+            Conversion conversion = new Conversion();
+            string yaml = @"
+- task: AzureKeyVault@2
+  displayName: 'Get Azure Keyvault secrets 2' 
+  inputs:
+    connectedServiceName: 'Service Connection2 to Azure Portal'
+    keyVaultName: myKeyvaultName
+    secretsFilter: '*'
+";
+
+            //Act
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineTaskToGitHubActionTask(yaml);
+
+            //Assert
+            string expected = @"
+- name: Get Azure Keyvault secrets 2
+  uses: azure/cli@v1.0.0
+  with:
+    inlineScript: az keyvault secret list --subscription Service Connection2 to Azure Portal --vault-name myKeyvaultName
+    azcliversion: latest
+";
+            expected = UtilityTests.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+        }
+
+        [TestMethod]
         public void AzurePowershellIndividualStepTest()
         {
             //Arrange
