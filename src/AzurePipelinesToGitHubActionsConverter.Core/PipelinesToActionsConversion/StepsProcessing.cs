@@ -647,7 +647,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
             //https://github.com/actions/cache
             //To:
             //- name: Cache multiple paths
-            //  uses: actions/cache@v2
+            //  uses: actions/cache@v3
             //  with:
             //    key: 'npm | "${{ runner.os }}" | package-lock.json'
             //    restore-keys: |
@@ -661,7 +661,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
 
             GitHubActions.Step gitHubStep = new GitHubActions.Step
             {
-                uses = "actions/cache@v2",
+                uses = "actions/cache@v3",
                 with = new Dictionary<string, string>
                 {
                     { "key", key },

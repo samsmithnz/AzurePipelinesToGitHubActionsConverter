@@ -572,7 +572,7 @@ jobs:
       run: scripts/azure-pipelines/create_deps_md5sum.sh
       shell: bash
     - name: Restore ParaView Build
-      uses: actions/cache@v2
+      uses: actions/cache@v3
       with:
         key: paraview | ${{ runner.os }} | ${{ env.deps_md5sum }} | v2
         restore-keys: 
