@@ -110,7 +110,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
             //Assert
             string expected = @"
 - name: Cache npm dependencies
-  uses: actions/cache@v2
+  uses: actions/cache@v3
   with:
     key: npm | ""${{ runner.os }}"" | package-lock.json
     restore-keys: 
