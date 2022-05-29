@@ -75,7 +75,7 @@ jobs:
   SonarCloud:
     name: SonarCloud
     runs-on: ubuntu-latest
-    needs: build
+    #needs: build
     #if: 0 == 1 # disable SonarCloud until it's fixed for .NET 6
     steps:
       - uses: actions/checkout@v3
@@ -114,7 +114,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        shell: powershell
+        shell: pwsh
         run: |
           .\.sonar\scanner\dotnet-sonarscanner begin /k:"samsmithnz_AzurePipelinesToGitHubActionsConverter" /o:"samsmithnz-github" /d:sonar.login="${{ secrets.SONAR_TOKEN }}" /d:sonar.host.url="https://sonarcloud.io" /v:"${{ needs.build.outputs.Version }}"
           dotnet build src/AzurePipelinesToGitHubActionsConverter.Core/AzurePipelinesToGitHubActionsConverter.Core.csproj
@@ -122,7 +122,9 @@ jobs:
 
   NuGetPush:
     runs-on: ubuntu-latest
-    needs: build
+    needs: 
+    - build
+    - SonarCloud
     if: github.ref == 'refs/heads/main'      
     steps:
     - name: Display GitVersion outputs
