@@ -60,6 +60,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                     case "BATCHSCRIPT@1":
                         gitHubStep = CreateBatchScriptStep(step);
                         break;
+                    case "CMDLINE@1":
                     case "CMDLINE@2":
                         gitHubStep = CreateScriptStep("cmd", step);
                         break;
