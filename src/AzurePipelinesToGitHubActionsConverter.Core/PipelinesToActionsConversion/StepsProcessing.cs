@@ -34,6 +34,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                         gitHubStep = CreateAzureCLIStep(step);
                         break;
                     case "AZUREKEYVAULT@1":
+                    case "AZUREKEYVAULT@2":
                         gitHubStep = CreateAzureKeyStep(step);
                         break;
                     case "AZUREPOWERSHELL@2":
@@ -2732,8 +2733,9 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
             //    inlineScript: az keyvault secret list --subscription 'mysubscription' --vault-name 'keyvaultname'
 
             string azureSubscription = GetStepInput(step, "azureSubscription");
+            string connectedServiceName = GetStepInput(step, "connectedServiceName");
             string keyVaultName = GetStepInput(step, "keyVaultName");
-            string inlineScript = "az keyvault secret list --subscription " + azureSubscription;
+            string inlineScript = "az keyvault secret list --subscription " + azureSubscription + connectedServiceName;
             inlineScript += " --vault-name " + keyVaultName;
 
             GitHubActions.Step gitHubStep = new GitHubActions.Step
