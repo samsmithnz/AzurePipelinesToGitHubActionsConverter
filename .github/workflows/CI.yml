@@ -76,7 +76,7 @@ jobs:
     name: SonarCloud
     runs-on: windows-latest
     needs: build
-    if: 0 == 1 # disable SonarCloud until it's fixed for .NET 6
+    #if: 0 == 1 # disable SonarCloud until it's fixed for .NET 6
     steps:
       - name: Set up JDK 11
         uses: actions/setup-java@v3
@@ -88,7 +88,7 @@ jobs:
           fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
 
       - name: Cache SonarCloud packages
-        uses: actions/cache@v1
+        uses: actions/cache@v3
         with:
           path: ~\sonar\cache
           key: ${{ runner.os }}-sonar
@@ -96,7 +96,7 @@ jobs:
 
       - name: Cache SonarCloud scanner
         id: cache-sonar-scanner
-        uses: actions/cache@v1
+        uses: actions/cache@v3
         with:
           path: .\.sonar\scanner
           key: ${{ runner.os }}-sonar-scanner
