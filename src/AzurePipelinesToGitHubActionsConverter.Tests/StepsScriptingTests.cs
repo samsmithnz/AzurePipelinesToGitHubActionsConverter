@@ -115,7 +115,30 @@ namespace AzurePipelinesToGitHubActionsConverter.Tests
         }
 
         [TestMethod]
-        public void CmdLineScriptIndividualStepTest()
+        public void CmdLine1ScriptIndividualStepTest()
+        {
+            //Arrange
+            Conversion conversion = new Conversion();
+            string yaml = @"
+- task: CmdLine@1
+  inputs:
+    script: echo your commands here 
+";
+
+            //Act
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineTaskToGitHubActionTask(yaml);
+
+            //Assert
+            string expected = @"
+- run: echo your commands here
+  shell: cmd
+";
+            expected = UtilityTests.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+        }
+
+        [TestMethod]
+        public void CmdLine2ScriptIndividualStepTest()
         {
             //Arrange
             Conversion conversion = new Conversion();
