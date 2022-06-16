@@ -75,8 +75,7 @@ jobs:
   SonarCloud:
     name: SonarCloud
     runs-on: ubuntu-latest
-    #needs: build
-    #if: 0 == 1 # disable SonarCloud until it's fixed for .NET 6
+    if: github.ref == 'refs/heads/main' 
     steps:
       - uses: actions/checkout@v3
         with:
