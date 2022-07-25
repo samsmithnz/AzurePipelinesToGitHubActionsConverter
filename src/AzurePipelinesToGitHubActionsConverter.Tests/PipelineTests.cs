@@ -123,7 +123,7 @@ jobs:
     runs-on: windows-latest
     steps:
     - uses: actions/checkout@v2
-    - run: 'This step is unknown and caused an exception: (Line: 1, Col: 2, Idx: 1) - (Line: 1, Col: 2, Idx: 1): Exception during deserialization'
+    - run: ""This step is unknown and caused an exception: Property 'task2' not found on type 'AzurePipelinesToGitHubActionsConverter.Core.AzurePipelines.Step'.""
 ";
             //When this test runs on a Linux runner, the YAML converter returns a slightly different result
             expected = UtilityTests.TrimNewLines(expected);
