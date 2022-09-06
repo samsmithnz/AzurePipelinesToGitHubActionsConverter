@@ -487,7 +487,42 @@ jobs:
   build:
     steps:
     - uses: actions/checkout@v2
-    - run: echo My favorite vegetable is ${{ env. variables.favoriteVeggie  }}.
+    - run: echo My favorite vegetable is ${{ env.variables.favoriteVeggie }}.
+";
+            expected = UtilityTests.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+
+        }
+
+
+        [TestMethod]
+        public void VariablesWithMultipleTemplatesTest()
+        {
+            //Arrange
+            string input = @"
+variables:
+- template: vars.yml
+- template: vars2.yml
+
+steps:
+- script: echo My favorite vegetable is ${{ variables.favoriteVeggie }}.
+";
+
+            Conversion conversion = new Conversion();
+
+            //Act
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(input);
+
+            //Assert
+            string expected = @"
+env:
+  template: vars.yml
+  template: vars2.yml
+jobs:
+  build:
+    steps:
+    - uses: actions/checkout@v2
+    - run: echo My favorite vegetable is ${{ env.variables.favoriteVeggie }}.
 ";
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);

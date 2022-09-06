@@ -241,6 +241,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                 {
                     list[i] = list[i].Substring(0, item.Length - 1);
                     list[i] = list[i].Remove(0, 2);
+                    list[i] = list[i].Trim();
                 }
             }
 
@@ -269,7 +270,8 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                 if (list[i].Length > 5)
                 {
                     list[i] = list[i].Substring(0, item.Length - 2);
-                    list[i] = list[i].Remove(0, 3);
+                    list[i] = list[i].Remove(0, 3); 
+                    list[i] = list[i].Trim();
                 }
             }
 
