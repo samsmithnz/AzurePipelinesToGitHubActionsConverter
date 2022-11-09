@@ -34,9 +34,9 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
             return variables;
         }
 
-        public Dictionary<string, string> ProcessComplexVariablesV2(List<AzurePipelines.Variable> variables)
+        public List<KeyValuePair<string, string>> ProcessComplexVariablesV2(List<AzurePipelines.Variable> variables)
         {
-            Dictionary<string, string> processedVariables = new Dictionary<string, string>();
+            List<KeyValuePair<string, string>> processedVariables = new List<KeyValuePair<string, string>>();
             if (variables != null)
             {
                 //update variables from the $(variableName) format to ${{variableName}} format, by piping them into a list for replacement later.
@@ -45,15 +45,16 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                     //name/value pairs
                     if (variables[i].name != null && variables[i].value != null)
                     {
-                        processedVariables.Add(variables[i].name, variables[i].value);
+                        processedVariables.Add(new KeyValuePair<string, string>(variables[i].name, variables[i].value));
                         VariableList.Add(variables[i].name);
                     }
                     //groups
                     if (variables[i].group != null)
                     {
-                        if (!processedVariables.ContainsKey("group"))
+                        KeyValuePair<string, string> results = processedVariables.Find(item => item.Key == "group");
+                        if (results.Equals(default(KeyValuePair<string, string>)))
                         {
-                            processedVariables.Add("group", variables[i].group);
+                            processedVariables.Add(new KeyValuePair<string, string>("group", variables[i].group));
                         }
                         else
                         {
@@ -63,7 +64,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                     //template
                     if (variables[i].template != null)
                     {
-                        processedVariables.Add("template", variables[i].template);
+                        processedVariables.Add(new KeyValuePair<string, string>("template", variables[i].template));
                     }
                 }
             }
@@ -94,7 +95,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
         }
 
 
-        public Dictionary<string, string> ProcessParametersAndVariablesV2(string parametersYaml, string variablesYaml)
+        public List<KeyValuePair<string, string>> ProcessParametersAndVariablesV2(string parametersYaml, string variablesYaml)
         {
             List<Parameter> parameters = null;
             if (parametersYaml != null)
@@ -142,21 +143,23 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                 }
             }
 
-            Dictionary<string, string> env = new Dictionary<string, string>();
+            List<KeyValuePair<string, string>> env = new List<KeyValuePair<string, string>>();
             Dictionary<string, string> processedParameters = ProcessComplexParametersV2(parameters);
-            Dictionary<string, string> processedVariables = ProcessComplexVariablesV2(variables);
+            List<KeyValuePair<string, string>> processedVariables = ProcessComplexVariablesV2(variables);
             foreach (KeyValuePair<string, string> item in processedParameters)
             {
-                if (!env.ContainsKey(item.Key))
+                KeyValuePair<string, string> results = processedVariables.Find(item => item.Key == "group");
+                if (env.Equals(default(KeyValuePair<string, string>)))
                 {
-                    env.Add(item.Key, item.Value);
+                    env.Add(new KeyValuePair<string,string>(item.Key, item.Value));
                 }
             }
             foreach (KeyValuePair<string, string> item in processedVariables)
             {
-                if (!env.ContainsKey(item.Key))
+                KeyValuePair<string, string> results = processedVariables.Find(item => item.Key == "group");
+                if (env.Equals(default(KeyValuePair<string, string>)))
                 {
-                    env.Add(item.Key, item.Value);
+                    env.Add(new KeyValuePair<string, string>(item.Key, item.Value));
                 }
             }
 
@@ -270,7 +273,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                 if (list[i].Length > 5)
                 {
                     list[i] = list[i].Substring(0, item.Length - 2);
-                    list[i] = list[i].Remove(0, 3); 
+                    list[i] = list[i].Remove(0, 3);
                     list[i] = list[i].Trim();
                 }
             }
