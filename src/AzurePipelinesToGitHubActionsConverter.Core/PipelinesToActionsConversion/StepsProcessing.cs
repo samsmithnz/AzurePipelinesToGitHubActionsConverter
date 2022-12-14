@@ -105,6 +105,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                         gitHubStep = CreateGitVersionSetupStep(step);
                         break;
                     case "GRADLE@2":
+                    case "GRADLE@3":
                         gitHubStep = CreateGradleStep(step);
                         break;
                     case "HUGOTASK@1":
