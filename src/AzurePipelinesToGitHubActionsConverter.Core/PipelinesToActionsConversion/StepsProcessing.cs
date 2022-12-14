@@ -3113,8 +3113,8 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
 
                             case "TERRAFORM@0":
                             case "TERRAFORMTASKV1@0":
-                            case "TerraformTaskV2@2":
-                            case "TerraformTaskV2@3":
+                            case "TERRAFORMTASKV2@2":
+                            case "TERRAFORMTASKV2@3":
                             case "TERRAFORMCLI@0":
                             case "MS-DEVLABS.CUSTOM-TERRAFORM-TASKS.CUSTOM-TERRAFORM-RELEASE-TASK.TERRAFORMTASKV1@0":
 
