@@ -30,6 +30,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                     case "AZUREAPPSERVICEMANAGE@0":
                         gitHubStep = CreateAzureAppServiceManageStep(step);
                         break;
+                    case "AZURECLI@1":
                     case "AZURECLI@2":
                         gitHubStep = CreateAzureCLIStep(step);
                         break;
