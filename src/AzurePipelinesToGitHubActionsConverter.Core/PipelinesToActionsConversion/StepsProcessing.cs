@@ -30,6 +30,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                     case "AZUREAPPSERVICEMANAGE@0":
                         gitHubStep = CreateAzureAppServiceManageStep(step);
                         break;
+                    case "AZURECLI@1":
                     case "AZURECLI@2":
                         gitHubStep = CreateAzureCLIStep(step);
                         break;
@@ -104,6 +105,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                         gitHubStep = CreateGitVersionSetupStep(step);
                         break;
                     case "GRADLE@2":
+                    case "GRADLE@3":
                         gitHubStep = CreateGradleStep(step);
                         break;
                     case "HUGOTASK@1":
@@ -3111,6 +3113,8 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
 
                             case "TERRAFORM@0":
                             case "TERRAFORMTASKV1@0":
+                            case "TERRAFORMTASKV2@2":
+                            case "TERRAFORMTASKV2@3":
                             case "TERRAFORMCLI@0":
                             case "MS-DEVLABS.CUSTOM-TERRAFORM-TASKS.CUSTOM-TERRAFORM-RELEASE-TASK.TERRAFORMTASKV1@0":
 
