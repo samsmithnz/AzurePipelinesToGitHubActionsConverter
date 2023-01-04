@@ -2565,5 +2565,86 @@ jobs:
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
         }
 
+        [TestMethod]
+        public void SachinTest()
+        {
+            //Arrange
+            string input = @"
+name: $(date:yyyyMMdd)$(rev:.r) - PR - main - Zircon Legacy Build
+resources:
+  repositories:
+  - repository: self
+    type: git
+    ref: develop
+jobs:
+- job: Job_1
+  displayName: Zircon Build Agent Job
+  pool:
+    name: Zircon Build Pool
+  steps:
+  - checkout: self
+    clean: true
+    fetchTags: false
+  - task: CopyFiles@2
+    displayName: 'Copy Files to: D:\ZirconTfs\Build'
+    inputs:
+      SourceFolder: $(agent.builddirectory)
+      TargetFolder: D:\ZirconTfs\Build
+      CleanTargetFolder: true
+      OverWrite: true
+  - task: CmdLine@2
+    displayName: MKS Packaging script
+    inputs:
+      script: ""cd %ZirconBase%\nnant genInterface \nattrib -s -h -r %ZirconBase%\\MKS\\*.* /s /d\nattrib -s -h -r %ZirconBase%\\ProvisionIt\\WebSite\\Bin\\*.* /s /d\nattrib -s -h -r %ZirconBase%\\PITUtil\\PITUtil\\PITUtil\\bin\\*.* /s /d\ndel /f/s/q %ZirconBase%\\ReportItGUI\\WebSite\\Bin\\*\nrd /s/q %ZirconBase%\\ReportItGUI\\WebSite\\Bin\nmd %ZirconBase%\\ReportItGUI\\WebSite\\Bin\ncopy %ZirconBase%\\ReportItGUI\\ThirdParty\\AjaxControlToolkit.dll  %ZirconBase%\\ReportItGUI\\Website\\Bin\\AjaxControlToolkit.dll\ncopy %ZirconBase%\\ReportItGUI\\ThirdParty\\DocumentFormat.OpenXml.dll  %ZirconBase%\\ReportItGUI\\Website\\Bin\\DocumentFormat.OpenXml.dll\ndel /f/s/q d:\\Stage\\Apps\\BUILD\\*\nrd /s/q d:\\Stage\\Apps\\BUILD\ncd %ZirconBase%\\MKS\nperl package.p\n""
+  - task: CopyFiles@2
+    displayName: 'Copy Files to: D:\stage\apps\TestBuild'
+    inputs:
+      SourceFolder: D:\stage\apps\build
+      TargetFolder: D:\stage\apps\TestBuild
+      CleanTargetFolder: true
+      OverWrite: true
+";
+            Conversion conversion = new Conversion();
+
+            //Act
+            ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(input);
+
+            //Assert
+            string expected = @"name: ${{ env.date:yyyyMMdd }}${{ env.rev:.r }} - PR - main - Zircon Legacy Build
+jobs:
+  Job_1:
+    name: Zircon Build Agent Job
+    runs-on: Zircon Build Pool
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/checkout@v2
+      with:
+        clean: true
+    - name: 'Copy Files to: D:\ZirconTfs\Build'
+      run: Copy '${{ env.agent.builddirectory }}/' 'D:\ZirconTfs\Build'
+    - name: MKS Packaging script
+      run: |
+        cd %ZirconBase%
+        nant genInterface 
+        attrib -s -h -r %ZirconBase%\MKS\*.* /s /d
+        attrib -s -h -r %ZirconBase%\ProvisionIt\WebSite\Bin\*.* /s /d
+        attrib -s -h -r %ZirconBase%\PITUtil\PITUtil\PITUtil\bin\*.* /s /d
+        del /f/s/q %ZirconBase%\ReportItGUI\WebSite\Bin\*
+        rd /s/q %ZirconBase%\ReportItGUI\WebSite\Bin
+        md %ZirconBase%\ReportItGUI\WebSite\Bin
+        copy %ZirconBase%\ReportItGUI\ThirdParty\AjaxControlToolkit.dll  %ZirconBase%\ReportItGUI\Website\Bin\AjaxControlToolkit.dll
+        copy %ZirconBase%\ReportItGUI\ThirdParty\DocumentFormat.OpenXml.dll  %ZirconBase%\ReportItGUI\Website\Bin\DocumentFormat.OpenXml.dll
+        del /f/s/q d:\Stage\Apps\BUILD\*
+        rd /s/q d:\Stage\Apps\BUILD
+        cd %ZirconBase%\MKS
+        perl package.p
+      shell: cmd
+    - name: 'Copy Files to: D:\stage\apps\TestBuild'
+      run: Copy 'D:\stage\apps\build/' 'D:\stage\apps\TestBuild'";
+
+            expected = UtilityTests.TrimNewLines(expected);
+            Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+        }
+
     }
 }

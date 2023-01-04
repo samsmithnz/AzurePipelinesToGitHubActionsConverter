@@ -90,6 +90,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.AzurePipelines
         public Dictionary<string, string> parameters { get; set; }
         public string clean { get; set; }
         public string fetchDepth { get; set; }
+        public string fetchTags { get; set; }
         public string lfs { get; set; }
         public string submodules { get; set; }
         public string path { get; set; }
