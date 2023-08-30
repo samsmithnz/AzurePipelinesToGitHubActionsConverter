@@ -9,10 +9,21 @@ updates:
   open-pull-requests-limit: 10
   assignees:
   - "samsmithnz"
+  groups:
+    core:
+      patterns: ["*"]
+      update-types: ["minor", "patch"]
 # Maintain dependencies for GitHub Actions
 - package-ecosystem: "github-actions"
   directory: "/"
   schedule:
     interval: "daily"
+    time: "06:00"
+    timezone: America/New_York
+  open-pull-requests-limit: 10
   assignees:
   - "samsmithnz"
+  groups:
+    actions:
+      patterns: ["*"]
+      update-types: ["minor", "patch"]
