@@ -38,7 +38,7 @@ jobs:
     - name: Setup .NET
       uses: actions/setup-dotnet@v3
       with:
-        dotnet-version: 7.0.x
+        dotnet-version: 8.0.x
     - name: .NET test
       run: dotnet test src/AzurePipelinesToGitHubActionsConverter.Tests/AzurePipelinesToGitHubActionsConverter.Tests.csproj -c Release --nologo -p:CollectCoverage=true -p:CoverletOutput=TestResults/ -p:CoverletOutputFormat=lcov -l:"trx;LogFileName=${{ github.workspace }}/TestOutput.xml"
     - name: Output results
@@ -81,7 +81,7 @@ jobs:
         uses: samsmithnz/SamsDotNetSonarCloudAction@v2.0.1
         with:
           projects: 'src/AzurePipelinesToGitHubActionsConverter.Core/AzurePipelinesToGitHubActionsConverter.Core.csproj,src/AzurePipelinesToGitHubActionsConverter.Tests/AzurePipelinesToGitHubActionsConverter.Tests.csproj'
-          dotnet-version: '7.0.x'
+          dotnet-version: '8.0.x'
           sonarcloud-organization: samsmithnz-github
           sonarcloud-project: samsmithnz_AzurePipelinesToGitHubActionsConverter
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
