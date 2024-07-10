@@ -22,12 +22,12 @@ jobs:
         
     #Install and calculate the new version with GitVersion  
     - name: Install GitVersion
-      uses: gittools/actions/gitversion/setup@v1.1.1
+      uses: gittools/actions/gitversion/setup@v1.2.0
       with:
         versionSpec: 5.x
 
     - name: Determine Version
-      uses: gittools/actions/gitversion/execute@v1.1.1
+      uses: gittools/actions/gitversion/execute@v1.2.0
       id: gitversion # step id used as reference for output values
 
     - name: Display GitVersion outputs
