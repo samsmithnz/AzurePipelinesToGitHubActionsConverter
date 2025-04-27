@@ -47,7 +47,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
 
         public AzurePipelines.Environment ProcessEnvironmentV2(string environmentYaml)
         {
-            AzurePipelines.Environment environment = null;
+            AzurePipelines.Environment environment = new AzurePipelines.Environment();
             if (environmentYaml != null)
             {
                 try
