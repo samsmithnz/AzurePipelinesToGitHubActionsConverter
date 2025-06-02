@@ -78,7 +78,7 @@ trigger:
 - master
 
 pool:
-  vmImage: 'windows-2019'
+  vmImage: 'windows-latest'
   demands:
   - msbuild
   - visualstudio
@@ -209,7 +209,7 @@ env:
   buildConfiguration: Release
 jobs:
   build:
-    runs-on: windows-2019
+    runs-on: windows-latest
     steps:
     - uses: actions/checkout@v2
     - uses: OctopusDeploy/install-octocli@v1
