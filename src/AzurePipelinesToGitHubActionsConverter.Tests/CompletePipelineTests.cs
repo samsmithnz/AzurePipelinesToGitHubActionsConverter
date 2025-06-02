@@ -1657,7 +1657,7 @@ stages:
       - job: Test_HQRM
         displayName: 'HQRM'
         pool:
-          vmImage: 'windows-2019'
+          vmImage: 'windows-latest'
         timeoutInMinutes: 0
         steps:
           - task: DownloadBuildArtifacts@0
@@ -1685,7 +1685,7 @@ stages:
       - job: Test_Unit
         displayName: 'Unit'
         pool:
-          vmImage: 'windows-2019'
+          vmImage: 'windows-latest'
         timeoutInMinutes: 0
         steps:
           - task: DownloadBuildArtifacts@0
@@ -1719,7 +1719,7 @@ stages:
       - job: Test_Integration_SQL2016
         displayName: 'Integration (SQL2016)'
         pool:
-          vmImage: 'windows-2019'
+          vmImage: 'windows-latest'
         timeoutInMinutes: 0
         variables:
           # This sets environment variable $env:CI.
@@ -1788,7 +1788,7 @@ stages:
       - job: Test_Integration_SQL2017
         displayName: 'Integration (SQL2017)'
         pool:
-          vmImage: 'windows-2019'
+          vmImage: 'windows-latest'
         timeoutInMinutes: 0
         variables:
           # This sets environment variable $env:CI.
@@ -1987,7 +1987,7 @@ jobs:
         name: ${{ env.buildArtifactName }}
   Test_Stage_Test_HQRM:
     name: HQRM
-    runs-on: windows-2019
+    runs-on: windows-latest
     needs:
     - Build_Stage_Package_Module
     steps:
@@ -2013,7 +2013,7 @@ jobs:
       if: (${{ job.status }} != 'cancelled')
   Test_Stage_Test_Unit:
     name: Unit
-    runs-on: windows-2019
+    runs-on: windows-latest
     needs:
     - Build_Stage_Package_Module
     steps:
@@ -2044,7 +2044,7 @@ jobs:
         name: ${{ env.testArtifactName }}
   Test_Stage_Test_Integration_SQL2016:
     name: Integration (SQL2016)
-    runs-on: windows-2019
+    runs-on: windows-latest
     needs:
     - Build_Stage_Package_Module
     env:
@@ -2110,7 +2110,7 @@ jobs:
       if: (${{ job.status }} != 'cancelled')
   Test_Stage_Test_Integration_SQL2017:
     name: Integration (SQL2017)
-    runs-on: windows-2019
+    runs-on: windows-latest
     needs:
     - Build_Stage_Package_Module
     env:
