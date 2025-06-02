@@ -196,10 +196,11 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
         //process the schedule
         public string[] ProcessSchedules(AzurePipelines.Schedule[] schedules)
         {
-            //if (schedules == null)
-            //{
-            //    return null;
-            //}
+
+            if (schedules == null || schedules.Length == 0)
+            { 
+                return null;
+            }
             string[] newSchedules = new string[schedules.Length];
             for (int i = 0; i < schedules.Length; i++)
             {
