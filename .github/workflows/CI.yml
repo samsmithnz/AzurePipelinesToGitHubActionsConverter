@@ -12,7 +12,7 @@ jobs:
         os: [windows-latest, ubuntu-latest]
     runs-on: ${{matrix.os}}
     outputs: # https://stackoverflow.com/questions/59175332/using-output-from-a-previous-job-in-a-new-one-in-a-github-action
-      Version: ${{ steps.gitversion.outputs.SemVer }}
+      Version: ${{ steps.gitversion.outputs.MajorMinorPatch }}
       CommitsSinceVersionSource: ${{ steps.gitversion.outputs.CommitsSinceVersionSource }}  
     steps:
 
@@ -32,7 +32,7 @@ jobs:
 
     - name: Display GitVersion outputs
       run: |
-        echo "Version: ${{ steps.gitversion.outputs.SemVer }}"
+        echo "Version: ${{ steps.gitversion.outputs.MajorMinorPatch }}"
         echo "CommitsSinceVersionSource: ${{ steps.gitversion.outputs.CommitsSinceVersionSource }}"
     
     - name: Setup .NET
@@ -62,7 +62,7 @@ jobs:
 
     #Pack the code into a NuGet package
     - name: .NET pack
-      run: dotnet pack src/AzurePipelinesToGitHubActionsConverter.Core/AzurePipelinesToGitHubActionsConverter.Core.csproj -c Release --nologo --include-symbols -p:Version='${{ steps.gitversion.outputs.SemVer }}'
+      run: dotnet pack src/AzurePipelinesToGitHubActionsConverter.Core/AzurePipelinesToGitHubActionsConverter.Core.csproj -c Release --nologo --include-symbols -p:Version='${{ steps.gitversion.outputs.MajorMinorPatch }}'
 
     - name: Upload nuget package back to GitHub
       uses: actions/upload-artifact@v4
