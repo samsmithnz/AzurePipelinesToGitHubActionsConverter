@@ -54,7 +54,7 @@ jobs:
         echo "- Passed ✅: $($result.TestRun.ResultSummary.Counters.passed)" >> $env:GITHUB_STEP_SUMMARY
         echo "- Failed ❌: $($result.TestRun.ResultSummary.Counters.failed)" >> $env:GITHUB_STEP_SUMMARY
     - name: Publish coverage report to coveralls.io
-      uses: coverallsapp/github-action@master
+      uses: coverallsapp/github-action@v2.3.6
       if: runner.OS == 'Linux' && 0 == 1 #Only push the Linux coverage
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
