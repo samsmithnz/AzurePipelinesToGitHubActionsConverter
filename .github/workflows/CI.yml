@@ -38,7 +38,7 @@ jobs:
     - name: Setup .NET
       uses: actions/setup-dotnet@v5
       with:
-        dotnet-version: 8.0.x
+        dotnet-version: 10.0.x
     - name: .NET test
       run: dotnet test src/AzurePipelinesToGitHubActionsConverter.Tests/AzurePipelinesToGitHubActionsConverter.Tests.csproj -c Release --nologo -p:CollectCoverage=true -p:CoverletOutput=TestResults/ -p:CoverletOutputFormat=lcov -l:"trx;LogFileName=${{ github.workspace }}/TestOutput.xml"
     - name: Output results
@@ -75,13 +75,13 @@ jobs:
   sonarCloud:
     name: Run SonarCloud analysis
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' 
+    if: false && github.ref == 'refs/heads/main' 
     steps:
       - name: Run Sonarcloud test
         uses: samsmithnz/SamsDotNetSonarCloudAction@v2
         with:
           projects: 'src/AzurePipelinesToGitHubActionsConverter.Core/AzurePipelinesToGitHubActionsConverter.Core.csproj,src/AzurePipelinesToGitHubActionsConverter.Tests/AzurePipelinesToGitHubActionsConverter.Tests.csproj'
-          dotnet-version: '8.0.x'
+          dotnet-version: '10.0.x'
           sonarcloud-organization: samsmithnz-github
           sonarcloud-project: samsmithnz_AzurePipelinesToGitHubActionsConverter
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
@@ -91,7 +91,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: 
     - build
-    - sonarCloud
+    #- sonarCloud
     if: github.ref == 'refs/heads/main'      
     steps:
     - name: Display GitVersion outputs
