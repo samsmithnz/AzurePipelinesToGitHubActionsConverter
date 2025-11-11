@@ -65,7 +65,7 @@ jobs:
       run: dotnet pack src/AzurePipelinesToGitHubActionsConverter.Core/AzurePipelinesToGitHubActionsConverter.Core.csproj -c Release --nologo --include-symbols -p:Version='${{ steps.gitversion.outputs.MajorMinorPatch }}'
 
     - name: Upload nuget package back to GitHub
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v5
       if: runner.OS == 'Linux' #Only pack the Linux nuget package
       with:
         name: nugetPackage
