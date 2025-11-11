@@ -270,7 +270,7 @@ The core functionality is contained in a .NET Standard 2.0 class, "AzurePipeline
 - The [GitHubActionsSerialization object](https://github.com/samsmithnz/AzurePipelinesToGitHubActionsConverter/blob/master/AzurePipelinesToGitHubActionsConverter/AzurePipelinesToGitHubActionsConverter.Core/GitHubActionsSerialization.cs) has calls to serialize and deserialize GitHub actions 
 
 Testing:
-- There is a .NET CORE 3.1 MSTest project for tests, "AzurePipelinesToGitHubActionsConverter.Tests" 
+- There is a .NET 10 MSTest project for tests, "AzurePipelinesToGitHubActionsConverter.Tests" 
 
 Current projects consuming this:
 - There is a website in [another GitHub project](https://github.com/samsmithnz/AzurePipelinesToGitHubActionsConverterWeb) where you can test this interactively, at: https://pipelinestoactions.azurewebsites.net/ 
