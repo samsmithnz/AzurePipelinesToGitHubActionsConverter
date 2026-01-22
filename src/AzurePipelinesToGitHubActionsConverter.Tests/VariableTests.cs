@@ -492,7 +492,102 @@ jobs:
             expected = UtilityTests.TrimNewLines(expected);
             Assert.AreEqual(expected, gitHubOutput.actionsYaml);
 
-        }
+                }
 
-    }
-}
+
+                [TestMethod]
+                public void VariablesWithMultipleTemplatesTest()
+                {
+                    //Arrange
+                    string input = @"
+        variables:
+        - template: vars.yml  # Template reference
+        - template: vars2.yml  # Template reference
+
+        steps:
+        - script: echo My favorite vegetable is ${{ variables.favoriteVeggie }}.
+        ";
+
+                    Conversion conversion = new Conversion();
+
+                    //Act
+                    ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(input);
+
+                    //Assert
+                    string expected = @"
+        env:
+          template: vars.yml
+          template1: vars2.yml
+        jobs:
+          build:
+            steps:
+            - uses: actions/checkout@v2
+            - run: echo My favorite vegetable is ${{ env. variables.favoriteVeggie  }}.
+        ";
+                    expected = UtilityTests.TrimNewLines(expected);
+                    Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+
+                }
+
+                [TestMethod]
+                public void VariablesWithThreeTemplatesTest()
+                {
+                    //Arrange
+                    string input = @"
+        variables:
+        - template: template1.yml
+        - template: template2.yml
+        - template: template3.yml
+        ";
+
+                    Conversion conversion = new Conversion();
+
+                    //Act
+                    ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(input);
+
+                    //Assert
+                    string expected = @"
+        env:
+          template: template1.yml
+          template1: template2.yml
+          template2: template3.yml
+        ";
+                    expected = UtilityTests.TrimNewLines(expected);
+                    Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+
+                }
+
+                [TestMethod]
+                public void VariablesWithTemplateAndOtherVariablesTest()
+                {
+                    //Arrange
+                    string input = @"
+        variables:
+        - name: myVariable
+          value: myValue
+        - template: vars.yml
+        - name: myVariable2
+          value: myValue2
+        - group: myVariablegroup
+        ";
+
+                    Conversion conversion = new Conversion();
+
+                    //Act
+                    ConversionResponse gitHubOutput = conversion.ConvertAzurePipelineToGitHubAction(input);
+
+                    //Assert
+                    string expected = @"
+        env:
+          myVariable: myValue
+          template: vars.yml
+          myVariable2: myValue2
+          group: myVariablegroup
+        ";
+                    expected = UtilityTests.TrimNewLines(expected);
+                    Assert.AreEqual(expected, gitHubOutput.actionsYaml);
+
+                }
+
+            }
+        }
