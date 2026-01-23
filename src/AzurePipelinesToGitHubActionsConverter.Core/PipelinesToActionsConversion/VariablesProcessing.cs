@@ -39,6 +39,7 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
             Dictionary<string, string> processedVariables = new Dictionary<string, string>();
             if (variables != null)
             {
+                int templateCount = 0;
                 //update variables from the $(variableName) format to ${{variableName}} format, by piping them into a list for replacement later.
                 for (int i = 0; i < variables.Count; i++)
                 {
@@ -60,10 +61,12 @@ namespace AzurePipelinesToGitHubActionsConverter.Core.PipelinesToActionsConversi
                             ConversionUtility.WriteLine("group: only 1 variable group is supported at present", _verbose);
                         }
                     }
-                    //template
+                    //template - append unique number to each template (template, template1, template2, etc.)
                     if (variables[i].template != null)
                     {
-                        processedVariables.Add("template", variables[i].template);
+                        string templateKey = templateCount == 0 ? "template" : $"template{templateCount}";
+                        processedVariables.Add(templateKey, variables[i].template);
+                        templateCount++;
                     }
                 }
             }
