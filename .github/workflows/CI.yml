@@ -22,12 +22,12 @@ jobs:
         
     #Install and calculate the new version with GitVersion  
     - name: Install GitVersion
-      uses: gittools/actions/gitversion/setup@v4.2.0
+      uses: gittools/actions/gitversion/setup@v4.3.3
       with:
         versionSpec: 6.x
 
     - name: Determine Version
-      uses: gittools/actions/gitversion/execute@v4.2.0
+      uses: gittools/actions/gitversion/execute@v4.3.3
       id: gitversion # step id used as reference for output values
 
     - name: Display GitVersion outputs
@@ -65,7 +65,7 @@ jobs:
       run: dotnet pack src/AzurePipelinesToGitHubActionsConverter.Core/AzurePipelinesToGitHubActionsConverter.Core.csproj -c Release --nologo --include-symbols -p:Version='${{ steps.gitversion.outputs.MajorMinorPatch }}'
 
     - name: Upload nuget package back to GitHub
-      uses: actions/upload-artifact@v6
+      uses: actions/upload-artifact@v7
       if: runner.OS == 'Linux' #Only pack the Linux nuget package
       with:
         name: nugetPackage
@@ -99,7 +99,7 @@ jobs:
         echo "Version: ${{ needs.build.outputs.Version }}" 
         echo "CommitsSinceVersionSource: ${{ needs.build.outputs.CommitsSinceVersionSource }}" 
     - name: Download nuget package artifact
-      uses: actions/download-artifact@v7
+      uses: actions/download-artifact@v8
       with:
         name: nugetPackage 
         path: nugetPackage 
